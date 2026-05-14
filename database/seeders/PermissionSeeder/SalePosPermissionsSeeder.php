@@ -22,7 +22,13 @@ class SalePosPermissionsSeeder extends Seeder
             'pos cash movements history',
 
             'pos config view', 
-            'pos config update'
+            'pos config update',
+
+            'view quotes',
+            'create quotes',
+            'edit quotes',
+            'convert quotes', // Para pasar a venta
+            'cancel quotes',
         ];
 
         foreach ($permissions as $permission) {

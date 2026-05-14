@@ -14,7 +14,8 @@ use App\Models\Inventory\Warehouse;
 use App\Models\Sales\Ncf\NcfLog;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Models\Sales\Pos\PosSession; 
-use App\Models\Sales\Pos\PosTerminal; 
+use App\Models\Sales\Pos\PosTerminal;
+use App\Models\Sales\Quotes\Quote; 
 
 class Sale extends Model
 {
@@ -108,7 +109,8 @@ class Sale extends Model
             'posTerminal',   // <--- NUEVO
             'payments.tipoPago', // <--- NUEVO (Para ver los métodos de pago usados)
             'items', // Cargamos todos los campos de los items (precio, cantidad)
-            'items.product:id,name,sku' // Cargamos el producto de cada item
+            'items.product:id,name,sku', // Cargamos el producto de cada item
+            'quote:id,discount_total' // <--- NUEVO (Para mostrar descuentos de cotizacion)
         ]);
     }
 
@@ -159,6 +161,14 @@ class Sale extends Model
     public function posTerminal(): BelongsTo 
     { 
         return $this->belongsTo(PosTerminal::class, 'pos_terminal_id'); 
+    }
+
+    /**
+     * Relación con la cotización (si se originó de una)
+     */
+    public function quote(): BelongsTo
+    {
+        return $this->belongsTo(Quote::class, 'id', 'sale_id');
     }
 
     /**

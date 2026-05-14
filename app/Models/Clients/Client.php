@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Configuration\ConfiguracionGeneral;
 use App\Models\Configuration\TaxIdentifierType;
+use App\Models\Sales\Quotes\Quote;
 use App\Models\Sales\Sale;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -88,6 +89,14 @@ class Client extends Model
     public function sales(): HasMany
     {
         return $this->hasMany(Sale::class);
+    }
+
+    /**
+     * Relación con las cotizaciones del cliente.
+     */
+    public function quotes(): HasMany
+    {
+        return $this->hasMany(Quote::class, 'customer_id');
     }
 
     
