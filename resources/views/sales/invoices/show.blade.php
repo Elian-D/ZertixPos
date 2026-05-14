@@ -20,19 +20,27 @@
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <a href="{{ route('sales.invoices.print', $invoice) }}" target="_blank" 
+                    <select id="formatSelector" 
+                            class="block px-4 py-2.5 bg-white border border-gray-300 rounded-lg font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500">
+                            <option value="ticket">Ticket (Térmica)</option>
+                            <option value="letter">Carta (PDF)</option>
+                    </select>
+
+                    <a id="printBtn" 
+                       href="{{ route('sales.invoices.print', $invoice) }}?format=ticket" 
+                       target="_blank" 
                        class="inline-flex items-center px-5 py-2.5 bg-gray-900 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-gray-800 shadow-lg active:scale-95 transition-all">
                         <x-heroicon-s-printer class="w-4 h-4 mr-2" />
-                        Imprimir Documento
+                        Imprimir
                     </a>
                     
-                    @if($invoice->format_type === 'letter')
-                    <a href="{{ route('sales.invoices.print', $invoice) }}?download=1" 
-                       class="inline-flex items-center px-5 py-2.5 bg-white border border-gray-300 rounded-lg font-bold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 active:scale-95 transition-all">
+                    <a id="downloadBtn"
+                       href="{{ route('sales.invoices.print', $invoice) }}?format=letter&download=1" 
+                       class="inline-flex items-center px-5 py-2.5 bg-white border border-gray-300 rounded-lg font-bold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 active:scale-95 transition-all"
+                       target="blank">
                         <x-heroicon-s-arrow-down-tray class="w-4 h-4 mr-2" />
-                        PDF
+                        Descargar PDF
                     </a>
-                    @endif
                 </div>
             </div>
 
@@ -186,38 +194,63 @@
     </div>
 
     <style>
-        /* Escalado responsivo según tipo de documento */
+        /* Contenedor Base */
         .invoice-frame-container {
-            transition: transform 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background: white;
+        }
+
+        /* Estilos para CARTA (Letter) */
+        .is-letter {
+            width: 21.59cm;
+            height: 27.94cm;
+            transform: scale(0.7);
             transform-origin: top center;
         }
 
-        /* Pantallas pequeñas: Reducido */
-        @media (max-width: 640px) {
-            .scale-ticket {
-                transform: scale(0.85);
-            }
+        /* Estilos para TICKET (80mm o 58mm) */
+        .is-ticket {
+            width: 85mm; 
+            min-height: 150mm;
+            height: 600px;
         }
 
-        /* Pantallas medianas: Normal */
-        @media (min-width: 641px) and (max-width: 1279px) {
-            .scale-ticket {
-                transform: scale(1);
-            }
+        /* Ajustes Responsivos */
+        @media (max-width: 1280px) {
+            .is-letter { transform: scale(0.5); }
+            .is-ticket { transform: scale(0.9); }
         }
 
-        /* Pantallas grandes: Ampliado */
-        @media (min-width: 1280px) {
-            .scale-ticket {
-                transform: scale(1.3);
-            }
-        }
-
-        /* Pantallas extra grandes: Más ampliado */
         @media (min-width: 1536px) {
-            .scale-ticket {
-                transform: scale(1.5);
-            }
+            .is-letter { transform: scale(0.85); }
+            .is-ticket { transform: scale(1.2); }
         }
     </style>
+
+    <script>
+        const config = {
+            letter: "{{ route('sales.invoices.print', $invoice) }}?format=letter",
+            ticket: "{{ route('sales.invoices.print', $invoice) }}?format=ticket"
+        };
+
+        const formatSelector = document.getElementById('formatSelector');
+        const printBtn = document.getElementById('printBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const previewContainer = document.querySelector('.invoice-frame-container');
+        const invoiceIframe = document.getElementById('invoice-iframe');
+
+        formatSelector.addEventListener('change', function() {
+            const format = this.value;
+            const url = config[format];
+            
+            printBtn.href = url;
+            downloadBtn.href = url + '&download=1';
+            downloadBtn.style.display = format === 'letter' ? 'inline-flex' : 'none';
+            
+            previewContainer.classList.remove('is-letter', 'is-ticket');
+            previewContainer.classList.add(`is-${format}`);
+            
+            invoiceIframe.src = "{{ route('sales.invoices.preview', $invoice) }}?format=" + format;
+        });
+    </script>
 </x-app-layout>

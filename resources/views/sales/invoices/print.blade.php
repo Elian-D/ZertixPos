@@ -40,21 +40,47 @@
             top: 20px;
             left: 20px;
             z-index: 100;
+            display: flex;
+            gap: 10px;
+        }
+        .no-print button {
+            padding: 12px 24px;
+            cursor: pointer;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-weight: bold;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            transition: background 0.2s;
+        }
+        .no-print button:hover {
+            background: #4338ca;
+        }
+        .no-print button.close {
+            background: #6b7280;
+        }
+        .no-print button.close:hover {
+            background: #4b5563;
         }
     </style>
 </head>
 <body>
     <div class="no-print">
-        <button onclick="window.print()" style="padding: 12px 24px; cursor: pointer; background: #4f46e5; color: white; border: none; border-radius: 6px; font-weight: bold; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+        <button onclick="window.print()">
             IMPRIMIR FACTURA
         </button>
-        <button onclick="window.close()" style="padding: 12px 24px; cursor: pointer; background: #6b7280; color: white; border: none; border-radius: 6px; margin-left: 10px; font-weight: bold;">
+        <button class="close" onclick="window.close()">
             CERRAR
         </button>
     </div>
 
     <div class="print-container">
-        @include('sales.invoices.formats.' . ($invoice->format_type === 'route' ? 'ticket' : $invoice->format_type))
+        @if($view)
+            {!! $view !!}
+        @else
+            @include('sales.invoices.formats.ticket', compact('invoice'))
+        @endif
     </div>
 
     <script>

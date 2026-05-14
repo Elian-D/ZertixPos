@@ -68,7 +68,7 @@ class SaleController extends Controller
     /**
      * Redirigir a la impresión de la factura asociada a la venta.
      */
-    public function printInvoice(Sale $sale)
+    public function printInvoice(Sale $sale, Request $request)
     {
         // Buscamos la factura asociada
         $invoice = $sale->invoice; 
@@ -77,8 +77,8 @@ class SaleController extends Controller
             return back()->with('error', 'Esta venta aún no tiene una factura generada.');
         }
 
-        // Reutilizamos el método print del InvoiceController
-        return app(\App\Http\Controllers\Sales\InvoiceController::class)->print($invoice);
+        // Pasar el formato y parámetros de descarga al método print del InvoiceController
+        return app(\App\Http\Controllers\Sales\InvoiceController::class)->print($invoice, $request);
     }
 
     /**

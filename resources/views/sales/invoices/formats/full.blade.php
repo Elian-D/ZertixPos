@@ -21,8 +21,10 @@
     $taxName = $impuestoConfig->nombre ?? 'ITBIS';
     
     // CÁLCULOS DE SEGURIDAD
-    $subtotalCalculado = $sale->items->sum('subtotal'); 
-    $taxCalculado = $sale->tax_amount > 0 ? $sale->tax_amount : ($sale->total_amount - $subtotalCalculado);
+    $subtotalCalculado = $sale->items->sum('subtotal');
+    $descuentoCotizacion = $sale->quote?->discount_total ?? 0;
+    $subtotalConDescuento = $subtotalCalculado - $descuentoCotizacion;
+    $taxCalculado = $sale->tax_amount > 0 ? $sale->tax_amount : ($sale->total_amount - $subtotalConDescuento);
 
     // Vencimiento de factura (Crédito comercial)
     $vencimientoPago = $sale->payment_type === 'credit' 
@@ -212,8 +214,18 @@
         <div class="totals-container">
             <table style="width: 100%;">
                 <tr>
-                    <td class="info-label" style="padding: 5px 0;">Subtotal Neto:</td>
+                    <td class="info-label" style="padding: 5px 0;">Subtotal Bruto:</td>
                     <td class="text-right bold" style="font-size: 14px;">{{ $currency }}{{ number_format($subtotalCalculado, 2) }}</td>
+                </tr>
+                @if($descuentoCotizacion > 0)
+                <tr style="color: #dc2626;">
+                    <td class="info-label" style="padding: 5px 0;">Descuento (Cotización):</td>
+                    <td class="text-right bold" style="font-size: 14px; color: #dc2626;">-{{ $currency }}{{ number_format($descuentoCotizacion, 2) }}</td>
+                </tr>
+                @endif
+                <tr>
+                    <td class="info-label" style="padding: 5px 0;">Subtotal Neto:</td>
+                    <td class="text-right bold" style="font-size: 14px;">{{ $currency }}{{ number_format($subtotalConDescuento, 2) }}</td>
                 </tr>
                 <tr>
                     <td class="info-label" style="padding: 5px 0;">{{ $taxName }}:</td>
