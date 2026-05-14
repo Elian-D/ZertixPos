@@ -28,6 +28,9 @@
 
     // NUEVO: Determinar si mostramos info fiscal
     $mostrarFiscal = $config->usa_ncf && $sale->ncf;
+    
+    // Descuento de cotización (si existe)
+    $descuentoCotizacion = $sale->quote?->discount_total ?? 0;
 @endphp
 
 <!DOCTYPE html>
@@ -185,13 +188,24 @@
         {{-- 5. TOTALES --}}
         <div class="spacer">
             @php
-                $subtotalCalculado = $sale->items->sum('subtotal'); 
-                $taxCalculado = $sale->tax_amount > 0 ? $sale->tax_amount : ($sale->total_amount - $subtotalCalculado);
+                $subtotalCalculado = $sale->items->sum('subtotal');
+                $subtotalConDescuento = $subtotalCalculado - $descuentoCotizacion;
+                $taxCalculado = $sale->tax_amount > 0 ? $sale->tax_amount : ($sale->total_amount - $subtotalConDescuento);
             @endphp
             <table style="border-top: 1px solid #000; padding-top: 4px;">
                 <tr>
-                    <td>SUBTOTAL NETO:</td>
+                    <td>SUBTOTAL BRUTO:</td>
                     <td class="right">{{ $currency }}{{ number_format($subtotalCalculado, 2) }}</td>
+                </tr>
+                @if($descuentoCotizacion > 0)
+                <tr>
+                    <td>DESCUENTO (COTIZ.):</td>
+                    <td class="right">-{{ $currency }}{{ number_format($descuentoCotizacion, 2) }}</td>
+                </tr>
+                @endif
+                <tr>
+                    <td>SUBTOTAL NETO:</td>
+                    <td class="right">{{ $currency }}{{ number_format($subtotalConDescuento, 2) }}</td>
                 </tr>
                 <tr>
                     <td>{{ $taxName }}:</td>

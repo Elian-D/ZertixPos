@@ -79,7 +79,7 @@
                 </div>
             </div>
 
-            {{-- TABLA DE ARTÍCULOS (Mobile Responsive) --}}
+            {{-- TABLA DE ARTÍCULOS --}}
             <div class="border rounded-xl overflow-hidden mb-6 shadow-sm">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
@@ -114,7 +114,7 @@
                 </div>
             </div>
 
-            {{-- DESGLOSE DE PAGOS MULTIPLES (El Corazón del Multipay) --}}
+            {{-- DESGLOSE DE PAGOS MULTIPLES --}}
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start mb-6">
                 {{-- Columna Izquierda: Notas --}}
                 <div>
@@ -128,35 +128,66 @@
 
                 {{-- Columna Derecha: Totales y Pagos --}}
                 <div class="space-y-3">
-                    <div class="flex justify-between text-xs text-gray-500 px-1">
-                        <span>Subtotal General</span>
-                        <span class="font-mono">${{ number_format($sale->subtotal, 2) }}</span>
-                    </div>
                     @php
                         $config = general_config();
                         $impuestoConfig = $config->impuesto;
                         $taxName = $impuestoConfig->nombre ?? 'ITBIS';
+                        
+                        // Obtener descuento de cotización si existe
+                        $descuentoCotizacion = $sale->quote?->discount_total ?? 0;
+                        
+                        // Calcular subtotal bruto (suma de items)
+                        $subtotalBruto = $sale->items->sum('subtotal');
                     @endphp
+
+                    {{-- Subtotal Bruto --}}
+                    <div class="flex justify-between text-xs text-gray-500 px-1">
+                        <span>Subtotal Bruto</span>
+                        <span class="font-mono">${{ number_format($subtotalBruto, 2) }}</span>
+                    </div>
+
+                    {{-- Descuento de Cotización (solo si existe) --}}
+                    @if($descuentoCotizacion > 0)
+                        <div class="flex justify-between text-xs text-amber-600 px-1">
+                            <span class="flex items-center gap-1">
+                                <x-heroicon-s-tag class="w-3 h-3"/>
+                                Descuento (Cotización)
+                            </span>
+                            <span class="font-mono font-bold">-${{ number_format($descuentoCotizacion, 2) }}</span>
+                        </div>
+                        
+                        {{-- Subtotal Neto (después del descuento) --}}
+                        <div class="flex justify-between text-xs font-semibold text-gray-700 px-1 pb-2 border-b border-gray-200">
+                            <span>Subtotal Neto</span>
+                            <span class="font-mono">${{ number_format($sale->subtotal, 2) }}</span>
+                        </div>
+                    @endif
+
+                    {{-- Impuesto --}}
                     <div class="flex justify-between text-xs text-gray-500 px-1">
                         <span>{{ $taxName }}</span>
                         <span class="font-mono">${{ number_format($sale->tax_amount, 2) }}</span>
                     </div>
-                    <div class="flex justify-between items-center bg-indigo-50 p-2 rounded-lg border border-indigo-100">
-                        <span class="text-[10px] font-black text-indigo-700 uppercase">Total Venta</span>
-                        <span class="text-lg font-black text-indigo-700 font-mono">${{ number_format($sale->total_amount, 2) }}</span>
+
+                    {{-- Total Final --}}
+                    <div class="flex justify-between items-center bg-indigo-50 p-3 rounded-lg border border-indigo-100">
+                        <span class="text-xs font-black text-indigo-700 uppercase">Total Venta</span>
+                        <span class="text-xl font-black text-indigo-700 font-mono">${{ number_format($sale->total_amount, 2) }}</span>
                     </div>
 
                     {{-- Desglose de Métodos Usados --}}
                     <div class="mt-4 pt-4 border-t border-gray-100">
                         <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2 text-right">Distribución del Pago</span>
                         @foreach($sale->payments as $payment)
-                            <div class="flex justify-between items-center py-1 border-b border-gray-50 last:border-0">
-                                <span class="text-xs text-gray-600 flex items-center">
-                                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-2"></div>
-                                    {{ $payment->tipoPago->nombre }}
-                                    @if($payment->reference) <span class="text-[9px] text-gray-400 ml-1">({{ $payment->reference }})</span> @endif
+                            <div class="flex justify-between items-center py-1.5 border-b border-gray-50 last:border-0">
+                                <span class="text-xs text-gray-600 flex items-center gap-2">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
+                                    <span class="font-medium">{{ $payment->tipoPago->nombre }}</span>
+                                    @if($payment->reference) 
+                                        <span class="text-[9px] text-gray-400">({{ $payment->reference }})</span> 
+                                    @endif
                                 </span>
-                                <span class="text-xs font-bold text-gray-700 font-mono">${{ number_format($payment->amount, 2) }}</span>
+                                <span class="text-sm font-bold text-gray-700 font-mono">${{ number_format($payment->amount, 2) }}</span>
                             </div>
                         @endforeach
                     </div>
@@ -178,41 +209,41 @@
     </div>
 </x-modal>
     
-    {{-- 2. MODAL: CONFIRMACIÓN DE ANULACIÓN ACTUALIZADO --}}
-    <x-modal name="confirm-cancel-sale-{{ $sale->id }}" maxWidth="sm">
-        <form action="{{ route('sales.cancel', $sale) }}" method="POST" class="p-6">
-            @csrf
-            @method('PATCH')
-            
-            <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <x-heroicon-s-exclamation-triangle class="w-10 h-10"/>
-            </div>
-            
-            <div class="text-center mb-4">
-                <h3 class="text-lg font-bold text-gray-900">¿Anular Venta?</h3>
-                <p class="text-xs text-gray-500 mt-1">
-                    Venta: <strong>{{ $sale->number }}</strong>
-                </p>
-            </div>
+{{-- 2. MODAL: CONFIRMACIÓN DE ANULACIÓN --}}
+<x-modal name="confirm-cancel-sale-{{ $sale->id }}" maxWidth="sm">
+    <form action="{{ route('sales.cancel', $sale) }}" method="POST" class="p-6">
+        @csrf
+        @method('PATCH')
+        
+        <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <x-heroicon-s-exclamation-triangle class="w-10 h-10"/>
+        </div>
+        
+        <div class="text-center mb-4">
+            <h3 class="text-lg font-bold text-gray-900">¿Anular Venta?</h3>
+            <p class="text-xs text-gray-500 mt-1">
+                Venta: <strong>{{ $sale->number }}</strong>
+            </p>
+        </div>
 
-            {{-- Nuevo: Campo de Motivo --}}
-            <div class="mt-4 text-left">
-                <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Motivo de Anulación (DGII)</label>
-                <select name="cancellation_reason" required class="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    <option value="01 - ERRORES DE DIGITACION">01 - Errores de digitación</option>
-                    <option value="02 - ERRORES DE IMPRESION">02 - Errores de impresión</option>
-                    <option value="03 - PRODUCTO DEFECTUOSO">03 - Producto defectuoso</option>
-                    <option value="04 - DEVOLUCION">04 - Devolución</option>
-                    <option value="05 - OTROS">05 - Otros</option>
-                </select>
-            </div>
+        {{-- Campo de Motivo --}}
+        <div class="mt-4 text-left">
+            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Motivo de Anulación (DGII)</label>
+            <select name="cancellation_reason" required class="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <option value="01 - ERRORES DE DIGITACION">01 - Errores de digitación</option>
+                <option value="02 - ERRORES DE IMPRESION">02 - Errores de impresión</option>
+                <option value="03 - PRODUCTO DEFECTUOSO">03 - Producto defectuoso</option>
+                <option value="04 - DEVOLUCION">04 - Devolución</option>
+                <option value="05 - OTROS">05 - Otros</option>
+            </select>
+        </div>
 
-            <div class="mt-8 flex justify-center gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">Volver</x-secondary-button>
-                <button type="submit" class="px-6 py-2 bg-red-600 text-white text-xs font-bold uppercase rounded-lg hover:bg-red-700 transition-colors shadow-lg shadow-red-200">
-                    Confirmar
-                </button>
-            </div>
-        </form>
+        <div class="mt-8 flex justify-center gap-3">
+            <x-secondary-button x-on:click="$dispatch('close')">Volver</x-secondary-button>
+            <button type="submit" class="px-6 py-2 bg-red-600 text-white text-xs font-bold uppercase rounded-lg hover:bg-red-700 transition-colors shadow-lg shadow-red-200">
+                Confirmar Anulación
+            </button>
+        </div>
+    </form>
 </x-modal>
 @endforeach

@@ -97,6 +97,11 @@ class User extends Authenticatable
         return $this->hasMany(PosCashMovement::class);
     }
 
+    public function quotes(): HasMany
+    {
+        return $this->hasMany(\App\Models\Sales\Quotes\Quote::class);
+    }
+
     /**
      * Scope para filtrar usuarios que son cajeros o tienen acceso al POS.
      * Útil para el CatalogService.
