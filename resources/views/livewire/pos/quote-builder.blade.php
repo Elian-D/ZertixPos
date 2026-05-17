@@ -9,7 +9,7 @@
                     <option value="{{ $client->id }}">{{ $client->name }}</option>
                 @endforeach
             </select>
-            @error('clientId') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+            @error('clientId') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
         </div>
 
         {{-- Buscador de Productos (Inyectamos el otro componente aquí) --}}
@@ -27,28 +27,41 @@
                     <th class="px-4 py-3">Producto</th>
                     <th class="px-4 py-3 w-32">Precio</th>
                     <th class="px-4 py-3 w-32">Cant.</th>
-                    <th class="px-4 py-3 w-32">Desc. ($)</th>
+                    <th class="px-4 py-3 w-32">Desc. (%)</th>
                     <th class="px-4 py-3 w-32">Subtotal</th>
                     <th class="px-4 py-3 w-16"></th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($items as $index => $item)
-                    {{-- ESTE wire:key ES VITAL PARA QUE LIVEWIRE NO ROMPA LA TABLA --}}
                     <tr wire:key="item-row-{{ $item['product_id'] }}-{{ $index }}" class="border-b">
                         <td class="px-4 py-3 font-medium text-gray-900">{{ $item['name'] }}</td>
                         <td class="px-4 py-3">${{ number_format($item['price'], 2) }}</td>
                         <td class="px-4 py-3">
                             <input type="number" 
-                                   wire:model.live.debounce.500ms="items.{{ $index }}.quantity" 
-                                   min="1" 
-                                   class="w-full border-gray-300 rounded text-sm p-1">
+                                wire:model.live.debounce.500ms="items.{{ $index }}.quantity" 
+                                min="1" 
+                                class="w-full border-gray-300 rounded text-sm p-1">
+                            @error("items.{$index}.quantity") 
+                                <span class="text-red-500 text-xs block mt-1 leading-tight">{{ $message }}</span> 
+                            @enderror
                         </td>
                         <td class="px-4 py-3">
-                            <input type="number" 
-                                   wire:model.live.debounce.500ms="items.{{ $index }}.discount_amount" 
-                                   min="0" 
-                                   class="w-full border-gray-300 rounded text-sm p-1">
+                            <div class="relative rounded-md shadow-sm">
+                                <input type="number" 
+                                    wire:model.live.debounce.500ms="items.{{ $index }}.discount_percentage" 
+                                    min="0" 
+                                    max="100"
+                                    step="0.01"
+                                    {{ !pos_config()->allow_item_discount ? 'disabled' : '' }}
+                                    class="w-full border-gray-300 rounded text-sm p-1 pr-7 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed text-right">
+                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                    <span class="text-gray-400 text-xs">%</span>
+                                </div>
+                            </div>
+                            @error("items.{$index}.discount_percentage") 
+                                <span class="text-red-500 text-xs block mt-1 leading-tight">{{ $message }}</span> 
+                            @enderror
                         </td>
                         <td class="px-4 py-3 font-bold text-gray-900">
                             ${{ number_format($item['subtotal'], 2) }}
@@ -92,21 +105,35 @@
                 <span class="text-xl font-black">${{ number_format($total, 2) }}</span>
             </div>
 
+            {{-- NUEVO: Bloque de Errores Críticos / Generales del Servidor --}}
+            @error('general')
+                <div class="mt-4 p-2.5 bg-red-50 border-l-4 border-red-500 rounded text-red-700 text-xs flex items-start gap-2 animate-fade-in">
+                    <x-icon name="heroicon-m-exclamation-triangle" class="w-4 h-4 flex-shrink-0 mt-0.5 text-red-500"/>
+                    <div>{{ $message }}</div>
+                </div>
+            @enderror
+
             <button 
                 wire:click="saveQuote" 
-                {{-- wire:loading.attr desactiva el botón mientras se guarda --}}
                 wire:loading.attr="disabled"
-                class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg disabled:opacity-50 flex items-center justify-center gap-2"
+                class="w-full mt-4 bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg disabled:opacity-50 flex items-center justify-center gap-2 transition-colors duration-150"
             >
                 <span wire:loading.remove wire:target="saveQuote">Guardar Cotización</span>
-                <span wire:loading wire:target="saveQuote">Guardando...</span>
+                <span wire:loading wire:target="saveQuote" class="flex items-center gap-2">
+                    <svg class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Guardando...
+                </span>
             </button>
         </div>
     </div>
 
     @if (session()->has('success'))
-        <div class="mt-4 p-4 bg-green-100 text-green-700 rounded-lg">
-            {{ session('success') }}
+        <div class="mt-4 p-4 bg-green-100 text-green-700 rounded-lg flex items-center gap-2">
+            <x-icon name="heroicon-o-check-circle" class="w-5 h-5 text-green-600"/>
+            <span>{{ session('success') }}</span>
         </div>
     @endif
 </div>

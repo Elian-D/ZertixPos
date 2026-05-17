@@ -15,6 +15,7 @@ use App\Models\Sales\Ncf\NcfLog;
 use App\DTOs\Sales\PosContext; // Importamos el DTO
 use App\Models\Configuration\TipoPago;
 use App\Models\Sales\Ncf\NcfSequence;
+use App\Models\Sales\Pos\PosSetting;
 use Carbon\Carbon;
 use Exception;
 
@@ -36,6 +37,9 @@ class SaleService
         if ($config?->usa_ncf && isset($data['ncf_type_id'])) {
             $this->validateNcfSequence($data['ncf_type_id']);
         }
+
+        // 2. Validación de descuentos contra pos_settings
+        $this->validateDiscounts($data);
 
         return DB::transaction(function () use ($data, $context, $config) {
             $docType = DocumentType::where('code', 'FAC')->firstOrFail();
@@ -65,6 +69,7 @@ class SaleService
                 'user_id'          => Auth::id(),
                 'sale_date'        => $saleDate,
                 'total_amount'     => $data['total_amount'],
+                'discount_total'   => $data['discount_total'] ?? 0,
                 'payment_type'     => $data['payment_type'],
                 'tipo_pago_id'     => $data['tipo_pago_id'] ?? null,
                 'cash_received'    => $data['cash_received'] ?? 0,
@@ -76,11 +81,17 @@ class SaleService
 
             // 3. Crear Items e Inventario
             foreach ($data['items'] as $item) {
+                $discountAmount     = $item['discount_amount'] ?? 0;
+                $discountPercentage = $item['discount_percentage'] ?? 0;
+                $lineSubtotal       = ($item['quantity'] * $item['price']) - $discountAmount;
+
                 $sale->items()->create([
-                    'product_id' => $item['product_id'],
-                    'quantity'   => $item['quantity'],
-                    'unit_price' => $item['price'],
-                    'subtotal'   => $item['quantity'] * $item['price'],
+                    'product_id'          => $item['product_id'],
+                    'quantity'            => $item['quantity'],
+                    'unit_price'          => $item['price'],
+                    'discount_amount'     => $discountAmount,
+                    'discount_percentage' => $discountPercentage,
+                    'subtotal'            => $lineSubtotal,
                 ]);
 
                 $this->inventoryService->register([
@@ -195,6 +206,41 @@ class SaleService
             'reference_type'  => Sale::class,
             'reference_id'    => $sale->id,
         ]);
+    }
+
+    private function validateDiscounts(array $data): void
+    {
+        $settings = PosSetting::getSettings();
+        $max      = $settings->max_discount_percentage;
+
+        // Descuento global
+        if (!empty($data['discount_total']) && $data['discount_total'] > 0) {
+            if (!$settings->allow_global_discount) {
+                throw new Exception("Los descuentos globales no están habilitados.");
+            }
+
+            $subtotalBruto = collect($data['items'])->sum(fn($i) => $i['quantity'] * $i['price']);
+            if ($subtotalBruto > 0) {
+                $globalPct = ($data['discount_total'] / $subtotalBruto) * 100;
+                if ($globalPct > $max) {
+                    throw new Exception("El descuento global ({$globalPct}%) supera el límite permitido ({$max}%).");
+                }
+            }
+        }
+
+        // Descuentos por ítem
+        foreach ($data['items'] ?? [] as $item) {
+            $pct = $item['discount_percentage'] ?? 0;
+            $amt = $item['discount_amount'] ?? 0;
+
+            if (($pct > 0 || $amt > 0) && !$settings->allow_item_discount) {
+                throw new Exception("Los descuentos por ítem no están habilitados.");
+            }
+
+            if ($pct > $max) {
+                throw new Exception("Un descuento por ítem ({$pct}%) supera el límite permitido ({$max}%).");
+            }
+        }
     }
 
     private function validateNcfSequence($ncfTypeId) {
