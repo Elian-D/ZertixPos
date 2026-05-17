@@ -216,18 +216,107 @@ Sistema híbrido que soporta descuentos por ítem y descuentos globales, ambos v
 
 ### 5.1 — Reglas de Negocio
 
-- [ ] Si `allow_item_discount = false` → UI de descuento por ítem bloqueada visualmente.
-- [ ] Si `allow_global_discount = false` → campo de descuento global oculto.
-- [ ] Si el porcentaje supera `max_discount_percentage` → error de validación antes de procesar.
+- [x] Si `allow_item_discount = false` → UI de descuento por ítem bloqueada visualmente.
+- [x] Si `allow_global_discount = false` → campo de descuento global oculto.
+- [x] Si el porcentaje supera `max_discount_percentage` → error de validación antes de procesar.
 
 ### 5.2 — Persistencia
 
-- [ ] **Campos en `sale_items`:**
+- [x] **Campos en `sale_items`:**
     ```php
     $table->decimal('discount_amount', 10, 2)->default(0);
     $table->decimal('discount_percentage', 5, 2)->default(0);
     ```
     Los descuentos nunca se infieren del total. Se guardan explícitamente para auditoría y reversión.
+
+### 5.3 — Fuente de la verdad y Validaciones Integrales
+
+- [x] Modificar `ticket.blade.php` y `full.blade.php` para que utilicen el `total_amount` y `discount_total` reales de `sales` en vez de heredarlo de la cotización original, garantizando la consistencia en el cálculo final de los impuestos (ITBIS) y el neto a cobrar.
+- [x] Adecuar el `QuoteService` para que en el método `convertToSale` mapee los valores correspondientes al descuento global e individual por ítem de forma explícita hacia el registro de la venta (`sales` y `sale_items`).
+- [x] Corregir `QuoteBuilder` para que calcule correctamente el descuento global y realice la validación de inventario (*stock disponible*) en tiempo real.
+- [x] Ajustar la interfaz reactiva en `quote-builder.blade.php` con el fin de reflejar visualmente el impacto del descuento total sobre el subtotal neto consolidado.
+- [x] Incorporar los campos de entrada para descuentos (porcentaje y monto fijo) en la vista de creación *fallback* tradicional de ventas de mercancía.
+- [x] Actualizar la validación de integridad matemática y lógica financiera en el `StoreSaleRequest` para alinearlo con el envío del monto bruto de Alpine.js:
+
+```php
+// --- VALIDACIÓN DE INTEGRIDAD MATEMÁTICA EN STORESALEREQUEST ---
+$subtotalBruto = 0;
+$descuentoTotalCalculado = 0;
+
+foreach ($this->items as $index => $item) {
+    $itemBruto = ($item['quantity'] * $item['price']);
+    $itemDescuento = $item['discount_amount'] ?? 0;
+    
+    $subtotalBruto += $itemBruto;
+    $descuentoTotalCalculado += $itemDescuento;
+
+    // Validación de stock
+    $stock = InventoryStock::where('warehouse_id', $this->warehouse_id)
+        ->where('product_id', $item['product_id'])
+        ->first();
+
+    if (!$stock || $stock->quantity < $item['quantity']) {
+        $available = $stock ? $stock->quantity : 0;
+        $validator->errors()->add("items.{$index}.quantity", "Stock insuficiente. Disponible: {$available}.");
+    }
+}
+
+// 1. Validamos que el total_amount enviado corresponda al BRUTO real (suma de precio * cantidad)
+if (abs($subtotalBruto - $this->total_amount) > 0.01) {
+    $validator->errors()->add('total_amount', 'El monto bruto no coincide con la suma de los productos.');
+}
+
+// 2. Validamos que el descuento global enviado no sea manipulado
+if (abs($descuentoTotalCalculado - ($this->discount_total ?? 0)) > 0.01) {
+    $validator->errors()->add('discount_total', 'El descuento reportado no coincide con la suma de descuentos aplicados.');
+}
+
+// 3. Calculamos el Neto real a cobrar (Bruto - Descuento + ITBIS)
+$subtotalNeto = $subtotalBruto - $descuentoTotalCalculado;
+$totalFinalNeto = $subtotalNeto;
+
+if ($this->boolean('apply_tax')) {
+    $taxRate = general_config()->impuesto->valor ?? 0;
+    $taxAmount = $subtotalNeto * ($taxRate / 100);
+    $totalFinalNeto = $subtotalNeto + $taxAmount;
+}
+
+```
+
+* [x] Modificar las validaciones de las pasarelas de pago (`cash` y `credit`) dentro del Request para comparar las transacciones de caja contra el valor neto calculado final en lugar del monto bruto original:
+
+```php
+// --- VALIDACIÓN DE EFECTIVO ---
+if ($this->payment_type === Sale::PAYMENT_CASH) {
+    $recibido = (float) $this->cash_received;
+    $totalCobrar = (float) $totalFinalNeto;
+
+    if ($recibido < $totalCobrar) {
+        $validator->errors()->add('cash_received', 'El efectivo recibido es menor al total neto a pagar.');
+    }
+}
+
+// --- LÓGICA DE CRÉDITO Y CUENTAS POR COBRAR ---
+if ($this->payment_type === Sale::PAYMENT_CREDIT && $client) {
+    if ($client->id == 1 || $client->name === 'Consumidor Final') {
+        $validator->errors()->add('payment_type', 'El Consumidor Final no puede procesar ventas a crédito.');
+    }
+
+    $categoryCode = $client->estadoCliente->category->code ?? null;
+    if (in_array($categoryCode, ['BLOQUEO_TOTAL', 'FINANCIERO_RESTRICTO'])) {
+        $validator->errors()->add('client_id', "Crédito denegado: El cliente tiene un estado de {$client->estadoCliente->nombre}.");
+    }
+
+    $nuevoSaldoProyectado = $client->balance + $totalFinalNeto;
+    if ($nuevoSaldoProyectado > $client->credit_limit) {
+        $disponible = number_format($client->credit_limit - $client->balance, 2);
+        $validator->errors()->add('total_amount', "Límite de crédito superado. Disponible: \${$disponible}.");
+    }
+}
+
+```
+
+* [x] Agregar los bloques informativos de auditoría de descuentos y desglose de totales modificados en el modal de detalles de venta (`sales.partials.modals`).
 
 ---
 
@@ -361,7 +450,7 @@ feat/pos-loyalty-system     — Sistema de puntos y fidelización de clientes
 - [ ] Modal "Cargar Cotización" en POS
 
 ### Pendiente
-- [ ] Fase 5 — Motor de descuentos con validación configurable
+- [x] Fase 5 — Motor de descuentos con validación configurable
 - [ ] Fase 6 — Integración `PosContext` en `SalesService`
 - [ ] Fase 7 — Interfaz completa POS (layout + componentes Livewire)
 - [ ] Fase 8 — Ventas pausadas (snapshot JSON)

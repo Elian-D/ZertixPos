@@ -19,12 +19,9 @@
 
     // Lógica de impuestos dinámica
     $taxName = $impuestoConfig->nombre ?? 'ITBIS';
-    
-    // CÁLCULOS DE SEGURIDAD
-    $subtotalCalculado = $sale->items->sum('subtotal');
-    $descuentoCotizacion = $sale->quote?->discount_total ?? 0;
-    $subtotalConDescuento = $subtotalCalculado - $descuentoCotizacion;
-    $taxCalculado = $sale->tax_amount > 0 ? $sale->tax_amount : ($sale->total_amount - $subtotalConDescuento);
+
+    // Usar directamente el valor de la base de datos, si es nulo o cero, mostrará 0.00
+    $taxCalculado = $sale->tax_amount ?? 0.00; 
 
     // Vencimiento de factura (Crédito comercial)
     $vencimientoPago = $sale->payment_type === 'credit' 
@@ -122,7 +119,7 @@
                         <span class="ncf-value">{{ $sale->ncf }}</span>
                     @else
                         <span class="info-label">Tipo de Documento:</span><br>
-                        <span class="bold">DOCUMENTO DE VENTA</span>
+                        <span class="bold">DOCUMENTO</span>
                     @endif
                 </td>
                 <td class="text-right" style="width: 33%;">
@@ -215,25 +212,27 @@
             <table style="width: 100%;">
                 <tr>
                     <td class="info-label" style="padding: 5px 0;">Subtotal Bruto:</td>
-                    <td class="text-right bold" style="font-size: 14px;">{{ $currency }}{{ number_format($subtotalCalculado, 2) }}</td>
+                    <td class="text-right bold" style="font-size: 14px;">{{ $currency }}{{ number_format($sale->total_amount, 2) }}</td>
                 </tr>
-                @if($descuentoCotizacion > 0)
+                @if($sale->discount_total > 0)
                 <tr style="color: #dc2626;">
-                    <td class="info-label" style="padding: 5px 0;">Descuento (Cotización):</td>
-                    <td class="text-right bold" style="font-size: 14px; color: #dc2626;">-{{ $currency }}{{ number_format($descuentoCotizacion, 2) }}</td>
+                    <td class="info-label" style="padding: 5px 0;">Descuento:</td>
+                    <td class="text-right bold" style="font-size: 14px; color: #dc2626;">-{{ $currency }}{{ number_format($sale->discount_total, 2) }}</td>
                 </tr>
                 @endif
                 <tr>
                     <td class="info-label" style="padding: 5px 0;">Subtotal Neto:</td>
-                    <td class="text-right bold" style="font-size: 14px;">{{ $currency }}{{ number_format($subtotalConDescuento, 2) }}</td>
+                    <td class="text-right bold" style="font-size: 14px;">{{ $currency }}{{ number_format($sale->total_amount - $sale->discount_total, 2) }}</td>
                 </tr>
-                <tr>
-                    <td class="info-label" style="padding: 5px 0;">{{ $taxName }}:</td>
-                    <td class="text-right bold" style="font-size: 14px;">{{ $currency }}{{ number_format($taxCalculado, 2) }}</td>
-                </tr>
+                @if($taxCalculado > 0)
+                    <tr>
+                        <td class="info-label" style="padding: 5px 0;">{{ $taxName }}:</td>
+                        <td class="text-right bold" style="font-size: 14px;">{{ $currency }}{{ number_format($taxCalculado, 2) }}</td>
+                    </tr>
+                @endif
                 <tr class="grand-total">
                     <td class="bold">TOTAL:</td>
-                    <td class="text-right bold">{{ $currency }}{{ number_format($sale->total_amount, 2) }}</td>
+                    <td class="text-right bold">{{ $currency }}{{ number_format($sale->total_amount - $sale->discount_total, 2) }}</td>
                 </tr>
                 @if($sale->payment_type === 'cash' && $sale->cash_received > 0)
                 <tr>

@@ -28,9 +28,9 @@
 
     // NUEVO: Determinar si mostramos info fiscal
     $mostrarFiscal = $config->usa_ncf && $sale->ncf;
-    
-    // Descuento de cotización (si existe)
-    $descuentoCotizacion = $sale->quote?->discount_total ?? 0;
+
+    // Usar directamente el valor de la base de datos, si es nulo o cero, mostrará 0.00
+    $taxCalculado = $sale->tax_amount ?? 0.00; 
 @endphp
 
 <!DOCTYPE html>
@@ -187,33 +187,30 @@
 
         {{-- 5. TOTALES --}}
         <div class="spacer">
-            @php
-                $subtotalCalculado = $sale->items->sum('subtotal');
-                $subtotalConDescuento = $subtotalCalculado - $descuentoCotizacion;
-                $taxCalculado = $sale->tax_amount > 0 ? $sale->tax_amount : ($sale->total_amount - $subtotalConDescuento);
-            @endphp
             <table style="border-top: 1px solid #000; padding-top: 4px;">
                 <tr>
                     <td>SUBTOTAL BRUTO:</td>
-                    <td class="right">{{ $currency }}{{ number_format($subtotalCalculado, 2) }}</td>
+                    <td class="right">{{ $currency }}{{ number_format($sale->total_amount, 2) }}</td>
                 </tr>
-                @if($descuentoCotizacion > 0)
+                @if($sale->discount_total > 0)
                 <tr>
-                    <td>DESCUENTO (COTIZ.):</td>
-                    <td class="right">-{{ $currency }}{{ number_format($descuentoCotizacion, 2) }}</td>
+                    <td>DESCUENTO:</td>
+                    <td class="right">-{{ $currency }}{{ number_format($sale->discount_total, 2) }}</td>
                 </tr>
                 @endif
                 <tr>
                     <td>SUBTOTAL NETO:</td>
-                    <td class="right">{{ $currency }}{{ number_format($subtotalConDescuento, 2) }}</td>
+                    <td class="right">{{ $currency }}{{ number_format($sale->total_amount - $sale->discount_total, 2) }}</td>
                 </tr>
-                <tr>
-                    <td>{{ $taxName }}:</td>
-                    <td class="right">{{ $currency }}{{ number_format($taxCalculado, 2) }}</td>
-                </tr>
+                @if($taxCalculado > 0)
+                    <tr>
+                        <td>{{ $taxName ?? 'ITBIS' }}:</td>
+                        <td class="text-right right">{{ $currency }}{{ number_format($taxCalculado, 2) }}</td>
+                    </tr>
+                @endif
                 <tr class="total-row">
                     <td style="padding-top: 4px;">TOTAL</td>
-                    <td class="right" style="padding-top: 4px;">{{ $currency }}{{ number_format($sale->total_amount, 2) }}</td>
+                    <td class="right" style="padding-top: 4px;">{{ $currency }}{{ number_format($sale->total_amount - $sale->discount_total, 2) }}</td>
                 </tr>
             </table>
         </div>
@@ -231,7 +228,7 @@
                 @endforeach
             @endif
 
-            @if($sale->payment_type === 'cash')
+            @if($sale->payment_type === 'cash' && $sale->cash_received > 0)
                 <table style="{{ $isMultiPay ? 'margin-top: 4px; border-top: 0.5px solid #000; padding-top: 2px;' : '' }}">
                     <tr>
                         <td>RECIBIDO:</td>

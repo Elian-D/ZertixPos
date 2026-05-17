@@ -87,12 +87,18 @@
                             <tr>
                                 <th class="px-4 py-3 text-[10px] font-black uppercase text-gray-400">Producto</th>
                                 <th class="px-4 py-3 text-[10px] font-black uppercase text-gray-400 text-center">Cant.</th>
-                                <th class="px-4 py-3 text-[10px] font-black uppercase text-gray-400 text-right">Precio</th>
-                                <th class="px-4 py-3 text-[10px] font-black uppercase text-gray-400 text-right">Subtotal</th>
+                                <th class="px-4 py-3 text-[10px] font-black uppercase text-gray-400 text-right">Precio Bruto</th>
+                                <th class="px-4 py-3 text-[10px] font-black uppercase text-gray-400 text-right">Descuento</th>
+                                <th class="px-4 py-3 text-[10px] font-black uppercase text-gray-400 text-right">Total Línea</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y">
                             @foreach($sale->items as $item)
+                                @php
+                                    // Cálculo de respaldo para evitar inconsistencias visuales
+                                    $itemBruto = $item->quantity * $item->unit_price;
+                                    $itemDescuento = $item->discount_amount ?? 0;
+                                @endphp
                                 <tr class="hover:bg-gray-50/50 transition-colors">
                                     <td class="px-4 py-3">
                                         <div class="font-medium text-gray-900 leading-tight">{{ $item->product->name ?? 'P. Eliminado' }}</div>
@@ -104,8 +110,19 @@
                                     <td class="px-4 py-3 text-right text-gray-500 text-xs">
                                         ${{ number_format($item->unit_price, 2) }}
                                     </td>
+                                    <td class="px-4 py-3 text-right text-xs text-amber-600">
+                                        @if($itemBruto > 0 && $itemDescuento > 0)
+                                            <span class="text-[10px] bg-amber-50 px-1 py-0.5 rounded font-semibold mr-1">
+                                                {{ number_format(($itemDescuento / $itemBruto) * 100, 0) }}%
+                                            </span>
+                                            -${{ number_format($itemDescuento, 2) }}
+                                        @else
+                                            -
+                                        @endif
+                                    </td>
                                     <td class="px-4 py-3 text-right font-bold text-gray-900">
-                                        ${{ number_format($item->subtotal, 2) }}
+                                        {{-- El subtotal del item ya almacena el valor neto post-descuento --}}
+                                        ${{ number_format($sale->total_amount - $sale->discount_total, 2) }}
                                     </td>
                                 </tr>
                             @endforeach
@@ -133,63 +150,63 @@
                         $impuestoConfig = $config->impuesto;
                         $taxName = $impuestoConfig->nombre ?? 'ITBIS';
                         
-                        // Obtener descuento de cotización si existe
-                        $descuentoCotizacion = $sale->quote?->discount_total ?? 0;
-                        
-                        // Calcular subtotal bruto (suma de items)
-                        $subtotalBruto = $sale->items->sum('subtotal');
+
                     @endphp
 
-                    {{-- Subtotal Bruto --}}
+                    {{-- Subtotal Bruto Real --}}
                     <div class="flex justify-between text-xs text-gray-500 px-1">
                         <span>Subtotal Bruto</span>
-                        <span class="font-mono">${{ number_format($subtotalBruto, 2) }}</span>
+                        <span class="font-mono">${{ number_format($sale->total_amount, 2) }}</span>
                     </div>
 
-                    {{-- Descuento de Cotización (solo si existe) --}}
-                    @if($descuentoCotizacion > 0)
+                    {{-- Descuentos Aplicados --}}
+                    @if($sale->discount_total > 0)
                         <div class="flex justify-between text-xs text-amber-600 px-1">
                             <span class="flex items-center gap-1">
                                 <x-heroicon-s-tag class="w-3 h-3"/>
-                                Descuento (Cotización)
+                                Total Descuentos
                             </span>
-                            <span class="font-mono font-bold">-${{ number_format($descuentoCotizacion, 2) }}</span>
+                            <span class="font-mono font-bold">-${{ number_format($sale->discount_total, 2) }}</span>
                         </div>
                         
-                        {{-- Subtotal Neto (después del descuento) --}}
-                        <div class="flex justify-between text-xs font-semibold text-gray-700 px-1 pb-2 border-b border-gray-200">
+                        {{-- Subtotal Neto --}}
+                        <div class="flex justify-between text-xs font-semibold text-gray-700 px-1 pb-1 border-b border-gray-100">
                             <span>Subtotal Neto</span>
-                            <span class="font-mono">${{ number_format($sale->subtotal, 2) }}</span>
+                            <span class="font-mono">${{ number_format($sale->total_amount - $sale->discount_total, 2) }}</span>
                         </div>
                     @endif
 
-                    {{-- Impuesto --}}
+                    {{-- Impuesto (ITBIS) --}}
                     <div class="flex justify-between text-xs text-gray-500 px-1">
-                        <span>{{ $taxName }}</span>
+                        <span>{{ $taxName }} {{ $sale->tax_amount > 0 ? '' : '(Incluido/Exento)' }}</span>
                         <span class="font-mono">${{ number_format($sale->tax_amount, 2) }}</span>
                     </div>
 
                     {{-- Total Final --}}
                     <div class="flex justify-between items-center bg-indigo-50 p-3 rounded-lg border border-indigo-100">
-                        <span class="text-xs font-black text-indigo-700 uppercase">Total Venta</span>
-                        <span class="text-xl font-black text-indigo-700 font-mono">${{ number_format($sale->total_amount, 2) }}</span>
+                        <span class="text-xs font-black text-indigo-700 uppercase">Total Facturado</span>
+                        <span class="text-xl font-black text-indigo-700 font-mono">${{ number_format($sale->total_amount - $sale->discount_total, 2) }}</span>
                     </div>
 
-                    {{-- Desglose de Métodos Usados --}}
+                    {{-- Distribución de Métodos Usados --}}
                     <div class="mt-4 pt-4 border-t border-gray-100">
                         <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block mb-2 text-right">Distribución del Pago</span>
-                        @foreach($sale->payments as $payment)
+                        @forelse($sale->payments as $payment)
                             <div class="flex justify-between items-center py-1.5 border-b border-gray-50 last:border-0">
                                 <span class="text-xs text-gray-600 flex items-center gap-2">
                                     <div class="w-1.5 h-1.5 rounded-full bg-emerald-400"></div>
-                                    <span class="font-medium">{{ $payment->tipoPago->nombre }}</span>
+                                    <span class="font-medium">{{ $payment->tipoPago->nombre ?? 'Pago Registrado' }}</span>
                                     @if($payment->reference) 
                                         <span class="text-[9px] text-gray-400">({{ $payment->reference }})</span> 
                                     @endif
                                 </span>
-                                <span class="text-sm font-bold text-gray-700 font-mono">${{ number_format($payment->amount, 2) }}</span>
+                                <span class="text-sm font-bold text-gray-700 font-mono">${{ number_format($payment->amount - $sale->discount_total, 2) }}</span>
                             </div>
-                        @endforeach
+                        @empty
+                            <div class="text-right text-[11px] text-gray-400 italic">
+                                Ventas en cuenta corriente / Crédito comercial
+                            </div>
+                        @endforelse
                     </div>
                 </div>
             </div>

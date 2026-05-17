@@ -50,7 +50,7 @@
                             <input type="hidden" name="payment_type" x-model="formData.payment_type">
                         </div>
 
-                        {{-- Selector de Cliente con Búsqueda (Sugerencia: usar un datalist o select2 si es posible) --}}
+                        {{-- Selector de Cliente --}}
                         <div class="md:col-span-5">
                             <x-input-label value="Cliente" class="mb-1 text-xs text-gray-500 uppercase tracking-wider" />
                             <div class="relative">
@@ -124,11 +124,9 @@
                             </div>
                         </div>
 
-
-                        {{-- INFO BOX DEL CLIENTE (AQUÍ DENTRO) --}}
+                        {{-- INFO BOX DEL CLIENTE --}}
                         <div class="flex items-center">
                             <template x-if="selectedClient">
-                                {{-- Mantenemos tu lógica de info box pero reducida en padding --}}
                                 <div class="w-full bg-white border border-gray-200 rounded-xl p-3 flex justify-between items-center shadow-sm">
                                     <div>
                                         <p class="text-[10px] uppercase font-bold text-gray-400">RNC/Cédula</p>
@@ -148,7 +146,6 @@
                 {{-- ALERTAS DE ESTADO DE CLIENTE --}}
                 <template x-if="selectedClient && (selectedClient.is_moroso || exceedsCreditLimit)">
                     <div class="mb-6 space-y-3">
-                        {{-- Alerta de Morosidad --}}
                         <template x-if="selectedClient.is_moroso">
                             <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl shadow-sm animate-pulse">
                                 <div class="flex items-center">
@@ -161,7 +158,6 @@
                             </div>
                         </template>
 
-                        {{-- Alerta de Límite de Crédito --}}
                         <template x-if="exceedsCreditLimit">
                             <div class="bg-amber-50 border-l-4 border-amber-500 p-4 rounded-r-xl shadow-sm">
                                 <div class="flex items-center">
@@ -201,6 +197,7 @@
                                     <th class="px-6 py-4 text-center">Stock</th>
                                     <th class="px-6 py-4 w-28 text-center">Cant.</th>
                                     <th class="px-6 py-4 text-center">Precio</th>
+                                    <th class="px-6 py-4 w-28 text-center">Desc. (%)</th>
                                     <th class="px-6 py-4 text-right">Subtotal</th>
                                     <th class="px-6 py-4 w-10"></th>
                                 </tr>
@@ -234,13 +231,34 @@
                                                 class="w-full border-gray-200 rounded-lg text-sm text-center focus:ring-indigo-500">
                                         </td>
                                         <td class="px-4 py-3">
-                                            <input type="number" :name="`items[${index}][price]`" 
+                                            <input type="hidden" :name="`items[${index}][price]`" :value="item.price">
+                                            <input type="number" 
                                                 x-model.number="item.price"
                                                 class="w-full border-transparent bg-gray-50/50 rounded-lg text-sm text-right font-mono cursor-not-allowed" 
                                                 readonly>
                                         </td>
+
+                                        <td class="px-4 py-3">
+                                            <div class="relative rounded-md shadow-sm">
+                                                <input type="number" 
+                                                    :name="`items[${index}][discount_percentage]`"
+                                                    x-model.number="item.discount_percentage" 
+                                                    @input="calculateTotals()"
+                                                    min="0" 
+                                                    max="100"
+                                                    step="0.01"
+                                                    {{ !pos_config()?->allow_item_discount ? 'disabled' : '' }}
+                                                    class="w-full border-gray-200 rounded-lg text-sm text-right p-2 pr-7 focus:ring-indigo-500 disabled:bg-gray-100">
+                                                <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+                                                    <span class="text-gray-400 text-xs">%</span>
+                                                </div>
+                                                <input type="hidden" :name="`items[${index}][discount_amount]`" :value="item.discount_amount">
+                                            </div>
+                                        </td>
+
+                                        {{-- Muestra el bruto de la línea (qty * price), el descuento se ve en el resumen --}}
                                         <td class="px-4 py-3 text-right font-mono font-bold text-gray-700" 
-                                            x-text="formatMoney(item.quantity * item.price)">
+                                            x-text="formatMoney(item.subtotal)">
                                         </td>
                                         <td class="px-4 py-3 text-center">
                                             <button type="button" @click="removeItem(index)" 
@@ -275,26 +293,19 @@
                     <div class="bg-gray-900 text-white rounded-2xl p-6 shadow-2xl space-y-4 relative overflow-hidden transition-all duration-500">
                         <div class="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 rounded-full -mr-12 -mt-12"></div>
                         
-                        {{-- Subtotal (Venta Real) --}}
+                        {{-- Subtotal Bruto --}}
                         <div class="flex justify-between text-[10px] opacity-50 uppercase tracking-[0.2em]">
-                            <span>Venta Neta (Subtotal)</span>
-                            <span x-text="formatMoney(totals.subtotal)"></span>
+                            <span>Subtotal</span>
+                            <span x-text="formatMoney(totals.gross)"></span>
                         </div>
 
-                        {{-- Toggle de Impuesto: Solo aparece si el tax_rate es > 0 --}}
-                        {{-- COMENTADA HASTA SABER EL FUNCIONAMIENTO CORRECTO DE LAS EMPRESAS --}}
-                        {{-- <template x-if="config.tax_rate > 0">
-                            <div class="flex justify-between items-center py-3 border-y border-white/5">
-                                <div class="flex items-center gap-3">
-                                    <label class="relative inline-flex items-center cursor-pointer">
-                                        <input type="checkbox" x-model="config.apply_tax" @change="calculateTotals()" class="sr-only peer">
-                                        <div class="w-9 h-5 bg-gray-700 rounded-full peer peer-checked:bg-indigo-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:after:translate-x-4"></div>
-                                    </label>
-                                    <span class="text-[10px] font-bold text-gray-400">DESGLOSAR ITBIS</span>
-                                </div>
-                                <span class="font-mono text-sm text-indigo-300" x-text="formatMoney(totals.tax)"></span>
+                        {{-- Descuento (solo si hay) --}}
+                        <template x-if="formData.discount_total > 0">
+                            <div class="flex justify-between text-[10px] text-red-400 uppercase tracking-[0.2em]" x-transition>
+                                <span>Descuento</span>
+                                <span x-text="'- ' + formatMoney(formData.discount_total)"></span>
                             </div>
-                        </template> --}}
+                        </template>
 
                         {{-- NUEVO: Bloque de Pago (Solo si es Contado) --}}
                         <template x-if="formData.payment_type === 'cash'">
@@ -323,7 +334,7 @@
                                     
                                     {{-- ESTOS INPUTS SON VITALES PARA EL BACKEND --}}
                                     <input type="hidden" name="cash_change" :value="formData.cash_change">
-                                    {{-- Si el método NO es efectivo, enviamos 0 de recibido automáticamente --}}
+                                    {{-- Si el método NO es efectivo, enviamos el neto como recibido --}}
                                     <template x-if="!tipo_pagos.find(t => t.id == formData.tipo_pago_id)?.nombre.toLowerCase().includes('efectivo')">
                                         <input type="hidden" name="cash_received" :value="totals.total">
                                     </template>
@@ -334,12 +345,20 @@
                         <div class="pt-2">
                             <div class="flex justify-between items-end">
                                 <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Total a Pagar</span>
+                                {{-- totals.total es el NETO (lo que el cliente paga de verdad) --}}
                                 <span class="text-3xl font-black font-mono tracking-tight" x-text="formatMoney(totals.total)"></span>
                             </div>
-                            {{-- Enviamos los valores reales al servidor --}}
-                            <input type="hidden" name="subtotal" :value="totals.subtotal">
-                            <input type="hidden" name="tax_amount" :value="totals.tax">
-                            <input type="hidden" name="total_amount" :value="totals.total">
+
+                            {{--
+                                CAMPOS OCULTOS PARA EL BACKEND:
+                                - total_amount  → BRUTO (gross): lo que vale sin descuentos  → se guarda en sales.total_amount
+                                - discount_total → descuento en dinero                        → se guarda en sales.discount_total
+                                El backend calcula: total_amount - discount_total = neto a cobrar
+                            --}}
+                            <input type="hidden" name="subtotal"      :value="totals.subtotal">
+                            <input type="hidden" name="tax_amount"    :value="totals.tax">
+                            <input type="hidden" name="total_amount"  :value="totals.gross">
+                            <input type="hidden" name="discount_total" :value="formData.discount_total">
                         </div>
                     </div>
                 </section>
@@ -349,7 +368,7 @@
             <div class="p-6 bg-gray-50/50 flex justify-end items-center border-t border-gray-100 gap-6">
                 <a href="{{ route('sales.index') }}" class="text-sm font-medium text-gray-400 hover:text-gray-600 transition-colors">Cancelar</a>
                 <div class="flex flex-col items-end gap-1">    
-                        <button type="submit"
+                    <button type="submit"
                         class="bg-indigo-600 text-white px-10 py-3 rounded-xl font-bold shadow-lg shadow-indigo-100 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale"
                         :class="isSubmitDisabled ? '' : 'hover:bg-indigo-700 hover:-translate-y-0.5 active:scale-95'"
                         :disabled="isSubmitDisabled">
@@ -363,6 +382,7 @@
             </div>
         </form>
     </div>
+
     <script>
         function saleForm() {
             return {
@@ -378,19 +398,20 @@
                 },
                 formData: {
                     payment_type: 'cash',
-                    tipo_pago_id: '1', // Por defecto Efectivo
-                    client_id: '1', // Por defecto Consumidor Final
+                    tipo_pago_id: '1',
+                    client_id: '1',
                     warehouse_id: '',
-                    ncf_type_id: '2', // Por defecto Consumidor Final (B02)
+                    ncf_type_id: '2',
                     sale_date: '{{ date("Y-m-d") }}',
-                    
                     cash_received: 0,
                     cash_change: 0,
-                },  
-                totals: { subtotal: 0, tax: 0, total: 0 },  
+                    discount_total: 0,
+                },
+                // CAMBIO: se añade gross (bruto) y net (neto) para separar lo que se muestra de lo que se guarda
+                totals: { gross: 0, net: 0, subtotal: 0, tax: 0, total: 0 },
 
                 init() {
-                    if(!this.config.usa_ncf) { 
+                    if (!this.config.usa_ncf) {
                         this.formData.ncf_type_id = null;
                     }
                     this.$watch('formData.ncf_type_id', () => this.validateNcfAndClient());
@@ -398,24 +419,17 @@
 
                 get filteredClients() {
                     let list = this.clients;
-                    
-                    // Si es Crédito, quitar Consumidor Final (ID 1)
                     if (this.formData.payment_type === 'credit') {
                         list = list.filter(c => c.id != 1);
                     }
-
-                    // Si el NCF actual requiere RNC, quitar Consumidor Final o genéricos
                     const selectedNcf = this.ncf_types.find(n => n.id == this.formData.ncf_type_id);
                     if (selectedNcf && ['01', '31'].includes(selectedNcf.code)) {
                         list = list.filter(c => c.id != 1 && c.tax_id !== '00000000000');
                     }
-
                     return list;
                 },
 
-                // Tipos de NCF filtrados según el cliente seleccionado
                 get filteredNcfTypes() {
-                    // Si el cliente es Consumidor Final, no mostrar Crédito Fiscal (01, 31)
                     if (this.formData.client_id == 1 || this.selectedClient?.tax_id === '00000000000') {
                         return this.ncf_types.filter(n => !['01', '31'].includes(n.code));
                     }
@@ -431,11 +445,8 @@
                     return this.products.filter(p => p.warehouse_id == this.formData.warehouse_id);
                 },
 
-                // Nueva lógica de validación cruzada
                 validateNcfAndClient() {
                     const selectedNcf = this.ncf_types.find(n => n.id == this.formData.ncf_type_id);
-                    
-                    // Si el NCF pide RNC y el cliente actual no tiene o es Consumidor Final, limpiar cliente
                     if (selectedNcf && ['01', '31'].includes(selectedNcf.code)) {
                         if (this.formData.client_id == 1 || (this.selectedClient && !this.selectedClient.tax_id)) {
                             this.formData.client_id = '';
@@ -449,21 +460,18 @@
                     return ['01', '31'].includes(selectedNcf.code) && (!this.selectedClient?.tax_id || this.selectedClient.tax_id === '00000000000');
                 },
 
-                // Propiedad computada para saber si excede el límite
                 get exceedsCreditLimit() {
                     if (this.formData.payment_type !== 'credit' || !this.selectedClient || this.selectedClient.id == 1) {
                         return false;
                     }
-                    // Comparamos el total actual contra el disponible del cliente
+                    // Comparamos el NETO a pagar contra el disponible del cliente
                     return this.totals.total > parseFloat(this.selectedClient.available || 0);
                 },
 
-                // Modificar isSubmitDisabled para que no bloquee si usa_ncf es false
                 get isSubmitDisabled() {
                     const hasItems = this.items.length > 0;
                     const hasTotal = this.totals.total > 0;
-                    
-                    // Si usa_ncf está activo, validamos RNC, si no, lo ignoramos
+
                     if (this.config.usa_ncf && this.ncfRequiresRnc) return true;
 
                     if (this.formData.payment_type === 'credit') {
@@ -474,7 +482,15 @@
                 },
 
                 addItem() {
-                    this.items.push({ product_id: '', quantity: 1, price: 0, stock: 0 });
+                    this.items.push({
+                        product_id: '',
+                        quantity: 1,
+                        price: 0,
+                        stock: 0,
+                        discount_percentage: 0,
+                        discount_amount: 0,
+                        subtotal: 0
+                    });
                 },
 
                 removeItem(index) {
@@ -497,68 +513,101 @@
                     this.calculateTotals();
                 },
 
-                // Lógica al cambiar tipo de venta (Contado/Crédito)
                 handlePaymentTypeChange() {
                     if (this.formData.payment_type === 'credit') {
-                        // ERROR: No debe ser null. Debe ser el ID del tipo de pago "Crédito"
-                        // Busca el ID real en tu tabla tipo_pagos donde slug = 'credito'
                         const tipoCredito = this.tipo_pagos.find(tp => tp.slug === 'credito' || tp.nombre.toLowerCase().includes('crédito'));
-                        this.formData.tipo_pago_id = tipoCredito ? tipoCredito.id : null; 
-                        
+                        this.formData.tipo_pago_id = tipoCredito ? tipoCredito.id : null;
                         this.formData.cash_received = 0;
                         this.formData.cash_change = 0;
                     } else {
-                        this.formData.tipo_pago_id = '1'; // Efectivo
+                        this.formData.tipo_pago_id = '1';
                     }
                     this.validateNcfAndClient();
                 },
 
-                // Lógica al cambiar el método detallado (Efectivo/Transferencia/etc)
                 handleTipoPagoChange() {
-                    // Buscamos si el método seleccionado es "Efectivo"
                     const metodo = this.tipo_pagos.find(t => t.id == this.formData.tipo_pago_id);
                     const esEfectivo = metodo && metodo.nombre.toLowerCase().includes('efectivo');
-
                     if (!esEfectivo) {
-                        // Si es transferencia o tarjeta, el "recibido" es igual al total (no hay cambio)
+                        // Para no-efectivo, el recibido es el neto a pagar (no hay cambio)
                         this.formData.cash_received = this.totals.total;
                         this.formData.cash_change = 0;
                     }
                 },
 
-
                 calculateTotals() {
-                    // 1. El Total Bruto es la suma simple de lo que el cliente realmente va a pagar
-                    const bruto = this.items.reduce((sum, item) => sum + (parseFloat(item.quantity || 0) * parseFloat(item.price || 0)), 0);
-                    
+                    let bruto = 0;
+                    let totalDescuentos = 0;
+
+                    const maxDiscountPct  = {{ pos_config()?->max_discount_percentage ?? 100 }};
+                    const allowItemDiscount = {{ pos_config()?->allow_item_discount ? 'true' : 'false' }};
+
+                    this.items.forEach(item => {
+                        let qty   = parseFloat(item.quantity) || 1;
+                        let price = parseFloat(item.price)    || 0;
+                        let pct   = parseFloat(item.discount_percentage) || 0;
+
+                        if (!allowItemDiscount) {
+                            pct = 0;
+                        } else {
+                            if (pct < 0) pct = 0;
+                            if (pct > maxDiscountPct) pct = maxDiscountPct;
+                        }
+
+                        item.discount_percentage = pct;
+
+                        // Bruto de la línea: precio * cantidad (ej. 20 * $15 = $300)
+                        const itemBruto = price * qty;
+
+                        // CAMBIO: item.subtotal muestra el BRUTO (lo que vale sin descuento)
+                        // El descuento se refleja en el resumen global, no en la columna de línea
+                        item.subtotal       = itemBruto;
+                        item.discount_amount = (itemBruto * pct) / 100;
+
+                        bruto            += itemBruto;
+                        totalDescuentos  += item.discount_amount;
+                    });
+
+                    // El descuento global en dinero (ej. $30)
+                    this.formData.discount_total = totalDescuentos;
+
+                    // El neto real que el cliente va a pagar (ej. $270)
+                    const netoPagar = bruto - totalDescuentos;
+
                     if (this.config.apply_tax && this.config.tax_rate > 0) {
-                        // Lógica ITBIS Incluido:
-                        // Total es 100. Base = 100 / 1.18. Impuesto = Total - Base.
                         const divisor = 1 + (this.config.tax_rate / 100);
-                        this.totals.total = bruto; 
-                        this.totals.subtotal = bruto / divisor;
-                        this.totals.tax = bruto - this.totals.subtotal;
+
+                        // CAMBIO: gross = bruto antes de descuentos → va a total_amount en BD
+                        this.totals.gross    = bruto;
+                        // net = neto después de descuentos → lo que realmente paga
+                        this.totals.net      = netoPagar;
+                        this.totals.subtotal = netoPagar / divisor;
+                        this.totals.tax      = netoPagar - this.totals.subtotal;
+                        // total = neto → se muestra en pantalla y se usa para cobro/cambio/crédito
+                        this.totals.total    = netoPagar;
                     } else {
-                        // Sin impuestos o impuesto 0: Todo es subtotal
-                        this.totals.total = bruto;
-                        this.totals.subtotal = bruto;
-                        this.totals.tax = 0;
-                        this.calculateChange();
-                        this.handleTipoPagoChange();
+                        // CAMBIO: gross = bruto → se envía como total_amount al servidor
+                        this.totals.gross    = bruto;
+                        this.totals.net      = netoPagar;
+                        this.totals.subtotal = netoPagar;
+                        this.totals.tax      = 0;
+                        // total = neto → lo que se muestra y se cobra
+                        this.totals.total    = netoPagar;
                     }
+
+                    this.calculateChange();
+                    this.handleTipoPagoChange();
                 },
 
                 calculateChange() {
-                    const total = parseFloat(this.totals.total) || 0;
+                    const total    = parseFloat(this.totals.total) || 0;
                     const received = parseFloat(this.formData.cash_received) || 0;
-                    
                     if (received > total) {
                         this.formData.cash_change = (received - total).toFixed(2);
                     } else {
                         this.formData.cash_change = 0;
                     }
                 },
-
 
                 formatMoney(amount) {
                     return '$' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2 }).format(amount);
