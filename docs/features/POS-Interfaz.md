@@ -325,7 +325,7 @@ if ($this->payment_type === Sale::PAYMENT_CREDIT && $client) {
 
 ### 6.1 — Contexto POS
 
-- [ ] **DTO `PosContext`** extendido con:
+- [x] **DTO `PosContext`** extendido con:
     ```php
     pos_terminal_id: int
     pos_session_id: int
@@ -333,9 +333,9 @@ if ($this->payment_type === Sale::PAYMENT_CREDIT && $client) {
     is_walkin_customer: bool
     ```
 
-- [ ] **`SalesService::create()`** acepta el `PosContext` como parámetro opcional. Si está presente, persiste los campos de contexto en la venta.
+- [x] **`SalesService::create()`** acepta el `PosContext` como parámetro opcional. Si está presente, persiste los campos de contexto en la venta.
 
-- [ ] Las ventas sin contexto POS mantienen `sale_origin = 'backoffice'` por defecto para compatibilidad hacia atrás.
+- [x] Las ventas sin contexto POS mantienen `sale_origin = 'backoffice'` por defecto para compatibilidad hacia atrás.
 
 ---
 
