@@ -151,21 +151,24 @@ class QuoteService
                 );
             }
 
-            // 3. Mapear Items al formato del SaleService
-            // Nota: Pasamos 'price' como 'price' porque el SaleService lo mapea internamente a 'unit_price'
+            // 3. Mapear Items al formato exacto del SaleService
+            // AQUI inyectamos explícitamente los descuentos pactados
             $saleItems = $quote->items->map(function ($item) {
                 return [
-                    'product_id' => $item->product_id,
-                    'quantity'   => $item->quantity,
-                    'price'      => $item->price, // El precio pactado en la cotización
+                    'product_id'          => $item->product_id,
+                    'quantity'            => $item->quantity,
+                    'price'               => $item->price, 
+                    'discount_amount'     => $item->discount_amount,
+                    'discount_percentage' => $item->discount_percentage,
                 ];
             })->toArray();
 
-            // 4. Consolidar payload para SaleService
+            // 4. Consolidar payload inyectando el DESCUENTO GLOBAL como la Verdad
             $saleData = [
                 'client_id'      => $quote->customer_id,
                 'warehouse_id'   => $quote->terminal?->warehouse_id ?? $additionalData['warehouse_id'],
                 'total_amount'   => $quote->total,
+                'discount_total' => $quote->discount_total, // <-- Traspaso de la verdad
                 'items'          => $saleItems,
                 'payment_type'   => $additionalData['payment_type'] ?? 'cash',
                 'tipo_pago_id'   => $additionalData['tipo_pago_id'] ?? null,
@@ -173,7 +176,7 @@ class QuoteService
                 'sale_date'      => now(),
             ];
 
-            // 5. Ejecutar Venta
+            // 5. Ejecutar Venta (SaleService ejecutará sus propias validaciones de Phase 5)
             $sale = $this->saleService->create($saleData, $context);
 
             // 6. Actualizar Cotización
