@@ -29,6 +29,7 @@ class Sale extends Model
         'user_id',
         'sale_date',
         'total_amount',
+        'discount_total',
         'payment_type',
         'tipo_pago_id',
         'cash_received', 
