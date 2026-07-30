@@ -22,7 +22,7 @@
 
             <div class="p-8">
                 {{-- Pasamos la propiedad quote al componente --}}
-                @livewire('pos.quote-builder', ['quote' => $quote])
+                @livewire('sales.pos.quote-builder', ['quote' => $quote])
             </div>
 
             <div class="p-6 bg-gray-50 border-t flex justify-between items-center">

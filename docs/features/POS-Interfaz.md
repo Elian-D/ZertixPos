@@ -5,7 +5,7 @@
 
 **Objetivo:** Implementar el sistema completo de Punto de Venta con soporte para cotizaciones (persistentes y no persistentes), descuentos configurables, integración con `SalesService`, interfaz reactiva completa, cierre de caja y módulo de impresión. La arquitectura se basa en configuración centralizada (`pos_settings`) que controla el comportamiento de todas las fases posteriores.
 
-> **Estado actual:** Fase 4 en curso (`feat/pos-quotes`). Las fases 1, 2 y 3 están completadas.
+> **Estado actual:** Fase 7 (interfaz completa del Workspace POS) completada. Las fases 1 a 7 están listas; pendientes: Fase 8 (ventas pausadas), Fase 9 (cierre de caja) y Fase 10 (módulo de impresión).
 
 ---
 
@@ -93,7 +93,7 @@ Conectará este modal a la API de la DGII para autocompletar datos por RNC/cédu
 
 - [x] **Almacenamiento seguro:** El PIN se guarda hasheado con `bcrypt`. Nunca en texto plano.
 
-- [x] **Control de acceso:** Validación del PIN al iniciar sesión en el terminal. `PosAccessController` gestiona la verificación.
+- [x] **Control de acceso:** Validación del PIN al iniciar sesión en el terminal. `PosTerminalLockController` gestiona la verificación (ver **Fase 7.7 (Revisión)** para el rediseño del bloqueo).
 
 ### 3.2 — Sesiones POS
 **Rama:** `feat/pos-sessions`
@@ -339,38 +339,198 @@ if ($this->payment_type === Sale::PAYMENT_CREDIT && $client) {
 
 ---
 
-## Fase 7 — Interfaz Completa POS
+# FASE 7 COMPLETA REAL
+
+---
+
 **Rama:** `feat/pos-interface`
 
-### 7.1 — Layout Desktop
+# 7.0 — POS Entry Flow
+
+* [x] Ruta `sales.pos.index`
+* [x] Componente `PosTerminalLobby`
+* [x] Selector visual de terminales
+* [x] Estado visual de terminal
+* [x] Modal PIN Livewire
+* [x] Modal apertura de caja
+* [x] Reanudación de sesión activa
+* [x] Validación de permisos por terminal
+* [x] Expiración automática de sesión (ventana deslizante de 30 min en `CheckTerminalAccess`)
+* [x] Heartbeat de actividad (`POST sales.pos.heartbeat`, ping cada 2 min desde el Workspace)
+
+---
+
+# 7.1 — POS Workspace
+
+* [x] Ruta `sales.pos.workspace`
+* [x] Componente padre `PosWorkspace` (Livewire, mismo patrón que `PosTerminalLobby`)
+* [x] Persistencia centralizada del estado (Alpine `posWorkspace()` alimentado por el catálogo/cliente/config precargados desde el componente Livewire)
+* [x] Sincronización Alpine + Livewire (Livewire como shell/datos iniciales + eventos `pos-client-created`; carrito y checkout 100% Alpine para evitar round-trips por tecla)
+* [x] Sistema de eventos internos (`window` custom events: `pos-client-created`; Breeze `open-modal`/`close-modal`)
+
+---
+
+# 7.2 — Product Engine
+
+* [x] Buscador/grid de productos embebido en el Workspace (decisión de arquitectura: catálogo del almacén de la terminal precargado como JSON en vez de un componente Livewire `PosProductSearch` con debounce por tecla — cero round-trips de red por búsqueda, más resiliente en la terminal física)
+* [x] debounce inteligente (filtrado reactivo Alpine, sin llamadas a servidor)
+* [x] scanner barcode (lectura por lector USB/Bluetooth tipo teclado: `Enter` sobre coincidencia exacta de SKU)
+* [x] búsqueda SKU
+* [x] búsqueda nombre
+* [x] categorías rápidas
+* [x] grid optimizado (limitado a 60 resultados renderizados; sin librería de virtualización adicional)
+
+---
+
+# 7.3 — Cart Engine
+
+* [x] Carrito embebido en `posWorkspace()` (decisión de arquitectura: mismo motivo que 7.2, no se crea un componente Livewire `PosCart` separado)
+* [x] actualización reactiva
+* [x] cantidades inline
+* [x] descuentos por item
+* [x] descuentos globales (nuevo — no existía en ningún UI previo; se distribuye proporcionalmente entre `discount_amount` de los ítems para no requerir cambios en el backend)
+* [x] validación stock realtime (visual, contra el stock precargado; el backend revalida siempre vía `StoreSaleRequest`)
+* [x] cálculo ITBIS realtime (automático cuando `general_config()->usa_ncf` está activo)
+
+---
+
+# 7.4 — Checkout Engine
+
+* [x] `PosCheckoutController` (HTTP + `StoreSaleRequest`, no Livewire directo — reutiliza toda la validación de integridad existente en vez de duplicarla)
+* [x] multi-payment (pago dividido / varios métodos en una sola venta — `sale_payments` lo soporta pero el Workspace solo envía un método por venta)
+* [x] efectivo (numpad + cálculo de cambio)
+* [x] tarjeta / transferencia (selección de `tipo_pago`; recibido = total, sin cambio)
+* [x] cálculo vuelto
+* [x] integración `SalesService` (vía `PosContext::fromSession`, contexto resuelto en servidor)
+* [x] impresión automática (abre el ticket de `InvoiceController::print` en pestaña nueva si `pos_config('auto_print_receipt')`)
+* [x] limpieza transaccional del carrito (POST real + redirect recarga el Workspace con estado limpio, sin lógica manual de reset)
+
+---
+
+# 7.5 — Customer Engine
+
+* [x] selector cliente
+* [x] quick customer modal (reutiliza el modal existente; se corrigió un `Swal.fire` roto — SweetAlert2 nunca estuvo cargado — por un banner Alpine inline)
+* [x] consumidor final automático (`pos_config('default_walkin_customer_id')` con fallback al cliente con `tax_id` genérico)
+* [x] bloqueo crédito inválido (cliente moroso / walk-in no puede pagar a crédito, validado en cliente y servidor)
+* [x] búsqueda rápida clientes (filtro Alpine sobre clientes operativos precargados)
+
+---
+
+# 7.6 — Numpad System
+
+* [x] `<x-pos.numpad>` (componente Blade reutilizable, sin `x-data` propio — evalúa contra el scope Alpine del padre; no se creó como componente Livewire `PosNumpad` para mantenerlo sin round-trips)
+* [x] control focus
+* [x] input targeting (props `digit`/`clear`/`backspace` parametrizables)
+* [x] reutilizable (sin uso activo por ahora — ver nota en el propio componente; se dejó listo para un futuro modo AIO 100% táctil)
+* [x] soporte touch completo
+
+---
+
+# 7.7 — Session Security
+
+> **Rediseñada.** La pantalla de lock dedicada (`lock.blade.php` + `PosAccessController`) se eliminó. Ver "Fase 7.7 (Revisión) — Eliminación del Lockscreen" más abajo para el diseño actual y el porqué.
+
+* [x] auto-lock inactivity (timer Alpine de 10 min sin actividad; solo corre si `terminal->requiresPinVerification()` es true — sin PIN configurado no hay nada que proteger)
+* [x] PIN revalidation (`CheckTerminalAccess` + `PosTerminalLobby::verifyPin()`, Livewire)
+* [x] refresh sesión actividad (ventana deslizante de 30 min + heartbeat cada 2 min vía `PosTerminalLockController@heartbeat`)
+* [x] reconexión segura (middleware responde 403 JSON `require_pin` para llamadas AJAX cuando expira la sesión de terminal)
+
+---
+
+## Fase 7.7 (Revisión) — Eliminación del Lockscreen
+
+**Problema encontrado:** el botón "Bloquear" del Workspace llevaba a `lock.blade.php`, una pantalla de PIN dedicada. Al desbloquear ahí, `PosAccessController@verify` marcaba `session()->put("terminal_verified.{id}", ...)` y redirigía al **Lobby** — que, sin saber que la sesión ya estaba verificada, volvía a abrir su propio modal de PIN. Resultado: el cajero tecleaba el mismo PIN dos veces para una sola acción de desbloqueo. Además:
+
+- El botón "Bloquear" aparecía **siempre**, incluso en terminales sin `access_pin` configurado (nada que bloquear).
+- "Bloquear" era un simple `<a href>` de **navegación**, no una acción que invalidara nada en el servidor. Como `CheckTerminalAccess` solo redirige a pedir PIN cuando la marca de sesión `terminal_verified.{id}` **no existe o expiró**, y esa marca nunca se borraba al "bloquear", entrar de nuevo por URL directa a `/sales/pos/workspace/{terminal}` dejaba pasar igual — el bloqueo era puramente cosmético.
+
+**Diagnóstico:** no hacía falta una pantalla ni un middleware nuevo. El middleware `CheckTerminalAccess` ya hacía exactamente lo que se necesitaba (bloquear acceso directo por ruta si no hay verificación vigente) — el bug era que nada disparaba una invalidación real de esa marca de sesión.
+
+**Solución:**
+
+- [x] **Eliminados:** `resources/views/sales/pos/lock.blade.php` y `app/Http/Controllers/Sales/Pos/PosAccessController.php` completos.
+- [x] **Nuevo `PosTerminalLockController`** (reemplaza a `PosAccessController`) con responsabilidad reducida:
+    - `lock(PosTerminal $pos_terminal)`: hace `session()->forget("terminal_verified.{id}")` y **redirige al Lobby** (`sales.pos.index`) con un flash informativo. El Lobby es ahora el **único punto de entrada al PIN** — no hay una segunda pantalla de bloqueo.
+    - `verify(Request $request)`: se conserva (throttle `pos-pin` sin cambios) porque los modales de apertura/cierre de sesión del **backoffice** (`sales/pos/sessions/partials/modal-open.blade.php` y `modal-close.blade.php`) también verifican el PIN de una terminal de forma independiente del Lobby.
+    - `heartbeat(Request $request)`: sin cambios de lógica, solo reubicado.
+- [x] **`CheckTerminalAccess`** ahora redirige a `sales.pos.index` (Lobby) en vez de a la ruta de lock eliminada. Como ya invalidamos `terminal_verified.{id}` de verdad al bloquear, el middleware **sí** bloquea el acceso directo por URL — este era el bug real reportado ("bloqueé la caja 3 y por ruta me deja"), no algo que requiriera un middleware nuevo ni un overlay.
+- [x] **`PosTerminalLobby::selectTerminal()`** ahora salta el modal de PIN si `session()->has("terminal_verified.{id}")` ya está vigente (ej. si el middleware te devolvió al Lobby por otra razón sin que la sesión haya expirado realmente) — evita el doble PIN sin reintroducir el problema original, porque `lock()` sí borra esa marca explícitamente antes de redirigir.
+- [x] **Botón "Bloquear"** en el Workspace: oculto por completo si `$terminal->requiresPinVerification()` es `false` (nada que bloquear). Sigue apuntando a `sales.pos.lock`, ahora resuelto por `PosTerminalLockController`.
+- [x] **Auto-lock por inactividad**: el timer de 10 min en el Workspace (`startInactivityWatch()`) ya no arranca si la terminal no requiere PIN.
+- [x] **Ruta `sales.pos.lock`** conservada por nombre (mismo `name()`), pero ahora apunta a `PosTerminalLockController@lock` con el comportamiento nuevo (invalidar + ir al Lobby, sin vista propia).
+
+---
+
+# 7.8 — Capa Móvil (POS táctiles portátiles)
+
+**Motivo:** el Workspace se usará en dispositivos POS móviles con impresora integrada (ej. Sunmi V2), pantallas de ~5-6". El layout de dos columnas fijas (catálogo + panel de checkout siempre visible) no cabe ahí. En vez de una vista separada, se construyó una capa responsiva **dentro del mismo `pos-workspace.blade.php`**: mismo estado de Alpine, dos presentaciones (`hidden lg:flex` para desktop, `lg:hidden` para el layout móvil), sin duplicar lógica de negocio.
+
+- [x] **Categorías como bottom sheet** (no chips en fila): un botón abre una hoja inferior con la lista completa; ahorra el ancho horizontal para la grilla de productos.
+- [x] **Grid de productos** a 2 columnas, mismo `filteredProducts`/`addItem()` que desktop.
+- [x] **FAB de carrito** fijo abajo-derecha con badge de cantidad de ítems.
+- [x] **Carrito como slide-over con 2 pestañas** (en vez de meter todo en un solo panel angosto):
+    - **Productos**: listado completo del carrito (+/-, eliminar) + mini-total fijo abajo.
+    - **Cobrar**: selector de cliente (bottom sheet propio), radios de NCF, descuento global, desglose de totales, botón que abre el **mismo modal de pago** que desktop.
+- [x] **Selector de cliente con buscador** (bottom sheet + `filteredClients` por nombre/RNC). Antes el `<select>` de escritorio tampoco tenía buscador — se agregó el getter `filteredClients`/`clientSearch` de forma reutilizable, pero el `<select>` de desktop se dejó intacto (fuera de alcance de este cambio; es candidato a convertirse en combobox si se pide más adelante).
+- [x] **Modal de pago único y compartido** (`pos-checkout-modal`): se movió fuera del `<form>` del panel de escritorio para que tanto el botón "Cobrar" de desktop como el "Confirmar Cobro" de la pestaña móvil lo abran por igual. El `<form id="pos-checkout-form">` con los inputs ocultos se queda donde estaba (dentro del panel desktop, invisible en móvil); el botón de submit del modal lo referencia vía atributo HTML `form="pos-checkout-form"` en vez de depender de anidamiento en el DOM — funciona aunque el form esté dentro de un contenedor `hidden` en la resolución activa.
+- [x] **`[x-cloak]`** agregado en `app.css` (no existía en ningún lado del proyecto; ya se usaba la directiva sin efecto en varias vistas).
+
+---
+
+## Fase 7.9 — Refactor de Métodos de Pago
+
+**Motivo:** el selector de "Método de Pago" mostraba opciones sin orden de uso real, y dos filas que nunca debieron ser seleccionables por el cajero:
+
+- **"Crédito"** es un slug interno protegido (`TipoPago::CREDITO`, ver `isSystemProtected()`), usado solo por `sales/create.blade.php` para dejar rastro contable cuando `payment_type === 'credit'`. No representa un método de pago real — el crédito comercial ya es su propio flujo (`payment_type`), separado del selector de tipo de pago.
+- **"Nota de Crédito Aplicada"** nunca tuvo uso en el código (grep confirmado); era ruido puro en el selector.
+
+**Cambios:**
+
+- [x] **`TipoPagoSeeder`**: reordenado por jerarquía real de caja — Efectivo, Tarjeta, Transferencia primero (uso diario); Depósito y Cheque después (requieren conciliación bancaria manual). **Cheque queda desactivado por defecto** (`estado = false`; el admin lo activa desde Configuración si lo necesita). **"Crédito"** se mantiene en la tabla (protegido, no se puede borrar) pero **siempre inactivo** — nunca aparece en un selector. **"Nota de Crédito Aplicada"** se desactiva explícitamente (no se borra físicamente: podría estar referenciada por ventas históricas).
+- [x] **`TipoPago::PRIORITY_ORDER` + `TipoPago::sortByPriority()`**: helper centralizado que ordena cualquier colección de tipos de pago activos según la jerarquía; usado en `PosWorkspace.php` y `SaleCatalogService` (backoffice + cotizaciones), así ambos flujos muestran el mismo orden sin duplicar la lista.
+- [x] **Referencia obligatoria para métodos no-efectivo**: tarjeta, transferencia, depósito o cheque ahora piden un campo "Referencia" (últimos dígitos, # de autorización, # de cheque — texto libre, sin formato estricto) antes de poder confirmar el cobro. Validado en `StoreSaleRequest` (solo si `tipo_pago` resuelto no es `efectivo`) y persistido en `sale_payments.reference` (columna que ya existía, sin usarse en el flujo de pago único). Efectivo no la pide: el dinero físico entra a la gaveta sin evidencia adicional que registrar.
+
+---
+
+## Fase 7.10 — Refactor de Vistas: Desktop/Móvil y Parciales Compartidos
+
+**Motivo:** una auditoría (pedida explícitamente para revisar si `pos-workspace.blade.php` mezclaba dos interfaces completas) confirmó que sí: el archivo (1379 líneas) contenía el layout desktop (`hidden lg:flex`) y el layout móvil (`lg:hidden`, Fase 7.8) como dos árboles DOM paralelos, con el selector de NCF, el resumen de totales, la fila de carrito y el buscador de cliente **pegados dos veces casi idénticos** en vez de compartidos. Esto no era solo un problema de tamaño de archivo — ya había causado bugs reales en esta misma rama: el input de descuento por ítem faltante en el carrito móvil, y el botón "eliminar" sin fondo rojo en uno de los dos sitios. Cualquier cambio a esas piezas había que aplicarlo dos veces, y era fácil olvidar una.
+
+**Diagnóstico verificado (no solo intuición):** se confirmó con grep exacto sobre el archivo, no solo lectura visual — el JS (`posWorkspace()`) estaba bien: un solo estado Alpine compartido por ambas vistas, sin duplicar lógica de negocio. El problema era 100% de HTML/marcado. El único `<form id="pos-checkout-form">` real vivía en el bloque desktop; el botón "Confirmar Cobro" del móvil lo submitea a distancia vía el atributo HTML `form="pos-checkout-form"` (confirmado, no solo sospechado) — los radios NCF y el input de RNC del bloque móvil no son decorativos, sí mutan el mismo estado real (`formData`, `ncfChoice`), solo que no llevan sus propios `<input type="hidden">`.
+
+**Solución — división en subvistas, todas bajo el mismo `x-data` raíz** (`@include` es una inclusión de servidor / concatenación de string antes de llegar al navegador, así que no rompe el estado de Alpine compartido con tal de que las subvistas queden anidadas dentro del elemento con `x-data="posWorkspace(...)"`):
 
 ```
---------------------------------------------------
-| Catálogo / búsqueda (70%) | Carrito + Cobro (30%) |
---------------------------------------------------
+resources/views/livewire/sales/pos/pages/
+├── pos-workspace.blade.php          (orquestador: x-data raíz, header, <script>, @includes)
+└── pos-workspace/
+    ├── desktop.blade.php            (layout ≥lg, antes líneas 74-364)
+    ├── mobile.blade.php             (layout <lg, antes líneas 366-746)
+    ├── client-modal.blade.php       (selector de cliente desktop, antes 748-783)
+    ├── checkout-modal.blade.php     (modal de pago, ya compartido antes — solo reubicado)
+    ├── success-modal.blade.php      (modal "Venta Hecha", ya compartido antes — solo reubicado)
+    └── partials/
+        ├── cart-item.blade.php      (fila de carrito; prop `touch` cambia cantidad
+        │                             editable con <input> vs. solo lectura con <span>
+        │                             + botones más grandes — diferencia real de UX
+        │                             táctil, no un descuido de copy-paste)
+        ├── ncf-selector.blade.php   (radios NCF + captura/verificación de RNC; props
+        │                             `showLabel` y `rncInputBg` para las diferencias
+        │                             de contexto que sí son intencionales)
+        ├── totals-summary.blade.php (prop `detailed`: false=compacto con Total nomás
+        │                             (desktop, el desglose completo ya se repite en el
+        │                             modal de pago), true=con Descuento/ITBIS inline
+        │                             (móvil, es la única vista del desglose antes de
+        │                             tocar "Confirmar Cobro"))
+        ├── client-search-input.blade.php  (ícono + input de búsqueda; prop `autofocus`)
+        └── client-results-list.blade.php  (resultados + estado vacío; prop `closeAction`
+                                             para cerrar el picker correcto tras seleccionar)
 ```
 
-**Panel Izquierdo (70%):**
-- Búsqueda rápida con debounce
-- Filtros por categoría (tabs o chips)
-- Grid de productos con foto, nombre y precio
-- Soporte para scan de código de barras
-
-**Panel Derecho (30%):**
-- Cliente seleccionado (con botón de cambio rápido)
-- Items del carrito con cantidad editable
-- Campo de descuento global
-- Subtotal / ITBIS / Total
-- Métodos de pago
-- Teclado numérico grande (obligatorio, sin dependencia del teclado físico)
-- Botón "Cobrar"
-
-### 7.2 — Componentes Livewire
-
-- [ ] `PosCart` — gestión del carrito, cálculo de totales, validación de descuentos
-- [ ] `PosProductSearch` — búsqueda con debounce y filtro por categoría
-- [ ] `PosCheckout` — selección de método de pago, cálculo de vuelto, integración con `SalesService`
-- [ ] `PosNumpad` — teclado numérico reactivo reutilizable
+- [x] **Consistencia recuperada de paso:** al unificar `ncf-selector.blade.php`, la tarjeta de confirmación de RNC verificado ahora siempre muestra la línea `RNC ... · estado` (antes el bloque móvil la omitía — otro síntoma de la misma duplicación, no un cambio de diseño deliberado).
+- [x] **Verificado en navegador** (no solo compilación): carrito con ítem agregado, descuento por ítem visible en ambas variantes, botón eliminar con fondo rojo en ambas, radios NCF completos (incluido Crédito Fiscal) con un cliente real seleccionado en la pestaña "Cobrar" móvil, y el picker de cliente de escritorio filtrando y seleccionando correctamente.
+- [x] **Nada de lógica de negocio se tocó** — mismos métodos (`selectNcf`, `recalculateTotals`, `onClientChange`, etc.), mismo `<form id="pos-checkout-form">`, mismas rutas y validaciones de backend.
 
 ---
 
@@ -392,7 +552,7 @@ if ($this->payment_type === Sale::PAYMENT_CREDIT && $client) {
 - [ ] **Expected total:** suma de todas las ventas en efectivo de la sesión.
 - [ ] **Counted total:** dinero físico contado por el cajero (input manual).
 - [ ] **Difference:** diferencia calculada automáticamente con validación visual.
-- [ ] **Asiento contable automático:** generado por `JournalEntryService` al cerrar.
+- ~~Asiento contable automático: ELIMINADO.~~
 
 ### 9.2 — Reporte de Sesión
 
@@ -451,8 +611,8 @@ feat/pos-loyalty-system     — Sistema de puntos y fidelización de clientes
 
 ### Pendiente
 - [x] Fase 5 — Motor de descuentos con validación configurable
-- [ ] Fase 6 — Integración `PosContext` en `SalesService`
-- [ ] Fase 7 — Interfaz completa POS (layout + componentes Livewire)
+- [x] Fase 6 — Integración `PosContext` en `SalesService`
+- [x] Fase 7 — Interfaz completa POS (Workspace, carrito, checkout, cliente, numpad, seguridad de sesión). Multi-payment (pago dividido) queda pendiente como único punto abierto.
 - [ ] Fase 8 — Ventas pausadas (snapshot JSON)
 - [ ] Fase 9 — Cierre de caja con asiento contable automático
 - [ ] Fase 10 — Módulo de impresión 58mm/80mm/PDF
@@ -467,10 +627,10 @@ feat/pos-loyalty-system     — Sistema de puntos y fidelización de clientes
 3.  feat/pos-terminal-security    ✅ LISTA
 4.  feat/pos-access-control       ✅ LISTA
 5.  feat/pos-session-security-ui  ✅ LISTA
-6.  pos-quotes                    🔄 EN CURSO (pasos finales de integración POS)
-7.  pos-discounts                 ⬜ PENDIENTE
-8.  pos-sales-integration         ⬜ PENDIENTE
-9.  pos-interface                 ⬜ PENDIENTE
+6.  pos-quotes                    ✅ LISTA
+7.  pos-discounts                 ✅ LISTA
+8.  pos-sales-integration         ✅ LISTA
+9.  pos-interface                 ✅ LISTA
 10. pos-parked-sales              ⬜ PENDIENTE
 11. pos-session-settlement        ⬜ PENDIENTE
 12. pos-print-service             ⬜ PENDIENTE

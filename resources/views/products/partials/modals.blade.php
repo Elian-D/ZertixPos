@@ -8,7 +8,7 @@
                     <div class="flex gap-4 items-center">
                         <div class="relative">
                             @if($item->image_path)
-                                <img src="{{ asset('storage/' . $item->image_path) }}" alt="{{ $item->name }}" class="w-16 h-16 rounded-xl object-cover shadow-md border-2 border-white">
+                                <img src="{{ $item->image_url }}" alt="{{ $item->name }}" class="w-16 h-16 rounded-xl object-cover shadow-md border-2 border-white">
                             @else
                                 <div class="w-16 h-16 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-700 shadow-sm border-2 border-white">
                                     <x-heroicon-s-photo class="w-8 h-8"/>

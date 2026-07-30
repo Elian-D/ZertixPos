@@ -17,7 +17,7 @@
                 <div class="flex items-center">
                     <div class="w-10 h-10 rounded-lg bg-red-50 flex items-center justify-center text-red-600 mr-3 overflow-hidden border border-red-100">
                         @if($product->image_path)
-                            <img src="{{ asset('storage/' . $product->image_path) }}" class="w-full h-full object-cover opacity-50 grayscale">
+                            <img src="{{ $product->image_url }}" class="w-full h-full object-cover opacity-50 grayscale">
                         @else
                             <x-heroicon-s-cube class="w-5 h-5"/>
                         @endif
