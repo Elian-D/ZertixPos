@@ -26,6 +26,18 @@ class CategorySeeder extends Seeder
                 'name' => 'Accesorios',
                 'description' => 'Bombas, dispensadores y otros artículos relacionados.',
             ],
+            [
+                'name' => 'Bebidas',
+                'description' => 'Refrescos, jugos y bebidas frías para venta directa.',
+            ],
+            [
+                'name' => 'Snacks',
+                'description' => 'Golosinas y meriendas para venta al mostrador.',
+            ],
+            [
+                'name' => 'Limpieza',
+                'description' => 'Artículos de limpieza e higiene para el hogar.',
+            ],
         ];
 
         foreach ($categories as $category) {
