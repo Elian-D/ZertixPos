@@ -38,6 +38,7 @@
                 setTimeout(() => window.dispatchEvent(new Event('resize-charts')), 310);
             });
         "
+        
     >
             
         {{-- ELIMINADA la clase ml-XX para que el sidebar FLOTE cuando esté colapsado. --}}
@@ -153,6 +154,8 @@
                     <x-sidebar.dropdown id="pos" icon="heroicon-s-building-storefront" :activeRoutes="['admin/pos*']">
                         Puntos de Venta
                         <x-slot name="submenu">
+                            <x-sidebar.subitem href="{{ route('sales.pos.index') }}">Ir al POS</x-sidebar.subitem>
+                            <div class="h-px bg-gray-700/30 my-1.5"></div>
                             <x-sidebar.subitem href="/admin/sales/pos/settings">Configuración</x-sidebar.subitem>
                             <x-sidebar.subitem href="/admin/sales/pos/terminals">Terminales</x-sidebar.subitem>
                             <x-sidebar.subitem href="/admin/sales/pos/sessions">Sesiones</x-sidebar.subitem>
