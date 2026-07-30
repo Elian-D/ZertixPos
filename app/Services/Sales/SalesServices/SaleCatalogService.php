@@ -30,9 +30,9 @@ class SaleCatalogService
 
             'payment_types' => Sale::getPaymentTypes(),
 
-            'tipo_pagos' => TipoPago::activo()
-            ->select('id', 'nombre')
-            ->get(),
+            'tipo_pagos' => TipoPago::sortByPriority(
+                TipoPago::activo()->select('id', 'nombre', 'slug')->get()
+            ),
             
             // Sesiones activas o recientes (últimos 30 días) para evitar saturación
             'pos_sessions' => PosSession::where('created_at', '>=', now()->subDays(30))
@@ -126,9 +126,9 @@ class SaleCatalogService
                     ];
                 }),
                 
-            'tipo_pagos' => TipoPago::activo()
-                            ->select('id', 'nombre', 'accounting_account_id')
-                            ->get(),
+            'tipo_pagos' => TipoPago::sortByPriority(
+                TipoPago::activo()->select('id', 'nombre', 'slug', 'accounting_account_id')->get()
+            ),
         ];
     }
 }

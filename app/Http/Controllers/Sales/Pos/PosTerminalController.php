@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Sales\Pos;
 
 use App\Http\Controllers\Controller;
 use App\Models\Sales\Pos\PosTerminal;
+use App\Models\Sales\Pos\PosSession;
 use App\Http\Requests\Sales\Pos\PosTerminals\StorePosTerminalRequest;
 use App\Http\Requests\Sales\Pos\PosTerminals\UpdatePosTerminalRequest;
 use App\Services\Sales\Pos\PosTerminals\PosTerminalService;
@@ -120,6 +121,14 @@ class PosTerminalController extends Controller
      */
     public function destroy(PosTerminal $posTerminal)
     {
+        // No permitir eliminar una terminal con una sesión de caja abierta:
+        // el cajero quedaría con una sesión "huérfana" e imposible de cerrar.
+        if ($posTerminal->sessions()->where('status', PosSession::STATUS_OPEN)->exists()) {
+            return redirect()
+                ->route('sales.pos.terminals.index')
+                ->with('error', "No se puede eliminar la terminal '{$posTerminal->name}': tiene una sesión de caja abierta. Cierra la caja primero.");
+        }
+
         // El trait manejará la lógica de borrado suave y redirección
         return $this->destroyTrait($posTerminal, null);
     }

@@ -4,6 +4,19 @@
 
 /*
 |--------------------------------------------------------------------------
+| x-cloak (Alpine.js)
+|--------------------------------------------------------------------------
+| Sin esta regla, x-cloak no hace nada: un elemento con x-show="false" igual
+| parpadea visible durante el instante entre el HTML crudo y que Alpine termine
+| de inicializar. Ya se usaba x-cloak en varias vistas (modal-quick-client,
+| pos settings, config general) sin que existiera esta regla en ningún lado.
+*/
+[x-cloak] {
+    display: none !important;
+}
+
+/*
+|--------------------------------------------------------------------------
 | Estilos personalizados para la barra de desplazamiento (Scrollbar)
 |--------------------------------------------------------------------------
 */

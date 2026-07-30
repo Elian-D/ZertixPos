@@ -18,7 +18,7 @@
             @if(in_array('image_path', $visibleColumns))
                 <td class="px-6 py-4">
                     @if($item->image_path)
-                        <img src="{{ asset('storage/' . $item->image_path) }}" alt="{{ $item->name }}" class="w-10 h-10 rounded-lg object-cover shadow-sm">
+                        <img src="{{ $item->image_url }}" alt="{{ $item->name }}" class="w-10 h-10 rounded-lg object-cover shadow-sm">
                     @else
                         <div class="w-10 h-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400">
                             <x-heroicon-s-photo class="w-6 h-6" />

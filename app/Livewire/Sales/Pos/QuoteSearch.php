@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Pos;
+namespace App\Livewire\Sales\Pos;
 
 use Livewire\Component;
 use App\Models\Products\Product;
@@ -49,6 +49,6 @@ class QuoteSearch extends Component
     public function render()
     {
         // Asegúrate de que la vista esté en esta ruta:
-        return view('livewire.pos.quote-search'); 
+        return view('livewire.sales.pos.quote-search'); 
     }
 }

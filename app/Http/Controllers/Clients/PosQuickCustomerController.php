@@ -29,6 +29,11 @@ class PosQuickCustomerController extends Controller
                     'display_name' => $client->display_name,
                     'tax_id'       => $client->tax_id,
                     'tax_label'    => $client->tax_label, // El accesor que definimos en el modelo
+                    // Mismo shape que PosWorkspace::getClients(): un cliente recién creado
+                    // siempre arranca limpio (sin balance ni mora), pero deben existir estos
+                    // campos porque el Workspace los lee al mostrarlo como seleccionado.
+                    'available'   => (float) ($client->credit_limit - $client->balance),
+                    'is_moroso'   => false,
                 ]
             ], 201);
 

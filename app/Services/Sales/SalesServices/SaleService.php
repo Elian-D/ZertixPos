@@ -2,8 +2,9 @@
 
 namespace App\Services\Sales\SalesServices;
 
-use App\Models\Sales\{Sale, SalePayment}; 
+use App\Models\Sales\{Sale, SalePayment};
 use App\Models\Accounting\{DocumentType, JournalEntry, AccountingAccount, Receivable};
+use App\Models\Clients\Client;
 use App\Models\Inventory\InventoryMovement;
 use App\Services\Inventory\InventoryMovementService;
 use App\Services\Accounting\JournalEntries\JournalEntryService;
@@ -78,6 +79,16 @@ class SaleService
 
             // Polimorfismo de origen: Si la venta viene de terminal física (POS), hereda su almacén asignado.
             $warehouseId = $context ? $context->warehouse_id : $data['warehouse_id'];
+
+            // RNC capturado al vuelo para Crédito Fiscal cuando el cliente no tenía uno en archivo
+            // (ej. walk-in verificado contra la DGII en el momento). Se guarda en el cliente para
+            // que quede disponible en futuras ventas, sin sobrescribir un RNC ya existente.
+            if (!empty($data['client_rnc'])) {
+                $client = Client::find($data['client_id']);
+                if ($client && empty($client->tax_id)) {
+                    $client->update(['tax_id' => $data['client_rnc']]);
+                }
+            }
 
             // 3. PERSISTENCIA DE CABECERA
             $sale = Sale::create([
@@ -167,6 +178,7 @@ class SaleService
             $sale->payments()->create([
                 'tipo_pago_id' => $sale->tipo_pago_id,
                 'amount'       => $sale->total_amount,
+                'reference'    => $data['payment_reference'] ?? null,
             ]);
         } else {
             // Registro detallado de cobros múltiples (v.g. Parte en Tarjeta y parte en Efectivo).

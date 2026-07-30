@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Pos;
+namespace App\Livewire\Sales\Pos;
 
 use Livewire\Component;
 use Livewire\Attributes\On;
@@ -187,7 +187,7 @@ class QuoteBuilder extends Component
 
     public function render()
     {
-        return view('livewire.pos.quote-builder', [
+        return view('livewire.sales.pos.quote-builder', [
             'clients' => $this->getOperativeClients()
         ]);
     }

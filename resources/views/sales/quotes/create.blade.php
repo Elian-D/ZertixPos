@@ -15,7 +15,7 @@
                     Pasamos los datos iniciales desde el controlador si fuera necesario, 
                     pero el componente ya está diseñado para ser autónomo.
                 --}}
-                @livewire('pos.quote-builder')
+                @livewire('sales.pos.quote-builder')
             </div>
 
             <div class="p-4 bg-gray-50 border-t flex justify-between items-center text-xs text-gray-400">

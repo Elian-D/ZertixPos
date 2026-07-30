@@ -64,7 +64,9 @@ class PosSession extends Model
 
     public function terminal(): BelongsTo
     {
-        return $this->belongsTo(PosTerminal::class, 'terminal_id');
+        // withTrashed(): una sesión puede seguir existiendo (histórico, arqueo) aunque
+        // la terminal a la que perteneció haya sido eliminada (soft delete) después.
+        return $this->belongsTo(PosTerminal::class, 'terminal_id')->withTrashed();
     }
 
     public function user(): BelongsTo

@@ -15,7 +15,7 @@
                         </ol>
                     </nav>
                     <h2 class="font-black text-3xl text-gray-800 tracking-tight">
-                        Detalle de Sesión: <span class="text-indigo-600">{{ $posSession->terminal->name }}</span>
+                        Detalle de Sesión: <span class="text-indigo-600">{{ $posSession->terminal->name ?? 'Terminal eliminada' }}</span>
                     </h2>
                 </div>
 

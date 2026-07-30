@@ -15,7 +15,7 @@
         {{-- Buscador de Productos (Inyectamos el otro componente aquí) --}}
         <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Buscar Producto</label>
-            @livewire('pos.quote-search')
+            @livewire('sales.pos.quote-search')
         </div>
     </div>
 

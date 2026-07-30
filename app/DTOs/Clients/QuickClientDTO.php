@@ -2,7 +2,7 @@
 
 namespace App\DTOs\Clients;
 
-use App\Models\Configuration\ConfiguracionGeneral;
+use App\Models\Configuration\EstadosCliente;
 
 class QuickClientDTO
 {
@@ -16,7 +16,7 @@ class QuickClientDTO
         public ?int $state_id = null,
         public ?string $city = null,
         public string $type = 'individual',
-        public int $estado_cliente_id = 1, // Asumimos 1 como Activo (ajustar según tu DB)
+        public ?int $estado_cliente_id = null,
         public float $credit_limit = 0,
         public int $payment_terms = 0,
     ) {}
@@ -34,6 +34,8 @@ class QuickClientDTO
             address: $data['address'] ?? null,
             state_id: $data['state_id'] ?? $config?->state_id,
             city: $data['city'] ?? $config?->city ?? $config?->ciudad ?? 'N/A',
+            estado_cliente_id: EstadosCliente::where('nombre', 'Activo')->value('id')
+                ?? EstadosCliente::query()->value('id'),
         );
     }
 

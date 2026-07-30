@@ -2,11 +2,11 @@
 
 namespace App\Http\Requests\Sales;
 
-use App\Models\Sales\Sale;
-use App\Models\Inventory\InventoryStock;
 use App\Models\Clients\Client;
-use App\Models\Sales\Ncf\NcfType; 
-use App\Models\Configuration\ConfiguracionGeneral;
+use App\Models\Configuration\TipoPago;
+use App\Models\Inventory\InventoryStock;
+use App\Models\Sales\Ncf\NcfType;
+use App\Models\Sales\Sale;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -17,60 +17,96 @@ class StoreSaleRequest extends FormRequest
         return $this->user()->can('create sales');
     }
 
+    /**
+     * Cuando la venta viene del Workspace POS (ruta con {pos_terminal}), el almacén
+     * siempre es el de la terminal y el frontend no lo envía en el payload.
+     * Lo resolvemos aquí para que pase la validación `required` antes de llegar
+     * al controlador, que además lo vuelve a fijar como fuente de verdad.
+     */
+    protected function prepareForValidation(): void
+    {
+        $terminal = $this->route('pos_terminal');
+
+        if ($terminal && ! $this->filled('warehouse_id')) {
+            $this->merge(['warehouse_id' => $terminal->warehouse_id]);
+        }
+    }
+
     public function rules(): array
     {
-        $config = general_config();
-        $usaNcf = $config?->usa_ncf ?? false;
-
         return [
-            'client_id'    => ['required', 'exists:clients,id'],
+            'client_id' => ['required', 'exists:clients,id'],
             'warehouse_id' => ['required', 'exists:warehouses,id'],
-            
-            'ncf_type_id'  => [
-                $usaNcf ? 'required' : 'nullable', 
-                'exists:ncf_types,id'
-            ], 
-            
-            'sale_date'    => ['required', 'date', 'after_or_equal:today', 'before_or_equal:today'],
+
+            // Nullable siempre: aunque el sistema tenga NCF activo, el cajero puede
+            // despachar "Sin Comprobante" (venta interna sin impacto fiscal). La
+            // obligatoriedad ya no es un switch global todo-o-nada; se decide por venta.
+            'ncf_type_id' => ['nullable', 'exists:ncf_types,id'],
+
+            // RNC capturado en el momento (cliente sin tax_id en archivo) para Crédito Fiscal.
+            'client_rnc' => ['nullable', 'string', 'max:20'],
+
+            'sale_date' => ['required', 'date', 'after_or_equal:today', 'before_or_equal:today'],
             'payment_type' => ['required', Rule::in([Sale::PAYMENT_CASH, Sale::PAYMENT_CREDIT])],
             'tipo_pago_id' => [
-                Rule::requiredIf($this->payment_type === Sale::PAYMENT_CASH), 
-                'nullable', 
-                'exists:tipo_pagos,id'
+                Rule::requiredIf($this->payment_type === Sale::PAYMENT_CASH),
+                'nullable',
+                'exists:tipo_pagos,id',
             ],
-            'cash_received'  => ['nullable', 'numeric', 'min:0'],
-            'cash_change'    => ['nullable', 'numeric', 'min:0'],
-            
-            // FASE 5: Reglas de totales y descuentos
-            'total_amount'   => ['required', 'numeric', 'min:0'],
-            'discount_total' => ['nullable', 'numeric', 'min:0'], 
-            'apply_tax'      => ['nullable', 'boolean'],
-            'notes'          => ['nullable', 'string', 'max:255'],
+            'cash_received' => ['nullable', 'numeric', 'min:0'],
+            'cash_change' => ['nullable', 'numeric', 'min:0'],
+            // Referencia libre (últimos 4 dígitos, # de confirmación, etc.) para métodos
+            // no-efectivo. Obligatoriedad real evaluada en withValidator() según el método.
+            'payment_reference' => ['nullable', 'string', 'max:100'],
 
-            'items'                       => ['required', 'array', 'min:1'],
-            'items.*.product_id'          => ['required', 'exists:products,id'],
-            'items.*.quantity'            => ['required', 'numeric', 'min:0.01'],
-            'items.*.price'               => ['required', 'numeric', 'min:0'],
+            // Pago dividido (multi-método): si viene presente, ES la fuente de verdad del
+            // cobro y reemplaza tipo_pago_id/cash_received/payment_reference de arriba —
+            // ver SaleService::processPayments(), que ya sabía manejar esto desde antes.
+            'payments' => ['nullable', 'array'],
+            'payments.*.tipo_pago_id' => ['required_with:payments', 'exists:tipo_pagos,id'],
+            'payments.*.amount' => ['required_with:payments', 'numeric', 'min:0.01'],
+            'payments.*.reference' => ['nullable', 'string', 'max:100'],
+
+            // FASE 5: Reglas de totales y descuentos
+            'total_amount' => ['required', 'numeric', 'min:0'],
+            'discount_total' => ['nullable', 'numeric', 'min:0'],
+            'apply_tax' => ['nullable', 'boolean'],
+            'notes' => ['nullable', 'string', 'max:255'],
+
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.product_id' => ['required', 'exists:products,id'],
+            'items.*.quantity' => ['required', 'numeric', 'min:0.01'],
+            'items.*.price' => ['required', 'numeric', 'min:0'],
             // FASE 5: Reglas de descuentos por ítem
             'items.*.discount_percentage' => ['nullable', 'numeric', 'min:0', 'max:100'],
-            'items.*.discount_amount'     => ['nullable', 'numeric', 'min:0'],
+            'items.*.discount_amount' => ['nullable', 'numeric', 'min:0'],
+
+            // Contexto POS (opcional; solo presente cuando la venta se origina en una terminal)
+            'pos_terminal_id' => ['nullable', 'exists:pos_terminals,id'],
+            'is_walkin_customer' => ['nullable', 'boolean'],
         ];
     }
 
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
-            if ($validator->errors()->any()) return;
+            if ($validator->errors()->any()) {
+                return;
+            }
 
             $client = Client::with('estadoCliente.categoria')->find($this->client_id);
             $config = general_config();
 
             // --- VALIDACIÓN DE NCF ---
+            // Solo se valida si REALMENTE se pidió un comprobante (ncf_type_id presente).
+            // "Sin Comprobante" (ncf_type_id vacío) no pasa por aquí, sin importar usa_ncf.
             if ($config?->usa_ncf && $this->ncf_type_id) {
                 $ncfType = NcfType::find($this->ncf_type_id);
-                if ($ncfType && $client) {
-                    if (in_array($ncfType->code, ['01', '31']) && empty($client->tax_id)) {
-                        $validator->errors()->add('ncf_type_id', "El tipo {$ncfType->nombre} requiere que el cliente tenga un RNC/Cédula.");
+                if ($ncfType && $ncfType->requires_rnc && $client) {
+                    // El RNC es válido si ya está en el cliente O si se acaba de capturar en esta venta.
+                    $hasRnc = !empty($client->tax_id) || !empty($this->client_rnc);
+                    if (!$hasRnc) {
+                        $validator->errors()->add('ncf_type_id', "El tipo {$ncfType->nombre} requiere un RNC/Cédula.");
                     }
                 }
             }
@@ -78,6 +114,30 @@ class StoreSaleRequest extends FormRequest
             // --- VALIDACIÓN DE TIPO DE PAGO ---
             if ($this->payment_type === Sale::PAYMENT_CASH && empty($this->tipo_pago_id)) {
                 $validator->errors()->add('tipo_pago_id', 'Debe seleccionar un método de pago para ventas al contado.');
+            }
+
+            // --- REFERENCIA OBLIGATORIA PARA MÉTODOS NO-EFECTIVO ---
+            // Tarjeta, transferencia, depósito o cheque dejan rastro bancario/electrónico real;
+            // sin una referencia mínima (últimos dígitos, # de autorización, # de cheque) el
+            // arqueo de caja y la conciliación contable no tienen forma de rastrear el cobro.
+            // Efectivo no la necesita: el dinero físico entra a la gaveta sin más evidencia.
+            // Con pago dividido, la referencia se exige por línea, no una sola vez.
+            $payments = $this->input('payments', []);
+
+            if ($this->payment_type === Sale::PAYMENT_CASH && empty($payments) && $this->tipo_pago_id) {
+                $tipoPago = TipoPago::find($this->tipo_pago_id);
+                if ($tipoPago && $tipoPago->slug !== TipoPago::EFECTIVO && empty($this->payment_reference)) {
+                    $validator->errors()->add('payment_reference', "Debes ingresar una referencia para el pago con {$tipoPago->nombre}.");
+                }
+            }
+
+            if ($this->payment_type === Sale::PAYMENT_CASH && !empty($payments)) {
+                foreach ($payments as $index => $p) {
+                    $tipoPago = TipoPago::find($p['tipo_pago_id'] ?? null);
+                    if ($tipoPago && $tipoPago->slug !== TipoPago::EFECTIVO && empty($p['reference'] ?? null)) {
+                        $validator->errors()->add("payments.{$index}.reference", "Debes ingresar una referencia para el pago con {$tipoPago->nombre}.");
+                    }
+                }
             }
 
             // --- CÁLCULO DE TOTALES Y VALIDACIÓN DE STOCK ---
@@ -88,7 +148,7 @@ class StoreSaleRequest extends FormRequest
                 // Matemáticas del ítem
                 $itemBruto = ($item['quantity'] * $item['price']);
                 $itemDescuento = $item['discount_amount'] ?? 0;
-                
+
                 $subtotalBruto += $itemBruto;
                 $descuentoTotalCalculado += $itemDescuento;
 
@@ -97,7 +157,7 @@ class StoreSaleRequest extends FormRequest
                     ->where('product_id', $item['product_id'])
                     ->first();
 
-                if (!$stock || $stock->quantity < $item['quantity']) {
+                if (! $stock || $stock->quantity < $item['quantity']) {
                     $available = $stock ? $stock->quantity : 0;
                     $validator->errors()->add("items.{$index}.quantity", "Stock insuficiente. Disponible: {$available}.");
                 }
@@ -123,9 +183,17 @@ class StoreSaleRequest extends FormRequest
                 $taxAmount = $subtotalNeto * ($taxRate / 100);
                 $totalFinalNeto = $subtotalNeto + $taxAmount;
             }
-            
-            // --- VALIDACIÓN DE EFECTIVO ---
-            if ($this->payment_type === Sale::PAYMENT_CASH) {
+
+            // --- VALIDACIÓN DE EFECTIVO / PAGO DIVIDIDO ---
+            if ($this->payment_type === Sale::PAYMENT_CASH && !empty($payments)) {
+                // Pago dividido: a diferencia del pago único (que permite recibir de más y dar
+                // vuelto), cada línea es exactamente lo que se aplica a la venta — deben sumar
+                // el total exacto, ni de más ni de menos.
+                $sumaPagos = collect($payments)->sum(fn ($p) => (float) ($p['amount'] ?? 0));
+                if (abs($sumaPagos - $totalFinalNeto) > 0.01) {
+                    $validator->errors()->add('payments', 'La suma de los pagos (' . number_format($sumaPagos, 2) . ') no coincide con el total a cobrar (' . number_format($totalFinalNeto, 2) . ').');
+                }
+            } elseif ($this->payment_type === Sale::PAYMENT_CASH) {
                 $recibido = (float) $this->cash_received;
                 $totalCobrar = (float) $totalFinalNeto; // <-- CAMBIO AQUÍ
 
@@ -146,25 +214,7 @@ class StoreSaleRequest extends FormRequest
                 }
 
                 // <-- CAMBIO AQUÍ: Sumamos el Neto al balance actual
-                $nuevoSaldoProyectado = $client->balance + $totalFinalNeto; 
-                if ($nuevoSaldoProyectado > $client->credit_limit) {
-                    $disponible = number_format($client->credit_limit - $client->balance, 2);
-                    $validator->errors()->add('total_amount', "Límite de crédito superado. Disponible: \${$disponible}.");
-                }
-            }
-
-            // --- LÓGICA DE CRÉDITO ---
-            if ($this->payment_type === Sale::PAYMENT_CREDIT && $client) {
-                if ($client->id == 1 || $client->name === 'Consumidor Final') {
-                    $validator->errors()->add('payment_type', 'El Consumidor Final no puede procesar ventas a crédito.');
-                }
-
-                $categoryCode = $client->estadoCliente->category->code ?? null;
-                if (in_array($categoryCode, ['BLOQUEO_TOTAL', 'FINANCIERO_RESTRICTO'])) {
-                    $validator->errors()->add('client_id', "Crédito denegado: El cliente tiene un estado de {$client->estadoCliente->nombre}.");
-                }
-
-                $nuevoSaldoProyectado = $client->balance + $this->total_amount;
+                $nuevoSaldoProyectado = $client->balance + $totalFinalNeto;
                 if ($nuevoSaldoProyectado > $client->credit_limit) {
                     $disponible = number_format($client->credit_limit - $client->balance, 2);
                     $validator->errors()->add('total_amount', "Límite de crédito superado. Disponible: \${$disponible}.");

@@ -106,7 +106,7 @@
                         <div class="w-full md:w-1/3 flex justify-center">
                             <div id="image-preview-container" class="w-48 h-48 rounded-2xl border-2 border-solid border-indigo-100 flex items-center justify-center bg-gray-50 overflow-hidden relative group">
                                 @if($product->image_path)
-                                    <img id="image-preview" src="{{ asset('storage/' . $product->image_path) }}" alt="{{ $product->name }}" class="w-full h-full object-cover" />
+                                    <img id="image-preview" src="{{ $product->image_url }}" alt="{{ $product->name }}" class="w-full h-full object-cover" />
                                     <div id="placeholder-icon" class="hidden flex flex-col items-center text-gray-400">
                                         <x-heroicon-s-photo class="w-12 h-12" />
                                     </div>

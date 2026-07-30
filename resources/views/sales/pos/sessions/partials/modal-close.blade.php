@@ -4,14 +4,14 @@
 <x-modal name="close-session-{{ $session->id }}" maxWidth="lg">
     <x-form-header 
         title="Arqueo y Cierre de Caja" 
-        subtitle="Sesión #{{ $session->id }} - {{ $session->terminal->name }}" />
+        subtitle="Sesión #{{ $session->id }} - {{ $session->terminal->name ?? 'Terminal eliminada' }}" />
 
     <form action="{{ route('sales.pos.sessions.close', $session) }}" 
         method="POST" 
         class="p-6"
         x-data="{ 
             terminalId: {{ $session->terminal_id }},
-            requiresPin: {{ $session->terminal->requires_pin ? 'true' : 'false' }},
+            requiresPin: {{ $session->terminal?->requires_pin ? 'true' : 'false' }},
             expected: {{ $session->calculateExpected() }}, 
             real: '',
             pin: '',

@@ -110,7 +110,7 @@ The codebase follows a "Skinny Controllers" pattern with clear separation of con
 
 6. **HTTP Layer (`app/Http/Controllers/`)**
    - Pure orchestrators: receives request → calls services → returns view/JSON
-   - Grouped by module: `Products/`, `Sales/`, `Clients/`, `Accounting/`, `Inventory/`, `PointOfSale/`
+   - Grouped by module: `Products/`, `Sales/` (with `Sales/Pos/` and `Sales/Ncf/` sub-namespaces), `Clients/`, `Accounting/`, `Inventory/`
    - Trait `SoftDeletesTrait` adds soft delete methods: `index` includes trash, `eliminadas()`, `restaurar()`, `borrarDefinitivo()`
 
 7. **Routes (`routes/admin/`)**
@@ -122,7 +122,7 @@ The codebase follows a "Skinny Controllers" pattern with clear separation of con
    - Blade templates organized by module
    - Table rendering with dynamic columns, AJAX filtering (chips-based UI)
    - Forms populated from `CatalogService`
-   - Livewire components in `resources/views/livewire/`
+   - Livewire component classes live in `app/Livewire/<Module>/` (e.g. `app/Livewire/Sales/Pos/`), with matching Blade views in `resources/views/livewire/<module>/`
 
 ### Key Traits
 
@@ -153,13 +153,14 @@ The codebase follows a "Skinny Controllers" pattern with clear separation of con
 
 | Domain | Controllers | Key Models | Purpose |
 |--------|-------------|-----------|---------|
-| **Products** | ProductController, CategoryController, UnitController | Product, Category, Unit | Catalog management |
-| **Inventory** | InventoryMovementController, InventoryStockController | InventoryStock, InventoryMovement | Stock tracking and movements |
-| **Sales** | InvoiceController, QuoteController | Invoice, Quote, SalesLine | Order processing and invoicing |
-| **Accounting** | AccountController, JournalController | Account, Journal, Receivable | Double-entry accounting |
-| **Clients** | ClientController | Client | Customer management |
-| **Point of Sale** | PosController, PosSessionController, PosTerminalController | PosSetting, PosSession, PosTerminal | POS operations with session security (PIN, bloqueo) |
-| **Configuration** | ConfigController | ConfiguracionGeneral, Impuesto, etc. | System-wide settings |
+| **Products** | `ProductController`, `CategoryController`, `UnitController` | `Product`, `Category`, `Unit` | Catalog management |
+| **Inventory** | `InventoryMovementController`, `InventoryStockController`, `WarehouseController` | `InventoryStock`, `InventoryMovement` | Stock tracking and movements |
+| **Sales** (`Sales/`) | `InvoiceController`, `QuoteController`, `SaleController` | `Invoice`, `Quote`, `QuoteItem`, `Sale`, `SaleItem`, `SalePayment` | Quoting, invoicing, and sale order processing |
+| **Sales → POS** (`Sales/Pos/`) | `PosTerminalController`, `PosSessionController`, `PosTerminalLockController`, `PosCashMovementController`, `PosConfigController` | `PosTerminal`, `PosSession`, `PosSetting`, `PosCashMovement` | Terminal sessions, cash drawer movements, PIN-gated access |
+| **Sales → NCF** (`Sales/Ncf/`) | `NcfSequenceController`, `NcfTypeController`, `NcfLogController`, `NcfDashboardController` | `NcfSequence`, `NcfType`, `NcfLog` | Dominican fiscal receipt (NCF) compliance — sequence assignment and audit log |
+| **Accounting** | `AccountingAccountController`, `JournalEntryController`, `ReceivableController`, `PaymentController` | `Account`, `Journal`, `Receivable` | Double-entry accounting |
+| **Clients** | `ClientController`, `EquipmentController`, `PointOfSaleController` (client-side POS reg.) | `Client`, `Equipment` | Customer management, credit limits, field equipment |
+| **Configuration** | `ConfiguracionGeneralController`, `TipoPagoController`, `EstadosClienteController` | `ConfiguracionGeneral`, `TipoPago`, etc. | System-wide settings (currency, tax, payment types) |
 
 ## Important Architectural Decisions
 
