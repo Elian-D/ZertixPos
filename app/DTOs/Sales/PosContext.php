@@ -3,7 +3,7 @@
 namespace App\DTOs\Sales;
 
 /**
- * Contenedor de datos para transportar el contexto del POS 
+ * Contenedor de datos para transportar el contexto del POS
  * hacia el motor de ventas (SaleService).
  */
 class PosContext
@@ -23,7 +23,7 @@ class PosContext
     public static function fromSession($session, bool $isWalkIn = false): self
     {
         return new self(
-            terminal_id: $session->pos_terminal_id,
+            terminal_id: $session->terminal_id,
             session_id: $session->id,
             cash_account_id: $session->terminal->cash_account_id,
             warehouse_id: $session->terminal->warehouse_id,

@@ -29,6 +29,33 @@ class TipoPago extends Model
     }
 
     /**
+     * Jerarquía de uso real en caja: los del día a día primero, los que requieren
+     * conciliación bancaria manual después. Cualquier método nuevo no listado aquí
+     * cae al final, en vez de romper el orden.
+     */
+    public const PRIORITY_ORDER = [
+        'efectivo',
+        'tarjeta-de-creditodebito',
+        'transferencia-bancaria',
+        'deposito-bancario',
+        'cheque',
+    ];
+
+    /**
+     * Ordena una colección de TipoPago según la jerarquía de uso (ver PRIORITY_ORDER).
+     */
+    public static function sortByPriority($tipoPagos)
+    {
+        return $tipoPagos
+            ->sortBy(function ($tipoPago) {
+                $position = array_search($tipoPago->slug, self::PRIORITY_ORDER, true);
+
+                return $position === false ? count(self::PRIORITY_ORDER) : $position;
+            })
+            ->values();
+    }
+
+    /**
      * Helper para verificar si es efectivo sin importar el nombre o ID
      */
     public function isCash(): bool {

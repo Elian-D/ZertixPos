@@ -104,12 +104,23 @@ class PosTerminal extends Model
     }
 
     /**
+     * Indica si la terminal realmente exige verificación de PIN.
+     * Si requires_pin está activo pero no hay access_pin configurado,
+     * no hay nada contra qué verificar, así que se trata como sin PIN
+     * (de lo contrario el cajero queda bloqueado sin ninguna clave válida).
+     */
+    public function requiresPinVerification(): bool
+    {
+        return $this->requires_pin && !empty($this->access_pin);
+    }
+
+    /**
      * Verifica si el PIN proporcionado es correcto.
      */
     public function verifyPin(string $pin): bool
     {
-        if (!$this->requires_pin) return true;
-        
+        if (!$this->requiresPinVerification()) return true;
+
         return Hash::check($pin, $this->access_pin);
     }
 
