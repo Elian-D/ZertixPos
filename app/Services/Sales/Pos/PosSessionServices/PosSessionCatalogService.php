@@ -24,6 +24,8 @@ class PosSessionCatalogService
                 ->get(),
 
             'statuses' => PosSession::getStatuses(),
+
+            'difference_reasons' => PosSession::getReasons(),
         ];
     }
 

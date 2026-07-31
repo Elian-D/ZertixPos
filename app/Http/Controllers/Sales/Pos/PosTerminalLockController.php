@@ -52,8 +52,12 @@ class PosTerminalLockController extends Controller
     }
 
     /**
-     * Heartbeat de actividad (Fase 7.0/7.7): refresca la ventana deslizante de
-     * CheckTerminalAccess sin requerir una navegación completa de página.
+     * Heartbeat de actividad (Fase 7.0/7.7). Vestigial desde que
+     * CheckTerminalAccess dejó de expirar la verificación por inactividad
+     * (docs/features/POS-Interfaz.md 9.0): ya no hay ventana que refrescar,
+     * el `put` de abajo es un no-op funcional. Se deja sin quitar la ruta ni
+     * el ping del Workspace (fuera de alcance de este cambio); es candidato
+     * a eliminarse si no se le encuentra otro uso.
      */
     public function heartbeat(Request $request)
     {

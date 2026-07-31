@@ -13,7 +13,7 @@ class SaleTable
             'warehouse_id'    => 'Almacén',
             'pos_terminal_id' => 'Terminal POS', // NUEVO
             'pos_session_id'  => 'Sesión POS',   // NUEVO
-            'payment_type'    => 'Tipo de Pago',
+            'payment_type'    => 'Tipo de Venta',
             'tipo_pago_id'    => 'Método de Pago',
             'total_amount'    => 'Total',
             'status'          => 'Estado',
@@ -32,6 +32,7 @@ class SaleTable
             'client_id',
             'pos_terminal_id', // Agregado por defecto para trazabilidad
             'payment_type',
+            'tipo_pago_id',
             'total_amount',
             'status',
         ];

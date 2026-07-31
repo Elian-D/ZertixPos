@@ -2,10 +2,7 @@
 
 namespace App\Services\Sales\Pos\PosSessionServices;
 
-use App\Models\Accounting\AccountingAccount;
-use App\Models\Accounting\JournalEntry;
 use App\Models\Sales\Pos\PosSession;
-use App\Services\Accounting\JournalEntries\JournalEntryService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -13,7 +10,6 @@ use Illuminate\Validation\ValidationException;
 class PosSessionService
 {
 
-    public function __construct(protected JournalEntryService $journalService) {}
     /**
      * Abrir una nueva sesión de caja.
      */
@@ -30,7 +26,7 @@ class PosSessionService
 
             if ($activeTerminalSession) {
                 throw ValidationException::withMessages([
-                    'terminal_id' => 'Esta terminal ya tiene una sesión activa.'
+                    'terminal_id' => 'Esta terminal ya tiene un turno activo.'
                 ]);
             }
 
@@ -41,18 +37,21 @@ class PosSessionService
 
             if ($activeUserSession) {
                 throw ValidationException::withMessages([
-                    'user_id' => 'Ya tienes una sesión abierta en otra terminal. Ciérrala antes de abrir una nueva.'
+                    'user_id' => 'Ya tienes un turno abierto en otra terminal. Ciérralo antes de abrir uno nuevo.'
                 ]);
             }
 
             // 3. Crear la sesión
+            // 'user_id' se mantiene por compatibilidad con reportes/filtros existentes;
+            // 'opened_by_user_id' es el campo canónico para saber quién abrió el turno.
             return PosSession::create([
-                'terminal_id'     => $terminalId,
-                'user_id'         => $userId,
-                'opened_at'       => now(),
-                'opening_balance' => $data['opening_balance'] ?? 0,
-                'status'          => PosSession::STATUS_OPEN,
-                'notes'           => $data['notes'] ?? null,
+                'terminal_id'       => $terminalId,
+                'user_id'           => $userId,
+                'opened_by_user_id' => $userId,
+                'opened_at'         => now(),
+                'opening_balance'   => $data['opening_balance'] ?? 0,
+                'status'            => PosSession::STATUS_OPEN,
+                'notes'             => $data['notes'] ?? null,
             ]);
         });
     }
@@ -63,13 +62,11 @@ class PosSessionService
     public function calculateExpected(PosSession $session): float
     {
         $opening = $session->opening_balance;
-        
-        // 1. Ventas marcadas como CONTADO (CASH) en esta sesión
-        // Usamos el campo payment_type que ya manejas en el modelo Sale
-        $cashSales = $session->sales()
-            ->where('status', \App\Models\Sales\Sale::STATUS_COMPLETED)
-            ->where('payment_type', \App\Models\Sales\Sale::PAYMENT_CASH)
-            ->sum('total_amount');
+
+        // 1. Ventas en efectivo físico de esta sesión (incluye la porción en efectivo
+        // de pagos divididos/mixtos). Ver el comentario en PosSession::getCashSalesAttribute()
+        // para el porqué de sumar por sale_payments.tipo_pago_id en vez de payment_type.
+        $cashSales = $session->cash_sales;
 
         // 2. Movimientos manuales (Entradas y Salidas de efectivo)
         $inflows = $session->cashMovements()->in()->sum('amount');
@@ -86,7 +83,7 @@ class PosSessionService
     {
         return DB::transaction(function () use ($session, $data) {
             if (!$session->isOpen()) {
-                throw new \Exception("La sesión ya se encuentra cerrada.");
+                throw new \Exception("El turno ya se encuentra cerrado.");
             }
 
             // 1. Calculamos el esperado "la verdad del sistema"
@@ -95,54 +92,22 @@ class PosSessionService
             $difference = $real - $expected;
 
             // 2. Persistimos la auditoría
+            // closed_by_user_id puede ser distinto de user_id/opened_by_user_id si hubo
+            // cambio de cajero durante el turno — ya no se exige que sea la misma persona.
             $session->update([
-                'closed_at'        => now(),
-                'expected_balance' => $expected, // Grabamos lo que debió haber
-                'closing_balance'  => $real,     // Lo que el cajero contó
-                'difference'       => $difference, // El descuadre
-                'status'           => PosSession::STATUS_CLOSED,
-                'notes'            => $data['notes'] ?? $session->notes,
+                'closed_at'         => now(),
+                'closed_by_user_id' => Auth::id(),
+                'expected_balance'  => $expected, // Grabamos lo que debió haber
+                'closing_balance'   => $real,     // Lo que el cajero contó
+                'difference'        => $difference, // El descuadre
+                'difference_reason' => $data['difference_reason'] ?? null,
+                'difference_notes'  => $data['difference_notes'] ?? null,
+                'status'            => PosSession::STATUS_CLOSED,
+                'notes'             => $data['notes'] ?? $session->notes,
             ]);
-
-            // 3. Solo si hay descuadre real, generamos el asiento de ajuste
-            if (abs($difference) >= 0.01) {
-                $this->createAdjustmentEntry($session, $difference);
-            }
 
             return true;
         });
-    }
-
-    protected function createAdjustmentEntry(PosSession $session, float $difference): void
-    {
-        $terminalAccount = $session->terminal->cash_account_id 
-            ?? AccountingAccount::where('code', '1.1.01')->value('id');
-
-        if ($difference > 0) {
-            // SOBRANTE: Débito Caja / Crédito Ingresos Extraordinarios
-            $contraAccount = AccountingAccount::where('code', '4.2.01')->value('id');
-            $items = [
-                ['accounting_account_id' => $terminalAccount, 'debit' => $difference, 'credit' => 0],
-                ['accounting_account_id' => $contraAccount, 'debit' => 0, 'credit' => $difference],
-            ];
-            $type = "Sobrante";
-        } else {
-            // FALTANTE: Débito Gastos (Faltante) / Crédito Caja
-            $contraAccount = AccountingAccount::where('code', '5.3.04')->value('id');
-            $items = [
-                ['accounting_account_id' => $contraAccount, 'debit' => abs($difference), 'credit' => 0],
-                ['accounting_account_id' => $terminalAccount, 'debit' => 0, 'credit' => abs($difference)],
-            ];
-            $type = "Faltante";
-        }
-
-        $this->journalService->create([
-            'entry_date'  => now(),
-            'reference'   => "POS-ADJ-{$session->id}",
-            'description' => "Ajuste de arqueo ($type) - Sesión #{$session->id}",
-            'status'      => JournalEntry::STATUS_POSTED,
-            'items'       => $items
-        ]);
     }
     /**
      * Actualizar notas o datos menores sin cambiar el flujo de estado.

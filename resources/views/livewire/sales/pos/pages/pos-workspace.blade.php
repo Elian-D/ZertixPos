@@ -45,7 +45,7 @@
             <div class="min-w-0">
                 <h1 class="text-base sm:text-lg font-bold text-gray-900 leading-tight truncate">{{ $terminal->name }}</h1>
                 <p class="hidden sm:block text-[11px] font-medium text-gray-400 uppercase tracking-wider">
-                    Cajero: {{ auth()->user()->name }} · Sesión #{{ $session->id }}
+                    Cajero: {{ auth()->user()->name }} · Turno #{{ $session->id }}
                 </p>
             </div>
         </div>

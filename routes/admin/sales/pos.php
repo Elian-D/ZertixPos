@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Clients\PosQuickCustomerController;
 use App\Http\Controllers\Sales\Ncf\RncLookupController;
-use App\Http\Controllers\Sales\Pos\PosCashMovementController;
+// use App\Http\Controllers\Sales\Pos\PosCashMovementController; // Deshabilitado — ver Fase 9.1 en docs/features/POS-Interfaz.md
 use App\Http\Controllers\Sales\Pos\PosCheckoutController;
 use App\Http\Controllers\Sales\Pos\PosConfigController;
 use App\Http\Controllers\Sales\Pos\PosSessionController;
@@ -69,11 +69,16 @@ Route::prefix('pos')->name('pos.')->group(function () {
 
             Route::get('/', 'index')->name('index');
             Route::get('/{pos_session}', 'show')->name('show');
+            Route::get('/{pos_session}/print', 'print')->name('print');
 
             // Apertura
             Route::post('/open', 'store')->name('store');
 
-            // Cierre
+            // Cierre — vista dedicada (Fase 9.3), gateada por permiso en la ruta
+            // (403 nativo, mismo patrón que Lobby/Workspace/Checkout en 9.0).
+            Route::get('/{pos_session}/close', 'closeForm')
+                ->name('close-form')
+                ->middleware('permission:pos sessions manage');
             Route::patch('/{pos_session}/close', 'close')->name('close');
 
             // Edición administrativa
@@ -96,8 +101,8 @@ Route::prefix('pos')->name('pos.')->group(function () {
 
         // Usado por los modales de apertura/cierre de sesión del backoffice (fuera del Lobby).
         Route::post('/verify-pin', 'verify')
-            ->name('verify-pin')
-            ->middleware('throttle:pos-pin');
+            ->name('verify-pin');
+            // ->middleware('throttle:pos-pin');
 
         Route::post('/heartbeat', 'heartbeat')
             ->name('heartbeat');
@@ -105,17 +110,22 @@ Route::prefix('pos')->name('pos.')->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Movimientos de Caja
+    | Movimientos de Caja — DESHABILITADO (Fase 9.1, docs/features/POS-Interfaz.md)
     |--------------------------------------------------------------------------
+    | Ocultado a propósito: hoy exige accounting_account_id (acoplamiento a
+    | Contabilidad, ver docs/analisis/sobre-ingenieria-modulos.md §1) y permite
+    | salidas de efectivo genéricas que no reflejan la operación real. Se
+    | reintroducirá simplificado (sin cuenta contable, razones curadas) más
+    | adelante. El cierre de sesión no depende de estas rutas.
     */
-    Route::prefix('cash-movements')
-        ->name('cash-movements.')
-        ->controller(PosCashMovementController::class)
-        ->group(function () {
+    // Route::prefix('cash-movements')
+    //     ->name('cash-movements.')
+    //     ->controller(PosCashMovementController::class)
+    //     ->group(function () {
 
-            Route::get('/', 'index')->name('index');
-            Route::post('/', 'store')->name('store');
-        });
+    //         Route::get('/', 'index')->name('index');
+    //         Route::post('/', 'store')->name('store');
+    //     });
 
     /*
     |--------------------------------------------------------------------------
@@ -144,15 +154,15 @@ Route::prefix('pos')->name('pos.')->group(function () {
     // 7.0 — Lobby de Selección de Terminales y Apertura de Sesión
     Route::get('/lobby', \App\Livewire\Sales\Pos\Pages\PosTerminalLobby::class)
         ->name('index')
-        ->middleware(['auth', 'verified']);
+        ->middleware(['auth', 'verified', 'permission:pos sessions manage']);
 
     // 7.1 — POS Workspace (Mesa de Trabajo Completa del POS)
     Route::get('/workspace/{pos_terminal}', \App\Livewire\Sales\Pos\Pages\PosWorkspace::class)
         ->name('workspace')
-        ->middleware(['auth', 'verified', 'check.terminal.access']);
+        ->middleware(['auth', 'verified', 'permission:pos sessions manage', 'check.terminal.access']);
 
     // 7.4 — Checkout Engine: registra la venta originada en el Workspace
     Route::post('/workspace/{pos_terminal}/checkout', [PosCheckoutController::class, 'store'])
         ->name('checkout.store')
-        ->middleware(['auth', 'verified', 'check.terminal.access']);
+        ->middleware(['auth', 'verified', 'permission:pos sessions manage', 'check.terminal.access']);
 });

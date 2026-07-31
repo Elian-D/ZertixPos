@@ -22,15 +22,18 @@ class PosCheckoutController extends Controller
      */
     public function store(StoreSaleRequest $request, PosTerminal $pos_terminal)
     {
+        // Cualquier usuario con permiso para operar sesiones POS puede vender en un
+        // turno ya abierto, no solo quien lo abrió (ver PosSession 9.0 en POS-Interfaz.md).
+        abort_unless(Auth::user()->can('pos sessions manage'), 403);
+
         $session = PosSession::where('terminal_id', $pos_terminal->id)
             ->open()
-            ->where('user_id', Auth::id())
             ->first();
 
         if (! $session) {
             return redirect()
                 ->route('sales.pos.index')
-                ->with('error', 'No tienes una caja abierta en esta terminal.');
+                ->with('error', 'No hay un turno abierto en esta terminal.');
         }
 
         $data = $request->validated();

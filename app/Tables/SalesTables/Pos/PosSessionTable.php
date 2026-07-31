@@ -10,18 +10,19 @@ class PosSessionTable
     public static function allColumns(): array
     {
         return [
-            'id'              => 'ID Sesión',
-            'terminal_id'     => 'Terminal/Caja',
-            'user_id'         => 'Cajero(a)',
-            'status'          => 'Estado',
-            'opened_at'       => 'Fecha Apertura',
-            'closed_at'       => 'Fecha Cierre',
-            'opening_balance' => 'Balance Inicial',
-            'closing_balance' => 'Balance Final (Arqueo)',
-            'expected_balance' => 'Balance Esperado',
-            'difference'      => 'Diferencia', // <--- NUEVO
-            'notes'           => 'Notas/Observaciones',
-            'created_at'      => 'Fecha Registro',
+            'id'                => 'ID Turno',
+            'terminal_id'       => 'Terminal/Caja',
+            'opened_by_user_id' => 'Abierto Por',
+            'closed_by_user_id' => 'Cerrado Por',
+            'status'            => 'Estado',
+            'opened_at'         => 'Fecha Apertura',
+            'closed_at'         => 'Fecha Cierre',
+            'opening_balance'   => 'Balance Inicial',
+            'closing_balance'   => 'Balance Final (Arqueo)',
+            'expected_balance'  => 'Balance Esperado',
+            'difference'        => 'Diferencia', // <--- NUEVO
+            'notes'             => 'Notas/Observaciones',
+            'created_at'        => 'Fecha Registro',
         ];
     }
 
@@ -33,7 +34,8 @@ class PosSessionTable
     {
         return [
             'terminal_id',
-            'user_id',
+            'opened_by_user_id',
+            'closed_by_user_id',
             'status',
             'opened_at',
             'opening_balance',
@@ -50,7 +52,7 @@ class PosSessionTable
     {
         return [
             'terminal_id',
-            'user_id',
+            'opened_by_user_id',
             'status',
             'opening_balance',
         ];

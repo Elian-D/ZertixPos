@@ -85,7 +85,32 @@
             {{-- Método de Pago Detallado --}}
             @if(in_array('tipo_pago_id', $visibleColumns))
                 <td class="px-6 py-4 text-sm">
-                    <div class="font-medium text-gray-900">{{ $sale->tipoPago->nombre ?? 'N/A' }}</div>
+                    @php
+                        // No usamos $sale->tipoPago->nombre: ese campo es sales.tipo_pago_id,
+                        // el "principal" heredado de antes de existir pago dividido. Una venta
+                        // mixta (varias filas en sale_payments) mostraba solo ese método suelto
+                        // en vez de "Mixto" — misma lógica que ya usa el reporte de turno POS.
+                        $isCredit = $sale->payment_type === \App\Models\Sales\Sale::PAYMENT_CREDIT;
+                        $isMixed = !$isCredit && $sale->payments->count() > 1;
+                        $singlePayment = (!$isCredit && !$isMixed) ? $sale->payments->first()?->tipoPago : null;
+
+                        $paymentBadgeKey = $isCredit
+                            ? \App\Models\Configuration\TipoPago::CREDITO
+                            : ($isMixed
+                                ? \App\Models\Configuration\TipoPago::MIXTO
+                                : ($singlePayment->slug ?? null));
+
+                        $paymentLabel = $isCredit ? 'Crédito' : ($isMixed ? 'Mixto' : ($singlePayment->nombre ?? 'N/A'));
+
+                        $pmStyles = \App\Models\Configuration\TipoPago::getBadgeStyles();
+                        $pmIcons  = \App\Models\Configuration\TipoPago::getBadgeIcons();
+                        $paymentBadgeStyle = $pmStyles[$paymentBadgeKey] ?? \App\Models\Configuration\TipoPago::getDefaultBadgeStyle();
+                        $paymentBadgeIcon  = $pmIcons[$paymentBadgeKey] ?? \App\Models\Configuration\TipoPago::getDefaultBadgeIcon();
+                    @endphp
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight ring-1 ring-inset {{ $paymentBadgeStyle }}">
+                        <x-dynamic-component :component="$paymentBadgeIcon" class="w-3 h-3 mr-1" />
+                        {{ $paymentLabel }}
+                    </span>
                 </td>
             @endif
 

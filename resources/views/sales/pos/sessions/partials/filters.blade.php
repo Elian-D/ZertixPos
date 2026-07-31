@@ -1,9 +1,5 @@
 <x-data-table.filter-container formId="pos-sessions-filters">
     <div class="w-full lg:flex-1">
-        <x-data-table.search 
-            formId="pos-sessions-filters" 
-            placeholder="Buscar por notas u observaciones..." 
-        />
     </div>
 
     <div class="w-full lg:w-auto flex flex-wrap items-center justify-end gap-2">
@@ -21,19 +17,33 @@
                     @endforeach
                 </x-data-table.filter-select>
 
-                <x-data-table.filter-select label="Cajero(a)" name="user_id" formId="pos-sessions-filters">
+                <x-data-table.filter-select label="Abierto Por" name="opened_by_user_id" formId="pos-sessions-filters">
                     <option value="">Todos los usuarios</option>
                     @foreach($users as $user)
                         <option value="{{ $user->id }}">{{ $user->name }}</option>
                     @endforeach
                 </x-data-table.filter-select>
 
-                <x-data-table.filter-toggle 
-                    label="Estado" 
-                    name="status" 
-                    :options="['' => 'Todos', 'open' => 'Abierta', 'closed' => 'Cerrada']" 
-                    formId="pos-sessions-filters" 
+                <x-data-table.filter-select label="Cerrado Por" name="closed_by_user_id" formId="pos-sessions-filters">
+                    <option value="">Todos los usuarios</option>
+                    @foreach($users as $user)
+                        <option value="{{ $user->id }}">{{ $user->name }}</option>
+                    @endforeach
+                </x-data-table.filter-select>
+
+                <x-data-table.filter-toggle
+                    label="Estado"
+                    name="status"
+                    :options="['' => 'Todos', 'open' => 'Abierta', 'closed' => 'Cerrada']"
+                    formId="pos-sessions-filters"
                 />
+
+                <x-data-table.filter-select label="Motivo de Descuadre" name="difference_reason" formId="pos-sessions-filters">
+                    <option value="">Todos los motivos</option>
+                    @foreach($difference_reasons as $value => $label)
+                        <option value="{{ $value }}">{{ $label }}</option>
+                    @endforeach
+                </x-data-table.filter-select>
 
             </x-data-table.filter-group>
 

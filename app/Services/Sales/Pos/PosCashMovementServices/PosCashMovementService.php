@@ -4,7 +4,6 @@ namespace App\Services\Sales\Pos\PosCashMovementServices;
 
 use App\Models\Sales\Pos\PosCashMovement;
 use App\Models\Sales\Pos\PosSession;
-use App\Events\Sales\Pos\CashMovementRegistered;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Exception;
@@ -33,8 +32,6 @@ class PosCashMovementService
                 'reference'             => $data['reference'] ?? null,
                 'metadata'              => $data['metadata'] ?? null,
             ]);
-
-            event(new CashMovementRegistered($movement));
 
             return $movement;
         });

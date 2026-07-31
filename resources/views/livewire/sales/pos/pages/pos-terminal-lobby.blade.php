@@ -3,6 +3,12 @@
     <!-- HEADER DEL LOBBY -->
     <header class="max-w-6xl w-full mx-auto flex justify-between items-center mb-8">
         <div>
+            <a href="{{ route('dashboard') }}" class="inline-flex items-center gap-1 text-xs font-semibold text-gray-400 hover:text-gray-600 transition mb-2">
+                <svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" />
+                </svg>
+                Volver al panel
+            </a>
             <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Terminales de Venta</h1>
             <p class="text-sm text-gray-500">Selecciona una estación de trabajo para iniciar tu turno.</p>
         </div>
@@ -23,22 +29,22 @@
     @enderror
 
     <!-- GRID DE SELECCIÓN DE TERMINALES -->
+    <!-- Quien llega a esta página ya tiene permiso ('permission:pos sessions manage' en la
+         ruta) — todas las tarjetas son clickeables por igual. Un turno activo no bloquea,
+         solo informa quién lo abrió; cualquier cajero autorizado puede entrar a atenderlo. -->
     <main class="max-w-6xl w-full mx-auto flex-1">
         <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             @forelse($terminals as $terminal)
                 @php
                     $activeSession = $terminal->sessions->first();
-                    $isOwnSession = $activeSession && $activeSession->user_id === auth()->id();
-                    $isBusy = $activeSession && !$isOwnSession;
                 @endphp
 
                 <div wire:click="selectTerminal({{ $terminal->id }})"
                      class="bg-white border rounded-xl p-4 flex flex-col items-center text-center gap-2 cursor-pointer transition-colors
-                            {{ $isOwnSession ? 'border-[#58c03f]/60' : '' }}
-                            {{ $isBusy ? 'border-gray-200 opacity-60 cursor-not-allowed' : 'border-gray-200 hover:border-[#58c03f] hover:shadow-sm' }}">
+                            {{ $activeSession ? 'border-amber-200 hover:border-amber-400 hover:shadow-sm' : 'border-sky-100 hover:border-[#58c03f] hover:shadow-sm' }}">
 
                     <div class="w-11 h-11 rounded-full flex items-center justify-center
-                                {{ $isOwnSession ? 'bg-emerald-50 text-[#58c03f]' : ($isBusy ? 'bg-amber-50 text-amber-500' : 'bg-gray-100 text-gray-400') }}">
+                                {{ $activeSession ? 'bg-amber-50 text-amber-500' : 'bg-sky-50 text-sky-500' }}">
                         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 8.25v10.5a1.5 1.5 0 0 0 1.5 1.5h16.5a1.5 1.5 0 0 0 1.5-1.5V8.25M2.25 8.25 4.5 4.5h15l2.25 3.75M9 12.75h6" />
                         </svg>
@@ -50,12 +56,10 @@
                     </div>
 
                     <span class="text-[11px] font-semibold flex items-center gap-1
-                                 {{ $isOwnSession ? 'text-emerald-600' : ($isBusy ? 'text-amber-600' : 'text-gray-400') }}">
-                        <span class="w-1.5 h-1.5 rounded-full {{ $isOwnSession ? 'bg-emerald-500' : ($isBusy ? 'bg-amber-500' : 'bg-gray-300') }}"></span>
-                        @if($isOwnSession)
-                            Reanudar caja
-                        @elseif($isBusy)
-                            {{ $activeSession->user->name }}
+                                 {{ $activeSession ? 'text-amber-600' : 'text-sky-600' }}">
+                        <span class="w-1.5 h-1.5 rounded-full {{ $activeSession ? 'bg-amber-500' : 'bg-sky-500' }}"></span>
+                        @if($activeSession)
+                            Abierto por {{ $activeSession->user->name }}
                         @else
                             Disponible
                         @endif
