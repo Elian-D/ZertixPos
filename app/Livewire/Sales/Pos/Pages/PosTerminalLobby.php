@@ -22,34 +22,37 @@ class PosTerminalLobby extends Component
         $this->pin = '';
         $this->selectedTerminalId = $terminalId;
 
+        // El permiso de operar POS ya lo exige la ruta ('permission:pos sessions manage'
+        // en routes/admin/sales/pos.php) — quien llega aquí ya está autorizado. Este check
+        // es solo defensa en profundidad para la llamada Livewire en sí (que no pasa por el
+        // middleware de la ruta de página), por eso es un 403 silencioso, no un mensaje en
+        // la vista: la vista ya no necesita saber nada de permisos.
+        abort_unless(Auth::user()->can('pos sessions manage'), 403);
+
         $terminal = PosTerminal::find($terminalId);
         if (!$terminal || !$terminal->is_active) {
             $this->addError('terminal', 'La terminal seleccionada no está disponible.');
             return;
         }
 
-        // 1. Validar si tiene sesión activa de OTRO usuario
-        $activeSession = $terminal->sessions()->where('status', PosSession::STATUS_OPEN)->first();
+        // Un turno activo ya no bloquea al cajero por ser "otro usuario": cualquiera con
+        // permiso para operar sesiones POS puede continuar un turno ya abierto por otro
+        // (ej. el que abrió la caja envía a un vendedor a atender).
 
-        if ($activeSession && $activeSession->user_id !== Auth::id()) {
-            $this->addError('terminal', "Esta terminal está ocupada actualmente por el cajero: {$activeSession->user->name}.");
-            return;
-        }
-
-        // 2. Si la terminal no tiene PIN de acceso configurado, saltamos la verificación
+        // Si la terminal no tiene PIN de acceso configurado, saltamos la verificación
         if (!$terminal->requiresPinVerification()) {
             $this->markTerminalVerified($terminal->id);
             return $this->proceedToWorkspaceOrOpening($terminal);
         }
 
-        // 3. Si ya está verificada en esta sesión (dentro de la ventana de 30 min de
-        // CheckTerminalAccess) no volvemos a pedir el PIN. Bloquear (PosTerminalLockController)
+        // Si ya está verificada en esta sesión de navegador (CheckTerminalAccess ya no la
+        // expira por inactividad) no volvemos a pedir el PIN. Bloquear (PosTerminalLockController)
         // sí borra esta marca explícitamente, así que tras un bloqueo real esto no aplica.
         if (session()->has("terminal_verified.{$terminal->id}")) {
             return $this->proceedToWorkspaceOrOpening($terminal);
         }
 
-        // 4. Disparar de forma reactiva la apertura del modal de PIN vía eventos globales de Breeze
+        // Disparar de forma reactiva la apertura del modal de PIN vía eventos globales de Breeze
         $this->dispatch('open-modal', 'pos-pin-modal');
     }
 
@@ -87,10 +90,17 @@ class PosTerminalLobby extends Component
 
     protected function proceedToWorkspaceOrOpening(PosTerminal $terminal)
     {
+        // Choke point real: aunque selectTerminal()/openSession() ya validan el permiso
+        // para dar buen feedback en la UI, este método es el que de verdad decide si se
+        // entra al Workspace o se abre un turno — se re-valida aquí por si se invoca un
+        // método de Livewire directamente (ej. verifyPin) sin pasar por selectTerminal().
+        abort_unless(Auth::user()->can('pos sessions manage'), 403);
+
         $activeSession = $terminal->sessions()->where('status', PosSession::STATUS_OPEN)->first();
 
-        if ($activeSession && $activeSession->user_id === Auth::id()) {
-            // Reanudación directa
+        if ($activeSession) {
+            // Reanudación: cualquier cajero autorizado retoma el turno ya abierto,
+            // sin importar quién lo abrió originalmente (ya se validó el permiso arriba).
             return redirect()->route('sales.pos.workspace', $terminal->id);
         } else {
             // Requiere apertura de caja nueva: disparamos el evento para levantar el modal de balance
@@ -102,6 +112,8 @@ class PosTerminalLobby extends Component
 
     public function openSession()
     {
+        abort_unless(Auth::user()->can('pos sessions manage'), 403);
+
         $this->validate([
             'opening_balance' => 'required|numeric|min:0',
             'notes'           => 'nullable|string|max:500',
@@ -114,17 +126,18 @@ class PosTerminalLobby extends Component
         $exists = $terminal->sessions()->where('status', PosSession::STATUS_OPEN)->exists();
         
         if ($exists) {
-            session()->flash('error', 'Esta terminal acaba de ser abierta por otra sesión.');
+            session()->flash('error', 'Esta terminal acaba de ser abierta por otro turno.');
             return redirect()->route('pos.index');
         }
 
         PosSession::create([
-            'terminal_id'     => $this->selectedTerminalId,
-            'user_id'         => Auth::id(),
-            'status'          => PosSession::STATUS_OPEN,
-            'opened_at'       => now(),
-            'opening_balance' => $this->opening_balance,
-            'notes'           => $this->notes,
+            'terminal_id'       => $this->selectedTerminalId,
+            'user_id'           => Auth::id(),
+            'opened_by_user_id' => Auth::id(),
+            'status'            => PosSession::STATUS_OPEN,
+            'opened_at'         => now(),
+            'opening_balance'   => $this->opening_balance,
+            'notes'             => $this->notes,
         ]);
 
         $this->dispatch('close-modal', 'pos-opening-modal');
@@ -141,8 +154,10 @@ class PosTerminalLobby extends Component
             ->get();
 
         /** @var \Livewire\Features\SupportPageComponents\View $view */
+        // No se pasa nada de permisos a la vista: quien llega aquí ya pasó el
+        // middleware 'permission:pos sessions manage' de la ruta.
         $view = view('livewire.sales.pos.pages.pos-terminal-lobby', [
-            'terminals' => $terminals
+            'terminals' => $terminals,
         ]);
 
         return $view->layout('layouts.pos');

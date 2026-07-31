@@ -23,13 +23,16 @@ class PosWorkspace extends Component
     {
         $this->terminal = $pos_terminal;
 
+        // Cualquier usuario con permiso para operar sesiones POS puede trabajar en un
+        // turno ya abierto, no solo quien lo abrió (ver PosSession 9.0 en POS-Interfaz.md).
+        abort_unless(Auth::user()->can('pos sessions manage'), 403);
+
         $this->session = PosSession::where('terminal_id', $pos_terminal->id)
             ->open()
-            ->where('user_id', Auth::id())
             ->first();
 
         if (! $this->session) {
-            session()->flash('error', 'No tienes una caja abierta en esta terminal. Selecciona la terminal desde el lobby para abrirla.');
+            session()->flash('error', 'No hay un turno abierto en esta terminal. Selecciona la terminal desde el lobby para abrirla.');
 
             return redirect()->route('sales.pos.index');
         }

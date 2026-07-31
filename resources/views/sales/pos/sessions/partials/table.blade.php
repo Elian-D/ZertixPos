@@ -19,12 +19,22 @@
                 </td>
             @endif
 
-            {{-- Cajero --}}
-            @if(in_array('user_id', $visibleColumns))
+            {{-- Abierto Por --}}
+            @if(in_array('opened_by_user_id', $visibleColumns))
                 <td class="px-6 py-4 text-sm text-gray-600">
                     <div class="flex items-center">
-                        <x-heroicon-s-user-circle class="w-4 h-4 mr-2 text-gray-400" />
-                        {{ $session->user->name ?? 'N/A' }}
+                        <x-heroicon-s-arrow-up-circle class="w-4 h-4 mr-2 text-emerald-400" />
+                        {{ $session->openedBy->name ?? 'N/A' }}
+                    </div>
+                </td>
+            @endif
+
+            {{-- Cerrado Por (puede ser distinto de quien abrió) --}}
+            @if(in_array('closed_by_user_id', $visibleColumns))
+                <td class="px-6 py-4 text-sm text-gray-600">
+                    <div class="flex items-center">
+                        <x-heroicon-s-arrow-down-circle class="w-4 h-4 mr-2 text-amber-400" />
+                        {{ $session->closedBy->name ?? '—' }}
                     </div>
                 </td>
             @endif
@@ -129,13 +139,13 @@
                         <x-heroicon-s-document-chart-bar class="w-4 h-4" />
                     </a>
 
-                    {{-- Si está abierta, botón rápido para ir al cierre --}}
+                    {{-- Si está abierta, ir a la vista dedicada de cierre --}}
                     @if($session->status === \App\Models\Sales\Pos\PosSession::STATUS_OPEN && auth()->user()->can('pos sessions manage'))
-                        <button @click="$dispatch('open-modal', 'close-session-{{ $session->id }}')" 
-                                class="bg-white border border-gray-200 text-amber-600 hover:bg-amber-50 p-2 rounded-lg transition-all shadow-sm"
-                                title="Realizar Arqueo y Cierre">
+                        <a href="{{ route('sales.pos.sessions.close-form', $session) }}"
+                           class="bg-white border border-gray-200 text-amber-600 hover:bg-amber-50 p-2 rounded-lg transition-all shadow-sm"
+                           title="Realizar Arqueo y Cierre">
                             <x-heroicon-s-lock-closed class="w-4 h-4" />
-                        </button>
+                        </a>
                     @endif
                 </div>
             </td>

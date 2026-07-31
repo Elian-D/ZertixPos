@@ -158,8 +158,9 @@
                             <div class="h-px bg-gray-700/30 my-1.5"></div>
                             <x-sidebar.subitem href="/admin/sales/pos/settings">Configuración</x-sidebar.subitem>
                             <x-sidebar.subitem href="/admin/sales/pos/terminals">Terminales</x-sidebar.subitem>
-                            <x-sidebar.subitem href="/admin/sales/pos/sessions">Sesiones</x-sidebar.subitem>
-                            <x-sidebar.subitem href="/admin/sales/pos/cash-movements">Movimientos de Caja</x-sidebar.subitem>
+                            <x-sidebar.subitem href="/admin/sales/pos/sessions">Turnos</x-sidebar.subitem>
+                            {{-- Movimientos de Caja: oculto, ver Fase 9.1 en docs/features/POS-Interfaz.md --}}
+                            {{-- <x-sidebar.subitem href="/admin/sales/pos/cash-movements">Movimientos de Caja</x-sidebar.subitem> --}}
                         </x-slot>
                     </x-sidebar.dropdown>
                 </x-sidebar.group>

@@ -33,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
             },
 
             pos_session_id: {
-                label: 'Sesión POS',
+                label: 'Turno POS',
                 source: 'sessions' // Mostrará el ID o código de sesión
             },
             pos_terminal_id: {
