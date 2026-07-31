@@ -10,7 +10,15 @@ use Symfony\Component\HttpFoundation\Response;
 class CheckTerminalAccess
 {
     /**
-     * Maneja la verificación del PIN de la terminal y su expiración.
+     * Verifica que el PIN de la terminal haya sido validado en esta sesión de navegador.
+     *
+     * Ya no expira a los 30 min de inactividad (decisión explícita): el PIN de terminal
+     * es un secreto compartido por caja, no por cajero — igual que se documentó en
+     * docs/features/POS-Interfaz.md 9.3 para el cierre de turno, forzar reingresarlo cada
+     * cierto tiempo no confirma que la persona correcta siga frente a la terminal, solo
+     * interrumpe a quien sí está autorizado a estar ahí. La verificación dura mientras
+     * dure la sesión del navegador (o hasta que `PosTerminalLockController::lock()` la
+     * invalide explícitamente, ej. al hacer clic en "Bloquear").
      */
     public function handle(Request $request, Closure $next): Response
     {
@@ -27,24 +35,9 @@ class CheckTerminalAccess
         }
 
         // 3. Verificar si existe la verificación en la sesión
-        $sessionKey = "terminal_verified.{$terminal->id}";
-        $lastVerified = session()->get($sessionKey);
-
-        if (! $lastVerified) {
+        if (! session()->has("terminal_verified.{$terminal->id}")) {
             return $this->redirectToPin();
         }
-
-        // 4. Lógica de expiración (30 minutos de inactividad)
-        $minutesPassed = (now()->timestamp - $lastVerified) / 60;
-
-        if ($minutesPassed > 30) {
-            session()->forget($sessionKey);
-
-            return $this->redirectToPin();
-        }
-
-        // 5. Actualizar el timestamp para "renovar" los 30 minutos por actividad
-        session()->put($sessionKey, now()->timestamp);
 
         return $next($request);
     }
@@ -56,13 +49,13 @@ class CheckTerminalAccess
     {
         if (request()->expectsJson()) {
             return response()->json([
-                'message' => 'Sesión de terminal expirada.',
+                'message' => 'Verificación de terminal requerida.',
                 'require_pin' => true,
             ], 403);
         }
 
         return redirect()
             ->route('sales.pos.index')
-            ->with('info', 'La sesión de la terminal expiró o fue bloqueada. Ingresa tu PIN para continuar.');
+            ->with('info', 'Esta terminal está bloqueada. Ingresa tu PIN para continuar.');
     }
 }
