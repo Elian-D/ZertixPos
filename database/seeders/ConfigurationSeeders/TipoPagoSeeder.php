@@ -19,9 +19,9 @@ class TipoPagoSeeder extends Seeder
         // requieren conciliación bancaria manual).
         $tiposPago = [
             ['nombre' => 'Efectivo', 'account_id' => $cajaId, 'estado' => true],
-            ['nombre' => 'Tarjeta de Crédito/Débito', 'account_id' => $cajaId, 'estado' => true],
-            ['nombre' => 'Transferencia Bancaria', 'account_id' => $cajaId, 'estado' => true],
-            ['nombre' => 'Depósito Bancario', 'account_id' => $cajaId, 'estado' => true],
+            ['nombre' => 'Tarjeta', 'account_id' => $cajaId, 'estado' => true],
+            ['nombre' => 'Transferencia', 'account_id' => $cajaId, 'estado' => true],
+            ['nombre' => 'Depósito', 'account_id' => $cajaId, 'estado' => true],
             // Cheque: desactivado por defecto. Muchos negocios ya no lo aceptan;
             // el admin lo activa desde Configuración > Tipos de Pago si lo necesita.
             ['nombre' => 'Cheque', 'account_id' => $cajaId, 'estado' => false],
