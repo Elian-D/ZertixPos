@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Sales\Invoice;
 use App\Services\Sales\InvoicesServices\InvoiceCatalogService;
 use App\Services\Sales\InvoicesServices\InvoicePrintService;
+use App\Services\Sales\Pos\PosPrintService;
 use App\Filters\Sales\InvoiceFilters\InvoiceFilters;
 use App\Tables\SalesTables\InvoiceTable;
 use App\Traits\SoftDeletesTrait;
@@ -21,7 +22,8 @@ class InvoiceController extends Controller
 
     public function __construct(
         protected InvoiceCatalogService $catalogService,
-        protected InvoicePrintService $printService
+        protected InvoicePrintService $printService,
+        protected PosPrintService $posPrintService
     ) {}
 
     /**
@@ -82,17 +84,18 @@ class InvoiceController extends Controller
     {
         // El preview también necesita la data del NCF para mostrarla en el iframe
         $invoice->load([
-            'sale.items.product', 
+            'sale.items.product',
             'sale.client',
             'sale.user',
             'sale.quote', // <--- Para mostrar descuentos de cotización
             'sale.ncfLog.type',
-            'sale.ncfLog.sequence' // <--- FUNDAMENTAL
+            'sale.ncfLog.sequence', // <--- FUNDAMENTAL
+            'sale.posTerminal',
         ]);
-        
+
         // Permitir cambio de formato vía query string desde JavaScript
         $format = $request->query('format', $invoice->format_type);
-        
+
         $viewMap = [
             Invoice::FORMAT_TICKET => 'ticket',
             Invoice::FORMAT_ROUTE  => 'ticket',
@@ -104,7 +107,8 @@ class InvoiceController extends Controller
         $viewName = $viewMap[$format] ?? 'ticket';
 
         return view("sales.invoices.formats.{$viewName}", [
-            'invoice' => $invoice
+            'invoice' => $invoice,
+            'paperWidth' => $this->posPrintService->resolvePaperWidth($invoice->sale->posTerminal),
         ]);
     }
 
@@ -114,24 +118,26 @@ class InvoiceController extends Controller
     {
         // Cargar todas las relaciones necesarias
         $invoice->load([
-            'sale.items.product', 
+            'sale.items.product',
             'sale.client',
             'sale.user',
             'sale.quote',
             'sale.ncfLog.type',
-            'sale.ncfLog.sequence'
+            'sale.ncfLog.sequence',
+            'sale.posTerminal',
         ]);
 
         // Permitir cambio de formato vía query string
         $format = $request->query('format', $invoice->format_type);
-        
+
         // Determinar si es descarga
         $download = $request->boolean('download', false);
 
         // Si es formato TICKET o RUTA
         if (in_array($format, ['ticket', 'route'])) {
             // Renderizar la vista de ticket
-            $view = view('sales.invoices.formats.ticket', ['invoice' => $invoice])->render();
+            $paperWidth = $this->posPrintService->resolvePaperWidth($invoice->sale->posTerminal);
+            $view = view('sales.invoices.formats.ticket', ['invoice' => $invoice, 'paperWidth' => $paperWidth])->render();
             return view('sales.invoices.print', compact('invoice', 'view'));
         }
 
