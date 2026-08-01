@@ -1,12 +1,15 @@
 {{-- Envolvemos todo el formulario en Alpine para manejar la lógica de estados --}}
-<div class="p-4 sm:p-8 space-y-8 sm:space-y-10" 
-     x-data="{ 
+<div class="p-4 sm:p-8 grid grid-cols-1 lg:grid-cols-2 gap-6"
+     x-data="{
         requiresPin: {{ old('requires_pin', $posTerminal->requires_pin ?? true) ? 'true' : 'false' }},
-        isEdit: {{ isset($posTerminal) ? 'true' : 'false' }}
+        isEdit: {{ isset($posTerminal) ? 'true' : 'false' }},
+        hasExistingPin: {{ isset($posTerminal) && $posTerminal->access_pin ? 'true' : 'false' }},
+        allowItemDiscount: {{ old('allow_item_discount', $posTerminal->allow_item_discount ?? true) ? 'true' : 'false' }},
+        allowGlobalDiscount: {{ old('allow_global_discount', $posTerminal->allow_global_discount ?? true) ? 'true' : 'false' }}
      }">
-     
+
     {{-- Sección 1: Identificación y Ubicación (Sin cambios significativos) --}}
-    <section>
+    <section class="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 sm:p-6">
         <div class="flex items-center gap-2 mb-6 border-b border-gray-100 pb-2">
             <div class="w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-xs">1</div>
             <h3 class="font-bold text-gray-800 uppercase text-xs tracking-wider">Configuración General</h3>
@@ -40,30 +43,13 @@
     </section>
 
     {{-- Sección 2: Finanzas y Facturación (CORREGIDA) --}}
-    <section>
+    <section class="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 sm:p-6">
         <div class="flex items-center gap-2 mb-6 border-b border-gray-100 pb-2">
             <div class="w-7 h-7 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold text-xs">2</div>
             <h3 class="font-bold text-gray-800 uppercase text-xs tracking-wider">Finanzas y Operación</h3>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {{-- ELIMINADO SELECT DE CUENTA CONTABLE - AGREGADO ALERT INFO --}}
-            <div class="md:col-span-2 bg-emerald-50 border-l-4 border-emerald-400 p-4 rounded-r-lg shadow-sm">
-                <div class="flex items-start gap-3">
-                    <svg class="w-6 h-6 text-emerald-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.040L3 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622l-0.382-3.016z"></path>
-                    </svg>
-                    <div>
-                        <h4 class="text-sm font-bold text-emerald-800 uppercase tracking-tight">Automatización Contable Activa</h4>
-                        <p class="text-xs text-emerald-700 leading-relaxed mt-1">
-                            El sistema generará y vinculará automáticamente una cuenta de <strong>Caja de Efectivo</strong> en el grupo contable <strong>1.1.01</strong>. No requiere configuración manual.
-                            @if(isset($posTerminal->account))
-                                <span class="block mt-1 font-mono font-bold">Cuenta actual: {{ $posTerminal->account->code }} - {{ $posTerminal->account->name }}</span>
-                            @endif
-                        </p>
-                    </div>
-                </div>
-            </div>
 
             @if(general_config()?->esModoFiscal())
                 <div class="md:col-span-2">
@@ -96,25 +82,36 @@
     </section>
 
     {{-- Sección 3: Hardware (Sin cambios) --}}
-    <section>
+    <section class="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 sm:p-6">
         <div class="flex items-center gap-2 mb-6 border-b border-gray-100 pb-2">
             <div class="w-7 h-7 bg-amber-500 text-white rounded-full flex items-center justify-center font-bold text-xs">3</div>
             <h3 class="font-bold text-gray-800 uppercase text-xs tracking-wider">Hardware y Operación</h3>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-6">
             <div>
                 <x-input-label value="Formato de Impresión" />
-                <select name="printer_format" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm">
-                    <option value="" {{ is_null(old('printer_format', $posTerminal->printer_format ?? null)) ? 'selected' : '' }}>
-                        Heredar de Ajustes POS (Actual: {{ $global_printer_format }})
-                    </option>
+                {{-- Toggle en vez de <select> — con solo 3 opciones un desplegable es fricción
+                     de más; mismo patrón visual (radio + peer-checked) que ya usa el tamaño de
+                     papel en Configuración General del POS, sin necesitar Alpine nuevo. --}}
+                <div class="grid grid-cols-3 gap-3 mt-1">
+                    <label class="cursor-pointer group">
+                        <input type="radio" name="printer_format" value="" class="sr-only peer" {{ is_null(old('printer_format', $posTerminal->printer_format ?? null)) ? 'checked' : '' }}>
+                        <div class="h-full flex flex-col justify-center p-4 sm:p-5 border-2 border-gray-100 rounded-xl peer-checked:border-indigo-600 peer-checked:bg-indigo-50 transition-all text-center">
+                            <p class="text-sm sm:text-base font-bold text-gray-700 group-hover:text-indigo-600">Heredar</p>
+                            <p class="text-[10px] sm:text-xs text-gray-400 italic mt-1 truncate">{{ $global_printer_format }}</p>
+                        </div>
+                    </label>
                     @foreach($printer_formats as $format)
-                        <option value="{{ $format['id'] }}" {{ old('printer_format', $posTerminal->printer_format ?? '') == $format['id'] ? 'selected' : '' }}>
-                            {{ $format['name'] }}
-                        </option>
+                        <label class="cursor-pointer group">
+                            <input type="radio" name="printer_format" value="{{ $format['id'] }}" class="sr-only peer" {{ old('printer_format', $posTerminal->printer_format ?? '') == $format['id'] ? 'checked' : '' }}>
+                            <div class="h-full flex flex-col justify-center p-4 sm:p-5 border-2 border-gray-100 rounded-xl peer-checked:border-indigo-600 peer-checked:bg-indigo-50 transition-all text-center">
+                                <p class="text-sm sm:text-base font-bold text-gray-700 group-hover:text-indigo-600">{{ $format['id'] }}</p>
+                                <p class="text-[10px] sm:text-xs text-gray-400 italic mt-1 truncate">{{ str_contains($format['name'], 'Estándar') ? 'Estándar' : 'Portátil' }}</p>
+                            </div>
+                        </label>
                     @endforeach
-                </select>
+                </div>
             </div>
 
             <div class="flex items-center gap-4 bg-gray-50 p-3 rounded-lg border border-gray-100">
@@ -125,10 +122,56 @@
         </div>
     </section>
 
-    {{-- Sección 4: Seguridad Operativa (CORREGIDA CON ALPINE) --}}
-    <section>
+    {{-- Sección 4: Política de Descuentos (100% por terminal, sin fallback global, topes
+         separados por ítem y global — ver 11.2/11.2.5 en POS-Interfaz.md) --}}
+    <section class="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 sm:p-6">
         <div class="flex items-center gap-2 mb-6 border-b border-gray-100 pb-2">
-            <div class="w-7 h-7 bg-slate-800 text-white rounded-full flex items-center justify-center font-bold text-xs">4</div>
+            <div class="w-7 h-7 bg-emerald-600 text-white rounded-full flex items-center justify-center font-bold text-xs">4</div>
+            <h3 class="font-bold text-gray-800 uppercase text-xs tracking-wider">Política de Descuentos</h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-3">
+                <div class="flex items-center gap-4 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                    <x-input-label value="¿Permite Descuento por Ítem?" class="mb-0" />
+                    <input type="hidden" name="allow_item_discount" value="0">
+                    <input type="checkbox" name="allow_item_discount" value="1" x-model="allowItemDiscount" class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 w-5 h-5 cursor-pointer">
+                </div>
+
+                <div x-show="allowItemDiscount" x-transition>
+                    <x-input-label value="Límite de Descuento por Ítem (%)" />
+                    <div class="relative mt-1">
+                        <x-text-input type="number" step="0.01" min="0" max="100" name="max_item_discount_percentage" class="w-full pr-8" :value="old('max_item_discount_percentage', $posTerminal->max_item_discount_percentage ?? 5.00)" ::required="allowItemDiscount" />
+                        <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 text-sm">%</span>
+                    </div>
+                    <p class="mt-1 text-[10px] text-gray-400 italic">Tope por línea de producto que el cajero puede aplicar en el carrito.</p>
+                </div>
+            </div>
+
+            <div class="space-y-3">
+                <div class="flex items-center gap-4 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                    <x-input-label value="¿Permite Descuento Global?" class="mb-0" />
+                    <input type="hidden" name="allow_global_discount" value="0">
+                    <input type="checkbox" name="allow_global_discount" value="1" x-model="allowGlobalDiscount" class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 w-5 h-5 cursor-pointer">
+                </div>
+
+                <div x-show="allowGlobalDiscount" x-transition>
+                    <x-input-label value="Límite de Descuento Global (%)" />
+                    <div class="relative mt-1">
+                        <x-text-input type="number" step="0.01" min="0" max="100" name="max_global_discount_percentage" class="w-full pr-8" :value="old('max_global_discount_percentage', $posTerminal->max_global_discount_percentage ?? 10.00)" ::required="allowGlobalDiscount" />
+                        <span class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 text-sm">%</span>
+                    </div>
+                    <p class="mt-1 text-[10px] text-gray-400 italic">Tope al total de la factura. Bajo la Regla de Exclusión, solo aplica a productos sin descuento propio.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {{-- Sección 5: Seguridad Operativa (CORREGIDA CON ALPINE) — ocupa el ancho completo del
+         grid porque ya tiene su propio layout interno a 2 columnas. --}}
+    <section class="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 sm:p-6 lg:col-span-2">
+        <div class="flex items-center gap-2 mb-6 border-b border-gray-100 pb-2">
+            <div class="w-7 h-7 bg-slate-800 text-white rounded-full flex items-center justify-center font-bold text-xs">5</div>
             <h3 class="font-bold text-gray-800 uppercase text-xs tracking-wider">Seguridad y Acceso</h3>
         </div>
 
@@ -162,24 +205,29 @@
                      :class="requiresPin ? 'opacity-100' : 'opacity-50 pointer-events-none'">
                     
                     <label class="block text-xs font-bold text-slate-600 uppercase tracking-wider mb-3 text-center">
-                        Ingrese PIN de 4 dígitos
+                        <span x-show="!hasExistingPin">Ingrese PIN de 4 dígitos</span>
+                        <span x-show="hasExistingPin" x-cloak>Actualizar PIN (opcional)</span>
                     </label>
-                    
+
                     <div class="flex justify-center">
-                        <x-text-input 
-                            name="access_pin" 
+                        <x-text-input
+                            name="access_pin"
                             type="text"
                             maxlength="4"
                             pattern="[0-9]*"
                             inputmode="numeric"
                             class="w-full max-w-[240px] text-center text-4xl sm:text-5xl tracking-[0.5em] font-mono font-bold bg-white border-3 border-slate-300 focus:border-indigo-600 focus:ring-4 focus:ring-indigo-100 rounded-xl py-4 sm:py-5 shadow-sm"
                             placeholder="••••"
-                            ::required="requiresPin"
+                            ::required="requiresPin && !hasExistingPin"
                             ::disabled="!requiresPin"
                             autocomplete="new-password"
                             @input="$el.value = $el.value.replace(/[^0-9]/g, '')"
                         />
                     </div>
+
+                    <p x-show="hasExistingPin" x-cloak class="mt-2 text-[10px] text-slate-400 text-center italic">
+                        Deja en blanco para mantener el PIN actual.
+                    </p>
                 </div>
             </div>
         </div>

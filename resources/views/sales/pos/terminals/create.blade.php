@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="max-w-4xl mx-auto py-8 px-4">
+    <div class="max-w-6xl mx-auto py-8 px-4">
         <form action="{{ route('sales.pos.terminals.store') }}" method="POST"
             class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
             @csrf
