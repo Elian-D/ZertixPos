@@ -1,22 +1,10 @@
 <x-app-layout>
     <div class=""
         x-cloak
-        x-data="{ 
-            allowItemDiscount: {{ $settings->allow_item_discount ? 'true' : 'false' }},
-            allowGlobalDiscount: {{ $settings->allow_global_discount ? 'true' : 'false' }},
-            maxDiscount: {{ $settings->max_discount_percentage }},
+        x-data="{
             isLoading: false,
 
-            get isDiscountInvalid() {
-                return this.maxDiscount < 0 || this.maxDiscount > 100;
-            },
-
             submitForm() {
-                if (this.isDiscountInvalid) {
-                    alert('El porcentaje de descuento debe estar entre 0 y 100');
-                    return;
-                }
-                
                 this.isLoading = true;
                 this.$refs.configForm.submit();
             }
@@ -29,74 +17,10 @@
                 @csrf
                 @method('PUT')
 
-                {{-- SECCIÓN 1: POLÍTICA DE DESCUENTOS --}}
-                <section class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="p-4 sm:p-6 border-b border-slate-100 flex items-start sm:items-center gap-3 sm:gap-4">
-                        <span class="flex-none w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center text-sm sm:text-base font-bold shadow-lg shadow-indigo-100">1</span>
-                        <div class="flex-1 min-w-0">
-                            <h2 class="font-bold text-slate-800 text-base sm:text-xl tracking-tight">Política de Descuentos</h2>
-                            <p class="text-xs sm:text-sm text-slate-500 mt-0.5">Define qué tan flexible será el cajero al aplicar rebajas.</p>
-                        </div>
-                    </div>
-
-                    <div class="p-4 sm:p-8 space-y-4 sm:space-y-6">
-                        <div class="grid grid-cols-1 gap-4 sm:gap-6">
-                            {{-- Toggle Item Discount --}}
-                            <div class="flex items-center justify-between p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl border border-slate-100">
-                                <div class="flex-1 min-w-0 pr-3">
-                                    <p class="text-xs sm:text-sm font-bold text-slate-700">Descuento por Artículo</p>
-                                    <p class="text-[10px] sm:text-[11px] text-slate-500 mt-0.5">Permitir rebajas línea por línea.</p>
-                                </div>
-                                <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                                    <input type="checkbox" name="allow_item_discount" value="1" class="sr-only peer" x-model="allowItemDiscount">
-                                    <div class="w-11 h-6 bg-slate-200 peer-focus:ring-4 peer-focus:ring-indigo-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-indigo-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                </label>
-                            </div>
-
-                            {{-- Toggle Global Discount --}}
-                            <div class="flex items-center justify-between p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl border border-slate-100">
-                                <div class="flex-1 min-w-0 pr-3">
-                                    <p class="text-xs sm:text-sm font-bold text-slate-700">Descuento Global</p>
-                                    <p class="text-[10px] sm:text-[11px] text-slate-500 mt-0.5">Permitir rebaja al total de la factura.</p>
-                                </div>
-                                <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                                    <input type="checkbox" name="allow_global_discount" value="1" class="sr-only peer" x-model="allowGlobalDiscount">
-                                    <div class="w-11 h-6 bg-slate-200 peer-focus:ring-4 peer-focus:ring-indigo-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-indigo-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                </label>
-                            </div>
-                        </div>
-
-                        {{-- Porcentaje Máximo --}}
-                        <div class="bg-indigo-50/30 rounded-2xl sm:rounded-3xl p-4 sm:p-6 border border-indigo-100/50">
-                            <label class="text-[10px] sm:text-[11px] font-black text-indigo-600 uppercase mb-2 sm:mb-3 flex items-center gap-2 tracking-widest">
-                                <x-heroicon-s-receipt-percent class="w-4 h-4 flex-shrink-0" />
-                                <span class="truncate">Límite de Descuento Autorizado</span>
-                            </label>
-                            <div class="space-y-3">
-                                <div class="relative w-full sm:max-w-xs">
-                                    <x-text-input name="max_discount_percentage" type="number" step="0.01" 
-                                        x-model="maxDiscount"
-                                        class="w-full pl-10 sm:pl-12 font-bold text-base sm:text-lg" 
-                                        x-bind:class="isDiscountInvalid ? 'border-red-500 ring-red-100' : ''" />
-                                    <div class="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
-                                        <span class="text-slate-400 font-bold text-sm sm:text-base">%</span>
-                                    </div>
-                                </div>
-                                <p class="text-[11px] sm:text-xs text-slate-500 leading-tight">
-                                    El sistema bloqueará cualquier intento de descuento superior a este valor.
-                                </p>
-                            </div>
-                            <p x-show="isDiscountInvalid" class="mt-2 text-[9px] sm:text-[10px] text-red-500 font-bold uppercase tracking-tight">
-                                * El valor debe estar entre 0 y 100
-                            </p>
-                        </div>
-                    </div>
-                </section>
-
-                {{-- SECCIÓN 2: CLIENTE Y FLUJO --}}
+                {{-- SECCIÓN 1: CLIENTE Y FLUJO --}}
                 <section class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="p-4 sm:p-6 border-b border-slate-100 flex items-center gap-3 sm:gap-4">
-                        <span class="flex-none w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold">2</span>
+                        <span class="flex-none w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold">1</span>
                         <h2 class="font-bold text-slate-800 text-base sm:text-lg">Cliente y Operación</h2>
                     </div>
                     <div class="p-4 sm:p-8 space-y-4 sm:space-y-6">
@@ -140,10 +64,10 @@
                     </div>
                 </section>
 
-                {{-- SECCIÓN 3: IMPRESIÓN --}}
+                {{-- SECCIÓN 2: IMPRESIÓN --}}
                 <section class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="p-4 sm:p-6 border-b border-slate-100 flex items-center gap-3 sm:gap-4">
-                        <span class="flex-none w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold">3</span>
+                        <span class="flex-none w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold">2</span>
                         <h2 class="font-bold text-slate-800 text-base sm:text-lg">Configuración de Ticket</h2>
                     </div>
                     <div class="p-4 sm:p-8 space-y-4 sm:space-y-6">
@@ -190,7 +114,7 @@
                     <button 
                         type="button"
                         @click="submitForm()"
-                        x-bind:disabled="isLoading || isDiscountInvalid"
+                        x-bind:disabled="isLoading"
                         class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 sm:px-10 py-3 sm:py-4 bg-indigo-600 border border-transparent rounded-xl sm:rounded-2xl text-sm font-bold sm:font-semibold text-white uppercase tracking-widest shadow-lg shadow-indigo-200 hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition ease-in-out duration-150">
                         
                         <span x-show="!isLoading" class="flex items-center gap-2">

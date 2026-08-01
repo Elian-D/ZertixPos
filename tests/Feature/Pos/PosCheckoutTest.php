@@ -104,7 +104,8 @@ class PosCheckoutTest extends TestCase
         $this->setUpPosWorkspace(stock: 50);
         $session = $this->openPosSession();
 
-        // max_discount_percentage por defecto es 10%; forzamos 50%.
+        // 11.2.5: es un descuento por ítem (discount_percentage en la línea), validado
+        // contra max_item_discount_percentage (default 5%); forzamos 50%.
         $price = (float) $this->product->price;
         $discountAmount = $price * 2 * 0.5;
 

@@ -6,6 +6,7 @@ use App\Models\Sales\{Sale, SalePayment};
 use App\Models\Accounting\{DocumentType, JournalEntry, AccountingAccount, Receivable};
 use App\Models\Clients\Client;
 use App\Models\Inventory\InventoryMovement;
+use App\Models\Products\Product;
 use App\Services\Inventory\InventoryMovementService;
 use App\Services\Accounting\JournalEntries\JournalEntryService;
 use App\Services\Accounting\Receivable\ReceivableService;
@@ -13,10 +14,10 @@ use Illuminate\Support\Facades\{DB, Auth};
 use App\Services\Sales\InvoicesServices\InvoiceService; 
 use App\Contracts\Sales\NcfGeneratorInterface;
 use App\Models\Sales\Ncf\NcfLog;
-use App\DTOs\Sales\PosContext; 
+use App\DTOs\Sales\PosContext;
 use App\Models\Configuration\TipoPago;
 use App\Models\Sales\Ncf\NcfSequence;
-use App\Models\Sales\Pos\PosSetting;
+use App\Models\Sales\Pos\PosTerminal;
 use Carbon\Carbon;
 use Exception;
 
@@ -57,7 +58,7 @@ class SaleService
         }
 
         // Verifica políticas de descuento corporativo configuradas para el POS.
-        $this->validateDiscounts($data);
+        $this->validateDiscounts($data, $context);
 
         // 2. ATOMICIDAD DEL FLUJO DE NEGOCIO
         // Se encapsula todo en una transacción SQL para asegurar que si un submódulo (v.g. Contabilidad o NCF)
@@ -114,6 +115,13 @@ class SaleService
             ]);
 
             // 4. PROCESAMIENTO DE ÍTEMS Y MOVIMIENTOS DE INVENTARIO
+            // Precargado en una sola query: un "servicio" (is_stockable=false) no debe
+            // generar movimiento de inventario ni asiento de Costo de Ventas — no tiene
+            // cantidad física real que descontar de ningún almacén.
+            $products = Product::whereIn('id', collect($data['items'])->pluck('product_id'))
+                ->get(['id', 'is_stockable'])
+                ->keyBy('id');
+
             foreach ($data['items'] as $item) {
                 $discountAmount     = $item['discount_amount'] ?? 0;
                 $discountPercentage = $item['discount_percentage'] ?? 0;
@@ -128,16 +136,20 @@ class SaleService
                     'subtotal'            => $lineSubtotal,
                 ]);
 
-                // Registrar salida física de almacén (Kardex / Costeo) con referencia cruzada al modelo Sale
-                $this->inventoryService->register([
-                    'warehouse_id'   => $warehouseId,
-                    'product_id'     => $item['product_id'],
-                    'quantity'       => $item['quantity'],
-                    'type'           => InventoryMovement::TYPE_OUTPUT,
-                    'description'    => "Venta {$saleNumber}",
-                    'reference_type' => Sale::class,
-                    'reference_id'   => $sale->id,
-                ]);
+                $isStockable = $products->get($item['product_id'])?->is_stockable ?? true;
+
+                if ($isStockable) {
+                    // Registrar salida física de almacén (Kardex / Costeo) con referencia cruzada al modelo Sale
+                    $this->inventoryService->register([
+                        'warehouse_id'   => $warehouseId,
+                        'product_id'     => $item['product_id'],
+                        'quantity'       => $item['quantity'],
+                        'type'           => InventoryMovement::TYPE_OUTPUT,
+                        'description'    => "Venta {$saleNumber}",
+                        'reference_type' => Sale::class,
+                        'reference_id'   => $sale->id,
+                    ]);
+                }
             }
 
             // 5. INTEGRACIÓN CON MÓDULOS FINANCIEROS Y FISCALES
@@ -263,40 +275,80 @@ class SaleService
     }
 
     /**
-     * Validador de topes de descuento permitidos según las políticas administrativas activas del POS.
-     * Evalúa tanto políticas globales de la venta como penalizaciones por línea de producto.
+     * Validador de topes de descuento permitidos según la política de la terminal POS.
+     * Evalúa por separado el tope de descuento por ítem y el de descuento global — dos
+     * campos y dos validaciones independientes desde 11.2.5, porque un solo tope
+     * compartido no puede distinguir "el cajero puso descuento en esta línea" de
+     * "esta línea recibió una porción del descuento global repartido".
+     *
+     * Señal confiable: `item['discount_percentage']` es SIEMPRE el descuento propio del
+     * ítem, nunca tocado por el reparto del descuento global (que solo suma sobre
+     * `discount_amount`, ver pos-workspace.blade.php::recalculateTotals() y su Regla de
+     * Exclusión). Por eso el descuento por ítem se valida contra `discount_percentage`
+     * y el descuento global se reconstruye como la diferencia entre `discount_total`
+     * (declarado) y la suma de descuentos por ítem ya validados — nunca leyendo
+     * `discount_amount` directo, que mezcla ambos orígenes.
+     *
+     * Sin `$context` (venta de backoffice, no atada a una terminal física) no hay a qué
+     * política aplicar tras eliminar el global de `pos_settings` — se salta la validación
+     * por completo, decisión explícita: el backoffice es de uso exclusivo de admins de
+     * confianza. Ver 11.2 en docs/features/POS-Interfaz.md.
      */
-    private function validateDiscounts(array $data): void
+    private function validateDiscounts(array $data, ?PosContext $context): void
     {
-        $settings = PosSetting::getSettings();
-        $max      = $settings->max_discount_percentage;
-
-        // 1. Control de Descuento Global (Toda la Factura)
-        if (!empty($data['discount_total']) && $data['discount_total'] > 0) {
-            if (!$settings->allow_global_discount) {
-                throw new Exception("Los descuentos globales no están habilitados.");
-            }
-
-            $subtotalBruto = collect($data['items'])->sum(fn($i) => $i['quantity'] * $i['price']);
-            if ($subtotalBruto > 0) {
-                $globalPct = ($data['discount_total'] / $subtotalBruto) * 100;
-                if ($globalPct > $max) {
-                    throw new Exception("El descuento global ({$globalPct}%) supera el límite permitido ({$max}%).");
-                }
-            }
+        if (! $context) {
+            return;
         }
 
-        // 2. Control de Descuento por Ítem (Línea por Línea)
+        $terminal = PosTerminal::find($context->terminal_id);
+        if (! $terminal) {
+            return;
+        }
+
+        $maxItem = $terminal->max_item_discount_percentage;
+        $maxGlobal = $terminal->max_global_discount_percentage;
+
+        // 1. Control de Descuento por Ítem (Línea por Línea) — usa discount_percentage,
+        // la única señal que el reparto del descuento global nunca contamina.
+        $grossTotal = 0;
+        $itemDiscountTotal = 0;
+
         foreach ($data['items'] ?? [] as $item) {
             $pct = $item['discount_percentage'] ?? 0;
-            $amt = $item['discount_amount'] ?? 0;
+            $lineGross = $item['quantity'] * $item['price'];
+            $grossTotal += $lineGross;
 
-            if (($pct > 0 || $amt > 0) && !$settings->allow_item_discount) {
-                throw new Exception("Los descuentos por ítem no están habilitados.");
+            if ($pct > 0) {
+                if (!$terminal->allow_item_discount) {
+                    throw new Exception("Los descuentos por ítem no están habilitados para esta terminal.");
+                }
+
+                if ($pct > $maxItem) {
+                    throw new Exception("Un descuento por ítem ({$pct}%) supera el límite permitido para esta terminal ({$maxItem}%).");
+                }
             }
 
-            if ($pct > $max) {
-                throw new Exception("Un descuento por ítem ({$pct}%) supera el límite permitido ({$max}%).");
+            $itemDiscountTotal += ($lineGross * $pct) / 100;
+        }
+
+        // 2. Control de Descuento Global (Toda la Factura) — el monto global es lo que
+        // sobra de discount_total una vez descontada la parte que ya se explicó por ítem.
+        $globalDiscountAmount = max(0, ($data['discount_total'] ?? 0) - $itemDiscountTotal);
+
+        if ($globalDiscountAmount > 0.01) {
+            if (!$terminal->allow_global_discount) {
+                throw new Exception("Los descuentos globales no están habilitados para esta terminal.");
+            }
+
+            // Bajo la Regla de Exclusión, el global solo se reparte entre ítems sin
+            // descuento propio — el remanente relevante para el % es justamente
+            // gross - itemDiscountTotal, igual que en pos-workspace.blade.php.
+            $remaining = $grossTotal - $itemDiscountTotal;
+            if ($remaining > 0) {
+                $globalPct = ($globalDiscountAmount / $remaining) * 100;
+                if ($globalPct > $maxGlobal) {
+                    throw new Exception("El descuento global ({$globalPct}%) supera el límite permitido para esta terminal ({$maxGlobal}%).");
+                }
             }
         }
     }

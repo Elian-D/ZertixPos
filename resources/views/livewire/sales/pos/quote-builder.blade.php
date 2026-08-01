@@ -53,7 +53,8 @@
                                     min="0" 
                                     max="100"
                                     step="0.01"
-                                    {{ !pos_config()->allow_item_discount ? 'disabled' : '' }}
+                                    {{-- 11.2: cotización de backoffice, sin terminal asociada — sin límite de
+                                         descuento a propósito (ver QuoteBuilder::recalculateTotals()). --}}
                                     class="w-full border-gray-300 rounded text-sm p-1 pr-7 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed text-right">
                                 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                     <span class="text-gray-400 text-xs">%</span>

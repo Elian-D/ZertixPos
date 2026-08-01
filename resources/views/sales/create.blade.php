@@ -247,7 +247,8 @@
                                                     min="0" 
                                                     max="100"
                                                     step="0.01"
-                                                    {{ !pos_config()?->allow_item_discount ? 'disabled' : '' }}
+                                                    {{-- 11.2: venta manual de backoffice, sin terminal asociada — sin límite de
+                                                         descuento a propósito (no hay config global a la que heredar). --}}
                                                     class="w-full border-gray-200 rounded-lg text-sm text-right p-2 pr-7 focus:ring-indigo-500 disabled:bg-gray-100">
                                                 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                                     <span class="text-gray-400 text-xs">%</span>
@@ -539,8 +540,10 @@
                     let bruto = 0;
                     let totalDescuentos = 0;
 
-                    const maxDiscountPct  = {{ pos_config()?->max_discount_percentage ?? 100 }};
-                    const allowItemDiscount = {{ pos_config()?->allow_item_discount ? 'true' : 'false' }};
+                    // 11.2: sin terminal asociada, sin límite de descuento a propósito
+                    // (backoffice de uso exclusivo de admins de confianza).
+                    const maxDiscountPct  = 100;
+                    const allowItemDiscount = true;
 
                     this.items.forEach(item => {
                         let qty   = parseFloat(item.quantity) || 1;

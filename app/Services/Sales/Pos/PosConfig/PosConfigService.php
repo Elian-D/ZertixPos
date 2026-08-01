@@ -22,8 +22,6 @@ class PosConfigService
 
             // Asegurar que los booleanos están presentes
             $data = array_merge([
-                'allow_item_discount' => false,
-                'allow_global_discount' => false,
                 'allow_quick_customer_creation' => false,
                 'allow_quote_without_save' => false,
                 'auto_print_receipt' => false,
@@ -37,19 +35,5 @@ class PosConfigService
 
             return $settings;
         });
-    }
-
-    /**
-     * Valida si un descuento aplicado es permitido por la política actual
-     */
-    public function validateDiscount(float $percentage): bool
-    {
-        $settings = PosSetting::getSettings();
-        
-        if (!$settings->allow_global_discount && !$settings->allow_item_discount) {
-            return false;
-        }
-
-        return $percentage <= $settings->max_discount_percentage;
     }
 }

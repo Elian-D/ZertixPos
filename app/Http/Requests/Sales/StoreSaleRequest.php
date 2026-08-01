@@ -5,6 +5,7 @@ namespace App\Http\Requests\Sales;
 use App\Models\Clients\Client;
 use App\Models\Configuration\TipoPago;
 use App\Models\Inventory\InventoryStock;
+use App\Models\Products\Product;
 use App\Models\Sales\Ncf\NcfType;
 use App\Models\Sales\Sale;
 use Illuminate\Foundation\Http\FormRequest;
@@ -144,6 +145,13 @@ class StoreSaleRequest extends FormRequest
             $subtotalBruto = 0;
             $descuentoTotalCalculado = 0;
 
+            // Precargado en una sola query (evita N+1): un "servicio" (is_stockable=false)
+            // no tiene por qué tener nunca una fila de InventoryStock, así que se salta el
+            // chequeo de stock por completo en vez de rechazar la venta con "insuficiente".
+            $products = Product::whereIn('id', collect($this->items)->pluck('product_id'))
+                ->get(['id', 'is_stockable'])
+                ->keyBy('id');
+
             foreach ($this->items as $index => $item) {
                 // Matemáticas del ítem
                 $itemBruto = ($item['quantity'] * $item['price']);
@@ -152,14 +160,20 @@ class StoreSaleRequest extends FormRequest
                 $subtotalBruto += $itemBruto;
                 $descuentoTotalCalculado += $itemDescuento;
 
-                // Stock
-                $stock = InventoryStock::where('warehouse_id', $this->warehouse_id)
-                    ->where('product_id', $item['product_id'])
-                    ->first();
+                // Stock: solo aplica a productos físicos. Si el producto no está en el
+                // catálogo cargado (no debería pasar, ya se validó `exists` arriba) se
+                // valida igual, por seguridad.
+                $isStockable = $products->get($item['product_id'])?->is_stockable ?? true;
 
-                if (! $stock || $stock->quantity < $item['quantity']) {
-                    $available = $stock ? $stock->quantity : 0;
-                    $validator->errors()->add("items.{$index}.quantity", "Stock insuficiente. Disponible: {$available}.");
+                if ($isStockable) {
+                    $stock = InventoryStock::where('warehouse_id', $this->warehouse_id)
+                        ->where('product_id', $item['product_id'])
+                        ->first();
+
+                    if (! $stock || $stock->quantity < $item['quantity']) {
+                        $available = $stock ? $stock->quantity : 0;
+                        $validator->errors()->add("items.{$index}.quantity", "Stock insuficiente. Disponible: {$available}.");
+                    }
                 }
             }
 
