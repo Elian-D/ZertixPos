@@ -38,6 +38,10 @@ class CategorySeeder extends Seeder
                 'name' => 'Limpieza',
                 'description' => 'Artículos de limpieza e higiene para el hogar.',
             ],
+            [
+                'name' => 'Servicios',
+                'description' => 'Servicios sin control de inventario (instalación, flete, mano de obra, etc.).',
+            ],
         ];
 
         foreach ($categories as $category) {
