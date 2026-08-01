@@ -46,7 +46,7 @@
 
         <template x-if="allowItemDiscount">
             <div class="relative flex-1">
-                <input type="number" min="0" :max="maxDiscountPct" step="0.01"
+                <input type="number" min="0" :max="maxItemDiscountPct" step="0.01"
                        x-model.number="item.discount_percentage" @input="recalculateTotals()"
                        placeholder="Desc. %"
                        class="w-full text-right border-gray-200 rounded-lg text-xs py-1.5 pr-6">

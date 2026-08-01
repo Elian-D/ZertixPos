@@ -98,10 +98,12 @@
                     <span class="truncate text-gray-800" x-text="selectedClient?.name ?? 'Selecciona un cliente'"></span>
                     <x-heroicon-s-chevron-down class="w-4 h-4 text-gray-400 shrink-0" />
                 </button>
-                <button type="button" @click="$dispatch('open-modal', 'quick-create-client')"
-                        class="shrink-0 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
-                    <x-heroicon-s-user-plus class="w-4 h-4 text-gray-600" />
-                </button>
+                @if($posConfig->allow_quick_customer_creation)
+                    <button type="button" @click="$dispatch('open-modal', 'quick-create-client')"
+                            class="shrink-0 px-3 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
+                        <x-heroicon-s-user-plus class="w-4 h-4 text-gray-600" />
+                    </button>
+                @endif
             </div>
             <template x-if="selectedClient && selectedClient.is_moroso">
                 <p class="text-[11px] text-red-600 font-bold mt-1.5">⚠ Cliente con estado restringido — crédito bloqueado.</p>
@@ -122,9 +124,12 @@
         {{-- Descuento global --}}
         <div class="px-4 py-2 border-t border-gray-100" x-show="allowGlobalDiscount">
             <div class="flex items-center justify-between gap-3">
-                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Descuento Global</label>
+                <div class="flex items-center gap-1">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Descuento Global</label>
+                    @include('livewire.sales.pos.pages.pos-workspace.partials.discount-info-tooltip')
+                </div>
                 <div class="relative w-24">
-                    <input type="number" min="0" :max="maxDiscountPct" step="0.01"
+                    <input type="number" min="0" :max="maxGlobalDiscountPct" step="0.01"
                            x-model.number="globalDiscountPercentage" @input="recalculateTotals()"
                            class="w-full text-right border-gray-200 rounded-lg text-xs py-1.5 pr-6">
                     <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400">%</span>

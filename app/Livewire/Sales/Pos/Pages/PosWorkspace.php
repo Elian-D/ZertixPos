@@ -127,6 +127,14 @@ class PosWorkspace extends Component
             'taxRate' => (float) ($config?->impuesto?->valor ?? 0),
             'posConfig' => pos_config(),
             'walkinClientId' => pos_config('default_walkin_customer_id') ?? 1,
+
+            // Política de descuentos: 100% por terminal desde 11.2, sin fallback global,
+            // con topes separados por ítem y global desde 11.2.5 (ver
+            // PosTerminal::$fillable/$casts) — se leen directo del modelo actual.
+            'maxItemDiscountPercentage' => $this->terminal->max_item_discount_percentage,
+            'maxGlobalDiscountPercentage' => $this->terminal->max_global_discount_percentage,
+            'allowItemDiscount' => $this->terminal->allow_item_discount,
+            'allowGlobalDiscount' => $this->terminal->allow_global_discount,
         ]);
 
         return $view->layout('layouts.pos');

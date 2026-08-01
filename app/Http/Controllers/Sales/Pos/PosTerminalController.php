@@ -105,6 +105,15 @@ class PosTerminalController extends Controller
      */
     public function update(UpdatePosTerminalRequest $request, PosTerminal $posTerminal)
     {
+        // Mismo guard que destroy(): no permitir desactivar una terminal con una sesión de
+        // caja abierta. Anular una sesión/venta en curso por un simple cambio de flag sería
+        // peor que dejarla activa un momento más — el cierre real de caja pasa por
+        // sales.pos.sessions.close, no por aquí.
+        if (! $request->boolean('is_active') && $posTerminal->is_active
+            && $posTerminal->sessions()->where('status', PosSession::STATUS_OPEN)->exists()) {
+            return back()->withInput()->with('error', "No se puede desactivar la terminal '{$posTerminal->name}': tiene una sesión de caja abierta. Cierra la caja primero.");
+        }
+
         try {
             $this->service->update($posTerminal, $request->validated());
 
