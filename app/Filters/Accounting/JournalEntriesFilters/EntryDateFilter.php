@@ -18,12 +18,14 @@ class EntryDateFilter implements FilterInterface
 
         return $query
             ->when($from, function($q) use ($from) {
-                $date = Carbon::parse($from)->startOfDay(); 
-                return $q->where('entry_date', '>=', $date->format('Y-m-d'));
+                // startOfMinute asegura que incluimos desde el segundo :00
+                $date = Carbon::parse($from)->startOfMinute(); 
+                return $q->where('entry_date', '>=', $date->toDateTimeString());
             })
             ->when($to, function($q) use ($to) {
-                $date = Carbon::parse($to)->endOfDay();
-                return $q->where('entry_date', '<=', $date->format('Y-m-d'));
+                // endOfMinute asegura que incluimos hasta el segundo :59
+                $date = Carbon::parse($to)->endOfMinute();
+                return $q->where('entry_date', '<=', $date->toDateTimeString());
             });
     }
 }

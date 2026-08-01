@@ -23,11 +23,11 @@ document.addEventListener('DOMContentLoaded', () => {
             // Rango de Fechas
             from_date: { 
                 label: 'Desde',
-                format: (val) => val ? val : '' 
+                format: (val) => val ? val.replace('T', ' ').split('-').reverse().join('/') : '' 
             },
             to_date: { 
                 label: 'Hasta',
-                format: (val) => val ? val : '' 
+                format: (val) => val ? val.replace('T', ' ').split('-').reverse().join('/') : '' 
             }
         }
     });

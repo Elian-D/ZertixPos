@@ -21,6 +21,14 @@ class UnitSeeder extends Seeder
                 'name' => 'Funda',
                 'abbreviation' => 'fnd',
             ],
+            [
+                'name' => 'Unidad',
+                'abbreviation' => 'und',
+            ],
+            [
+                'name' => 'Caja',
+                'abbreviation' => 'cja',
+            ],
         ];
 
         foreach ($units as $unit) {

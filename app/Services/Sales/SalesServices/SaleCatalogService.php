@@ -7,6 +7,8 @@ use App\Models\Clients\Client;
 use App\Models\Inventory\{Warehouse, InventoryStock};
 use App\Models\Accounting\{AccountingAccount, DocumentType};
 use App\Models\Configuration\TipoPago;
+use App\Models\Sales\Pos\PosSession;
+use App\Models\Sales\Pos\PosTerminal;
 use Illuminate\Support\Facades\DB;
 
 class SaleCatalogService
@@ -28,9 +30,19 @@ class SaleCatalogService
 
             'payment_types' => Sale::getPaymentTypes(),
 
-            'tipo_pagos' => TipoPago::activo()
-            ->select('id', 'nombre')
-            ->get(),
+            'tipo_pagos' => TipoPago::sortByPriority(
+                TipoPago::activo()->select('id', 'nombre', 'slug')->get()
+            ),
+            
+            // Sesiones activas o recientes (últimos 30 días) para evitar saturación
+            'pos_sessions' => PosSession::where('created_at', '>=', now()->subDays(30))
+                ->orderBy('id', 'desc')
+                ->pluck('id', 'id'), // O un formato más legible como "Sesión #ID (Fecha)"
+                
+            'pos_terminals' => PosTerminal::select('id', 'name')
+                ->get()
+                ->pluck('name', 'id'),
+            
 
             'statuses'      => Sale::getStatuses(),
         ];
@@ -114,9 +126,9 @@ class SaleCatalogService
                     ];
                 }),
                 
-            'tipo_pagos' => TipoPago::activo()
-                            ->select('id', 'nombre', 'accounting_account_id')
-                            ->get(),
+            'tipo_pagos' => TipoPago::sortByPriority(
+                TipoPago::activo()->select('id', 'nombre', 'slug', 'accounting_account_id')->get()
+            ),
         ];
     }
 }

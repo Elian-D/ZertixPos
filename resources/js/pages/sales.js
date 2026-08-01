@@ -31,6 +31,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 label: 'Método Detallado',
                 source: 'tipo_pagos' // Se alimenta de window.filterSources.tipo_pagos
             },
+
+            pos_session_id: {
+                label: 'Turno POS',
+                source: 'sessions' // Mostrará el ID o código de sesión
+            },
+            pos_terminal_id: {
+                label: 'Terminal',
+                source: 'terminals'
+            },
             
             // Filtro por Estado (Enum: completed, canceled)
             status: {

@@ -15,6 +15,11 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \Spatie\Permission\Middleware\RoleMiddleware::class,
             'permission' => \Spatie\Permission\Middleware\PermissionMiddleware::class,
             'role_or_permission' => \Spatie\Permission\Middleware\RoleOrPermissionMiddleware::class,
+
+            // POS Middlewares
+            'pos.config.integrity' => \App\Http\Middleware\Sales\Pos\EnsurePosConfig::class,
+            'pos.session' => \App\Http\Middleware\Sales\Pos\EnsurePosSession::class,
+            'check.terminal.access' => \App\Http\Middleware\Sales\Pos\CheckTerminalAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

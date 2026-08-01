@@ -12,7 +12,6 @@ class JournalEntryFilters extends QueryFilter
             'search'    => EntrySearchFilter::class,
             'status'    => EntryStatusFilter::class,
             'from_date' => EntryDateFilter::class,
-            'to_date'   => EntryDateFilter::class,
         ];
     }
 }

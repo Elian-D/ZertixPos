@@ -1,4 +1,7 @@
 <x-config-layout>
+
+    <x-ui.toasts />
+    
     <div class="mb-10">
         <h1 class="text-3xl font-bold text-gray-800">
             Panel de Configuración

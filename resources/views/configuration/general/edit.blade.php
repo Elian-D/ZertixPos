@@ -4,6 +4,7 @@
         x-data="{ 
             countries: {{ $countries->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'emoji' => $c->emoji, 'phonecode' => $c->phonecode])->toJson() }},
             states: {{ $states->toJson() }},
+            usaNcf: {{ old('usa_ncf', $config->usa_ncf ?? false) ? 'true' : 'false' }},
             taxTypes: {{ $taxTypes->toJson() }},
             
             searchCountry: '',
@@ -69,21 +70,7 @@
         }">
 
         <div class="max-w-4xl mx-auto">
-            @if (session('success'))
-                <div x-data="{ show: true }" x-show="show" x-transition.out.opacity.duration.1500ms x-init="setTimeout(() => show = false, 4000)"
-                    class="mb-6 flex items-center p-4 bg-emerald-50 border border-emerald-100 rounded-2xl shadow-sm">
-                    <div class="flex-none w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center shadow-lg shadow-emerald-200">
-                        <x-heroicon-s-check class="w-6 h-6 text-white" />
-                    </div>
-                    <div class="ml-4">
-                        <p class="text-sm font-bold text-emerald-900">Configuración actualizada</p>
-                        <p class="text-xs text-emerald-600 font-medium">{{ session('success') }}</p>
-                    </div>
-                    <button @click="show = false" class="ml-auto text-emerald-400 hover:text-emerald-600 transition-colors">
-                        <x-heroicon-s-x-mark class="w-5 h-5" />
-                    </button>
-                </div>
-            @endif
+            <x-ui.toasts />
 
             <form method="POST" action="{{ route('configuration.general.update') }}" enctype="multipart/form-data" class="space-y-8">
                 @csrf
@@ -301,6 +288,37 @@
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mt-8">
+                    <div class="p-6 border-b border-slate-100 flex items-center gap-4">
+                        <span class="flex-none w-10 h-10 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center font-bold text-sm">4</span>
+                        <h3 class="font-bold text-slate-800 text-lg">Regulación Fiscal (NCF)</h3>
+                    </div>
+
+                    <div class="p-8">
+                        <div class="flex items-center justify-between p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                            <div class="space-y-1">
+                                <h4 class="text-sm font-bold text-slate-700">Activar Comprobantes Fiscales (NCF/e-NCF)</h4>
+                                <p class="text-xs text-slate-500 max-w-md">
+                                    Al activar esta opción, el sistema exigirá secuencias válidas de la DGII para cada venta. Si se desactiva, las ventas se generarán como documentos internos sin valor fiscal.
+                                </p>
+                            </div>
+                            
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="usa_ncf" value="1" class="sr-only peer" 
+                                    x-model="usaNcf" :checked="usaNcf">
+                                <div class="w-14 h-7 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-indigo-600"></div>
+                            </label>
+                        </div>
+
+                        <div x-show="usaNcf" x-transition class="mt-4 flex items-start gap-3 bg-amber-50 p-4 rounded-2xl border border-amber-100">
+                            <x-heroicon-s-exclamation-circle class="w-5 h-5 text-amber-500 mt-0.5" />
+                            <p class="text-xs text-amber-700 leading-snug">
+                                <strong>Modo Estricto Activo:</strong> Asegúrese de tener secuencias configuradas en el módulo de NCF. El sistema bloqueará las ventas si las secuencias están agotadas o vencidas.
+                            </p>
                         </div>
                     </div>
                 </section>

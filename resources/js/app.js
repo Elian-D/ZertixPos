@@ -1,10 +1,10 @@
 import './bootstrap';
-
-import Alpine from 'alpinejs';
+// IMPORTANTE: Importamos ambos desde el bundle de Livewire
+import { Livewire, Alpine } from '../../vendor/livewire/livewire/dist/livewire.esm';
 
 window.Alpine = Alpine;
 
-Alpine.start();
+Livewire.start();
 
 // Loader de páginas
 import './pages/clients'
@@ -28,4 +28,8 @@ import './pages/invoices'
 import './pages/sequences'
 import './pages/ncf-logs'
 import './pages/nfc-types'
+import './pages/terminals'
+import './pages/pos-sessions'
+import './pages/pos-cash-movements'
+import './pages/quotes'
 

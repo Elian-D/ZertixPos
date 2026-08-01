@@ -28,6 +28,7 @@ class ConfiguracionGeneral extends Model
         'currency_name',
         'currency_symbol',
         'timezone',
+        'usa_ncf',
         'tax_identifier_type_id',
     ];
 
@@ -57,6 +58,14 @@ class ConfiguracionGeneral extends Model
     public static function actual()
     {
         return self::first();
+    }
+
+    /**
+     * Determina si el sistema opera bajo normativa de la DGII (NCF/e-NCF)
+     */
+    public function esModoFiscal(): bool
+    {
+        return (bool) $this->usa_ncf;
     }
 }
 

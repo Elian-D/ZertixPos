@@ -123,7 +123,7 @@
                         
                         {{-- COLUMNA 2: CUENTA CONTABLE (Oculto en móvil, visible en md+) --}}
                         <td class="hidden md:table-cell px-6 py-4 text-sm text-gray-600">
-                            <span class="font-mono text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
+                            <span class="whitespace-nowrap font-mono text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
                                 {{ $pago->account->code ?? 'S/N' }} - {{ $pago->account->name ?? 'Sin cuenta' }}
                             </span>
                         </td>
@@ -150,34 +150,44 @@
                         {{-- COLUMNA 5: ACCIONES (Visible en móvil y desktop) --}}
                         <td class="block md:table-cell px-6 py-4 whitespace-nowrap text-sm font-medium w-full md:w-2/12">
                             <div class="flex gap-2 mt-2 md:mt-0">
-
-                                {{-- TOGGLE ESTADO --}}
+                                {{-- TOGGLE ESTADO: Siempre permitido si quieres pausar un método --}}
                                 <form action="{{ route('configuration.pagos.toggle', $pago) }}" method="POST">
                                     @csrf
                                     @method('PATCH')
-                                    <button class="text-sm px-3 py-1 rounded
-                                        {{ $pago->estado ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
+                                    <button class="text-sm px-3 py-1 rounded {{ $pago->estado ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
                                         {{ $pago->estado ? 'Desactivar' : 'Activar' }}
                                     </button>
                                 </form>
 
                                 {{-- BOTÓN EDITAR --}}
                                 @if($pago->estado)
-                                    <button
-                                        type="button"
-                                        @click="$dispatch('open-modal', 'edit-tipo-pago-{{ $pago->id }}')"
-                                        title="Editar nombre"
-                                        class="text-indigo-600 hover:text-indigo-900 p-1 rounded hover:bg-indigo-100">
-                                        <x-heroicon-s-pencil class="w-5 h-5" />
-                                    </button>
+                                    @if($pago->isSystemProtected())
+                                        <button type="button" 
+                                            class="text-gray-400 p-1 cursor-not-allowed" 
+                                            title="Este método es requerido por el sistema y no puede ser editado">
+                                            <x-heroicon-s-pencil class="w-5 h-5" />
+                                        </button>
+                                    @else
+                                        <button type="button" @click="$dispatch('open-modal', 'edit-tipo-pago-{{ $pago->id }}')"
+                                            class="text-indigo-600 hover:text-indigo-900 p-1 rounded hover:bg-indigo-100">
+                                            <x-heroicon-s-pencil class="w-5 h-5" />
+                                        </button>
+                                    @endif
                                 @endif
 
                                 {{-- ELIMINAR --}}
-                                <button type="button" @click="$dispatch('open-modal', 'confirm-payment-deletion-{{ $pago->id }}')" 
-                                    title="Eliminar Tipo Pago"
-                                    class="text-red-600 hover:text-red-900 p-1 rounded-md hover:bg-red-100">
-                                    <x-heroicon-s-trash class="w-5 h-5" />
-                                </button>
+                                @if($pago->isSystemProtected())
+                                    <button type="button" 
+                                        class="text-gray-400 p-1 cursor-not-allowed" 
+                                        title="Protegido por el sistema">
+                                        <x-heroicon-s-trash class="w-5 h-5" />
+                                    </button>
+                                @else
+                                    <button type="button" @click="$dispatch('open-modal', 'confirm-payment-deletion-{{ $pago->id }}')" 
+                                        class="text-red-600 hover:text-red-900 p-1 rounded-md hover:bg-red-100">
+                                        <x-heroicon-s-trash class="w-5 h-5" />
+                                    </button>
+                                @endif
                             </div>
                         </td>
                     </tr>

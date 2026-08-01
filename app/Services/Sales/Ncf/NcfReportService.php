@@ -37,7 +37,7 @@ class NcfReportService
             $data = [
                 // 1. RNC o Cédula del Cliente
                 $client->tax_id ?? '',
-                
+
                 // 2. Tipo de Identificación (1: RNC, 2: Cédula, 3: Pasaporte/Otro)
                 $this->getTaxIdType($client->tax_id ?? ''),
                 

@@ -56,6 +56,9 @@ class ConfiguracionGeneralController extends Controller
             'ciudad' => 'nullable|string|max:255',
             'country_id' => 'required|exists:countries,id',
 
+            // Nuevo campo
+            'usa_ncf' => 'nullable|boolean',
+
 
             'impuesto_nombre' => 'required|string|max:255',
             'impuesto_tipo'   => 'required|in:porcentaje,fijo',
@@ -70,6 +73,9 @@ class ConfiguracionGeneralController extends Controller
         $state = $validated['state_id']
             ? State::find($validated['state_id'])
             : null;
+            
+        // Manejo del checkbox usa_ncf (si no llega en el request, es false)
+        $validated['usa_ncf'] = $request->has('usa_ncf');
 
         // Moneda automática desde país
         $validated['currency'] = $country->currency;

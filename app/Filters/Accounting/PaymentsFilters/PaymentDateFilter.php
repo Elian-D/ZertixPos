@@ -18,12 +18,14 @@ class PaymentDateFilter implements FilterInterface
 
         return $query
             ->when($from, function($q) use ($from) {
-                $date = Carbon::parse($from)->startOfDay(); 
-                return $q->where('payment_date', '>=', $date->format('Y-m-d'));
+                // Si el input trae hora (T), startOfMinute lo respeta. 
+                // Si solo trae fecha, startOfDay es el default.
+                $date = Carbon::parse($from)->startOfMinute(); 
+                return $q->where('payment_date', '>=', $date->toDateTimeString());
             })
             ->when($to, function($q) use ($to) {
-                $date = Carbon::parse($to)->endOfDay();
-                return $q->where('payment_date', '<=', $date->format('Y-m-d'));
+                $date = Carbon::parse($to)->endOfMinute();
+                return $q->where('payment_date', '<=', $date->toDateTimeString());
             });
     }
 }

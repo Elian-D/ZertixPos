@@ -13,8 +13,18 @@ use Exception;
 
 class LocalNcfGenerator implements NcfGeneratorInterface
 {
-    public function generate(Sale $sale, int $ncfTypeId): string
+    /**
+     * Genera el NCF o retorna null si el sistema no usa comprobantes.
+     */
+    public function generate(Sale $sale, int $ncfTypeId): ?string
     {
+        $config = general_config();
+
+        // Si el switch principal está apagado, no generamos nada.
+        if (!$config->usa_ncf) {
+            return null;
+        }
+
         return DB::transaction(function () use ($sale, $ncfTypeId) {
             
             // 1. Bloqueo de fila: Buscamos la secuencia activa con lockForUpdate
@@ -24,6 +34,7 @@ class LocalNcfGenerator implements NcfGeneratorInterface
                 ->lockForUpdate()
                 ->first();
 
+            // En modo fiscal, si no hay secuencia, es un error fatal.
             if (!$sequence) {
                 throw new Exception("No hay secuencias activas o vigentes para este tipo de comprobante.");
             }
@@ -38,23 +49,17 @@ class LocalNcfGenerator implements NcfGeneratorInterface
             }
 
             // 3. Determinar la longitud de la secuencia (Padding)
-            // Físico = 8 dígitos | Electrónico = 10 dígitos
             $padding = $sequence->type->is_electronic ? 10 : 8;
 
+            // 4. Formatear el NCF Completo
+            $fullNcf = $sequence->series . 
+                    str_pad($sequence->type->code, 2, '0', STR_PAD_LEFT) . 
+                    str_pad($nextNumber, $padding, '0', STR_PAD_LEFT);
 
-        // 4. Formatear el NCF Completo
-        // Estructura: Prefijo (E/B) + Tipo (01/31) + Secuencia (0000000001)
-        // Nota: Para e-NCF, la normativa suele incluir una 'Serie' de 3 dígitos (ej: 001) 
-        // antes de la secuencia, usualmente guardada en $sequence->series si decides usarla.
-        
-        $fullNcf = $sequence->series . 
-                str_pad($sequence->type->code, 2, '0', STR_PAD_LEFT) . 
-                str_pad($nextNumber, $padding, '0', STR_PAD_LEFT);
+            // 5. Actualizar la secuencia
+            $sequence->update(['current' => $nextNumber]);
 
-        // 5. Actualizar la secuencia
-        $sequence->update(['current' => $nextNumber]);
-
-            // 5. Registrar en el Log de auditoría
+            // 6. Registrar en el Log de auditoría
             NcfLog::create([
                 'full_ncf' => $fullNcf,
                 'sale_id' => $sale->id,
@@ -68,8 +73,17 @@ class LocalNcfGenerator implements NcfGeneratorInterface
         });
     }
 
+    /**
+     * Si no usamos NCF, siempre hay "disponibilidad" (porque no se consume nada).
+     */
     public function hasAvailability(int $ncfTypeId): bool
     {
+        $config = general_config();
+
+        if (!$config->usa_ncf) {
+            return true;
+        }
+
         return NcfSequence::where('ncf_type_id', $ncfTypeId)
             ->where('status', NcfSequence::STATUS_ACTIVE)
             ->where('expiry_date', '>=', now())

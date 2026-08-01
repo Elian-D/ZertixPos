@@ -24,8 +24,17 @@ class Product extends Model
     {
         $config = general_config();
         $symbol = $config->currency_symbol ?? '$';
-        
+
         return $symbol . ' ' . number_format($this->price, 2);
+    }
+
+    /**
+     * URL pública de la imagen, relativa a la raíz (no absoluta vía asset()/APP_URL).
+     * Evita imágenes rotas cuando el puerto real del servidor difiere del configurado en APP_URL.
+     */
+    public function getImageUrlAttribute(): ?string
+    {
+        return $this->image_path ? '/storage/' . $this->image_path : null;
     }
 
     /* ===========================

@@ -17,6 +17,8 @@ class SaleFilters extends QueryFilter
             'status'       => SaleStatusFilter::class,
             'from_date'    => SaleDateFilter::class,
             'min_amount'   => SaleAmountRangeFilter::class,
+            'pos_session_id'  => SalePosSessionFilter::class,
+            'pos_terminal_id' => SalePosTerminalFilter::class,
         ];
     }
 }

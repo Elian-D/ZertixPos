@@ -38,6 +38,8 @@ class InventoryMovementController extends Controller
                 'items'          => $movements,
                 'visibleColumns' => $visibleColumns,
                 'allColumns'     => InventoryMovementTable::allColumns(),
+                'defaultDesktop' => InventoryMovementTable::defaultDesktop(),
+                'defaultMobile'  => InventoryMovementTable::defaultMobile(),
             ])->render();
         }
 

@@ -36,6 +36,8 @@ class AccountingAccountSeeder extends Seeder
             // INGRESOS
             ['code' => '4', 'name' => 'Ingresos', 'type' => AccountingAccount::TYPE_REVENUE, 'is_selectable' => false, 'level' => 1],
             ['code' => '4.1', 'name' => 'Ventas de Productos', 'type' => AccountingAccount::TYPE_REVENUE, 'is_selectable' => true, 'level' => 2, 'parent_code' => '4'],
+            ['code' => '4.2', 'name' => 'Otros Ingresos', 'type' => 'revenue', 'is_selectable' => false, 'level' => 2, 'parent_code' => '4'],
+            ['code' => '4.2.01', 'name' => 'Sobrantes de Caja', 'type' => 'revenue', 'is_selectable' => true, 'level' => 3, 'parent_code' => '4.2'],
             
             // COSTOS
             ['code' => '5', 'name' => 'Costos', 'type' => AccountingAccount::TYPE_COST, 'is_selectable' => false, 'level' => 1],
@@ -47,6 +49,7 @@ class AccountingAccountSeeder extends Seeder
             ['code' => '5.3.01', 'name' => 'Servicios Eléctricos', 'type' => 'expense', 'is_selectable' => true, 'level' => 3, 'parent_code' => '5.3'],
             ['code' => '5.3.02', 'name' => 'Suministros (Fundas, insumos)', 'type' => 'expense', 'is_selectable' => true, 'level' => 3, 'parent_code' => '5.3'],
             ['code' => '5.3.03', 'name' => 'Mantenimiento y Reparaciones', 'type' => 'expense', 'is_selectable' => true, 'level' => 3, 'parent_code' => '5.3'],
+            ['code' => '5.3.04', 'name' => 'Faltantes de Caja', 'type' => 'expense', 'is_selectable' => true, 'level' => 3, 'parent_code' => '5.3'],
         ];
 
         foreach ($accounts as $acc) {

@@ -18,10 +18,14 @@ class SaleDateFilter implements FilterInterface
 
         return $query
             ->when($from, function($q) use ($from) {
-                return $q->whereDate('sale_date', '>=', Carbon::parse($from));
+                // Ajustamos al inicio del minuto para incluir el segundo 0
+                $date = Carbon::parse($from)->startOfMinute(); 
+                return $q->where('sale_date', '>=', $date->toDateTimeString());
             })
             ->when($to, function($q) use ($to) {
-                return $q->whereDate('sale_date', '<=', Carbon::parse($to));
+                // Ajustamos al final del minuto para incluir hasta el segundo 59
+                $date = Carbon::parse($to)->endOfMinute();
+                return $q->where('sale_date', '<=', $date->toDateTimeString());
             });
     }
 }

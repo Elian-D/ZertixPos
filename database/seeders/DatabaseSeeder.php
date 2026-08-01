@@ -29,6 +29,7 @@ class DatabaseSeeder extends Seeder
             \Database\Seeders\PermissionSeeder\InventoryPermissionsSeeder::class,
             \Database\Seeders\PermissionSeeder\AccountingPermissionsSeeder::class,
             \Database\Seeders\PermissionSeeder\SalesPermissionsSeeder::class,
+            \Database\Seeders\PermissionSeeder\SalePosPermissionsSeeder::class,
             RoleSeeder::class,
             UserSeeder::class,
 
@@ -62,6 +63,7 @@ class DatabaseSeeder extends Seeder
 
             // Inventory Seeders
             \Database\Seeders\InventorySeeders\WarehouseSeeder::class,
+            \Database\Seeders\InventorySeeders\InventoryStockSeeder::class,
 
             //Sales Seeders
             \Database\Seeders\SalesSeeders\NcfTypeSeeder::class,

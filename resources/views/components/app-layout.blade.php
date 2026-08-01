@@ -11,6 +11,8 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
         <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+        {{-- 1. Directiva de Estilos de Livewire --}}
+            @livewireStyles
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
@@ -36,6 +38,7 @@
                 setTimeout(() => window.dispatchEvent(new Event('resize-charts')), 310);
             });
         "
+        
     >
             
         {{-- ELIMINADA la clase ml-XX para que el sidebar FLOTE cuando esté colapsado. --}}
@@ -71,6 +74,12 @@
                             </x-slot>
                         </x-sidebar.dropdown>
                     @endcanany
+
+                    @can('view quotes')
+                        <x-sidebar.item href="/admin/sales/quotes" icon="heroicon-s-document-currency-dollar">
+                            Cotizaciones
+                        </x-sidebar.item>
+                    @endcan
 
                     <x-sidebar.item href="/rutas" icon="heroicon-s-map">
                         Rutas y Entregas
@@ -122,9 +131,9 @@
                     <x-sidebar.title>Catálogos</x-sidebar.title>
 
                     <x-sidebar.dropdown id="productos" icon="heroicon-s-shopping-cart" :activeRoutes="['admin/products*']">
-                        Productos
+                        Productos/Servicios
                         <x-slot name="submenu">
-                            <x-sidebar.subitem href="/admin/products">Lista de Productos</x-sidebar.subitem>
+                            <x-sidebar.subitem href="/admin/products">Productos/Servicios</x-sidebar.subitem>
                             <x-sidebar.subitem href="/admin/products/categories">Categorías</x-sidebar.subitem>
                             <x-sidebar.subitem href="/admin/products/units">Unidades de Medida</x-sidebar.subitem>
                         </x-slot>
@@ -141,6 +150,19 @@
                             <x-sidebar.subitem href="/admin/clients/equipmentTypes">Tipos de Equipo</x-sidebar.subitem>
                         </x-slot>
                     </x-sidebar.dropdown>
+
+                    <x-sidebar.dropdown id="pos" icon="heroicon-s-building-storefront" :activeRoutes="['admin/pos*']">
+                        Puntos de Venta
+                        <x-slot name="submenu">
+                            <x-sidebar.subitem href="{{ route('sales.pos.index') }}">Ir al POS</x-sidebar.subitem>
+                            <div class="h-px bg-gray-700/30 my-1.5"></div>
+                            <x-sidebar.subitem href="/admin/sales/pos/settings">Configuración</x-sidebar.subitem>
+                            <x-sidebar.subitem href="/admin/sales/pos/terminals">Terminales</x-sidebar.subitem>
+                            <x-sidebar.subitem href="/admin/sales/pos/sessions">Turnos</x-sidebar.subitem>
+                            {{-- Movimientos de Caja: oculto, ver Fase 9.1 en docs/features/POS-Interfaz.md --}}
+                            {{-- <x-sidebar.subitem href="/admin/sales/pos/cash-movements">Movimientos de Caja</x-sidebar.subitem> --}}
+                        </x-slot>
+                    </x-sidebar.dropdown>
                 </x-sidebar.group>
 
                 {{-- GRUPO 4: Sistema --}}
@@ -155,7 +177,10 @@
                         Roles
                     </x-sidebar.item>
 
-                    {{-- Configuración ahora incluye NCF --}}
+                    @php
+                        $config = \App\Models\Configuration\ConfiguracionGeneral::actual();
+                    @endphp
+
                     <x-sidebar.dropdown 
                         id="configuracion" 
                         icon="heroicon-s-cog-6-tooth" 
@@ -165,14 +190,17 @@
                         <x-slot name="submenu">
                             <x-sidebar.subitem href="/admin/config">General</x-sidebar.subitem>
                             
-                            @can('view ncf sequences')
-                                <div class="h-px bg-gray-700/30 my-1.5"></div>
-                                <div class="px-3 py-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">NCF (Fiscal)</div>
-                                <x-sidebar.subitem href="/admin/sales/ncf/dashboard">Dashboard NCF</x-sidebar.subitem>
-                                <x-sidebar.subitem href="/admin/sales/ncf/sequences">Secuencias NCF</x-sidebar.subitem>
-                                <x-sidebar.subitem href="/admin/sales/ncf/logs">Historial NCF</x-sidebar.subitem>
-                                <x-sidebar.subitem href="/admin/sales/ncf/types">Tipos NCF</x-sidebar.subitem>
-                            @endcan
+                            {{-- Solo mostrar si la empresa usa NCF --}}
+                            @if($config->usa_ncf)
+                                @can('view ncf sequences')
+                                    <div class="h-px bg-gray-700/30 my-1.5"></div>
+                                    <div class="px-3 py-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">NCF (Fiscal)</div>
+                                    <x-sidebar.subitem href="/admin/sales/ncf/dashboard">Dashboard NCF</x-sidebar.subitem>
+                                    <x-sidebar.subitem href="/admin/sales/ncf/sequences">Secuencias NCF</x-sidebar.subitem>
+                                    <x-sidebar.subitem href="/admin/sales/ncf/logs">Historial NCF</x-sidebar.subitem>
+                                    <x-sidebar.subitem href="/admin/sales/ncf/types">Tipos NCF</x-sidebar.subitem>
+                                @endcan
+                            @endif
                         </x-slot>
                     </x-sidebar.dropdown>
                 </x-sidebar.group>
@@ -211,5 +239,8 @@
             </div>
         </div>
         @stack('scripts')
+        
+        {{-- Usamos la configuración manual para que no inyecte Alpine doble --}}
+        @livewireScriptConfig
     </body>
 </html>
