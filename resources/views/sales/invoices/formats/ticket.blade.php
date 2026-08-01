@@ -44,6 +44,29 @@
     // publicado para rollos de 58mm (50mm).
     $printSafetyMarginMm = 4;
     $printableWidthMm = max(1, ((int) str_replace('mm', '', $paperWidth)) - ($printSafetyMarginMm * 2));
+
+    // 11.2.6: desglosar el descuento total en "por ítem" vs. "global" para el ticket.
+    // `discount_percentage` de cada línea es la señal confiable de descuento PROPIO del
+    // ítem (nunca tocado por el reparto del descuento global bajo la Regla de Exclusión,
+    // ver pos-workspace.blade.php::recalculateTotals() y SaleService::validateDiscounts()
+    // — misma lógica de reconstrucción en los tres lugares). Lo que sobra de
+    // sale->discount_total tras restar esa parte es lo que aportó el descuento global.
+    $itemDiscountTotal = 0;
+    $eligibleGrossForGlobal = 0;
+
+    foreach ($sale->items as $saleItem) {
+        $lineGross = $saleItem->quantity * $saleItem->unit_price;
+        $itemPct = $saleItem->discount_percentage ?? 0;
+
+        if ($itemPct > 0) {
+            $itemDiscountTotal += ($lineGross * $itemPct) / 100;
+        } else {
+            $eligibleGrossForGlobal += $lineGross;
+        }
+    }
+
+    $globalDiscountTotal = max(0, ($sale->discount_total ?? 0) - $itemDiscountTotal);
+    $globalDiscountPct = $eligibleGrossForGlobal > 0 ? ($globalDiscountTotal / $eligibleGrossForGlobal) * 100 : 0;
 @endphp
 
 <!DOCTYPE html>
@@ -188,8 +211,8 @@
                 <thead>
                     <tr class="table-header">
                         <th align="left" style="width: 15%; padding-bottom: 2px;">CANT</th>
-                        <th align="left" style="width: 55%; padding-bottom: 2px;">DESC.</th>
-                        <th class="right" style="width: 30%; padding-bottom: 2px;">SUBT.</th>
+                        <th align="left" style="width: 60%; padding-bottom: 2px;">DESCRIPCIÓN</th>
+                        <th class="right" style="width: 25%; padding-bottom: 2px;">SUBT.</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -201,6 +224,9 @@
                             <td valign="top" style="padding-top: 5px;">
                                 {{ substr($item->product->name, 0, $isNarrow ? 16 : 22) }}<br>
                                 <span style="font-size: 12px;">@ {{ number_format($item->unit_price, 2) }}</span>
+                                @if(($item->discount_percentage ?? 0) > 0)
+                                    <br><span style="font-size: 11px;">(DESC. {{ number_format($item->discount_percentage, 0) }}%: -{{ $currency }}{{ number_format(($item->quantity * $item->unit_price * $item->discount_percentage) / 100, 2) }})</span>
+                                @endif
                             </td>
                             <td class="right" valign="top" style="padding-top: 5px;">{{ number_format($item->quantity * $item->unit_price, 2) }}</td>
                         </tr>
@@ -216,10 +242,16 @@
                     <td>SUBTOTAL BRUTO:</td>
                     <td class="right">{{ $currency }}{{ number_format($sale->total_amount, 2) }}</td>
                 </tr>
-                @if($sale->discount_total > 0)
+                @if($itemDiscountTotal > 0.01)
                 <tr>
-                    <td>DESCUENTO:</td>
-                    <td class="right">-{{ $currency }}{{ number_format($sale->discount_total, 2) }}</td>
+                    <td>DESC. POR ÍTEMS:</td>
+                    <td class="right">-{{ $currency }}{{ number_format($itemDiscountTotal, 2) }}</td>
+                </tr>
+                @endif
+                @if($globalDiscountTotal > 0.01)
+                <tr>
+                    <td>DESC. GLOBAL ({{ number_format($globalDiscountPct, 0) }}%):</td>
+                    <td class="right">-{{ $currency }}{{ number_format($globalDiscountTotal, 2) }}</td>
                 </tr>
                 @endif
                 <tr>
