@@ -5,7 +5,7 @@
 
 **Objetivo:** Implementar el sistema completo de Punto de Venta con soporte para cotizaciones (persistentes y no persistentes), descuentos configurables, integración con `SalesService`, interfaz reactiva completa, cierre de caja y módulo de impresión. La arquitectura se basa en configuración centralizada (`pos_settings`) que controla el comportamiento de todas las fases posteriores.
 
-> **Estado actual:** Fase 7 (interfaz completa del Workspace POS) completada. Las fases 1 a 7 están listas; pendientes: Fase 8 (ventas pausadas), Fase 9 (cierre de caja) y Fase 10 (módulo de impresión).
+> **Estado actual:** Fases 1 a 7 y 9 (cierre de caja) completas. Pendientes: Fase 8 (ventas pausadas), Fase 10 (módulo de impresión) y Fase 11 (correcciones pre-release: `is_active`, Independencia de Cajas, Producto/Servicio).
 
 ---
 
@@ -680,11 +680,67 @@ Orden de implementación (jerárquico, de abajo hacia arriba — dato antes que 
 ## Fase 10 — Módulo de Impresión
 **Rama:** `feat/pos-print-service`
 
-- [ ] **Soporte 58mm** — ticket compacto sin logo, solo datos esenciales.
-- [ ] **Soporte 80mm** — ticket estándar con logo, datos del cliente y totales detallados.
-- [ ] **PDF estándar** — versión carta para envío por email o impresión en impresora láser.
-- [ ] `PosPrintService` centraliza la lógica de selección de formato según `receipt_size` en `pos_settings`.
-- [ ] `auto_print_receipt` dispara la impresión automáticamente al completar la venta.
+- [x] **Soporte 58mm** — ticket compacto sin logo, solo datos esenciales.
+- [x] **Soporte 80mm** — ticket estándar con logo, datos del cliente y totales detallados.
+- [x] **PDF estándar** — versión carta para envío por email o impresión en impresora láser fuera del TPV, directamente en el backoffice.
+- [x] `PosPrintService` centraliza la lógica de selección de formato según `receipt_size` en `pos_settings`.
+- [x] `auto_print_receipt` dispara la impresión automáticamente al completar la venta.
+
+---
+
+## Fase 11 — Correcciones Pre-Release (`is_active`, Independencia de Cajas, Producto/Servicio)
+
+**Rama:** `feat/pos-pre-release-fixes`
+
+**Motivo:** tres hallazgos confirmados en código durante la revisión previa al release del lunes, empaquetados junto a la Fase 10 porque tocan el mismo terreno (terminal, checkout, catálogo) y son necesarios antes de arrancar el desacople grande de Contabilidad/módulos satélite documentado en `docs/analisis/modulos-base-satelite.md`. Detalle completo de cada hallazgo (evidencia, líneas exactas) en `docs/promts.md`; aquí solo el checklist de ejecución.
+
+### 11.1 — `is_active` de `PosTerminal` no se respeta fuera del Lobby
+
+Confirmado: una terminal desactivada se puede seguir usando para abrir sesión y vender — `is_active` hoy solo filtra el listado del Lobby, no es una regla de negocio real.
+
+- [ ] `OpenSessionRequest::rules()`: `terminal_id` exige `Rule::exists('pos_terminals', 'id')->where('is_active', true)` (hoy es un `exists` plano).
+- [ ] `CheckTerminalAccess::handle()`: si `!$terminal->is_active`, redirigir al Lobby (o 403 JSON si `expectsJson()`) — cubre Workspace y Checkout de una vez, ambas rutas ya pasan por este middleware.
+- [ ] `PosTerminalController::update()`: si el request pone `is_active=false` y la terminal tiene una sesión abierta, rechazar con el mismo guard/mensaje que ya usa `destroy()` — no anular ventas/sesión en curso por un cambio de flag.
+
+### 11.2 — Independencia de Cajas: descuentos 100% por terminal (se elimina la config global)
+
+**Decisión de alcance (revisada):** no es un override con fallback al global — es reemplazo total. "Heredar del global" no resuelve nada, es la misma rigidez con un paso extra. `allow_item_discount`/`allow_global_discount`/`max_discount_percentage` **dejan de existir en `pos_settings`** y pasan a ser campos **obligatorios de cada `PosTerminal`**, sin fallback. Decisión ya tomada: la venta manual de backoffice (`sales/create.blade.php`) y `QuoteBuilder` (no están atados a una terminal) **quedan sin límite de descuento** — no hay a qué heredar una vez que el global desaparece, y el backoffice es de uso exclusivo de admins de confianza.
+
+- [ ] Migración `pos_terminals`: agregar los 3 campos `NOT NULL` con default (`true`/`true`/`10.00`, mismos valores que tenía el global hoy) — el `default` de columna resuelve el backfill de terminales existentes sin script aparte.
+- [ ] Migración `pos_settings`: `dropColumn` de los 3 campos. El resto de la tabla (cliente rápido, auto-print, `receipt_size`) no se toca.
+- [ ] `PosSetting.php`: quitar los 3 campos de `$fillable`/casts/`createDefault()`.
+- [ ] `PosTerminal.php`: 3 campos nuevos en `$fillable`/casts — se leen directo (`$terminal->allow_item_discount`), no pasan por `getSetting()` (ese patrón es justo el fallback que se está descartando).
+- [ ] `SaleService::validateDiscounts()`: recibe `?PosContext $context`. Con contexto (venta POS), valida contra los 3 campos del terminal directo. **Sin contexto (venta de backoffice), no valida ningún tope** — se salta el bloque completo.
+- [ ] `PosConfigService::validateDiscount()`: eliminar (quedaría leyendo columnas inexistentes; sin caller fuera de sí mismo).
+- [ ] `PosConfigService::update()` + `UpdatePosConfigRequest`: quitar referencias a los 3 campos.
+- [ ] `sales/pos/settings/edit.blade.php`: quitar la sección de descuentos completa (checkboxes + campo + variables Alpine que ya no aplican a esta pantalla).
+- [ ] `PosWorkspace::render()` + `pos-workspace.blade.php`: leen `$this->terminal->allow_item_discount`/`allow_global_discount`/`max_discount_percentage` directo.
+- [ ] **`QuoteBuilder.php` y `sales/create.blade.php` — cambio obligatorio, no opcional:** ambos leen hoy `pos_config()?->allow_item_discount`/`max_discount_percentage`. Tras dropear las columnas, esa lectura da `null`, y en `sales/create.blade.php` (`{{ !pos_config()?->allow_item_discount ? 'disabled' : '' }}`) eso invierte el resultado acordado — `null` deshabilita el campo en vez de dejarlo libre. Reemplazar por valores fijos en código (descuento siempre habilitado, tope de UI en 100, sin validación server-side), coherente con "backoffice sin límite".
+- [ ] Formularios de terminal (`Store`/`UpdatePosTerminalRequest` + vistas): los 3 campos pasan a **obligatorios** (`required`), no más lenguaje de "heredado" — se configuran al crear la terminal, con el default de la migración precargado.
+
+### 11.3 — `is_stockable` (Producto vs. Servicio): corte real del flujo + refactor de alta
+
+Confirmado: el bug real es el opuesto al esperado — un "servicio" no vende infinito, se **bloquea** ("Stock insuficiente. Disponible: 0") en cuanto su stock fantasma (creado en 0 por `firstOrCreate`) intentaría ir a negativo, porque ningún punto del flujo de venta sabe que `is_stockable` existe salvo el botón del Workspace (cosmético). Además cada venta de un "servicio" genera igual `InventoryMovement` y asiento de Costo de Ventas.
+
+**Backend:**
+- [ ] `StoreSaleRequest::withValidator()`: precargar `is_stockable` de los productos del payload y saltar el chequeo de `InventoryStock` cuando es `false`.
+- [ ] `SaleService::create()`: no llamar a `inventoryService->register()` para ítems con `is_stockable=false` — sin `InventoryMovement`, sin `InventoryStock`, sin asiento de Costo de Ventas.
+
+**Alta/edición de Producto/Servicio (refactor de formulario):**
+- [ ] Seeder: agregar categoría `Servicios` a `CategorySeeder`.
+- [ ] `products/create.blade.php` y `edit.blade.php`: agregar `x-data` (hoy son formularios planos) con toggle **Producto / Servicio** primero, antes del campo Nombre (mismo patrón visual que el toggle Contado/Crédito de `sales/create.blade.php`).
+- [ ] Reordenar: Toggle → Nombre → Categoría → Unidad → resto igual.
+- [ ] Al elegir Servicio: categoría se preselecciona a `Servicios` (editable), unidad se fija a `Unidad` y se deshabilita (fuera de alcance por ahora: unidades propias tipo "horas").
+- [ ] Costo: helper text dinámico según el toggle (compra a proveedor vs. mano de obra/tercerizado/destajo).
+- [ ] Quitar el checkbox suelto "¿Gestionar Stock?" — el toggle nuevo es la única fuente de `is_stockable`.
+
+**Decisión de alcance (revisada, no construir):** se descartó una tabla pivote de visibilidad por almacén/terminal (`product_warehouse`) para restringir qué servicios/productos aparecen en cada terminal. Ocultar catálogo por terminal es contraproducente: un empleado nuevo que no conoce todo el catálogo necesita verlo completo para poder ofrecerlo. Un producto o servicio se vende desde cualquier terminal/almacén sin restricción de catálogo.
+
+**Renombrado de UI (solo texto visible, cero cambios de rutas/clases/BD):**
+- [ ] Sidebar: "Productos" → "Productos/Servicios".
+- [ ] `products/index.blade.php`: título y botón "Nuevo Producto" → "...Producto/Servicio".
+- [ ] `products/create.blade.php`/`edit.blade.php`: títulos y botones de guardar.
+- [ ] `ProductTable::allColumns()`: revisar el label de `is_stockable` ("Gestionar Stock") acorde al nuevo toggle — no bloqueante.
 
 ---
 
@@ -729,8 +785,9 @@ feat/pos-loyalty-system     — Sistema de puntos y fidelización de clientes
 - [x] Fase 6 — Integración `PosContext` en `SalesService`
 - [x] Fase 7 — Interfaz completa POS (Workspace, carrito, checkout, cliente, numpad, seguridad de sesión). Multi-payment (pago dividido) queda pendiente como único punto abierto.
 - [ ] Fase 8 — Ventas pausadas (snapshot JSON)
-- [ ] Fase 9 — Cierre de caja con asiento contable automático
+- [x] Fase 9 — Cierre de caja y liquidación (sin asiento contable automático — eliminado a propósito, ver 9.1)
 - [ ] Fase 10 — Módulo de impresión 58mm/80mm/PDF
+- [ ] Fase 11 — Correcciones pre-release: `is_active`, Independencia de Cajas, Producto/Servicio
 
 ---
 
@@ -747,8 +804,9 @@ feat/pos-loyalty-system     — Sistema de puntos y fidelización de clientes
 8.  pos-sales-integration         ✅ LISTA
 9.  pos-interface                 ✅ LISTA
 10. pos-parked-sales              ⬜ PENDIENTE
-11. pos-session-settlement        ⬜ PENDIENTE
+11. pos-session-settlement        ✅ LISTA
 12. pos-print-service             ⬜ PENDIENTE
+13. pos-pre-release-fixes         ⬜ PENDIENTE
 ```
 
 ---
