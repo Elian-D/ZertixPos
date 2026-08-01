@@ -30,7 +30,20 @@
     $mostrarFiscal = $config->usa_ncf && $sale->ncf;
 
     // Usar directamente el valor de la base de datos, si es nulo o cero, mostrará 0.00
-    $taxCalculado = $sale->tax_amount ?? 0.00; 
+    $taxCalculado = $sale->tax_amount ?? 0.00;
+
+    $paperWidth = $paperWidth ?? '80mm';
+    $isNarrow = $paperWidth === '58mm';
+
+    // El ancho nominal del rollo (58mm/80mm) NO es el ancho imprimible real: todo cabezal
+    // térmico tiene una zona muerta a cada lado (en la Epson TM-m30, ~3mm por lado) donde
+    // no imprime nada. Usar el ancho nominal tal cual corta contenido en papel físico,
+    // aunque en el preview/PDF se vea completo. Se descuenta un margen de seguridad de
+    // 4mm por lado (8mm en total) — mismo colchón que ya traía el ticket original
+    // hardcodeado en 72mm para 80mm, y que coincide con el ancho imprimible estándar
+    // publicado para rollos de 58mm (50mm).
+    $printSafetyMarginMm = 4;
+    $printableWidthMm = max(1, ((int) str_replace('mm', '', $paperWidth)) - ($printSafetyMarginMm * 2));
 @endphp
 
 <!DOCTYPE html>
@@ -39,18 +52,18 @@
     <meta charset="UTF-8">
     <style>
         @page { margin: 0; size: auto; }
-        * { 
-            font-family: 'Courier New', Courier, monospace; 
-            font-size: 12px; 
-            line-height: 1.2; 
+        * {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: {{ $isNarrow ? '12px' : '14px' }};
+            line-height: 1.2;
             color: #000000 !important;
             margin: 0; padding: 0;
             box-sizing: border-box;
-            font-weight: bold;
+            font-weight: normal;
             text-transform: uppercase;
         }
         body { background: #fff; -webkit-print-color-adjust: exact; }
-        .ticket { width: 72mm; margin: 0 auto; padding: 10px 2px; }
+        .ticket { width: {{ $printableWidthMm }}mm; margin: 0 auto; padding: 10px {{ $isNarrow ? '1px' : '2px' }}; }
         .center { text-align: center; }
         .right { text-align: right; }
         
@@ -62,7 +75,7 @@
         .footer-message {
             margin-top: 25px;
             padding-bottom: 10mm;
-            font-size: 11px;
+            font-size: 13px;
             text-transform: none;
         }
 
@@ -71,11 +84,11 @@
             display: block;
             width: 100%;
             margin-bottom: 4px;
-            font-size: 11px;
+            font-size: 13px;
         }
 
         .table-header { border-bottom: 1.5px solid #000; }
-        .total-row { font-size: 14px; }
+        .total-row, .total-row * { font-size: 16px; font-weight: bold; }
 
         .cancelled-banner {
             border: 2px solid #000;
@@ -84,23 +97,34 @@
             text-align: center;
         }
         .cancelled-text {
-            font-size: 18px;
+            font-size: 21px;
             display: block;
+            font-weight: bold;
         }
+
+        /* Jerarquía visual: solo lo que el cajero/cliente necesita ver de un
+           vistazo (total, vuelto, encabezado, N° de factura) va en negrita real.
+           No existe un "semi-bold" auténtico en Courier New, así que el resto
+           del ticket se queda en normal en vez de un peso intermedio falso. */
+        /* El selector universal `*` fija font-weight:normal directamente en cada
+           elemento (no por herencia), así que .bold en un contenedor no le
+           llega a sus hijos si solo se define en el propio .bold — hace falta
+           forzarlo también en los descendientes. */
+        .bold, .bold * { font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="ticket">
         {{-- 1. ENCABEZADO EMPRESA --}}
         <div class="center">
-            <span style="font-size: 16px; display: block; margin-bottom: 2px;">{{ $config->nombre_empresa }}</span>
-            <div class="header-info" style="font-size: 11px;">
+            <span class="bold" style="font-size: 18px; display: block; margin-bottom: 2px;">{{ $config->nombre_empresa }}</span>
+            <div class="header-info" style="font-size: 13px;">
                 {{ $config->direccion }}<br>
                 TEL: {{ $config->telefono }}<br>
                 {{ $taxLabel }}: {{ $config->tax_id }}<br>
                 {{-- Solo mostrar si NCF está activo --}}
                 @if($mostrarFiscal)
-                    <span style="font-size: 9px;">COMPROBANTE AUTORIZADO POR LA DGII</span>
+                    <span style="font-size: 10px;">COMPROBANTE AUTORIZADO POR LA DGII</span>
                 @endif
             </div>
         </div>
@@ -108,7 +132,7 @@
         @if($isCancelled)
             <div class="cancelled-banner">
                 <span class="cancelled-text">*** CANCELADA ***</span>
-                <div class="cancellation-reason" style="font-size: 10px; margin-top: 3px; text-transform: none;">
+                <div class="cancellation-reason" style="font-size: 12px; margin-top: 3px; text-transform: none;">
                     MOTIVO: {{ $ncfLog->cancellation_reason ?? 'SIN MOTIVO REGISTRADO' }}
                 </div>
             </div>
@@ -117,7 +141,7 @@
         {{-- 2. DATOS DE LA FACTURA Y NCF --}}
         <div class="info-section spacer">
             <table>
-                <tr>
+                <tr class="bold">
                     <td>FACTURA: {{ $invoice->invoice_number }}</td>
                     <td class="right">{{ $sale->payment_type === 'cash' ? 'CONTADO' : 'CREDITO' }}</td>
                 </tr>
@@ -126,11 +150,11 @@
             {{-- Bloque NCF: Solo si existe y está habilitado --}}
             @if($mostrarFiscal)
                 <div style="margin-top: 4px;">
-                    <span style="font-size: 11px; display:block;">{{ $ncfLog->type->name ?? 'COMPROBANTE' }}</span>
+                    <span style="font-size: 13px; display:block;">{{ $ncfLog->type->name ?? 'COMPROBANTE' }}</span>
                     <div class="ncf-row">
-                        {{ $ncfLog?->type?->is_electronic ? 'E-NCF:' : 'NCF:' }} {{ $sale->ncf }} 
+                        {{ $ncfLog?->type?->is_electronic ? 'E-NCF:' : 'NCF:' }} {{ $sale->ncf }}
                         @if($vencimientoNcf)
-                            <span style="font-size: 10px;"> VENCE:{{ $vencimientoNcf }}</span>
+                            <span style="font-size: 12px;"> VENCE:{{ $vencimientoNcf }}</span>
                         @endif
                     </div>
                 </div>
@@ -175,8 +199,8 @@
                                 {{ (float)$item->quantity == (int)$item->quantity ? (int)$item->quantity : number_format($item->quantity, 2) }}
                             </td>
                             <td valign="top" style="padding-top: 5px;">
-                                {{ substr($item->product->name, 0, 22) }}<br>
-                                <span style="font-size: 10px;">@ {{ number_format($item->unit_price, 2) }}</span>
+                                {{ substr($item->product->name, 0, $isNarrow ? 16 : 22) }}<br>
+                                <span style="font-size: 12px;">@ {{ number_format($item->unit_price, 2) }}</span>
                             </td>
                             <td class="right" valign="top" style="padding-top: 5px;">{{ number_format($item->quantity * $item->unit_price, 2) }}</td>
                         </tr>
@@ -221,15 +245,15 @@
                 @foreach($payments as $payment)
                     <table>
                         <tr>
-                            <td style="font-size: 11px;">{{ $payment->tipoPago->nombre }}:</td>
-                            <td class="right" style="font-size: 11px;">{{ $currency }}{{ number_format($payment->amount, 2) }}</td>
+                            <td style="font-size: 13px;">{{ $payment->tipoPago->nombre }}:</td>
+                            <td class="right" style="font-size: 13px;">{{ $currency }}{{ number_format($payment->amount, 2) }}</td>
                         </tr>
                     </table>
                 @endforeach
             @endif
 
             @if($sale->payment_type === 'cash' && $sale->cash_received > 0)
-                <table style="{{ $isMultiPay ? 'margin-top: 4px; border-top: 0.5px solid #000; padding-top: 2px;' : '' }}">
+                <table class="bold" style="{{ $isMultiPay ? 'margin-top: 4px; border-top: 0.5px solid #000; padding-top: 2px;' : '' }}">
                     <tr>
                         <td>RECIBIDO:</td>
                         <td class="right">{{ $currency }}{{ number_format($sale->cash_received ?? 0, 2) }}</td>
@@ -241,9 +265,9 @@
                 </table>
             @elseif($sale->payment_type === 'credit')
                 <div class="center" style="padding-top: 15px;">
-                    <p style="font-size: 10px;">ACEPTO LOS TÉRMINOS DE PAGO.</p>
+                    <p style="font-size: 12px;">ACEPTO LOS TÉRMINOS DE PAGO.</p>
                     <div style="border-top: 1.5px solid #000; width: 85%; margin: 35px auto 5px auto;"></div>
-                    <span style="font-size: 10px;">FIRMA DEL CLIENTE</span>
+                    <span style="font-size: 12px;">FIRMA DEL CLIENTE</span>
                 </div>
             @endif
         </div>
