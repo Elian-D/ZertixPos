@@ -19,9 +19,6 @@ class PosSettingSeeder extends Seeder
         PosSetting::firstOrCreate(
             ['id' => 1], // Solo queremos una fila de configuración
             [
-                'allow_item_discount' => true,
-                'allow_global_discount' => true,
-                'max_discount_percentage' => 10.00,
                 'allow_quick_customer_creation' => true,
                 'default_walkin_customer_id' => $defaultClient ? $defaultClient->id : null,
                 'allow_quote_without_save' => true,

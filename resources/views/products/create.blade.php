@@ -1,19 +1,61 @@
 <x-app-layout>
-    <div class="max-w-4xl mx-auto py-8 px-4">
+    <div class="max-w-4xl mx-auto py-8 px-4"
+        x-data="{
+            isService: {{ old('is_stockable') !== null ? (old('is_stockable') == '0' ? 'true' : 'false') : 'false' }},
+            categoryId: '{{ old('category_id') }}',
+            unitId: '{{ old('unit_id') }}',
+            servicesCategoryId: @js($categories->firstWhere('name', 'Servicios')?->id),
+            unidadUnitId: @js($units->firstWhere('name', 'Unidad')?->id),
+            selectType(service) {
+                this.isService = service;
+                if (service) {
+                    if (this.servicesCategoryId) this.categoryId = this.servicesCategoryId;
+                    if (this.unidadUnitId) this.unitId = this.unidadUnitId;
+                }
+            },
+        }">
         {{-- Importante: enctype para permitir subida de imágenes --}}
         <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data"
             class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
             @csrf
 
             <x-ui.toasts />
-            
+
             <x-form-header
-                title="Nuevo Producto"
-                subtitle="Registre un nuevo artículo en su catálogo de inventario."
+                title="Nuevo Producto/Servicio"
+                subtitle="Registre un nuevo artículo en su catálogo."
                 :back-route="route('products.index')" />
 
             <div class="p-8 space-y-10">
-                
+
+                {{-- Sección 0: Tipo de Ítem --}}
+                <section>
+                    <div class="flex items-center gap-2 mb-6 border-b border-gray-100 pb-2">
+                        <div class="w-7 h-7 bg-gray-700 text-white rounded-full flex items-center justify-center font-bold text-xs">0</div>
+                        <h3 class="font-bold text-gray-800 uppercase text-xs tracking-wider">Tipo de Ítem</h3>
+                    </div>
+
+                    <input type="hidden" name="is_stockable" :value="isService ? 0 : 1">
+
+                    <div class="grid grid-cols-2 gap-2 p-1 bg-gray-100 rounded-xl">
+                        <button type="button" @click="selectType(false)"
+                            :class="!isService ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'"
+                            class="flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all">
+                            <x-heroicon-s-cube class="w-4 h-4"/>
+                            Producto
+                        </button>
+                        <button type="button" @click="selectType(true)"
+                            :class="isService ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'"
+                            class="flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all">
+                            <x-heroicon-s-wrench-screwdriver class="w-4 h-4"/>
+                            Servicio
+                        </button>
+                    </div>
+                    <p class="mt-2 text-xs text-gray-400 italic" x-show="isService">
+                        Un servicio no descuenta inventario ni requiere existencias en almacén (ej. instalación, flete, mano de obra).
+                    </p>
+                </section>
+
                 {{-- Sección 1: Identificación y Categoría --}}
                 <section>
                     <div class="flex items-center gap-2 mb-6 border-b border-gray-100 pb-2">
@@ -23,16 +65,16 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="md:col-span-2">
-                            <x-input-label value="Nombre del Producto" />
+                            <x-input-label value="Nombre" />
                             <x-text-input name="name" class="w-full mt-1" :value="old('name')" placeholder="Ej: Funda de Hielo 10lb" required />
                         </div>
 
                         <div>
                             <x-input-label value="Categoría" />
-                            <select name="category_id" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm" required>
+                            <select name="category_id" x-model="categoryId" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm" required>
                                 <option value="">Seleccione una categoría...</option>
                                 @foreach($categories as $category)
-                                    <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>
+                                    <option value="{{ $category->id }}">
                                         {{ $category->name }}
                                     </option>
                                 @endforeach
@@ -41,19 +83,29 @@
 
                         <div>
                             <x-input-label value="Unidad de Medida" />
-                            <select name="unit_id" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm" required>
-                                <option value="">Seleccione unidad...</option>
-                                @foreach($units as $unit)
-                                    <option value="{{ $unit->id }}" {{ old('unit_id') == $unit->id ? 'selected' : '' }}>
-                                        {{ $unit->name }} ({{ $unit->abbreviation }})
-                                    </option>
-                                @endforeach
-                            </select>
+                            <template x-if="!isService">
+                                <select name="unit_id" x-model="unitId" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm" required>
+                                    <option value="">Seleccione unidad...</option>
+                                    @foreach($units as $unit)
+                                        <option value="{{ $unit->id }}">
+                                            {{ $unit->name }} ({{ $unit->abbreviation }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </template>
+                            <template x-if="isService">
+                                <div>
+                                    <input type="hidden" name="unit_id" :value="unitId">
+                                    <div class="w-full mt-1 rounded-md border-gray-200 bg-gray-50 text-sm text-gray-500 px-3 py-2">
+                                        {{ $units->firstWhere('name', 'Unidad')?->name ?? 'Unidad' }} (fija para servicios)
+                                    </div>
+                                </div>
+                            </template>
                         </div>
 
                         <div class="md:col-span-2">
                             <x-input-label value="Descripción" />
-                            <textarea name="description" rows="2" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm" placeholder="Detalles adicionales del producto...">{{ old('description') }}</textarea>
+                            <textarea name="description" rows="2" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm" placeholder="Detalles adicionales...">{{ old('description') }}</textarea>
                         </div>
                     </div>
                 </section>
@@ -80,18 +132,18 @@
                                 <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 text-sm">$</span>
                                 <x-text-input type="number" step="0.01" name="cost" class="w-full pl-7" :value="old('cost')" placeholder="0.00" required />
                             </div>
+                            <p class="mt-1 text-xs text-gray-800" x-show="!isService">
+                                El precio pagado al proveedor por la compra de este artículo de inventario.
+                            </p>
+                            <p class="mt-1 text-xs text-gray-800" x-show="isService">
+                                Deja en 0 si es mano de obra propia. Si el servicio es subcontratado (tercerizado) o pagas una comisión fija al técnico, escribe aquí ese costo directo.
+                            </p>
                         </div>
 
-                        <div class="md:col-span-2 flex items-center gap-4 bg-gray-50 p-4 rounded-lg border border-gray-100 mt-2">
-                            <x-input-label value="¿Gestionar Stock?" class="mb-0" />
-                            <input type="checkbox" name="is_stockable" value="1" checked class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 w-5 h-5 cursor-pointer">
-                            <span class="text-xs text-gray-500 italic">Si se desmarca, el producto no restará inventario al venderse.</span>
-                        </div>
-
-                        <div class="md:col-span-2 flex items-center gap-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                        <div class="md:col-span-4 flex items-center gap-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
                             <x-input-label value="Estado Activo" class="mb-0" />
                             <input type="checkbox" name="is_active" value="1" {{ old('is_active', '1') == '1' ? 'checked' : '' }} class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 w-5 h-5 cursor-pointer">
-                            <span class="text-xs text-gray-500 italic">Determina si el producto aparece en el POS.</span>
+                            <span class="text-xs text-gray-500 italic">Determina si el producto/servicio aparece en el POS.</span>
                         </div>
                     </div>
                 </section>
@@ -116,7 +168,7 @@
 
                         <div class="flex-1 w-full">
                             <x-input-label value="Seleccionar Archivo" />
-                            <input type="file" name="image" id="image-input" accept="image/*" 
+                            <input type="file" name="image" id="image-input" accept="image/*"
                                 class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 transition-all cursor-pointer" />
                             <p class="mt-2 text-xs text-gray-400">Formatos recomendados: JPG, PNG o WEBP. Máximo 2MB.</p>
                         </div>
@@ -126,7 +178,7 @@
 
             <div class="p-6 bg-gray-50 flex justify-end gap-3 border-t">
                 <a href="{{ route('products.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition">Cancelar</a>
-                <x-primary-button class="bg-indigo-600 hover:bg-indigo-700 shadow-lg px-8">Guardar Producto</x-primary-button>
+                <x-primary-button class="bg-indigo-600 hover:bg-indigo-700 shadow-lg px-8">Guardar Producto/Servicio</x-primary-button>
             </div>
         </form>
     </div>

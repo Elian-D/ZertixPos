@@ -7,7 +7,6 @@ class ProductTable
     public static function allColumns(): array
     {
         return [
-            'sku'               => 'Código',
             'name'              => 'Nombre',
             'image_path'        => 'Imagen',
             'category_id'       => 'Categoría',
@@ -16,7 +15,7 @@ class ProductTable
             'cost'              => 'Costo',
             'unit_id'           => 'Unidad de Medida',
             'is_active'         => 'Estado',
-            'is_stockable'      => 'Gestionar Stock',
+            'is_stockable'      => 'Tipo',
             'created_at'        => 'Fecha Creación',
             'updated_at'        => 'Última Actualización',
         ];
@@ -25,19 +24,18 @@ class ProductTable
     public static function defaultDesktop(): array
     {
         return [
-            'sku',
             'name',
             'image_path',
             'price',
             'is_active',
+            'is_stockable',
         ];
     }
 
     public static function defaultMobile(): array
     {
         return [
-            'sku',
-            'name',
+            'name'
         ];
     }
 }

@@ -27,13 +27,22 @@ class PosTerminal extends Model
         'printer_format',
         'is_active',
         'access_pin',   // Añadido
-        'requires_pin'  // Añadido
+        'requires_pin', // Añadido
+        'allow_item_discount',
+        'allow_global_discount',
+        'max_item_discount_percentage',
+        'max_global_discount_percentage',
+        'discount_policy',
     ];
 
     protected $casts = [
-        'is_mobile'    => 'boolean',
-        'is_active'    => 'boolean',
-        'requires_pin' => 'boolean', // Añadido
+        'is_mobile'                        => 'boolean',
+        'is_active'                        => 'boolean',
+        'requires_pin'                     => 'boolean', // Añadido
+        'allow_item_discount'              => 'boolean',
+        'allow_global_discount'            => 'boolean',
+        'max_item_discount_percentage'     => 'float',
+        'max_global_discount_percentage'   => 'float',
     ];
 
     protected $hidden = [

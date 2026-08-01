@@ -40,6 +40,25 @@
 
     // NUEVO: Lógica de visibilidad fiscal
     $mostrarFiscal = $config->usa_ncf && $sale->ncf;
+
+    // 11.2.6: mismo desglose y misma lógica de reconstrucción que ticket.blade.php —
+    // ver el comentario allá para el porqué de usar discount_percentage como señal.
+    $itemDiscountTotal = 0;
+    $eligibleGrossForGlobal = 0;
+
+    foreach ($sale->items as $saleItem) {
+        $lineGross = $saleItem->quantity * $saleItem->unit_price;
+        $itemPct = $saleItem->discount_percentage ?? 0;
+
+        if ($itemPct > 0) {
+            $itemDiscountTotal += ($lineGross * $itemPct) / 100;
+        } else {
+            $eligibleGrossForGlobal += $lineGross;
+        }
+    }
+
+    $globalDiscountTotal = max(0, ($sale->discount_total ?? 0) - $itemDiscountTotal);
+    $globalDiscountPct = $eligibleGrossForGlobal > 0 ? ($globalDiscountTotal / $eligibleGrossForGlobal) * 100 : 0;
 @endphp
 
 <!DOCTYPE html>
@@ -177,6 +196,9 @@
                         @if($item->product->sku)
                             <br><small style="color: #64748b;">SKU: {{ $item->product->sku }}</small>
                         @endif
+                        @if(($item->discount_percentage ?? 0) > 0)
+                            <br><small style="color: #dc2626;">Desc. ítem {{ number_format($item->discount_percentage, 0) }}%: -{{ $currency }}{{ number_format(($item->quantity * $item->unit_price * $item->discount_percentage) / 100, 2) }}</small>
+                        @endif
                     </td>
                     <td class="text-right">{{ $currency }}{{ number_format($item->unit_price, 2) }}</td>
                     <td class="text-right bold">{{ $currency }}{{ number_format($item->quantity * $item->unit_price, 2) }}</td>
@@ -214,10 +236,16 @@
                     <td class="info-label" style="padding: 5px 0;">Subtotal Bruto:</td>
                     <td class="text-right bold" style="font-size: 14px;">{{ $currency }}{{ number_format($sale->total_amount, 2) }}</td>
                 </tr>
-                @if($sale->discount_total > 0)
+                @if($itemDiscountTotal > 0.01)
                 <tr style="color: #dc2626;">
-                    <td class="info-label" style="padding: 5px 0;">Descuento:</td>
-                    <td class="text-right bold" style="font-size: 14px; color: #dc2626;">-{{ $currency }}{{ number_format($sale->discount_total, 2) }}</td>
+                    <td class="info-label" style="padding: 5px 0;">Desc. por Ítems:</td>
+                    <td class="text-right bold" style="font-size: 14px; color: #dc2626;">-{{ $currency }}{{ number_format($itemDiscountTotal, 2) }}</td>
+                </tr>
+                @endif
+                @if($globalDiscountTotal > 0.01)
+                <tr style="color: #dc2626;">
+                    <td class="info-label" style="padding: 5px 0;">Desc. Global ({{ number_format($globalDiscountPct, 0) }}%):</td>
+                    <td class="text-right bold" style="font-size: 14px; color: #dc2626;">-{{ $currency }}{{ number_format($globalDiscountTotal, 2) }}</td>
                 </tr>
                 @endif
                 <tr>

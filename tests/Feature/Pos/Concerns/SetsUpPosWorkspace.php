@@ -36,9 +36,6 @@ trait SetsUpPosWorkspace
         $this->walkinClientId = Client::where('tax_id', '00000000000')->value('id');
 
         PosSetting::create([
-            'allow_item_discount' => true,
-            'allow_global_discount' => true,
-            'max_discount_percentage' => 10.00,
             'allow_quick_customer_creation' => true,
             'default_walkin_customer_id' => $this->walkinClientId,
             'allow_quote_without_save' => true,

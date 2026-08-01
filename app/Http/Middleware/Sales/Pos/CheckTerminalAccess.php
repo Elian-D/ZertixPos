@@ -29,12 +29,19 @@ class CheckTerminalAccess
             return $next($request); // Si no hay terminal en el contexto, seguimos
         }
 
-        // 2. Si la terminal no requiere PIN (o no tiene uno configurado), permitimos el paso
+        // 2. Terminal desactivada: bloquea Workspace y Checkout de una vez, sin importar
+        // si la sesión de PIN ya estaba verificada (una sesión abierta antes de desactivar
+        // la terminal no debe poder seguir vendiendo).
+        if (! $terminal->is_active) {
+            return $this->redirectInactive();
+        }
+
+        // 3. Si la terminal no requiere PIN (o no tiene uno configurado), permitimos el paso
         if (! $terminal->requiresPinVerification()) {
             return $next($request);
         }
 
-        // 3. Verificar si existe la verificación en la sesión
+        // 4. Verificar si existe la verificación en la sesión
         if (! session()->has("terminal_verified.{$terminal->id}")) {
             return $this->redirectToPin();
         }
@@ -57,5 +64,21 @@ class CheckTerminalAccess
         return redirect()
             ->route('sales.pos.index')
             ->with('info', 'Esta terminal está bloqueada. Ingresa tu PIN para continuar.');
+    }
+
+    /**
+     * Redirección al Lobby (o 403 JSON) cuando la terminal fue desactivada.
+     */
+    private function redirectInactive()
+    {
+        if (request()->expectsJson()) {
+            return response()->json([
+                'message' => 'Esta terminal está desactivada.',
+            ], 403);
+        }
+
+        return redirect()
+            ->route('sales.pos.index')
+            ->with('error', 'Esta terminal está desactivada. Contacta a un administrador.');
     }
 }

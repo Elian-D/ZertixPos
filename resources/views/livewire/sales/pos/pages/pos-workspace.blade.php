@@ -7,9 +7,10 @@
         ncfTypes: @js($ncfTypes),
         usaNcf: @js($usaNcf),
         taxRate: @js($taxRate),
-        maxDiscountPct: @js($posConfig?->max_discount_percentage ?? 100),
-        allowItemDiscount: @js((bool) ($posConfig?->allow_item_discount ?? true)),
-        allowGlobalDiscount: @js((bool) ($posConfig?->allow_global_discount ?? true)),
+        maxItemDiscountPct: @js($maxItemDiscountPercentage),
+        maxGlobalDiscountPct: @js($maxGlobalDiscountPercentage),
+        allowItemDiscount: @js((bool) $allowItemDiscount),
+        allowGlobalDiscount: @js((bool) $allowGlobalDiscount),
         walkinClientId: @js($walkinClientId),
         defaultNcfTypeId: @js($terminal->default_ncf_type_id),
         checkoutUrl: @js(route('sales.pos.checkout.store', $terminal)),
@@ -250,7 +251,7 @@
 
                     this.items.forEach(item => {
                         item.quantity = Math.max(1, parseFloat(item.quantity) || 1);
-                        let pct = this.allowItemDiscount ? Math.min(this.maxDiscountPct, Math.max(0, parseFloat(item.discount_percentage) || 0)) : 0;
+                        let pct = this.allowItemDiscount ? Math.min(this.maxItemDiscountPct, Math.max(0, parseFloat(item.discount_percentage) || 0)) : 0;
                         item.discount_percentage = pct;
 
                         const lineBruto = item.price * item.quantity;
@@ -260,20 +261,31 @@
                         itemDiscounts += item.discount_amount;
                     });
 
-                    // Descuento global: aplica sobre el neto restante tras descuentos por ítem,
-                    // y se distribuye proporcionalmente para que discount_total == Σ items[].discount_amount.
+                    // Descuento global — Regla de Exclusión (única política operativa por ahora,
+                    // ver 11.2.5): se reparte ÚNICAMENTE entre los ítems SIN descuento propio
+                    // (discount_percentage == 0). Un ítem con descuento individual queda excluido
+                    // del reparto global, así el backend puede distinguir con certeza "descuento
+                    // por ítem" de "descuento global" mirando solo discount_percentage (nunca
+                    // tocado por este reparto) — ver SaleService::validateDiscounts().
+                    //
+                    // (Política alternativa 'cascade' — reparto sobre el subtotal restante tras
+                    // descuentos por ítem, incluyendo ítems ya descontados — queda documentada
+                    // pero sin implementar ni selector en la UI hasta que haya demanda real de
+                    // una terminal con discount_policy = 'cascade'.)
                     let globalAmount = 0;
                     if (this.allowGlobalDiscount && this.globalDiscountPercentage > 0) {
-                        const gPct = Math.min(this.maxDiscountPct, Math.max(0, parseFloat(this.globalDiscountPercentage) || 0));
+                        const gPct = Math.min(this.maxGlobalDiscountPct, Math.max(0, parseFloat(this.globalDiscountPercentage) || 0));
                         this.globalDiscountPercentage = gPct;
-                        const remaining = bruto - itemDiscounts;
-                        globalAmount = (remaining * gPct) / 100;
 
-                        if (remaining > 0) {
-                            this.items.forEach(item => {
+                        const eligibleItems = this.items.filter(item => (item.discount_percentage || 0) === 0);
+                        const eligibleBase = eligibleItems.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+
+                        if (eligibleBase > 0) {
+                            globalAmount = (eligibleBase * gPct) / 100;
+
+                            eligibleItems.forEach(item => {
                                 const lineBruto = item.price * item.quantity;
-                                const lineRemaining = lineBruto - item.discount_amount;
-                                const share = (lineRemaining / remaining) * globalAmount;
+                                const share = (lineBruto / eligibleBase) * globalAmount;
                                 item.discount_amount += share;
                             });
                         }

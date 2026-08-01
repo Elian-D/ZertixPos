@@ -9,9 +9,6 @@ use Illuminate\Support\Facades\Cache;
 class PosSetting extends Model
 {
     protected $fillable = [
-        'allow_item_discount',
-        'allow_global_discount',
-        'max_discount_percentage',
         'allow_quick_customer_creation',
         'default_walkin_customer_id',
         'allow_quote_without_save',
@@ -20,9 +17,6 @@ class PosSetting extends Model
     ];
 
     protected $casts = [
-        'allow_item_discount' => 'boolean',
-        'allow_global_discount' => 'boolean',
-        'max_discount_percentage' => 'float',
         'allow_quick_customer_creation' => 'boolean',
         'allow_quote_without_save' => 'boolean',
         'auto_print_receipt' => 'boolean',
@@ -45,9 +39,6 @@ class PosSetting extends Model
     public static function createDefault()
     {
         return self::create([
-            'allow_item_discount' => true,
-            'allow_global_discount' => true,
-            'max_discount_percentage' => 10.00,
             'allow_quick_customer_creation' => true,
             'default_walkin_customer_id' => 1, // Asumiendo que 1 es Consumidor Final
             'allow_quote_without_save' => true,

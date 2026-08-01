@@ -64,10 +64,12 @@ class QuoteBuilder extends Component
         $this->subtotal = 0;
         $this->discountTotal = 0;
 
-        // FASE 5: Traer configuración
-        $posConfig = pos_config();
-        $allowItemDiscount = $posConfig?->allow_item_discount ?? true;
-        $maxDiscountPct = $posConfig?->max_discount_percentage ?? 100;
+        // 11.2: la política de descuentos ahora vive por terminal (PosTerminal), y las
+        // cotizaciones de backoffice no están atadas a ninguna. Decisión explícita: sin
+        // límite aquí (backoffice es de uso exclusivo de admins de confianza) — no hay
+        // config global a la que "heredar" desde que se eliminó de pos_settings.
+        $allowItemDiscount = true;
+        $maxDiscountPct = 100;
 
         foreach ($this->items as $index => &$item) {
             $item['quantity'] = max(1, (float)$item['quantity']);

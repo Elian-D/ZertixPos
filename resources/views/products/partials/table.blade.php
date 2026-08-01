@@ -7,12 +7,13 @@
                 </td>
             @endif
 
-            @if(in_array('sku', $visibleColumns))
-                <td class="px-6 py-4 text-sm font-mono font-bold text-gray-700">{{ $item->sku }}</td>
-            @endif
-
             @if(in_array('name', $visibleColumns))
-                <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">{{ $item->name }}</td>
+                <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
+                    {{ $item->name }}
+                    @if($item->sku)
+                        <span class="block text-xs font-mono font-normal text-gray-400 mt-0.5">{{ $item->sku }}</span>
+                    @endif
+                </td>
             @endif
 
             @if(in_array('image_path', $visibleColumns))
@@ -67,8 +68,8 @@
                 <td class="px-6 py-4">
                     <span
                         class="inline-flex whitespace-nowrap px-2 py-1 text-xs rounded-full font-bold
-                        {{ $item->is_stockable ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                        {{ $item->is_stockable ? 'Con stock' : 'Sin stock' }}
+                        {{ $item->is_stockable ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-100 text-amber-700' }}">
+                        {{ $item->is_stockable ? 'Producto' : 'Servicio' }}
                     </span>
                 </td>
             @endif

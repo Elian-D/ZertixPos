@@ -143,10 +143,12 @@
             <div class="space-y-1">
                 <div class="flex items-center justify-between">
                     <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Cliente</label>
-                    <button type="button" @click="$dispatch('open-modal', 'quick-create-client')"
-                            class="text-[#58c03f] text-xs font-bold flex items-center gap-1">
-                        <x-heroicon-s-user-plus class="w-3.5 h-3.5" /> Nuevo
-                    </button>
+                    @if($posConfig->allow_quick_customer_creation)
+                        <button type="button" @click="$dispatch('open-modal', 'quick-create-client')"
+                                class="text-[#58c03f] text-xs font-bold flex items-center gap-1">
+                            <x-heroicon-s-user-plus class="w-3.5 h-3.5" /> Nuevo
+                        </button>
+                    @endif
                 </div>
                 <button type="button" @click="clientSheetOpen = true"
                         class="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 flex items-center justify-between text-sm">
@@ -162,9 +164,12 @@
 
             {{-- Descuento global --}}
             <div x-show="allowGlobalDiscount" class="flex items-center justify-between gap-3">
-                <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Descuento Global</label>
+                <div class="flex items-center gap-1">
+                    <label class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Descuento Global</label>
+                    @include('livewire.sales.pos.pages.pos-workspace.partials.discount-info-tooltip')
+                </div>
                 <div class="relative w-24">
-                    <input type="number" min="0" :max="maxDiscountPct" step="0.01"
+                    <input type="number" min="0" :max="maxGlobalDiscountPct" step="0.01"
                            x-model.number="globalDiscountPercentage" @input="recalculateTotals()"
                            class="w-full text-right border-gray-200 rounded-lg text-xs py-1.5 pr-6">
                     <span class="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-400">%</span>
