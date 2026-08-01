@@ -35,6 +35,36 @@
                 </td>
             @endif
 
+            {{-- Terminal POS --}}
+            @if(in_array('pos_terminal_id', $visibleColumns))
+                <td class="px-6 py-4 text-sm text-gray-600">
+                    @if($sale->pos_terminal_id)
+                        <div class="flex items-center">
+                            <div class="p-1 bg-blue-50 rounded mr-2">
+                                <x-heroicon-s-computer-desktop class="w-3.5 h-3.5 text-blue-500" />
+                            </div>
+                            <span class="font-medium text-gray-700">{{ $sale->posTerminal->name }}</span>
+                        </div>
+                    @else
+                        <span class="text-gray-400 italic text-xs italic">Ventanilla/Admin</span>
+                    @endif
+                </td>
+            @endif
+
+            {{-- Sesión POS --}}
+            @if(in_array('pos_session_id', $visibleColumns))
+                <td class="px-6 py-4 text-sm text-gray-600 text-center">
+                    @if($sale->pos_session_id)
+                        <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 text-[10px] font-mono font-bold ring-1 ring-inset ring-gray-200">
+                            #{{ $sale->pos_session_id }}
+                        </span>
+                    @else
+                        <span class="text-gray-300">-</span>
+                    @endif
+                </td>
+            @endif
+
+
             {{-- Tipo de Pago --}}
             @if(in_array('payment_type', $visibleColumns))
                 <td class="px-6 py-4">
@@ -55,7 +85,32 @@
             {{-- Método de Pago Detallado --}}
             @if(in_array('tipo_pago_id', $visibleColumns))
                 <td class="px-6 py-4 text-sm">
-                    <div class="font-medium text-gray-900">{{ $sale->tipoPago->nombre ?? 'N/A' }}</div>
+                    @php
+                        // No usamos $sale->tipoPago->nombre: ese campo es sales.tipo_pago_id,
+                        // el "principal" heredado de antes de existir pago dividido. Una venta
+                        // mixta (varias filas en sale_payments) mostraba solo ese método suelto
+                        // en vez de "Mixto" — misma lógica que ya usa el reporte de turno POS.
+                        $isCredit = $sale->payment_type === \App\Models\Sales\Sale::PAYMENT_CREDIT;
+                        $isMixed = !$isCredit && $sale->payments->count() > 1;
+                        $singlePayment = (!$isCredit && !$isMixed) ? $sale->payments->first()?->tipoPago : null;
+
+                        $paymentBadgeKey = $isCredit
+                            ? \App\Models\Configuration\TipoPago::CREDITO
+                            : ($isMixed
+                                ? \App\Models\Configuration\TipoPago::MIXTO
+                                : ($singlePayment->slug ?? null));
+
+                        $paymentLabel = $isCredit ? 'Crédito' : ($isMixed ? 'Mixto' : ($singlePayment->nombre ?? 'N/A'));
+
+                        $pmStyles = \App\Models\Configuration\TipoPago::getBadgeStyles();
+                        $pmIcons  = \App\Models\Configuration\TipoPago::getBadgeIcons();
+                        $paymentBadgeStyle = $pmStyles[$paymentBadgeKey] ?? \App\Models\Configuration\TipoPago::getDefaultBadgeStyle();
+                        $paymentBadgeIcon  = $pmIcons[$paymentBadgeKey] ?? \App\Models\Configuration\TipoPago::getDefaultBadgeIcon();
+                    @endphp
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight ring-1 ring-inset {{ $paymentBadgeStyle }}">
+                        <x-dynamic-component :component="$paymentBadgeIcon" class="w-3 h-3 mr-1" />
+                        {{ $paymentLabel }}
+                    </span>
                 </td>
             @endif
 

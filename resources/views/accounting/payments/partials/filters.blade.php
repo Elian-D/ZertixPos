@@ -10,45 +10,52 @@
         <x-data-table.per-page-selector formId="payments-filters" />
 
         <x-data-table.filter-dropdown>
-            {{-- Filtro de Cliente --}}
-            <x-data-table.filter-select label="Cliente" name="client_id" formId="payments-filters">
-                <option value="">Todos los clientes</option>
-                @foreach($clients as $client)
-                    <option value="{{ $client->id }}">{{ $client->name }}</option>
-                @endforeach
-            </x-data-table.filter-select>
 
-            {{-- Filtro de Método de Pago --}}
-            <x-data-table.filter-select label="Método de Pago" name="tipo_pago_id" formId="payments-filters">
-                <option value="">Todos los métodos</option>
-                @foreach($paymentMethods as $method)
-                    <option value="{{ $method->id }}">{{ $method->nombre }}</option>
-                @endforeach
-            </x-data-table.filter-select>
+            {{-- GRUPO 1: Filtros Principales --}}
+            <x-data-table.filter-group title="Filtros Principales">
 
-            {{-- Filtro de Estado --}}
-            <x-data-table.filter-select label="Estado" name="status" formId="payments-filters">
-                <option value="">Todos los estados</option>
-                @foreach($statuses as $key => $label)
-                    <option value="{{ $key }}">{{ $label }}</option>
-                @endforeach
-            </x-data-table.filter-select>
+                <x-data-table.filter-select label="Cliente" name="client_id" formId="payments-filters">
+                    <option value="">Todos los clientes</option>
+                    @foreach($clients as $client)
+                        <option value="{{ $client->id }}">{{ $client->name }}</option>
+                    @endforeach
+                </x-data-table.filter-select>
 
-            {{-- Rango de Fecha de Pago --}}
-            <x-data-table.filter-datetime-range 
-                label="Fecha de Pago" 
-                formId="payments-filters" 
-                nameFrom="from_date"
-                nameTo="to_date"
-            />
+                <x-data-table.filter-select label="Método de Pago" name="tipo_pago_id" formId="payments-filters">
+                    <option value="">Todos los métodos</option>
+                    @foreach($paymentMethods as $method)
+                        <option value="{{ $method->id }}">{{ $method->nombre }}</option>
+                    @endforeach
+                </x-data-table.filter-select>
 
-            {{-- Rango de Montos --}}
-            <x-data-table.filter-range 
-                label="Monto Pagado" 
-                nameMin="min_amount" 
-                nameMax="max_amount" 
-                formId="payments-filters" 
-            />
+                <x-data-table.filter-toggle 
+                    label="Estado" 
+                    name="status" 
+                    :options="['' => 'Todos', 'active' => 'Aplicado', 'cancelled' => 'Anulado']" 
+                    formId="payments-filters" 
+                />
+
+            </x-data-table.filter-group>
+
+            {{-- GRUPO 2: Rangos --}}
+            <x-data-table.filter-group title="Rangos de Búsqueda" collapsed>
+
+                <x-data-table.filter-datetime-range 
+                    label="Fecha de Pago" 
+                    formId="payments-filters" 
+                    nameFrom="from_date"
+                    nameTo="to_date"
+                />
+
+                <x-data-table.filter-range 
+                    label="Monto Pagado" 
+                    nameMin="min_amount" 
+                    nameMax="max_amount" 
+                    formId="payments-filters" 
+                />
+
+            </x-data-table.filter-group>
+
         </x-data-table.filter-dropdown>
 
         <x-data-table.column-selector 

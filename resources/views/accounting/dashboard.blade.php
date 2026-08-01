@@ -91,7 +91,7 @@
             />
 
             <x-dashboard.kpi-card 
-                title="Patrimonio en Hielo" 
+                title="Patrimonio en Productos" 
                 :value="'$' . number_format($stats['inventory_value'], 2)" 
                 icon="square-3-stack-3d" color="indigo" secondary-text="Valor en almacenes"
             />

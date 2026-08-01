@@ -18,10 +18,14 @@ class NcfLogDateFilter implements FilterInterface
 
         return $query
             ->when($from, function($q) use ($from) {
-                return $q->whereDate('created_at', '>=', Carbon::parse($from));
+                // Estandarizado: Inicio del minuto
+                $date = Carbon::parse($from)->startOfMinute(); 
+                return $q->where('created_at', '>=', $date->toDateTimeString());
             })
             ->when($to, function($q) use ($to) {
-                return $q->whereDate('created_at', '<=', Carbon::parse($to));
+                // Estandarizado: Fin del minuto
+                $date = Carbon::parse($to)->endOfMinute();
+                return $q->where('created_at', '<=', $date->toDateTimeString());
             });
     }
 }

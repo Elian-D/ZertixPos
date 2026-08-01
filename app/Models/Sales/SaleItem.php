@@ -13,7 +13,9 @@ class SaleItem extends Model
         'product_id',
         'quantity',
         'unit_price',
-        'subtotal'
+        'discount_amount',
+        'discount_percentage',
+        'subtotal',
     ];
 
     public function sale(): BelongsTo

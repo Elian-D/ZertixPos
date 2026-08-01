@@ -115,4 +115,31 @@ class JournalEntryService
     {
         return $entry->update(['status' => JournalEntry::STATUS_CANCELLED]);
     }
+
+    /**
+     * Crea un asiento de reversión basado en uno existente.
+     */
+    public function reverse(int $entryId, array $overrides = []): JournalEntry
+    {
+        return DB::transaction(function () use ($entryId, $overrides) {
+            $original = JournalEntry::with('items')->findOrFail($entryId);
+
+            $items = $original->items->map(function ($item) {
+                return [
+                    'accounting_account_id' => $item->accounting_account_id,
+                    'debit'                 => $item->credit, // Inversión
+                    'credit'                => $item->debit, // Inversión
+                    'note'                  => "Reversión de item #{$item->id}"
+                ];
+            })->toArray();
+
+            return $this->create([
+                'entry_date'  => $overrides['entry_date'] ?? now(),
+                'reference'   => $overrides['reference'] ?? "REV-{$original->reference}",
+                'description' => $overrides['description'] ?? "Asiento de reversión de: {$original->description}",
+                'status'      => JournalEntry::STATUS_POSTED,
+                'items'       => $items
+            ]);
+        });
+    }
 }

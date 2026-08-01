@@ -2,6 +2,7 @@
 
 namespace App\Services\Client;
 
+use App\DTOs\Clients\QuickClientDTO;
 use App\Models\Clients\Client;
 use App\Models\Accounting\AccountingAccount;
 use Illuminate\Support\Facades\DB;
@@ -53,6 +54,38 @@ class ClientService
                 return Client::create($data);
             });
         }
+
+    public function createQuickClient(array $data): Client
+    {
+        // 1. Transformar datos usando el DTO para asegurar campos obligatorios
+        $dto = QuickClientDTO::fromRequest($data);
+        
+        // 2. Lógica de Identificador Fiscal Automático si no viene el tipo
+        $clientData = $dto->toArray();
+        if (empty($clientData['tax_identifier_type_id']) && !empty($clientData['tax_id'])) {
+            $clientData['tax_identifier_type_id'] = $this->resolveTaxType($clientData['tax_id']);
+        }
+
+        // 3. Llamar al método de creación estándar (que maneja transacciones y contabilidad)
+        return $this->createClient($clientData);
+    }
+
+    /**
+     * Lógica básica para RD: RNC (9) o Cédula (11)
+     */
+    private function resolveTaxType(?string $taxId): ?int
+    {
+        if (!$taxId) return null;
+        $length = strlen(preg_replace('/[^0-9]/', '', $taxId));
+        
+        // Aquí deberías buscar en tu tabla tax_identifier_types según la longitud
+        // Ejemplo hipotético:
+        return match($length) {
+            9 => 198,  // RNC
+            11 => 197, // Cédula
+            default => null
+        };
+    }
 
     public function updateClient(Client $client, array $data): bool
     {

@@ -33,11 +33,12 @@ document.addEventListener('DOMContentLoaded', () => {
             // Rango de Fechas de Emisión
             from_date: { 
                 label: 'Desde',
-                format: (val) => val ? val.split('-').reverse().join('/') : '' 
+                // Si viene con 'T' (datetime-local), lo limpiamos. Si es solo fecha, reverse normal.
+                format: (val) => val ? val.replace('T', ' ').split('-').reverse().join('/') : '' 
             },
             to_date: { 
                 label: 'Hasta',
-                format: (val) => val ? val.split('-').reverse().join('/') : '' 
+                format: (val) => val ? val.replace('T', ' ').split('-').reverse().join('/') : '' 
             }
         }
     });

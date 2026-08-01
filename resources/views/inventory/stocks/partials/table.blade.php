@@ -13,7 +13,7 @@
                     <div class="flex items-center">
                         <div class="flex-shrink-0 h-8 w-8 bg-gray-100 rounded-md flex items-center justify-center">
                             @if($item->product->image_path)
-                                <img class="h-8 w-8 rounded-md object-cover" src="{{ asset('storage/' . $item->product->image_path) }}" alt="">
+                                <img class="h-8 w-8 rounded-md object-cover" src="{{ $item->product->image_url }}" alt="">
                             @else
                                 <x-heroicon-o-cube class="w-5 h-5 text-gray-400" />
                             @endif

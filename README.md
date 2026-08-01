@@ -1,59 +1,174 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# ZertixPOS
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Sistema ERP con punto de venta integrado para negocios de distribución y retail. Gestiona ventas, inventario, contabilidad, clientes y terminales POS desde una sola plataforma.
 
-## About Laravel
+**Sitio:** [zertixpos.com](https://zertixpos.com)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+---
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Módulos
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+| Módulo | Descripción |
+|--------|-------------|
+| **Ventas** | Órdenes, facturas, cotizaciones, pagos múltiples |
+| **Punto de Venta** | Terminales con sesiones de caja, PIN, recibos |
+| **Inventario** | Almacenes, movimientos, stock en tiempo real |
+| **Contabilidad** | Contabilidad de doble entrada, cuentas por cobrar, pagos |
+| **Clientes** | CRM con límites de crédito, equipos, estados personalizados |
+| **Productos** | Catálogo con categorías, unidades, acciones masivas |
+| **NCF** | Cumplimiento fiscal dominicano (tipos, secuencias, log) |
+| **Configuración** | Moneda, impuestos, tipos de pago, usuarios y roles |
 
-## Learning Laravel
+---
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+## Stack
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+**Backend:** Laravel 12 · PHP 8.2+ · MySQL / SQLite  
+**Frontend:** Livewire 4 · Alpine.js 3 · Tailwind CSS 3 · Vite 7  
+**Librerías clave:**
+- `spatie/laravel-permission` — RBAC granular por módulo
+- `maatwebsite/excel` — Importación y exportación Excel
+- `barryvdh/laravel-dompdf` — Generación de PDFs (facturas, cotizaciones)
+- `livewire/livewire` — Componentes reactivos (POS, cotizador)
 
-## Laravel Sponsors
+---
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## Instalación
 
-### Premium Partners
+### Primera vez
+```bash
+composer run setup
+```
+Instala dependencias, crea `.env`, genera clave, corre migraciones y compila assets.
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+### Desarrollo
+```bash
+composer run dev
+```
+Levanta en paralelo: servidor HTTP, queue listener, logs en tiempo real y Vite dev server.
 
-## Contributing
+### Servicios individuales
+```bash
+php artisan serve                    # HTTP en :8000
+php artisan queue:listen --tries=1   # Procesador de jobs
+php artisan pail --timeout=0         # Logs en tiempo real
+npm run dev                          # Vite (Tailwind + JS)
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Docker (Laravel Sail)
+```bash
+./vendor/bin/sail up
+./vendor/bin/sail shell
+```
 
-## Code of Conduct
+---
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Base de datos
 
-## Security Vulnerabilities
+SQLite por defecto en desarrollo. MySQL en producción vía Docker Compose.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+```bash
+php artisan migrate:fresh --seed     # Reiniciar y sembrar datos
+```
 
-## License
+Los seeders organizados por dominio crean: permisos, roles, usuario admin, productos de ejemplo, almacenes, catálogo contable, configuración general y tipos de pago.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## Tests
+
+```bash
+composer run test
+php artisan test tests/Feature/YourTest.php --filter=methodName
+```
+
+Usa SQLite en memoria (configurado en `phpunit.xml`).
+
+---
+
+## Calidad de código
+
+```bash
+./vendor/bin/pint          # Formatear
+./vendor/bin/pint --test   # Verificar sin modificar
+```
+
+---
+
+## Arquitectura
+
+El proyecto sigue el patrón **Skinny Controllers** con capas bien definidas:
+
+```
+Request → FormRequest (auth + validación)
+        → Filters (pipeline de query building)
+        → Controller (orquestador)
+        → Service (lógica de negocio + DB::transaction)
+        → Model (scopeWithIndexRelations para eager loading)
+```
+
+**Patrones clave:**
+- `scopeWithIndexRelations()` en todos los modelos — previene N+1 en tablas y exports
+- Servicios separados: `CatalogService` (selects/dropdowns) vs `BusinessService` (escrituras)
+- `SoftDeletesTrait` — papelera, restaurar y borrado definitivo en todos los módulos
+- Pipeline de filtros — cada filtro es una clase independiente en `app/Filters/`
+- `FormRequest::authorize()` — permisos Spatie validados antes del controller
+- Rate limiting en PIN del POS — máximo 5 intentos/minuto por terminal
+
+---
+
+## Características destacadas
+
+### Punto de Venta
+- Multi-terminal con configuración individual (formato, impresora, almacén)
+- Sesiones de caja con balance de apertura/cierre
+- PIN de acceso con bloqueo automático por inactividad
+- PIN obligatorio para cierre de caja (arqueo ciego)
+- Teclado numérico para reactivación de terminal bloqueado
+- Movimientos de caja con cuenta contable
+- Integración con cotizaciones
+
+### Ventas y Facturación
+- Órdenes con múltiples líneas y métodos de pago
+- Facturas con numeración interna o NCF fiscal
+- Cotizador en tiempo real con Livewire (cálculo instantáneo de totales)
+- Conversión cotización → venta
+- Impresión en múltiples formatos (ticket, carta, ruta)
+
+### Contabilidad
+- Doble entrada automática en cada venta
+- Plan de cuentas jerárquico (activo, pasivo, equity, ingresos, gastos)
+- Cuentas por cobrar con aging via Observer
+- Creación automática de cuentas al configurar terminales y almacenes
+
+### Exportación e importación
+- Excel en todos los módulos principales
+- Importación masiva de clientes con plantilla
+- Export de NCF en Excel y TXT
+- Todos los exports usan `scopeWithIndexRelations()` para consistencia
+
+---
+
+## Permisos
+
+Convención de nombres: `view module`, `create module`, `edit module`, `delete module`, `restore module`.  
+Permisos especiales: `pos config view`, `print invoices`, `export sales`, entre otros.  
+Aplicados en `FormRequest::authorize()` — rechazados antes de llegar al controller.
+
+---
+
+## Variables de entorno clave
+
+```env
+DB_CONNECTION=sqlite          # o mysql para producción
+APP_DEBUG=true                # solo desarrollo
+QUEUE_CONNECTION=database
+CACHE_STORE=database
+SESSION_DRIVER=database
+```
+
+---
+
+## Flujo de trabajo Git
+
+Ramas de feature (`feat/<nombre>`) → `develop` → `main` vía pull requests.

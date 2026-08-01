@@ -88,6 +88,9 @@ class TipoPagoController extends Controller
     // Elimina el Tipo Pago si no tiene relaciones (o desactiva la eliminación por defecto).
     public function destroy(TipoPago $tipoPago)
     {
+        if ($tipoPago->isSystemProtected()) {
+            return back()->with('error', 'No puedes eliminar un método de pago protegido del sistema.');
+        }
         return $this->destroyTrait($tipoPago, null);
     }
 

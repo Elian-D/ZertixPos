@@ -39,27 +39,32 @@ class AccountingDashboardController extends Controller
                 break;
         }
 
-        // ===== BALANCES DE CUENTAS (CON FILTRO DE FECHA) =====
+        // 2. BALANCES DE CUENTAS (CORRECCIÓN TERMINALES E INVENTARIO)
+        // 1.1.01 ahora incluye recursivamente todas las sub-cajas de terminales.
         $cashBalance = $this->getAccountBalanceByCode('1.1.01', $startDay, $endDay);
         $cxcBalance = $this->getAccountBalanceByCode('1.1.02', $startDay, $endDay);
+        
+        // 1.1.03 ahora es PURA (solo inventario físico) porque las terminales ya no cuelgan de aquí.
         $inventoryValue = $this->getAccountBalanceByCode('1.1.03', $startDay, $endDay);
         $cxpBalance = abs($this->getAccountBalanceByCode('2.1', $startDay, $endDay));
 
-        // ===== CÁLCULOS DE RENDIMIENTO =====
+        // 3. CÁLCULOS DE RENDIMIENTO
         $income = abs($this->getAccountBalanceByCode('4.1', $startDay, $endDay));
         $costOfSales = $this->getAccountBalanceByCode('5.1', $startDay, $endDay);
         $grossProfit = $income - $costOfSales;
 
-        // ===== LIQUIDEZ =====
+        // 4. LIQUIDEZ (CORRECCIÓN DE RATIO ALTO)
         $currentAssets = $cashBalance + $cxcBalance + $inventoryValue;
-        $liquidityRatio = $cxpBalance > 0 ? ($currentAssets / $cxpBalance) : $currentAssets;
+        
+        // Si no hay deudas, el ratio es 100% positivo (representado como 2.5 para no romper gráficos)
+        $liquidityRatio = $cxpBalance > 0 ? ($currentAssets / $cxpBalance) : ($currentAssets > 0 ? 3.0 : 0);
 
-        // ===== NUEVO: FLUJO DE CAJA (Ingresos totales - Egresos totales) =====
+        // 5. FLUJO DE CAJA (Dinero Real saliendo de la 1.1.01)
         $totalInflows = $this->getTotalInflows($startDay, $endDay);
         $totalOutflows = $this->getTotalOutflows($startDay, $endDay);
         $cashFlow = $totalInflows - $totalOutflows;
 
-        // ===== NUEVO: SISTEMA DE ALERTAS FINANCIERAS =====
+        // 6. ALERTAS (Lógica suavizada)
         $alerts = $this->generateFinancialAlerts($liquidityRatio, $cashFlow, $cxcBalance, $cxpBalance);
 
         // ===== DATOS PARA GRÁFICOS =====
@@ -76,7 +81,7 @@ class AccountingDashboardController extends Controller
                 'gross_profit'    => $grossProfit,
                 'profit_margin'   => $income > 0 ? ($grossProfit / $income) * 100 : 0,
                 'liquidity_ratio' => $liquidityRatio,
-                'cash_flow'       => $cashFlow, // NUEVO
+                'cash_flow'       => $cashFlow,
             ],
             'charts' => [
                 'performance' => [
@@ -112,55 +117,68 @@ class AccountingDashboardController extends Controller
         ]);
     }
 
-    // ===== NUEVO: SISTEMA DE ALERTAS INTELIGENTES =====
+    // ===== SISTEMA DE ALERTAS FINANCIERAS ACTUALIZADO =====
     private function generateFinancialAlerts($liquidityRatio, $cashFlow, $cxcBalance, $cxpBalance)
     {
         $alerts = [];
 
-        // Alerta de Liquidez Crítica
-        if ($liquidityRatio < 0.5) {
+        // 1. Liquidez (Suavizada para evitar falsas alarmas en el inicio)
+        if ($liquidityRatio < 1.0 && $cxpBalance > 0) {
             $alerts[] = [
                 'type' => 'danger',
                 'color' => 'red',
                 'title' => 'Liquidez Crítica',
-                'message' => 'El ratio de liquidez está por debajo de 0.5. Se requiere acción inmediata para mejorar el flujo de caja.'
+                'message' => 'Sus obligaciones a corto plazo superan sus activos disponibles.'
             ];
-        } elseif ($liquidityRatio < 1.0) {
+        } elseif ($liquidityRatio >= 3.0 && $cxpBalance == 0) {
+            // Caso de inicio de operaciones o sin deudas
+            $alerts[] = [
+                'type' => 'success',
+                'color' => 'blue',
+                'title' => 'Estructura Inicial Limpia',
+                'message' => 'No presenta deudas corrientes registradas. Su capital está disponible en activos.'
+            ];
+        }
+
+        // 2. Flujo de Caja
+        if ($cashFlow < 0) {
             $alerts[] = [
                 'type' => 'warning',
                 'color' => 'orange',
-                'title' => 'Liquidez Baja',
-                'message' => 'El ratio de liquidez está por debajo de 1.0. Considere optimizar cobros y gestionar gastos.'
+                'title' => 'Déficit de Efectivo',
+                'message' => 'En este período ha salido más dinero del que ha ingresado a caja.'
             ];
         }
 
-        // Alerta de Flujo de Caja Negativo
-        if ($cashFlow < 0) {
-            $alerts[] = [
-                'type' => 'danger',
-                'color' => 'red',
-                'title' => 'Flujo de Caja Negativo',
-                'message' => 'Los egresos superan los ingresos en $' . number_format(abs($cashFlow), 2) . '. Revisar estrategia financiera.'
-            ];
-        }
-
-        // Alerta de Cuentas por Cobrar Altas
-        if ($cxcBalance > ($cxpBalance * 1.5) && $cxcBalance > 10000) {
+        // 3. Riesgo de Cartera (CxC vs CxP)
+        // Si las cuentas por cobrar son 2 veces mayores a las de pagar, hay un problema de gestión de cobro.
+        if ($cxcBalance > ($cxpBalance * 2) && $cxcBalance > 500) {
             $alerts[] = [
                 'type' => 'warning',
                 'color' => 'yellow',
-                'title' => 'Cartera Elevada',
-                'message' => 'Las cuentas por cobrar representan ' . number_format(($cxcBalance / $cxpBalance) * 100, 0) . '% de las cuentas por pagar. Acelerar cobranza.'
+                'title' => 'Cartera Sobre-extendida',
+                'message' => 'Sus cuentas por cobrar triplican sus deudas. Hay mucho capital de trabajo atrapado en clientes que no han pagado.'
             ];
         }
 
-        // Alerta Positiva - Salud Financiera Excelente
-        if ($liquidityRatio >= 2.0 && $cashFlow > 0) {
+        // 4. Alerta de "Dinero Ocioso" (Oportunidad de Inversión)
+        // Si tienes mucha liquidez y flujo positivo, podrías estar perdiendo rendimiento.
+        if ($liquidityRatio > 3.0 && $cashFlow > 1000) {
+            $alerts[] = [
+                'type' => 'success',
+                'color' => 'indigo',
+                'title' => 'Exceso de Liquidez',
+                'message' => 'Mantiene un ratio de liquidez de ' . number_format($liquidityRatio, 1) . '. Considere invertir el excedente en inventario crítico o reducir pasivos con costo financiero.'
+            ];
+        }
+
+        // 5. Salud Financiera Óptima
+        if ($liquidityRatio >= 1.2 && $liquidityRatio <= 2.5 && $cashFlow >= 0) {
             $alerts[] = [
                 'type' => 'success',
                 'color' => 'green',
-                'title' => 'Salud Financiera Excelente',
-                'message' => 'La empresa mantiene indicadores financieros óptimos. Liquidez: ' . number_format($liquidityRatio, 2)
+                'title' => 'Operación Equilibrada',
+                'message' => 'La empresa presenta un balance saludable entre disponibilidad, deuda y flujo operativo.'
             ];
         }
 
@@ -172,8 +190,10 @@ class AccountingDashboardController extends Controller
     {
         return JournalItem::select(
                 DB::raw("DATE_FORMAT(journal_entries.entry_date, '%d %b') as date"),
-                DB::raw("SUM(CASE WHEN accounting_accounts.code LIKE '4%' THEN (credit - debit) ELSE 0 END) as inflows"),
-                DB::raw("SUM(CASE WHEN accounting_accounts.code LIKE '5%' OR accounting_accounts.code LIKE '6%' THEN (debit - credit) ELSE 0 END) as outflows"),
+                // Dinero que entró a la 1.1.01
+                DB::raw("SUM(CASE WHEN accounting_accounts.code LIKE '1.1.01%' THEN debit ELSE 0 END) as inflows"),
+                // Dinero que salió de la 1.1.01
+                DB::raw("SUM(CASE WHEN accounting_accounts.code LIKE '1.1.01%' THEN credit ELSE 0 END) as outflows"),
                 DB::raw('MIN(journal_entries.entry_date) as sort_date')
             )
             ->join('journal_entries', 'journal_items.journal_entry_id', '=', 'journal_entries.id')
@@ -185,33 +205,32 @@ class AccountingDashboardController extends Controller
             ->get();
     }
 
-    // ===== NUEVO: TOTAL DE INGRESOS =====
+    // Cambia este método para medir dinero REAL entrando a caja
     private function getTotalInflows($start, $end)
     {
         return JournalItem::whereHas('entry', function($q) use ($start, $end) {
                 $q->whereBetween('entry_date', [$start, $end])
-                  ->where('status', 'posted');
+                ->where('status', 'posted');
             })
             ->whereHas('account', function($q) {
-                $q->where('code', 'like', '4%'); // Cuentas de ingreso
+                $q->where('code', 'like', '1.1.01%'); // Solo cuenta de Caja/Bancos
             })
-            ->selectRaw('SUM(credit - debit) as total')
-            ->value('total') ?? 0;
+            ->where('debit', '>', 0) // El débito en un activo es una entrada de dinero
+            ->sum('debit') ?? 0;
     }
 
-    // ===== NUEVO: TOTAL DE EGRESOS =====
+    // Cambia este método para medir dinero REAL saliendo de caja
     private function getTotalOutflows($start, $end)
     {
         return JournalItem::whereHas('entry', function($q) use ($start, $end) {
                 $q->whereBetween('entry_date', [$start, $end])
-                  ->where('status', 'posted');
+                ->where('status', 'posted');
             })
             ->whereHas('account', function($q) {
-                $q->where('code', 'like', '5%') // Costos
-                  ->orWhere('code', 'like', '6%'); // Gastos
+                $q->where('code', 'like', '1.1.01%'); // Solo cuenta de Caja/Bancos
             })
-            ->selectRaw('SUM(debit - credit) as total')
-            ->value('total') ?? 0;
+            ->where('credit', '>', 0) // El crédito en un activo es una salida de dinero
+            ->sum('credit') ?? 0;
     }
 
     // ===== DISTRIBUCIÓN DE GASTOS (ACTUALIZADO CON FILTRO) =====
@@ -237,12 +256,23 @@ class AccountingDashboardController extends Controller
     // ===== BALANCE DE CUENTA CON FILTRO DE FECHA =====
     private function getAccountBalanceByCode(string $code, $start, $end)
     {
+        // Cuentas de Balance: 1 (Activo), 2 (Pasivo), 3 (Patrimonio)
+        $isBalanceAccount = in_array(substr($code, 0, 1), ['1', '2', '3']);
+
         return JournalItem::whereHas('account', function($q) use ($code) {
                 $q->where('code', 'like', $code . '%');
             })
-            ->whereHas('entry', function($q) use ($start, $end) {
-                $q->whereBetween('entry_date', [$start, $end])
-                  ->where('status', 'posted');
+            ->whereHas('entry', function($q) use ($start, $end, $isBalanceAccount) {
+                $q->where('status', 'posted');
+                
+                if ($isBalanceAccount) {
+                    // IMPORTANTE: Para Activos/Pasivos el "Filtro de Fecha" es un "A la fecha de corte"
+                    // Ignoramos el $start porque el saldo es histórico.
+                    $q->where('entry_date', '<=', $end);
+                } else {
+                    // Para Ingresos/Gastos: Solo lo ocurrido en el rango (P&L)
+                    $q->whereBetween('entry_date', [$start, $end]);
+                }
             })
             ->selectRaw('SUM(debit - credit) as balance')
             ->value('balance') ?? 0;

@@ -4,6 +4,7 @@ namespace App\Services\Accounting\Receivable;
 
 use App\Models\Accounting\{AccountingAccount, Receivable, JournalEntry};
 use App\Models\Clients\Client;
+use App\Models\Sales\Sale;
 use App\Services\Accounting\JournalEntries\JournalEntryService;
 use Illuminate\Support\Facades\DB;
 use Exception;
@@ -13,9 +14,9 @@ class ReceivableService
     public function __construct(
         protected JournalEntryService $journalService
     ) {}
-
+    
     /**
-     * Invocado únicamente desde SaleService u otros procesos de origen
+     * Crea el registro de CxC vinculado opcionalmente a un asiento existente.
      */
     public function createReceivable(array $data): Receivable
     {
@@ -23,41 +24,19 @@ class ReceivableService
             $client = Client::findOrFail($data['client_id']);
             
             $receivableAccountId = $client->accounting_account_id 
-                ?? $data['accounting_account_id'] 
                 ?? $this->getAccountIdByCode('1.1.02');
-
-            $entry = $this->journalService->create([
-                'entry_date'  => $data['emission_date'],
-                'reference'   => $data['document_number'],
-                'description' => "Registro CxC: {$data['document_number']} - Cliente: {$client->name}",
-                'status'      => JournalEntry::STATUS_POSTED,
-                'items'       => [
-                    [
-                        'accounting_account_id' => $receivableAccountId,
-                        'debit'  => $data['total_amount'],
-                        'credit' => 0,
-                        'note'   => "Cargo de deuda"
-                    ],
-                    [
-                        'accounting_account_id' => $this->getAccountIdByCode('4.1'),
-                        'debit'  => 0,
-                        'credit' => $data['total_amount'],
-                        'note'   => "Contrapartida de ingreso"
-                    ]
-                ]
-            ]);
 
             return Receivable::create([
                 'client_id'             => $data['client_id'],
-                'journal_entry_id'      => $entry->id,
+                'journal_entry_id'      => null, // El asiento ya lo creó SaleService
                 'accounting_account_id' => $receivableAccountId,
                 'document_number'       => $data['document_number'],
-                'description'           => $data['description'] ?? "Registro CxC: {$data['document_number']} - Cliente: {$client->name}",
+                'description'           => $data['description'] ?? "CxC Venta: {$data['document_number']}",
                 'total_amount'          => $data['total_amount'],
                 'current_balance'       => $data['total_amount'],
                 'emission_date'         => $data['emission_date'],
                 'due_date'              => $data['due_date'],
-                'reference_type'        => $data['reference_type'],
+                'reference_type'        => Sale::class,
                 'reference_id'          => $data['reference_id'],
                 'status'                => Receivable::STATUS_UNPAID,
             ]);

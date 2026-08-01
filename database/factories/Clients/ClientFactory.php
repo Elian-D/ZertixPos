@@ -2,9 +2,13 @@
 
 namespace Database\Factories\Clients;
 
+use App\Models\Accounting\AccountingAccount;
+use App\Models\Accounting\DocumentType;
+use App\Models\Accounting\Payment;
+use App\Models\Accounting\Receivable;
 use App\Models\Clients\Client;
-use App\Models\Accounting\{AccountingAccount, Receivable, Payment, DocumentType};
-use App\Models\Configuration\{EstadosCliente, TaxIdentifierType};
+use App\Models\Configuration\EstadosCliente;
+use App\Models\Configuration\TaxIdentifierType;
 use App\Models\Geo\State;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -54,9 +58,9 @@ class ClientFactory extends Factory
             }
 
             // 1. Asegurar cuenta contable (CxC)
-            if (!$client->accounting_account_id) {
+            if (! $client->accounting_account_id) {
                 $client->update([
-                    'accounting_account_id' => AccountingAccount::where('code', '1.1.02')->first()?->id
+                    'accounting_account_id' => AccountingAccount::where('code', '1.1.02')->first()?->id,
                 ]);
             }
 
@@ -69,7 +73,7 @@ class ClientFactory extends Factory
                 ])
                 ->each(function ($receivable) use ($client) {
                     // 3. Crear pagos parciales
-                    if (fake()->boolean(70)) { 
+                    if (fake()->boolean(70)) {
                         $amountToPay = fake()->randomFloat(2, 10, $receivable->total_amount * 0.5);
                         $this->createRealPayment($client, $receivable, $amountToPay);
                     }
@@ -84,7 +88,7 @@ class ClientFactory extends Factory
     {
         // Buscamos el tipo de documento cada vez para asegurar frescura
         $docType = DocumentType::where('code', 'PAG')->first();
-        
+
         if ($docType) {
             // Usamos el método formateado
             $receiptNumber = $docType->getNextNumberFormatted();
@@ -92,18 +96,19 @@ class ClientFactory extends Factory
             $docType->increment('current_number');
         } else {
             // Fallback mucho más robusto si no existe el tipo de documento
-            $receiptNumber = 'REC-' . str_pad(fake()->unique()->numberBetween(1, 999999), 6, '0', STR_PAD_LEFT);
+            $receiptNumber = 'REC-'.str_pad(fake()->unique()->numberBetween(1, 999999), 6, '0', STR_PAD_LEFT);
         }
 
         Payment::create([
             'client_id' => $client->id,
             'receivable_id' => $receivable->id,
-            'tipo_pago_id' => 1,
+            'tipo_pago_id' => \App\Models\Configuration\TipoPago::where('slug', 'efectivo')->value('id')
+                ?? \App\Models\Configuration\TipoPago::query()->value('id'),
             'receipt_number' => $receiptNumber,
             'amount' => $amount,
             'payment_date' => now(),
             'status' => 'active',
-            'created_by' => 1
+            'created_by' => \App\Models\User::query()->value('id'),
         ]);
 
         $receivable->decrement('current_balance', $amount);

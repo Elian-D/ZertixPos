@@ -20,11 +20,11 @@ document.addEventListener('DOMContentLoaded', () => {
             },
             from_date: { 
                 label: 'Inicia',
-                format: (val) => val ? val.replace('T', ' ') : '' 
+                format: (val) => val ? val.replace('T', ' ').split('-').reverse().join('/') : '' 
             },
             to_date: { 
                 label: 'Termina',
-                format: (val) => val ? val.replace('T', ' ') : ''
+                format: (val) => val ? val.replace('T', ' ').split('-').reverse().join('/') : ''
             },
             min_amount: {
                 label: 'Monto mín.',

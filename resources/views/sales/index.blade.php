@@ -4,8 +4,10 @@
         warehouses: JSON.parse('{!! addslashes(json_encode($warehouses->pluck("name", "id"))) !!}'),
         payment_types: JSON.parse('{!! addslashes(json_encode($payment_types)) !!}'),
         statuses: JSON.parse('{!! addslashes(json_encode($statuses)) !!}'),
-        // NUEVO: Agregamos la fuente para los métodos de pago (Efectivo, Transferencia, etc.)
         tipo_pagos: JSON.parse('{!! addslashes(json_encode($tipo_pagos->pluck("nombre", "id"))) !!}'),
+        // NUEVO: Para filtrar por POS
+        sessions: JSON.parse('{!! addslashes(json_encode($pos_sessions ?? [])) !!}'),
+        terminals: JSON.parse('{!! addslashes(json_encode($pos_terminals ?? [])) !!}'),
     };
 </script>
 

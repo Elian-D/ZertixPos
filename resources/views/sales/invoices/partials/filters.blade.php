@@ -1,5 +1,4 @@
 <x-data-table.filter-container formId="invoices-filters">
-    {{-- Búsqueda por No. de Factura o Referencias --}}
     <div class="w-full lg:flex-1">
         <x-data-table.search 
             formId="invoices-filters" 
@@ -11,48 +10,54 @@
         <x-data-table.per-page-selector formId="invoices-filters" />
 
         <x-data-table.filter-dropdown>
-            {{-- Filtro de Cliente --}}
-            <x-data-table.filter-select label="Cliente" name="client_id" formId="invoices-filters">
-                <option value="">Todos los clientes</option>
-                @foreach($clients as $client)
-                    <option value="{{ $client->id }}">{{ $client->name }}</option>
-                @endforeach
-            </x-data-table.filter-select>
 
-            {{-- Filtro de Tipo de Venta (Contado/Crédito) --}}
-            <x-data-table.filter-select label="Tipo de Pago" name="type" formId="invoices-filters">
-                <option value="">Todos los tipos</option>
-                @foreach($payment_types as $key => $label)
-                    <option value="{{ $key }}">{{ $label }}</option>
-                @endforeach
-            </x-data-table.filter-select>
+            {{-- GRUPO 1: Filtros Principales --}}
+            <x-data-table.filter-group title="Filtros Principales">
+                
+                <x-data-table.filter-select label="Cliente" name="client_id" formId="invoices-filters">
+                    <option value="">Todos los clientes</option>
+                    @foreach($clients as $client)
+                        <option value="{{ $client->id }}">{{ $client->name }}</option>
+                    @endforeach
+                </x-data-table.filter-select>
 
-            {{-- Filtro de Estado Legal (Vigente/Anulada) --}}
-            <x-data-table.filter-select label="Estado Documento" name="status" formId="invoices-filters">
-                <option value="">Todos los estados</option>
-                @foreach($statuses as $key => $label)
-                    <option value="{{ $key }}">{{ $label }}</option>
-                @endforeach
-            </x-data-table.filter-select>
+                <x-data-table.filter-toggle 
+                    label="Tipo de Pago" 
+                    name="type" 
+                    :options="['' => 'Todos', 'cash' => 'Contado', 'credit' => 'Crédito']" 
+                    formId="invoices-filters" 
+                />
 
-            {{-- Filtro de Formato de Impresión --}}
-            <x-data-table.filter-select label="Formato Original" name="format_type" formId="invoices-filters">
-                <option value="">Todos los formatos</option>
-                @foreach($formats as $key => $label)
-                    <option value="{{ $key }}">{{ $label }}</option>
-                @endforeach
-            </x-data-table.filter-select>
+                <x-data-table.filter-toggle 
+                    label="Estado Documento" 
+                    name="status" 
+                    :options="['' => 'Todos', 'active' => 'Vigente', 'cancelled' => 'Anulada']" 
+                    formId="invoices-filters" 
+                />
 
-            {{-- Rango de Fecha de Emisión --}}
-            <x-data-table.filter-datetime-range 
-                label="Fecha de Emisión" 
-                formId="invoices-filters" 
-                nameFrom="from_date"
-                nameTo="to_date"
-            />
+                <x-data-table.filter-select label="Formato Original" name="format_type" formId="invoices-filters">
+                    <option value="">Todos los formatos</option>
+                    @foreach($formats as $key => $label)
+                        <option value="{{ $key }}">{{ $label }}</option>
+                    @endforeach
+                </x-data-table.filter-select>
+
+            </x-data-table.filter-group>
+
+            {{-- GRUPO 2: Rangos --}}
+            <x-data-table.filter-group title="Rangos de Búsqueda" collapsed>
+
+                <x-data-table.filter-datetime-range 
+                    label="Fecha de Emisión" 
+                    formId="invoices-filters" 
+                    nameFrom="from_date"
+                    nameTo="to_date"
+                />
+
+            </x-data-table.filter-group>
+
         </x-data-table.filter-dropdown>
 
-        {{-- Selector de Columnas Visibles --}}
         <x-data-table.column-selector 
             :allColumns="$allColumns" 
             :visibleColumns="$visibleColumns" 
