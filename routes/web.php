@@ -22,3 +22,12 @@ Route::middleware('auth')->group(function () {
 require __DIR__.'/auth.php';
 require __DIR__.'/admin/geo.php';
 
+// Rutas administrativas (panel) — antes vivía en RouteServiceProvider::boot()
+Route::middleware(['web', 'auth'])
+    ->prefix('admin')
+    ->group(function () {
+        foreach (glob(base_path('routes/admin/*.php')) as $routeFile) {
+            require $routeFile;
+        }
+    });
+
