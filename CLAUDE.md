@@ -2,6 +2,10 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Project Overview
+
+**ZertixPOS** is an ERP with integrated point of sale for distribution and retail businesses (Dominican Republic market). It manages sales, inventory, accounting, clients, and POS terminals from a single platform, including NCF (Dominican fiscal receipt) compliance.
+
 ## Quick Start
 
 **Stack:** Laravel 12 + Livewire 4 + Tailwind + Vite + MySQL/SQLite
@@ -217,8 +221,8 @@ See `ARCHITECTURE.md` for a complete implementation checklist.
 
 - **Excel Export**: `app/Exports/` classes powered by Maatwebsite; uses model's `scopeWithIndexRelations()` for consistency
 - **PDF Generation**: DomPDF for invoices and reports
-- **Event-Driven**: `app/Events/` and `app/Listeners/` for cross-module communication (e.g., Invoice created → GL entries)
-- **Observers**: `app/Observers/` watch model changes (e.g., Receivable aging updates)
+- **Observers**: `app/Observers/` watch model changes (e.g., `ReceivableObserver` for aging updates)
+- **Listeners**: `app/Listeners/Sales/` handle post-action side effects; GL journal entries are created directly in services (e.g., `JournalEntryService`), not via an events layer — there is no `app/Events/` directory
 - **Rate Limiting**: POS PIN attempts limited to 5/minute per terminal via `RateLimiter::for('pos-pin', ...)`
 - **DTOs**: `app/DTOs/` for structured data transfer between layers
 
