@@ -53,11 +53,9 @@ class SaleService
      */
     public function create(array $data, ?PosContext $context = null): Sale
     {
-        $config = general_config();
-
         // 1. VALIDACIÓN PRE-TRANSACCIONAL (Fail-Fast)
         // Se valida la secuencia NCF antes de abrir la transacción para evitar bloqueos innecesarios en base de datos.
-        if ($config?->usa_ncf && isset($data['ncf_type_id'])) {
+        if (module_enabled('sales.ncf') && isset($data['ncf_type_id'])) {
             $this->validateNcfSequence($data['ncf_type_id']);
         }
 
@@ -67,7 +65,7 @@ class SaleService
         // 2. ATOMICIDAD DEL FLUJO DE NEGOCIO
         // Se encapsula todo en una transacción SQL para asegurar que si un submódulo (v.g. Contabilidad o NCF)
         // falla, no se alteren inventarios ni se creen cabeceras de ventas huérfanas.
-        return DB::transaction(function () use ($data, $context, $config) {
+        return DB::transaction(function () use ($data, $context) {
 
             // Consumo y formateo secuencial de numeración interna por tipo de documento (Factura de Venta)
             $docType = DocumentType::where('code', 'FAC')->firstOrFail();
@@ -164,7 +162,7 @@ class SaleService
             $this->generateSaleAccountingEntry($sale, $context);
 
             // Capa Fiscal: Si está activo el control dominicano, consume y asigna secuencia NCF válida.
-            if ($config?->usa_ncf && ! empty($data['ncf_type_id'])) {
+            if (module_enabled('sales.ncf') && ! empty($data['ncf_type_id'])) {
                 $this->ncfGenerator->generate($sale, $data['ncf_type_id']);
             }
 

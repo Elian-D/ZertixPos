@@ -2,10 +2,10 @@
 
 namespace App\Models\Configuration;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use App\Models\Geo\Country;
 use App\Models\Geo\State;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
 class ConfiguracionGeneral extends Model
 {
@@ -28,7 +28,6 @@ class ConfiguracionGeneral extends Model
         'currency_name',
         'currency_symbol',
         'timezone',
-        'usa_ncf',
         'tax_identifier_type_id',
     ];
 
@@ -48,7 +47,6 @@ class ConfiguracionGeneral extends Model
         return $this->belongsTo(Impuesto::class);
     }
 
-
     public function taxIdentifierType()
     {
         return $this->belongsTo(TaxIdentifierType::class);
@@ -61,11 +59,12 @@ class ConfiguracionGeneral extends Model
     }
 
     /**
-     * Determina si el sistema opera bajo normativa de la DGII (NCF/e-NCF)
+     * Determina si el sistema opera bajo normativa de la DGII (NCF/e-NCF).
+     * Delega al registro de módulos (Fase 3/4) — el booleano que antes vivía en
+     * esta tabla ahora es el flag 'sales.ncf' en installation_modules.
      */
     public function esModoFiscal(): bool
     {
-        return (bool) $this->usa_ncf;
+        return module_enabled('sales.ncf');
     }
 }
-

@@ -15,7 +15,7 @@ use App\Http\Controllers\Sales\Pos\PosTerminalLockController;
 use App\Http\Controllers\Sales\QuoteController;
 use App\Http\Controllers\Sales\SaleController;
 use App\Http\Controllers\Sales\SalesDashboardController;
-use App\Models\Configuration\ConfiguracionGeneral; // Importante
+// Importante
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('sales')->as('sales.')->group(function () {
@@ -86,12 +86,13 @@ Route::prefix('sales')->as('sales.')->group(function () {
         // Si la configuración fiscal está apagada, estas rutas ni siquiera se registran
         // o puedes envolverlas en una condición:
 
-        if (general_config()?->usa_ncf) {
+        if (module_enabled('sales.ncf')) {
 
             Route::prefix('ncf')->name('ncf.')->group(function () {
 
                 // Dashboard y otras rutas
-                Route::get('/dashboard', function () { /* tu controller */ })->name('dashboard');
+                Route::get('/dashboard', function () { /* tu controller */
+                })->name('dashboard');
 
                 Route::prefix('sequences')->name('sequences.')->group(function () {
                     Route::get('/', [NcfSequenceController::class, 'index'])->name('index');
@@ -214,7 +215,7 @@ Route::prefix('sales')->as('sales.')->group(function () {
             // Usado por los modales de apertura/cierre de sesión del backoffice (fuera del Lobby).
             Route::post('/verify-pin', 'verify')
                 ->name('verify-pin');
-                // ->middleware('throttle:pos-pin');
+            // ->middleware('throttle:pos-pin');
 
             Route::post('/heartbeat', 'heartbeat')
                 ->name('heartbeat');

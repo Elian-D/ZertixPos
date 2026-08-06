@@ -102,7 +102,7 @@ class PosWorkspace extends Component
     public function render()
     {
         $config = general_config();
-        $usaNcf = (bool) ($config?->usa_ncf ?? false);
+        $usaNcf = module_enabled('sales.ncf');
 
         // pull() en vez de get(): se consume una sola vez, así que si el Workspace
         // llega a renderizarse más de una vez tras el checkout (doble request, doble
