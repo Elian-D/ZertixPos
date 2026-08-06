@@ -114,13 +114,18 @@
                         >
                             Contabilidad
                             <x-slot name="submenu">
-                                <x-sidebar.subitem href="/admin/accounting/dashboard">Dashboard</x-sidebar.subitem>
+                                <x-sidebar.subitem href="/admin/accounting/overview">Ingresos y Gastos</x-sidebar.subitem>
+                                @if(module_enabled('accounting.advanced'))
+                                    <x-sidebar.subitem href="/admin/accounting/dashboard">Dashboard Contable</x-sidebar.subitem>
+                                @endif
                                 <x-sidebar.subitem href="/admin/accounting/receivables">Cuentas por Cobrar</x-sidebar.subitem>
                                 <x-sidebar.subitem href="/admin/accounting/payments">Pagos</x-sidebar.subitem>
-                                <div class="h-px bg-gray-700/30 my-1.5"></div>
-                                <x-sidebar.subitem href="/admin/accounting/journal_entries">Asientos Contables</x-sidebar.subitem>
-                                <x-sidebar.subitem href="/admin/accounting/accounts">Plan de Cuentas</x-sidebar.subitem>
                                 <x-sidebar.subitem href="/admin/accounting/document_types">Tipos de Documento</x-sidebar.subitem>
+                                @if(module_enabled('accounting.advanced'))
+                                    <div class="h-px bg-gray-700/30 my-1.5"></div>
+                                    <x-sidebar.subitem href="/admin/accounting/journal_entries">Asientos Contables</x-sidebar.subitem>
+                                    <x-sidebar.subitem href="/admin/accounting/accounts">Plan de Cuentas</x-sidebar.subitem>
+                                @endif
                             </x-slot>
                         </x-sidebar.dropdown>
                     </x-sidebar.group>
@@ -143,11 +148,21 @@
                         Clientes
                         <x-slot name="submenu">
                             <x-sidebar.subitem href="/admin/clients">Lista de Clientes</x-sidebar.subitem>
-                            <x-sidebar.subitem href="/admin/clients/pos">Puntos de Venta</x-sidebar.subitem>
-                            <x-sidebar.subitem href="/admin/clients/equipments">Equipos</x-sidebar.subitem>
-                            <div class="h-px bg-gray-700/30 my-1.5"></div>
-                            <x-sidebar.subitem href="/admin/clients/businessTypes">Tipos de Negocio</x-sidebar.subitem>
-                            <x-sidebar.subitem href="/admin/clients/equipmentTypes">Tipos de Equipo</x-sidebar.subitem>
+                            @if(module_enabled('sales.delivery_points'))
+                                <x-sidebar.subitem href="/admin/clients/pos">Puntos de Venta</x-sidebar.subitem>
+                            @endif
+                            @if(module_enabled('clients.field_assets'))
+                                <x-sidebar.subitem href="/admin/clients/equipments">Equipos</x-sidebar.subitem>
+                            @endif
+                            @if(module_enabled('sales.delivery_points') || module_enabled('clients.field_assets'))
+                                <div class="h-px bg-gray-700/30 my-1.5"></div>
+                            @endif
+                            @if(module_enabled('sales.delivery_points'))
+                                <x-sidebar.subitem href="/admin/clients/businessTypes">Tipos de Negocio</x-sidebar.subitem>
+                            @endif
+                            @if(module_enabled('clients.field_assets'))
+                                <x-sidebar.subitem href="/admin/clients/equipmentTypes">Tipos de Equipo</x-sidebar.subitem>
+                            @endif
                         </x-slot>
                     </x-sidebar.dropdown>
 
