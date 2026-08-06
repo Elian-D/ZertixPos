@@ -27,7 +27,7 @@
     $isMultiPay = $payments->count() > 1;
 
     // NUEVO: Determinar si mostramos info fiscal
-    $mostrarFiscal = $config->usa_ncf && $sale->ncf;
+    $mostrarFiscal = module_enabled('sales.ncf') && $sale->ncf;
 
     // Usar directamente el valor de la base de datos, si es nulo o cero, mostrará 0.00
     $taxCalculado = $sale->tax_amount ?? 0.00;

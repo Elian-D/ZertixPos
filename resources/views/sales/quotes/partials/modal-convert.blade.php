@@ -39,7 +39,7 @@
             </div>
 
             {{-- Comprobante Fiscal --}}
-            @if($config->usa_ncf)
+            @if(module_enabled('sales.ncf'))
             <div>
                 <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Tipo de Comprobante (NCF)</label>
                 <select name="ncf_type_id" class="w-full text-sm border-gray-300 rounded-md shadow-sm">

@@ -192,21 +192,17 @@
                         Roles
                     </x-sidebar.item>
 
-                    @php
-                        $config = \App\Models\Configuration\ConfiguracionGeneral::actual();
-                    @endphp
-
-                    <x-sidebar.dropdown 
-                        id="configuracion" 
-                        icon="heroicon-s-cog-6-tooth" 
+                    <x-sidebar.dropdown
+                        id="configuracion"
+                        icon="heroicon-s-cog-6-tooth"
                         :activeRoutes="['admin/config*', 'admin/sales/ncf*']"
                     >
                         Configuración
                         <x-slot name="submenu">
                             <x-sidebar.subitem href="/admin/config">General</x-sidebar.subitem>
-                            
-                            {{-- Solo mostrar si la empresa usa NCF --}}
-                            @if($config->usa_ncf)
+
+                            {{-- Solo mostrar si el módulo sales.ncf está activo --}}
+                            @if(module_enabled('sales.ncf'))
                                 @can('view ncf sequences')
                                     <div class="h-px bg-gray-700/30 my-1.5"></div>
                                     <div class="px-3 py-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">NCF (Fiscal)</div>

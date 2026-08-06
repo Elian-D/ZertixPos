@@ -121,10 +121,8 @@ class Sale extends Model
 
     public function requiresNcf(): bool
     {
-        $config = general_config();
-
         // Si el sistema no usa NCF, nada lo requiere.
-        if (! $config?->usa_ncf) {
+        if (! module_enabled('sales.ncf')) {
             return false;
         }
 

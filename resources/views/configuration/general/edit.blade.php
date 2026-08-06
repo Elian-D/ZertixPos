@@ -4,7 +4,7 @@
         x-data="{ 
             countries: {{ $countries->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'emoji' => $c->emoji, 'phonecode' => $c->phonecode])->toJson() }},
             states: {{ $states->toJson() }},
-            usaNcf: {{ old('usa_ncf', $config->usa_ncf ?? false) ? 'true' : 'false' }},
+            usaNcf: {{ old('ncf_enabled', module_enabled('sales.ncf')) ? 'true' : 'false' }},
             taxTypes: {{ $taxTypes->toJson() }},
             
             searchCountry: '',
@@ -308,7 +308,7 @@
                             </div>
                             
                             <label class="relative inline-flex items-center cursor-pointer">
-                                <input type="checkbox" name="usa_ncf" value="1" class="sr-only peer" 
+                                <input type="checkbox" name="ncf_enabled" value="1" class="sr-only peer"
                                     x-model="usaNcf" :checked="usaNcf">
                                 <div class="w-14 h-7 bg-slate-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-indigo-600"></div>
                             </label>

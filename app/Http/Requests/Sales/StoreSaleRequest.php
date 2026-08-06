@@ -96,17 +96,16 @@ class StoreSaleRequest extends FormRequest
             }
 
             $client = Client::with('estadoCliente.categoria')->find($this->client_id);
-            $config = general_config();
 
             // --- VALIDACIÓN DE NCF ---
             // Solo se valida si REALMENTE se pidió un comprobante (ncf_type_id presente).
-            // "Sin Comprobante" (ncf_type_id vacío) no pasa por aquí, sin importar usa_ncf.
-            if ($config?->usa_ncf && $this->ncf_type_id) {
+            // "Sin Comprobante" (ncf_type_id vacío) no pasa por aquí, sin importar el módulo.
+            if (module_enabled('sales.ncf') && $this->ncf_type_id) {
                 $ncfType = NcfType::find($this->ncf_type_id);
                 if ($ncfType && $ncfType->requires_rnc && $client) {
                     // El RNC es válido si ya está en el cliente O si se acaba de capturar en esta venta.
-                    $hasRnc = !empty($client->tax_id) || !empty($this->client_rnc);
-                    if (!$hasRnc) {
+                    $hasRnc = ! empty($client->tax_id) || ! empty($this->client_rnc);
+                    if (! $hasRnc) {
                         $validator->errors()->add('ncf_type_id', "El tipo {$ncfType->nombre} requiere un RNC/Cédula.");
                     }
                 }
@@ -132,7 +131,7 @@ class StoreSaleRequest extends FormRequest
                 }
             }
 
-            if ($this->payment_type === Sale::PAYMENT_CASH && !empty($payments)) {
+            if ($this->payment_type === Sale::PAYMENT_CASH && ! empty($payments)) {
                 foreach ($payments as $index => $p) {
                     $tipoPago = TipoPago::find($p['tipo_pago_id'] ?? null);
                     if ($tipoPago && $tipoPago->slug !== TipoPago::EFECTIVO && empty($p['reference'] ?? null)) {
@@ -199,13 +198,13 @@ class StoreSaleRequest extends FormRequest
             }
 
             // --- VALIDACIÓN DE EFECTIVO / PAGO DIVIDIDO ---
-            if ($this->payment_type === Sale::PAYMENT_CASH && !empty($payments)) {
+            if ($this->payment_type === Sale::PAYMENT_CASH && ! empty($payments)) {
                 // Pago dividido: a diferencia del pago único (que permite recibir de más y dar
                 // vuelto), cada línea es exactamente lo que se aplica a la venta — deben sumar
                 // el total exacto, ni de más ni de menos.
                 $sumaPagos = collect($payments)->sum(fn ($p) => (float) ($p['amount'] ?? 0));
                 if (abs($sumaPagos - $totalFinalNeto) > 0.01) {
-                    $validator->errors()->add('payments', 'La suma de los pagos (' . number_format($sumaPagos, 2) . ') no coincide con el total a cobrar (' . number_format($totalFinalNeto, 2) . ').');
+                    $validator->errors()->add('payments', 'La suma de los pagos ('.number_format($sumaPagos, 2).') no coincide con el total a cobrar ('.number_format($totalFinalNeto, 2).').');
                 }
             } elseif ($this->payment_type === Sale::PAYMENT_CASH) {
                 $recibido = (float) $this->cash_received;

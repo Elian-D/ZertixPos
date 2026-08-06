@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Configuration;
 use App\Http\Controllers\Controller;
 use App\Models\Configuration\ConfiguracionGeneral;
 use App\Models\Configuration\Impuesto;
+use App\Models\Configuration\InstallationModule;
 use App\Models\Configuration\TaxIdentifierType;
 use App\Models\Geo\Country;
 use App\Models\Geo\State;
@@ -13,9 +14,6 @@ use Illuminate\Support\Facades\Storage;
 
 class ConfiguracionGeneralController extends Controller
 {
-
-
-
     public function edit()
     {
         $config = ConfiguracionGeneral::actual();
@@ -26,8 +24,8 @@ class ConfiguracionGeneralController extends Controller
         $states = $config?->country_id
             ? State::byCountry($config->country_id)->orderBy('name')->get()
             : collect();
-        
-        //Obtener identificadores fiscales del país configurado
+
+        // Obtener identificadores fiscales del país configurado
         $taxTypes = $config?->country_id
             ? TaxIdentifierType::byCountry($config->country_id)->get()
             : collect();
@@ -40,7 +38,6 @@ class ConfiguracionGeneralController extends Controller
             'impuestos'
         ));
     }
-
 
     public function update(Request $request)
     {
@@ -56,13 +53,12 @@ class ConfiguracionGeneralController extends Controller
             'ciudad' => 'nullable|string|max:255',
             'country_id' => 'required|exists:countries,id',
 
-            // Nuevo campo
-            'usa_ncf' => 'nullable|boolean',
-
+            // Flag de módulo — ver manejo aparte más abajo, no es columna de esta tabla.
+            'ncf_enabled' => 'nullable|boolean',
 
             'impuesto_nombre' => 'required|string|max:255',
-            'impuesto_tipo'   => 'required|in:porcentaje,fijo',
-            'impuesto_valor'  => 'required|numeric|min:0',
+            'impuesto_tipo' => 'required|in:porcentaje,fijo',
+            'impuesto_valor' => 'required|numeric|min:0',
             'impuesto_incluido' => 'nullable|boolean',
 
             'state_id' => 'nullable|exists:states,id',
@@ -73,9 +69,16 @@ class ConfiguracionGeneralController extends Controller
         $state = $validated['state_id']
             ? State::find($validated['state_id'])
             : null;
-            
-        // Manejo del checkbox usa_ncf (si no llega en el request, es false)
-        $validated['usa_ncf'] = $request->has('usa_ncf');
+
+        // El toggle de NCF ya no es una columna de configuraciones_generales — es el
+        // flag 'sales.ncf' del registro de módulos (Fase 3/4). Se escribe aparte y se
+        // saca de $validated antes de guardar, para no intentar escribirlo en una
+        // columna que ya no existe.
+        InstallationModule::updateOrCreate(
+            ['module_key' => 'sales.ncf'],
+            ['is_enabled' => $request->has('ncf_enabled')]
+        );
+        unset($validated['ncf_enabled']);
 
         // Moneda automática desde país
         $validated['currency'] = $country->currency;
@@ -108,12 +111,12 @@ class ConfiguracionGeneralController extends Controller
             ['id' => $config?->impuesto_id], // Si existe lo edita, si no, crea uno nuevo
             [
                 'nombre' => $validated['impuesto_nombre'],
-                'tipo'   => $validated['impuesto_tipo'],
-                'valor'  => $validated['impuesto_valor'],
-                'es_incluido' => $request->has('impuesto_incluido')
+                'tipo' => $validated['impuesto_tipo'],
+                'valor' => $validated['impuesto_valor'],
+                'es_incluido' => $request->has('impuesto_incluido'),
             ]
         );
-    
+
         $validated['impuesto_id'] = $impuesto->id;
 
         ConfiguracionGeneral::updateOrCreate(['id' => 1], $validated);
