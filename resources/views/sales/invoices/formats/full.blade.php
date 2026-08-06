@@ -39,7 +39,7 @@
     $isMultiPay = $payments->count() > 1;
 
     // NUEVO: Lógica de visibilidad fiscal
-    $mostrarFiscal = $config->usa_ncf && $sale->ncf;
+    $mostrarFiscal = module_enabled('sales.ncf') && $sale->ncf;
 
     // 11.2.6: mismo desglose y misma lógica de reconstrucción que ticket.blade.php —
     // ver el comentario allá para el porqué de usar discount_percentage como señal.

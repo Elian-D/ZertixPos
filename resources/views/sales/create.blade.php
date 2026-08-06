@@ -81,7 +81,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100/50 flex items-center gap-4">
                             
-                            <template x-if="config.usa_ncf">
+                            <template x-if="config.ncfEnabled">
                                 <div class="flex-1">
                                     <x-input-label value="Comprobante Fiscal" class="mb-1 text-[10px] text-indigo-400 uppercase font-bold" />
                                     <select name="ncf_type_id" x-model="formData.ncf_type_id"
@@ -94,7 +94,7 @@
                                 </div>
                             </template>
 
-                            <template x-if="!config.usa_ncf">
+                            <template x-if="!config.ncfEnabled">
                                 <div class="flex-1">
                                     <x-input-label value="Tipo de Documento" class="mb-1 text-[10px] text-gray-400 uppercase font-bold" />
                                     <div class="text-sm font-black text-gray-600 uppercase tracking-tight">
@@ -395,7 +395,7 @@
                 config: {
                     tax_rate: {{ general_config()->impuesto->valor ?? 0 }},
                     apply_tax: false,
-                    usa_ncf: {{ general_config()->usa_ncf ? 'true' : 'false' }}
+                    ncfEnabled: {{ module_enabled('sales.ncf') ? 'true' : 'false' }}
                 },
                 formData: {
                     payment_type: 'cash',
@@ -412,7 +412,7 @@
                 totals: { gross: 0, net: 0, subtotal: 0, tax: 0, total: 0 },
 
                 init() {
-                    if (!this.config.usa_ncf) {
+                    if (!this.config.ncfEnabled) {
                         this.formData.ncf_type_id = null;
                     }
                     this.$watch('formData.ncf_type_id', () => this.validateNcfAndClient());
@@ -473,7 +473,7 @@
                     const hasItems = this.items.length > 0;
                     const hasTotal = this.totals.total > 0;
 
-                    if (this.config.usa_ncf && this.ncfRequiresRnc) return true;
+                    if (this.config.ncfEnabled && this.ncfRequiresRnc) return true;
 
                     if (this.formData.payment_type === 'credit') {
                         return !hasItems || !this.selectedClient || this.selectedClient.is_moroso || this.exceedsCreditLimit;
