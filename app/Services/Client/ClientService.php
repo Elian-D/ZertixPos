@@ -121,11 +121,14 @@ class ClientService
                     // Validamos que sea una cuenta de cliente antes de borrar
                     // (ID 4 es tu padre 1.1.02 según logs)
                     if ($oldAccount && $oldAccount->parent_id == 4) {
-                        // VALIDACIÓN CRÍTICA: 
-                        // Asumiendo que tienes una columna 'balance' o una relación con transacciones
-                        $balance = DB::table('accounting_entries') // O tu tabla de transacciones
+                        // VALIDACIÓN CRÍTICA:
+                        // El saldo real de una cuenta contable es la suma de sus movimientos
+                        // en journal_items (débito - crédito), no una tabla 'accounting_entries'
+                        // que nunca existió en el esquema.
+                        $balance = DB::table('journal_items')
                                     ->where('accounting_account_id', $oldAccountId)
-                                    ->sum('amount'); // (Débitos - Créditos)
+                                    ->selectRaw('SUM(debit - credit) as balance')
+                                    ->value('balance') ?? 0;
 
                         if ($balance != 0) {
                             throw new \Exception("No se puede desvincular la cuenta contable porque aún tiene un saldo pendiente de: " . number_format($balance, 2));
