@@ -20,6 +20,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'pos.config.integrity' => \App\Http\Middleware\Sales\Pos\EnsurePosConfig::class,
             'pos.session' => \App\Http\Middleware\Sales\Pos\EnsurePosSession::class,
             'check.terminal.access' => \App\Http\Middleware\Sales\Pos\CheckTerminalAccess::class,
+
+            // Módulos base/satélite
+            'module' => \App\Http\Middleware\EnsureModuleEnabled::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
