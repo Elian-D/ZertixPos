@@ -2,7 +2,6 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -34,12 +33,13 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
 
             // Configuration Seeders
+            \Database\Seeders\ConfigurationSeeders\InstallationModuleSeeder::class,
 
-                //Accounting Seeders
-                \Database\Seeders\AccountingSeeders\AccountingAccountSeeder::class,
-                \Database\Seeders\AccountingSeeders\AccountingAccountRoleSeeder::class,
-                \Database\Seeders\AccountingSeeders\DocumentTypeSeeder::class,
-                
+            // Accounting Seeders
+            \Database\Seeders\AccountingSeeders\AccountingAccountSeeder::class,
+            \Database\Seeders\AccountingSeeders\AccountingAccountRoleSeeder::class,
+            \Database\Seeders\AccountingSeeders\DocumentTypeSeeder::class,
+
             \Database\Seeders\ConfigurationSeeders\ClientStateCategorySeeder::class,
             \Database\Seeders\ConfigurationSeeders\EstadosClienteSeeder::class,
             \Database\Seeders\ConfigurationSeeders\DiaSemanaSeeder::class,
@@ -59,14 +59,12 @@ class DatabaseSeeder extends Seeder
             \Database\Seeders\ProductsSeeders\CategorySeeder::class,
             \Database\Seeders\ProductsSeeders\UnitSeeder::class,
             \Database\Seeders\ProductsSeeders\ProductSeeder::class,
-            
-
 
             // Inventory Seeders
             \Database\Seeders\InventorySeeders\WarehouseSeeder::class,
             \Database\Seeders\InventorySeeders\InventoryStockSeeder::class,
 
-            //Sales Seeders
+            // Sales Seeders
             \Database\Seeders\SalesSeeders\NcfTypeSeeder::class,
         ]);
     }

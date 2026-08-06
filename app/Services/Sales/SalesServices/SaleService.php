@@ -213,8 +213,15 @@ class SaleService
      * Genera de manera estricta el asiento de diario contable (Doble Entrada) para la venta actual.
      * Balancea los Créditos (Ingresos) contra los Débitos correspondientes (Caja física, Bancos o CxC).
      */
-    protected function generateSaleAccountingEntry(Sale $sale, ?PosContext $context): JournalEntry
+    protected function generateSaleAccountingEntry(Sale $sale, ?PosContext $context): ?JournalEntry
     {
+        // Sin contabilidad avanzada, la venta no necesita asiento — Sale + Receivable/Payment
+        // ya bastan para reportar (ver REQ-02.8/03.4). Evita depender de cuentas contables
+        // que pueden no existir en esta instalación.
+        if (! module_enabled('accounting.advanced')) {
+            return null;
+        }
+
         $items = [];
 
         // Entrada de Ingreso (Origen Crédito: Aumenta los ingresos por ventas en la cuenta de rol 'sales_revenue')

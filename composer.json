@@ -35,7 +35,8 @@
         },
         "files": [
             "app/Helpers/general.php",
-            "app/Helpers/pos_helper.php"
+            "app/Helpers/pos_helper.php",
+            "app/Helpers/module_helper.php"
         ]
     },
     "autoload-dev": {
