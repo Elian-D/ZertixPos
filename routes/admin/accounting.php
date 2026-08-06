@@ -3,6 +3,7 @@
 use App\Http\Controllers\Accounting\AccountingAccountController;
 use App\Http\Controllers\Accounting\AccountingDashboardController;
 use App\Http\Controllers\Accounting\DocumentTypeController;
+use App\Http\Controllers\Accounting\FinancialOverviewController;
 use App\Http\Controllers\Accounting\JournalEntryController;
 use App\Http\Controllers\Accounting\PaymentController;
 use App\Http\Controllers\Accounting\ReceivableController;
@@ -10,55 +11,60 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('accounting')->as('accounting.')->group(function () {
 
-    Route::middleware('permission:configure accounting account')->group(function () {
+    // Plan de Cuentas y Asientos — contabilidad formal, satélite (REQ-03.5). Nunca envuelve
+    // receivables/payments: CxC y su abono operativo son base, ver config/modules.php.
+    Route::middleware('module:accounting.advanced')->group(function () {
 
-        Route::get('accounts/eliminados', [AccountingAccountController::class, 'eliminadas'])
-            ->name('accounts.eliminados');
+        Route::middleware('permission:configure accounting account')->group(function () {
 
-        Route::resource('accounts', AccountingAccountController::class)
-            ->parameters(['accounts' => 'accounting_account'])
-            ->names('accounts');
+            Route::get('accounts/eliminados', [AccountingAccountController::class, 'eliminadas'])
+                ->name('accounts.eliminados');
 
-        Route::patch('accounts/{id}/restaurar', [AccountingAccountController::class, 'restaurar'])
-            ->name('accounts.restaurar');
+            Route::resource('accounts', AccountingAccountController::class)
+                ->parameters(['accounts' => 'accounting_account'])
+                ->names('accounts');
 
-        Route::delete('accounts/{id}/borrar', [AccountingAccountController::class, 'borrarDefinitivo'])
-            ->name('accounts.borrarDefinitivo');
-    });
+            Route::patch('accounts/{id}/restaurar', [AccountingAccountController::class, 'restaurar'])
+                ->name('accounts.restaurar');
 
-    Route::middleware('auth')->group(function () {
+            Route::delete('accounts/{id}/borrar', [AccountingAccountController::class, 'borrarDefinitivo'])
+                ->name('accounts.borrarDefinitivo');
+        });
 
-        Route::get('journal_entries', [JournalEntryController::class, 'index'])
-            ->middleware('permission:view journal entries')
-            ->name('journal_entries.index');
+        Route::middleware('auth')->group(function () {
 
-        Route::get('journal_entries/create', [JournalEntryController::class, 'create'])
-            ->middleware('permission:create journal entries')
-            ->name('journal_entries.create');
+            Route::get('journal_entries', [JournalEntryController::class, 'index'])
+                ->middleware('permission:view journal entries')
+                ->name('journal_entries.index');
 
-        Route::post('journal_entries', [JournalEntryController::class, 'store'])
-            ->middleware('permission:create journal entries')
-            ->name('journal_entries.store');
+            Route::get('journal_entries/create', [JournalEntryController::class, 'create'])
+                ->middleware('permission:create journal entries')
+                ->name('journal_entries.create');
 
-        Route::get('journal_entries/{journal_entry}/edit', [JournalEntryController::class, 'edit'])
-            ->middleware('permission:edit journal entries')
-            ->name('journal_entries.edit');
+            Route::post('journal_entries', [JournalEntryController::class, 'store'])
+                ->middleware('permission:create journal entries')
+                ->name('journal_entries.store');
 
-        Route::put('journal_entries/{journal_entry}', [JournalEntryController::class, 'update'])
-            ->middleware('permission:edit journal entries')
-            ->name('journal_entries.update');
+            Route::get('journal_entries/{journal_entry}/edit', [JournalEntryController::class, 'edit'])
+                ->middleware('permission:edit journal entries')
+                ->name('journal_entries.edit');
 
-        Route::patch('journal_entries/{journal_entry}/post', [JournalEntryController::class, 'post'])
-            ->middleware('permission:post journal entries')
-            ->name('journal_entries.post');
+            Route::put('journal_entries/{journal_entry}', [JournalEntryController::class, 'update'])
+                ->middleware('permission:edit journal entries')
+                ->name('journal_entries.update');
 
-        Route::patch('journal_entries/{journal_entry}/cancel', [JournalEntryController::class, 'cancel'])
-            ->middleware('permission:cancel journal entries')
-            ->name('journal_entries.cancel');
+            Route::patch('journal_entries/{journal_entry}/post', [JournalEntryController::class, 'post'])
+                ->middleware('permission:post journal entries')
+                ->name('journal_entries.post');
 
-        Route::get('journal_entries/export', [JournalEntryController::class, 'export'])
-            ->middleware('permission:view journal entries')
-            ->name('journal_entries.export');
+            Route::patch('journal_entries/{journal_entry}/cancel', [JournalEntryController::class, 'cancel'])
+                ->middleware('permission:cancel journal entries')
+                ->name('journal_entries.cancel');
+
+            Route::get('journal_entries/export', [JournalEntryController::class, 'export'])
+                ->middleware('permission:view journal entries')
+                ->name('journal_entries.export');
+        });
     });
 
     Route::middleware(['auth'])->group(function () {
@@ -147,7 +153,20 @@ Route::prefix('accounting')->as('accounting.')->group(function () {
             ->name('payments.cancel');
     });
 
-    Route::get('/dashboard', AccountingDashboardController::class)
+    // Dashboard financiero — hoy solo reporta balances de partida doble (JournalItem por
+    // rol de cuenta), sin sentido si accounting.advanced está apagado (ver REQ-03.4/03.7:
+    // el reporte simple de Ingresos/Gastos, sin JournalEntry, es lo que lo reemplaza).
+    Route::middleware('module:accounting.advanced')->group(function () {
+        Route::get('/dashboard', AccountingDashboardController::class)
+            ->middleware('can:view accounting dashboard')
+            ->name('dashboard.index');
+    });
+
+    // Ingresos y Gastos (REQ-03.7) — base, sin gate de módulo: arma sus cifras
+    // solo con Sale/InventoryMovement/Payment/Receivable, nunca con JournalEntry.
+    // Es la vista financiera universal; el Dashboard de arriba es un extra para
+    // quien además tiene contabilidad formal activa.
+    Route::get('/overview', FinancialOverviewController::class)
         ->middleware('can:view accounting dashboard')
-        ->name('dashboard.index');
+        ->name('overview.index');
 });
