@@ -33,9 +33,9 @@
         </div>
 
         <div class="p-8 bg-white">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                
-                {{-- Columna Izquierda: Configuración de Numeración --}}
+            <div class="grid grid-cols-1 gap-8">
+
+                {{-- Configuración de Numeración --}}
                 <div class="space-y-6">
                     <section>
                         <h4 class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -49,27 +49,6 @@
                             <div class="pt-2 border-t border-gray-200">
                                 <span class="text-[10px] text-indigo-400 uppercase font-bold block tracking-tighter">Próximo a Emitir</span>
                                 <p class="text-lg font-mono font-bold text-indigo-600">{{ number_format($item->current_number + 1, 0) }}</p>
-                            </div>
-                        </div>
-                    </section>
-                </div>
-
-                {{-- Columna Derecha: Cuentas Contables --}}
-                <div class="space-y-6">
-                    <section>
-                        <h4 class="text-xs font-bold text-emerald-600 uppercase tracking-widest mb-4 flex items-center gap-2">
-                            <x-heroicon-s-calculator class="w-4 h-4"/> Cuentas por Defecto
-                        </h4>
-                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 space-y-3">
-                            <div>
-                                <span class="text-[10px] text-gray-400 uppercase block">Débito Automático</span>
-                                <p class="text-sm font-bold text-gray-800">{{ $item->defaultDebitAccount->name ?? 'No asignada' }}</p>
-                                @if($item->defaultDebitAccount) <span class="text-[11px] font-mono text-gray-500">{{ $item->defaultDebitAccount->code }}</span> @endif
-                            </div>
-                            <div class="pt-2 border-t border-gray-100">
-                                <span class="text-[10px] text-gray-400 uppercase block">Crédito Automático</span>
-                                <p class="text-sm font-bold text-gray-800">{{ $item->defaultCreditAccount->name ?? 'No asignada' }}</p>
-                                @if($item->defaultCreditAccount) <span class="text-[11px] font-mono text-gray-500">{{ $item->defaultCreditAccount->code }}</span> @endif
                             </div>
                         </div>
                     </section>

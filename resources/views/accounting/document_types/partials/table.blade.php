@@ -36,29 +36,6 @@
                 </td>
             @endif
 
-            {{-- Cuentas por Defecto --}}
-            @if(in_array('default_debit', $visibleColumns))
-                <td class="px-6 py-4 text-xs">
-                    @if($type->defaultDebitAccount)
-                        <span class="font-bold text-gray-700 block">{{ $type->defaultDebitAccount->code }}</span>
-                        <span class="text-gray-400 truncate block max-w-[150px]">{{ $type->defaultDebitAccount->name }}</span>
-                    @else
-                        <span class="text-gray-300 italic">No configurada</span>
-                    @endif
-                </td>
-            @endif
-
-            @if(in_array('default_credit', $visibleColumns))
-                <td class="px-6 py-4 text-xs">
-                    @if($type->defaultCreditAccount)
-                        <span class="font-bold text-gray-700 block">{{ $type->defaultCreditAccount->code }}</span>
-                        <span class="text-gray-400 truncate block max-w-[150px]">{{ $type->defaultCreditAccount->name }}</span>
-                    @else
-                        <span class="text-gray-300 italic">No configurada</span>
-                    @endif
-                </td>
-            @endif
-
             {{-- Estado --}}
             @if(in_array('is_active', $visibleColumns))
                 <td class="px-6 py-4 text-center">

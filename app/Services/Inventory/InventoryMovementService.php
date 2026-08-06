@@ -5,7 +5,7 @@ namespace App\Services\Inventory;
 use App\Models\Inventory\InventoryMovement;
 use App\Models\Inventory\InventoryStock;
 use App\Models\Accounting\JournalEntry;
-use App\Models\Accounting\AccountingAccount;
+use App\Models\Accounting\AccountingAccountRole;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Exception;
@@ -77,10 +77,10 @@ private function generateAccountingEntry(InventoryMovement $movement, $product, 
     $totalValue = $quantity * $product->cost;
     if ($totalValue <= 0) return; 
 
-    // Cuentas fijas
-    $cashAccount = AccountingAccount::where('code', '1.1.01')->first(); 
-    $costOfSalesAccount = AccountingAccount::where('code', '5.1')->first(); 
-    $productionAccount = AccountingAccount::where('code', '5.2')->first(); // Costo de Producción propia
+    // Cuentas resueltas por rol (antes hardcodeadas por código)
+    $cashAccountId = AccountingAccountRole::resolve('cash_default');
+    $costOfSalesAccountId = AccountingAccountRole::resolve('cost_of_sales');
+    $productionAccountId = AccountingAccountRole::resolve('production_cost');
 
     $entry = JournalEntry::create([
         'entry_date'  => now(),
@@ -95,16 +95,16 @@ private function generateAccountingEntry(InventoryMovement $movement, $product, 
             // Diferenciamos si es Compra o Producción
             if ($movement->reference_type === 'Production') {
                 $this->createItem($entry, $movement->warehouse->accounting_account_id, $totalValue, 0, "Entrada por producción");
-                $this->createItem($entry, $productionAccount->id, 0, $totalValue, "Costo de producción propia");
+                $this->createItem($entry, $productionAccountId, 0, $totalValue, "Costo de producción propia");
             } else {
                 $this->createItem($entry, $movement->warehouse->accounting_account_id, $totalValue, 0, "Compra de mercancía");
-                $this->createItem($entry, $cashAccount->id, 0, $totalValue, "Pago en efectivo");
+                $this->createItem($entry, $cashAccountId, 0, $totalValue, "Pago en efectivo");
             }
             break;
 
         case InventoryMovement::TYPE_OUTPUT:
             // La salida de inventario es el COSTO, no la VENTA.
-            $this->createItem($entry, $costOfSalesAccount->id, $totalValue, 0, "Costo de ventas devengado");
+            $this->createItem($entry, $costOfSalesAccountId, $totalValue, 0, "Costo de ventas devengado");
             $this->createItem($entry, $movement->warehouse->accounting_account_id, 0, $totalValue, "Salida física de inventario");
             break;
 
@@ -118,14 +118,14 @@ private function generateAccountingEntry(InventoryMovement $movement, $product, 
             if ($movement->quantity > 0) {
                 // --- CAMBIO AQUÍ ---
                 // Si el ajuste viene de una anulación de Venta, afectamos Costo de Ventas
-                $contraAccount = ($movement->reference_type === \App\Models\Sales\Sale::class) 
-                    ? $costOfSalesAccount->id 
-                    : $productionAccount->id;
+                $contraAccount = ($movement->reference_type === \App\Models\Sales\Sale::class)
+                    ? $costOfSalesAccountId
+                    : $productionAccountId;
 
                 $this->createItem($entry, $movement->warehouse->accounting_account_id, $totalValue, 0, "Reingreso de inventario");
                 $this->createItem($entry, $contraAccount, 0, $totalValue, "Reversión de costo/ajuste positivo");
             } else {
-                $this->createItem($entry, $costOfSalesAccount->id, $totalValue, 0, "Gasto por merma o pérdida");
+                $this->createItem($entry, $costOfSalesAccountId, $totalValue, 0, "Gasto por merma o pérdida");
                 $this->createItem($entry, $movement->warehouse->accounting_account_id, 0, $totalValue, "Baja por merma");
             }
             break;

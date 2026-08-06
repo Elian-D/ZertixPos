@@ -37,11 +37,10 @@
 
 
 
-                {{-- SECCIÓN 2: CONTROL Y CUENTAS --}}
+                {{-- SECCIÓN 2: CORRELATIVO --}}
                 <section>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-
-                        <div class="md:col-span-1">
+                    <div class="max-w-xs">
+                        @if($hasIssuedDocuments)
                             <div class="bg-indigo-50/50 p-6 rounded-xl border border-indigo-100 flex flex-col items-center justify-center">
                                 <x-input-label value="Correlativo Actual" class="text-indigo-600 mb-1" />
                                 <span class="text-4xl font-mono font-black text-indigo-700">
@@ -49,36 +48,18 @@
                                 </span>
                                 <div class="mt-2 flex items-center gap-1 text-indigo-400">
                                     <x-heroicon-s-lock-closed class="w-3 h-3" />
-                                    <span class="text-[10px] font-bold uppercase">Bloqueado por el sistema</span>
+                                    <span class="text-[10px] font-bold uppercase">Bloqueado — ya hay documentos emitidos</span>
                                 </div>
                             </div>
-                        </div>
-
-                        <div class="md:col-span-2 space-y-4">
-                            <div>
-                                <x-input-label value="Cuenta Débito" />
-                                <select name="default_debit_account_id" class="w-full mt-1 border-gray-300 rounded-md shadow-sm text-sm">
-                                    <option value="">Ninguna</option>
-                                    @foreach($catalogs['accounts'] as $acc)
-                                        <option value="{{ $acc->id }}" {{ old('default_debit_account_id', $item->default_debit_account_id) == $acc->id ? 'selected' : '' }}>
-                                            {{ $acc->code }} - {{ $acc->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div>
-                                <x-input-label value="Cuenta Crédito" />
-                                <select name="default_credit_account_id" class="w-full mt-1 border-gray-300 rounded-md shadow-sm text-sm">
-                                    <option value="">Ninguna</option>
-                                    @foreach($catalogs['accounts'] as $acc)
-                                        <option value="{{ $acc->id }}" {{ old('default_credit_account_id', $item->default_credit_account_id) == $acc->id ? 'selected' : '' }}>
-                                            {{ $acc->code }} - {{ $acc->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
+                        @else
+                            <x-input-label value="Correlativo Actual" />
+                            <x-text-input type="number" min="0" name="current_number" class="w-full mt-1 font-mono"
+                                :value="old('current_number', $item->current_number)" />
+                            <p class="text-[10px] text-gray-400 mt-1">
+                                Ajustable libremente hasta que se emita el primer documento con este tipo.
+                            </p>
+                            <x-input-error :messages="$errors->get('current_number')" class="mt-2" />
+                        @endif
                     </div>
                 </section>
 

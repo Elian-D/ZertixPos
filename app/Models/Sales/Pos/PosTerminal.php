@@ -55,10 +55,10 @@ class PosTerminal extends Model
     protected static function booted()
     {
         static::created(function (PosTerminal $terminal) {
-            // Generar cuenta contable de efectivo si no se especificó una
-            if (!$terminal->cash_account_id) {
-                $terminal->createAccountingAccount();
-            }
+            // La auto-creación de cuenta contable de efectivo (createAccountingAccount())
+            // ya no corre incondicionalmente aquí — abrir una terminal POS no debe depender
+            // de Contabilidad. Cuando exista module_enabled() (Fase 3, REQ-03.5), esta
+            // llamada se reintroduce condicionada a module_enabled('accounting.advanced').
         });
     }
 

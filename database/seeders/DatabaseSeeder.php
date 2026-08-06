@@ -37,6 +37,7 @@ class DatabaseSeeder extends Seeder
 
                 //Accounting Seeders
                 \Database\Seeders\AccountingSeeders\AccountingAccountSeeder::class,
+                \Database\Seeders\AccountingSeeders\AccountingAccountRoleSeeder::class,
                 \Database\Seeders\AccountingSeeders\DocumentTypeSeeder::class,
                 
             \Database\Seeders\ConfigurationSeeders\ClientStateCategorySeeder::class,
