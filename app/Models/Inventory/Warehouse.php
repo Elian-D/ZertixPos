@@ -42,8 +42,8 @@ class Warehouse extends Model
     {
         return [
             self::TYPE_STATIC => 'Estático (Bodega/Fábrica)',
+            self::TYPE_POS    => 'Estático (Tienda/Mostrador)',
             self::TYPE_MOBILE => 'Móvil (Camión/Ruta)',
-            self::TYPE_POS    => 'Punto de Venta',
         ];
     }
 
@@ -53,9 +53,11 @@ class Warehouse extends Model
     protected static function booted()
     {
         static::created(function (Warehouse $warehouse) {
-            // Ejecutamos la lógica contable
-            $warehouse->createAccountingAccount();
-            
+            // La auto-creación de subcuenta contable (createAccountingAccount()) ya no
+            // corre incondicionalmente aquí — CxC/CxP/Cotizaciones son base y no deben
+            // depender de Contabilidad. Cuando exista module_enabled() (Fase 3, REQ-03.5),
+            // esta llamada se reintroduce condicionada a module_enabled('accounting.advanced').
+
             // Ejecutamos la lógica del código
             $prefix = strtoupper(substr(Str::slug($warehouse->name), 0, 3));
             $warehouse->updateQuietly([

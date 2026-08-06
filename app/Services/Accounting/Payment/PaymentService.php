@@ -5,7 +5,7 @@ namespace App\Services\Accounting\Payment;
 use App\Models\Accounting\Payment;
 use App\Models\Accounting\Receivable;
 use App\Models\Accounting\JournalEntry;
-use App\Models\Accounting\AccountingAccount;
+use App\Models\Accounting\AccountingAccountRole;
 use App\Services\Accounting\JournalEntries\JournalEntryService;
 use App\Services\Accounting\Receivable\ReceivableService;
 use Illuminate\Support\Facades\DB;
@@ -40,7 +40,7 @@ class PaymentService
                 'status'      => JournalEntry::STATUS_POSTED,
                 'items'       => [
                     [
-                        'accounting_account_id' => $this->getAccountIdByCode('1.1.01'),
+                        'accounting_account_id' => AccountingAccountRole::resolve('cash_default'),
                         'debit'  => $data['amount'],
                         'credit' => 0,
                         'note'   => "Cobro según {$receiptNumber}"
@@ -108,10 +108,5 @@ class PaymentService
 
             return true;
         });
-    }
-
-    protected function getAccountIdByCode(string $code): int
-    {
-        return AccountingAccount::where('code', $code)->firstOrFail()->id;
     }
 }

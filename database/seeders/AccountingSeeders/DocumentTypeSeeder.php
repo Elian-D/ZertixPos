@@ -17,24 +17,6 @@ class DocumentTypeSeeder extends Seeder
                 'current_number' => 0,
             ],
             [
-                'name' => 'Recibo de Ingreso',
-                'code' => 'REC',
-                'prefix' => 'REC',
-                'current_number' => 0,
-            ],
-            [
-                'name' => 'Nota de Crédito',
-                'code' => 'NC',
-                'prefix' => 'NC',
-                'current_number' => 0,
-            ],
-            [
-                'name' => 'Asiento Manual',
-                'code' => 'MAN',
-                'prefix' => 'AS',
-                'current_number' => 0,
-            ],
-            [
                 'name' => 'Comprobante de Pago',
                 'code' => 'PAG',
                 'prefix' => 'PAG',
@@ -45,5 +27,11 @@ class DocumentTypeSeeder extends Seeder
         foreach ($docs as $doc) {
             DocumentType::updateOrCreate(['code' => $doc['code']], $doc);
         }
+
+        // REC, MAN y NC nunca se consultan en ningún punto del código (confirmado por
+        // grep) — se retiran de instalaciones existentes que los sembraron antes de
+        // esta limpieza. NC (Nota de Crédito) se elimina porque el módulo en sí no se
+        // construye en esta versión — queda para cuando se aborde B04 (v1.1.0.md Fase 4.4).
+        DocumentType::whereIn('code', ['REC', 'MAN', 'NC'])->forceDelete();
     }
 }
