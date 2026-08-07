@@ -2,8 +2,9 @@
 
 namespace App\Models\Configuration;
 
-use App\Models\Geo\Country;
-use App\Models\Geo\State;
+use App\Enums\TaxIdentifierType;
+use App\Models\Geo\Municipality;
+use App\Models\Geo\Province;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -18,39 +19,33 @@ class ConfiguracionGeneral extends Model
         'nombre_empresa',
         'logo',
         'tax_id',
+        'tax_identifier_type',
         'telefono',
         'email',
         'direccion',
-        'ciudad',
-        'country_id',
-        'state_id',
+        'provincia_id',
+        'municipio_id',
         'impuesto_id',
-        'currency',
-        'currency_name',
-        'currency_symbol',
-        'timezone',
-        'tax_identifier_type_id',
+    ];
+
+    protected $casts = [
+        'tax_identifier_type' => TaxIdentifierType::class,
     ];
 
     // Relaciones
-    public function country()
+    public function provincia()
     {
-        return $this->belongsTo(Country::class);
+        return $this->belongsTo(Province::class, 'provincia_id');
     }
 
-    public function state()
+    public function municipio()
     {
-        return $this->belongsTo(State::class);
+        return $this->belongsTo(Municipality::class, 'municipio_id');
     }
 
     public function impuesto()
     {
         return $this->belongsTo(Impuesto::class);
-    }
-
-    public function taxIdentifierType()
-    {
-        return $this->belongsTo(TaxIdentifierType::class);
     }
 
     // Obtener la configuración general actual (única fila)
