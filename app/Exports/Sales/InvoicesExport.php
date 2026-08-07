@@ -2,32 +2,44 @@
 
 namespace App\Exports\Sales;
 
+use App\Models\Clients\Client;
 use App\Models\Sales\Invoice;
 use App\Models\Sales\Sale;
-use App\Models\Clients\Client;
-use Maatwebsite\Excel\Concerns\{FromQuery, WithHeadings, WithMapping, WithStyles, WithDefaultStyles, WithColumnWidths};
+use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithDefaultStyles;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Style;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\{Style, Fill, Alignment, Border};
 
-class InvoicesExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithDefaultStyles, WithColumnWidths
+class InvoicesExport implements FromQuery, WithColumnWidths, WithDefaultStyles, WithHeadings, WithMapping, WithStyles
 {
     protected $query;
+
     private $clientsCache = [];
+
     private $statusLabels = [];
+
     private $formatLabels = [];
+
     private $paymentLabels = [];
 
     public function __construct($query)
     {
         $this->query = $query;
-        
+
         // Optimización: Cacheamos catálogos para evitar N+1 en el mapeo
         $this->clientsCache = Client::pluck('name', 'id')->toArray();
         $this->statusLabels = Invoice::getStatuses();
         $this->formatLabels = Invoice::getFormats();
         $this->paymentLabels = [
-            Sale::PAYMENT_CASH   => 'Contado',
-            Sale::PAYMENT_CREDIT => 'Crédito'
+            Sale::PAYMENT_CASH => 'Contado',
+            Sale::PAYMENT_CREDIT => 'Crédito',
         ];
     }
 
@@ -49,7 +61,7 @@ class InvoicesExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             'Monto Total',
             'Estado',
             'Vencimiento',
-            'Generado Por'
+            'Generado Por',
         ];
     }
 
@@ -57,7 +69,7 @@ class InvoicesExport implements FromQuery, WithHeadings, WithMapping, WithStyles
     {
         // Aseguramos que los objetos existan antes de llamar a sus propiedades
         $sale = $invoice->sale;
-        
+
         return [
             $invoice->id,
             $invoice->invoice_number,
@@ -71,7 +83,7 @@ class InvoicesExport implements FromQuery, WithHeadings, WithMapping, WithStyles
             $invoice->generated_by,
         ];
     }
-    
+
     public function columnWidths(): array
     {
         return [
@@ -100,11 +112,11 @@ class InvoicesExport implements FromQuery, WithHeadings, WithMapping, WithStyles
         $lastRow = $sheet->getHighestRow();
 
         // Formato Moneda
-        $sheet->getStyle('G2:G' . $lastRow)->getNumberFormat()
-            ->setFormatCode('"$"#,##0.00');
+        $sheet->getStyle('G2:G'.$lastRow)->getNumberFormat()
+            ->setFormatCode('"'.config('regional.currency_symbol').'"#,##0.00');
 
         // Bordes
-        $sheet->getStyle('A1:J' . $lastRow)->applyFromArray([
+        $sheet->getStyle('A1:J'.$lastRow)->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,

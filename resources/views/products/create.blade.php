@@ -121,16 +121,16 @@
                         <div class="md:col-span-2">
                             <x-input-label value="Precio de Venta" />
                             <div class="relative mt-1">
-                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 text-sm">$</span>
-                                <x-text-input type="number" step="0.01" name="price" class="w-full pl-7" :value="old('price')" placeholder="0.00" required />
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 text-sm">{{ config('regional.currency_symbol') }}</span>
+                                <x-text-input type="number" step="0.01" name="price" class="w-full pl-14" :value="old('price')" placeholder="0.00" required />
                             </div>
                         </div>
 
                         <div class="md:col-span-2">
                             <x-input-label value="Costo" />
                             <div class="relative mt-1">
-                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 text-sm">$</span>
-                                <x-text-input type="number" step="0.01" name="cost" class="w-full pl-7" :value="old('cost')" placeholder="0.00" required />
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500 text-sm">{{ config('regional.currency_symbol') }}</span>
+                                <x-text-input type="number" step="0.01" name="cost" class="w-full pl-14" :value="old('cost')" placeholder="0.00" required />
                             </div>
                             <p class="mt-1 text-xs text-gray-800" x-show="!isService">
                                 El precio pagado al proveedor por la compra de este artículo de inventario.

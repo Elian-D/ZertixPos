@@ -16,7 +16,7 @@
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Ventas Netas (Mes)</p>
-                                <p class="text-3xl font-bold text-gray-900 mt-1">$15,450.00</p>
+                                <p class="text-3xl font-bold text-gray-900 mt-1">{{ config('regional.currency_symbol') }}15,450.00</p>
                             </div>
                             <x-heroicon-s-currency-dollar class="w-8 h-8 text-indigo-500 opacity-70" />
                         </div>
@@ -110,21 +110,21 @@
                                     <p class="font-medium text-gray-800">Venta #1023</p>
                                     <p class="text-gray-500">Cliente: Juan Pérez</p>
                                 </div>
-                                <span class="font-bold text-green-600">$450.00</span>
+                                <span class="font-bold text-green-600">{{ config('regional.currency_symbol') }}450.00</span>
                             </li>
                             <li class="py-3 flex justify-between items-center text-sm">
                                 <div>
                                     <p class="font-medium text-gray-800">Venta #1022</p>
                                     <p class="text-gray-500">Cliente: María Gómez</p>
                                 </div>
-                                <span class="font-bold text-green-600">$120.50</span>
+                                <span class="font-bold text-green-600">{{ config('regional.currency_symbol') }}120.50</span>
                             </li>
                              <li class="py-3 flex justify-between items-center text-sm">
                                 <div>
                                     <p class="font-medium text-gray-800">Venta #1021</p>
                                     <p class="text-gray-500">Cliente: Suministros ABC</p>
                                 </div>
-                                <span class="font-bold text-green-600">$1,200.00</span>
+                                <span class="font-bold text-green-600">{{ config('regional.currency_symbol') }}1,200.00</span>
                             </li>
                             <li class="py-3 text-center">
                                 <a href="/ventas" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">Ver todo el historial</a>

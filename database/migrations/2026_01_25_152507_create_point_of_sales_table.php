@@ -28,8 +28,8 @@ return new class extends Migration
             $table->string('name', 150); // Nombre comercial del PDV
             $table->string('code', 50)->nullable()->unique(); // Código interno opcional
 
-            // Ubicación
-            $table->unsignedMediumInteger('state_id');
+            // Ubicación (RD-only, ver docs/features/v1.1.0.md Fase 6)
+            $table->foreignId('provincia_id')->constrained('provinces')->restrictOnDelete();
             $table->string('city', 100);
             $table->string('address', 255)->nullable();
 
@@ -49,11 +49,6 @@ return new class extends Migration
 
             $table->timestamps();
             $table->softDeletes();
-
-            // Relaciones
-            $table->foreign('state_id')
-                ->references('id')->on('states')
-                ->restrictOnDelete();
         });
     }
 

@@ -2,18 +2,18 @@
 
 namespace Database\Seeders\ClientsConfigSeeders;
 
+use App\Enums\TaxIdentifierType;
 use App\Models\Clients\Client;
-use App\Models\Accounting\AccountingAccount;
 use App\Models\Configuration\EstadosCliente;
-use App\Models\Configuration\TaxIdentifierType;
-use App\Models\Geo\State;
+use App\Models\Geo\Province;
 use Illuminate\Database\Seeder;
 
 class ClientSeeder extends Seeder
 {
     public function run(): void
     {
-        $countryId = function_exists('general_config') ? general_config()->country_id : 1;
+        $provinciaId = Province::where('name', 'Distrito Nacional')->value('id')
+            ?? Province::query()->value('id');
 
         // 1. Crear el Cliente Genérico (Consumidor Final)
         Client::firstOrCreate(
@@ -24,14 +24,14 @@ class ClientSeeder extends Seeder
                 'name' => 'Consumidor Final',
                 'email' => 'consumidor@final.com',
                 'phone' => '0000000000',
-                'state_id' => State::where('country_id', $countryId)->value('id') ?? 1,
-                'city' => 'N/A',
+                'provincia_id' => $provinciaId,
+                'municipio_id' => null,
                 'address' => 'Ventas de Mostrador',
-                'tax_identifier_type_id' => TaxIdentifierType::where('country_id', $countryId)->value('id') ?? 1,
+                'tax_identifier_type' => TaxIdentifierType::CEDULA->value,
                 'credit_limit' => 0, // No tiene crédito
                 'balance' => 0,
                 'payment_terms' => 0,
-                'accounting_account_id' => null
+                'accounting_account_id' => null,
             ]
         );
 

@@ -23,8 +23,8 @@
                 <td class="px-6 py-4 text-sm text-gray-600">{{ $item->businessType->nombre ?? '—' }}</td>
             @endif
 
-            @if(in_array('state_id', $visibleColumns))
-                <td class="px-6 py-4 text-sm text-gray-600">{{ $item->state->name ?? '—' }}</td>
+            @if(in_array('provincia_id', $visibleColumns))
+                <td class="px-6 py-4 text-sm text-gray-600">{{ $item->provincia->name ?? '—' }}</td>
             @endif
 
             @if(in_array('city', $visibleColumns))
@@ -39,9 +39,6 @@
                 <td class="px-6 py-4 text-sm text-gray-600">{{ $item->contact_phone ?? '—' }}</td>
             @endif
 
-            @if(in_array('state', $visibleColumns))
-                <td class="px-6 py-4 text-sm text-gray-600">{{ $item->state->name ?? '—' }}</td>
-            @endif
 
             @if(in_array('active', $visibleColumns))
                 <td class="px-6 py-4">

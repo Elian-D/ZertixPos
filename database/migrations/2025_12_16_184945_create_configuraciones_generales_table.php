@@ -19,40 +19,18 @@ return new class extends Migration
             $table->string('logo')->nullable();
 
             $table->string('tax_id', 50)->nullable();
-            
+            $table->string('tax_identifier_type')->nullable();
+
             $table->string('telefono')->nullable();
             $table->string('email')->nullable();
             $table->text('direccion')->nullable();
-            $table->string('ciudad')->nullable();
 
-            // Ubicación geográfica REAL
-            $table->unsignedMediumInteger('country_id')->default(62);
-            $table->unsignedMediumInteger('state_id')->nullable();
-
-            // Moneda (editable)
-            $table->string('currency', 10);
-            $table->string('currency_name')->nullable();
-            $table->string('currency_symbol')->nullable();
-
-            // Zona horaria (NO editable)
-            $table->string('timezone');
+            // Ubicación geográfica (RD-only, ver docs/features/v1.1.0.md Fase 6)
+            $table->foreignId('provincia_id')->constrained('provinces')->restrictOnDelete();
+            $table->foreignId('municipio_id')->nullable()->constrained('municipalities')->nullOnDelete();
 
             $table->timestamps();
 
-            // Relaciones
-            $table->foreign('country_id')
-                ->references('id')->on('countries')
-                ->restrictOnDelete();
-
-            $table->foreign('state_id')
-                ->references('id')->on('states')
-                ->nullOnDelete();
-
-            $table->foreignId('tax_identifier_type_id')
-                    ->nullable()
-                    ->references('id')->on('tax_identifier_types')
-                    ->nullOnDelete();;
-            
             $table->foreignId('impuesto_id')
                 ->nullable()
                 ->constrained('impuestos')

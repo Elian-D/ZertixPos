@@ -2,27 +2,19 @@
 
 namespace Database\Factories\Clients;
 
+use App\Enums\TaxIdentifierType;
 use App\Models\Accounting\AccountingAccount;
 use App\Models\Accounting\DocumentType;
 use App\Models\Accounting\Payment;
 use App\Models\Accounting\Receivable;
 use App\Models\Clients\Client;
 use App\Models\Configuration\EstadosCliente;
-use App\Models\Configuration\TaxIdentifierType;
-use App\Models\Geo\State;
+use App\Models\Geo\Municipality;
+use App\Models\Geo\Province;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ClientFactory extends Factory
 {
-    protected int $countryId;
-
-    public function __construct(...$args)
-    {
-        parent::__construct(...$args);
-        // Asegúrate de que esta función helper exista o usa un valor por defecto
-        $this->countryId = function_exists('general_config') ? general_config()->country_id : 1;
-    }
-
     /**
      * Define el estado básico del modelo.
      * ESTO ES LO QUE FALTABA
@@ -30,6 +22,7 @@ class ClientFactory extends Factory
     public function definition(): array
     {
         $type = fake()->boolean(50) ? 'individual' : 'company';
+        $provinciaId = Province::inRandomOrder()->value('id') ?? 1;
 
         return [
             'type' => $type,
@@ -37,10 +30,10 @@ class ClientFactory extends Factory
             'name' => $type === 'individual' ? fake()->name() : fake()->company(),
             'email' => fake()->unique()->safeEmail(),
             'phone' => fake()->phoneNumber(),
-            'state_id' => State::where('country_id', $this->countryId)->inRandomOrder()->value('id') ?? 1,
-            'city' => fake()->city(),
+            'provincia_id' => $provinciaId,
+            'municipio_id' => Municipality::where('province_id', $provinciaId)->inRandomOrder()->value('id'),
             'address' => fake()->address(),
-            'tax_identifier_type_id' => TaxIdentifierType::where('country_id', $this->countryId)->inRandomOrder()->value('id') ?? 1,
+            'tax_identifier_type' => fake()->randomElement(TaxIdentifierType::cases())->value,
             'tax_id' => fake()->numerify('###########'),
             'credit_limit' => fake()->randomElement([5000, 10000, 20000]),
             'balance' => 0, // Empezamos en 0 para que afterCreating cree la deuda real

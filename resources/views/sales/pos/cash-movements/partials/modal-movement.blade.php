@@ -83,11 +83,11 @@
                 <x-input-label for="amount" value="Monto a Registrar" />
                 <div class="relative mt-1">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <span class="text-gray-400 sm:text-sm font-bold">$</span>
+                        <span class="text-gray-400 sm:text-sm font-bold">{{ config('regional.currency_symbol') }}</span>
                     </div>
                     <x-text-input 
                         id="amount" name="amount" type="number" step="0.01" x-model="amount"
-                        class="block w-full pl-7 text-lg font-semibold" placeholder="0.00" required 
+                        class="block w-full pl-14 text-lg font-semibold" placeholder="0.00" required
                     />
                 </div>
                 <p class="mt-1 text-[10px] font-medium italic" :class="isOut ? 'text-amber-600' : 'text-green-600'">

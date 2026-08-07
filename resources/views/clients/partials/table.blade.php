@@ -38,7 +38,7 @@
             {{-- Columnas Financieras --}}
             @if(in_array('balance', $visibleColumns))
                 <td class="px-6 py-4 text-sm">
-                    <span class="font-semibold {{ $client->balance > 0 ? 'text-red-600' : 'text-green-600' }}">${{ number_format($client->balance, 2) }}</span>
+                    <span class="font-semibold {{ $client->balance > 0 ? 'text-red-600' : 'text-green-600' }}">{{ config('regional.currency_symbol') }}{{ number_format($client->balance, 2) }}</span>
                 </td>
             @endif
 
@@ -46,7 +46,7 @@
                 <td class="px-6 py-4 text-sm">
                     @if($client->credit_limit > 0)
                         <div class="flex items-center gap-2">
-                            <span class="text-gray-700 font-medium">${{ number_format($client->credit_limit, 2) }}</span>
+                            <span class="text-gray-700 font-medium">{{ config('regional.currency_symbol') }}{{ number_format($client->credit_limit, 2) }}</span>
                             
                             @if($client->balance > $client->credit_limit)
                                 <span class="whitespace-nowrap inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-700 animate-pulse ring-1 ring-red-400">
@@ -87,11 +87,11 @@
             @endif
 
             @if(in_array('state', $visibleColumns))
-                <td class="px-6 py-4 text-sm text-gray-600">{{ $client->state->name ?? '—' }}</td>
+                <td class="px-6 py-4 text-sm text-gray-600">{{ $client->provincia->name ?? '—' }}</td>
             @endif
-            
+
             @if(in_array('city', $visibleColumns))
-                <td class="px-6 py-4 text-sm text-gray-700">{{ $client->city }}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">{{ $client->municipio->name ?? '—' }}</td>
             @endif
 
 

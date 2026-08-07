@@ -36,7 +36,7 @@
                 @forelse($items as $index => $item)
                     <tr wire:key="item-row-{{ $item['product_id'] }}-{{ $index }}" class="border-b">
                         <td class="px-4 py-3 font-medium text-gray-900">{{ $item['name'] }}</td>
-                        <td class="px-4 py-3">${{ number_format($item['price'], 2) }}</td>
+                        <td class="px-4 py-3">{{ config('regional.currency_symbol') }}{{ number_format($item['price'], 2) }}</td>
                         <td class="px-4 py-3">
                             <input type="number" 
                                 wire:model.live.debounce.500ms="items.{{ $index }}.quantity" 
@@ -65,7 +65,7 @@
                             @enderror
                         </td>
                         <td class="px-4 py-3 font-bold text-gray-900">
-                            ${{ number_format($item['subtotal'], 2) }}
+                            {{ config('regional.currency_symbol') }}{{ number_format($item['subtotal'], 2) }}
                         </td>
                         <td class="px-4 py-3 text-right">
                             <button wire:click="removeItem({{ $index }})" class="text-red-500 hover:text-red-700">
@@ -95,15 +95,15 @@
         <div class="w-full md:w-1/3 bg-gray-50 p-4 rounded-lg">
             <div class="flex justify-between mb-2">
                 <span class="text-gray-600">Subtotal</span>
-                <span class="font-medium">${{ number_format($subtotal, 2) }}</span>
+                <span class="font-medium">{{ config('regional.currency_symbol') }}{{ number_format($subtotal, 2) }}</span>
             </div>
             <div class="flex justify-between mb-2 text-red-500">
                 <span>Descuento</span>
-                <span>-${{ number_format($discountTotal, 2) }}</span>
+                <span>-{{ config('regional.currency_symbol') }}{{ number_format($discountTotal, 2) }}</span>
             </div>
             <div class="flex justify-between mt-4 pt-4 border-t border-gray-200">
                 <span class="text-lg font-bold">Total</span>
-                <span class="text-xl font-black">${{ number_format($total, 2) }}</span>
+                <span class="text-xl font-black">{{ config('regional.currency_symbol') }}{{ number_format($total, 2) }}</span>
             </div>
 
             {{-- NUEVO: Bloque de Errores Críticos / Generales del Servidor --}}

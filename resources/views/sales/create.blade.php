@@ -317,13 +317,13 @@
                                     <div>
                                         <label class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Efectivo Recibido</label>
                                         <div class="relative">
-                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-mono">$</span>
+                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-mono">{{ config('regional.currency_symbol') }}</span>
                                             <input type="number" 
                                                 name="cash_received" 
                                                 x-model.number="formData.cash_received" 
                                                 @input="calculateChange()" 
                                                 step="0.01"
-                                                class="w-full bg-white/5 border-white/10 rounded-lg pl-7 py-2 text-lg font-mono focus:ring-indigo-500 focus:bg-white/10 transition-all">
+                                                class="w-full bg-white/5 border-white/10 rounded-lg pl-14 py-2 text-lg font-mono focus:ring-indigo-500 focus:bg-white/10 transition-all">
                                         </div>
                                     </div>
                                 </template>
@@ -613,7 +613,7 @@
                 },
 
                 formatMoney(amount) {
-                    return '$' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2 }).format(amount);
+                    return '{{ config('regional.currency_symbol') }}' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2 }).format(amount);
                 }
             }
         }

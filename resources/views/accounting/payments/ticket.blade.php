@@ -5,7 +5,7 @@
     // Accedemos a la venta a través de la relación polimórfica 'reference'
     $sale = $receivable->reference; 
     $client = $payment->client;
-    $currency = $config->currency_symbol ?? '$';
+    $currency = config('regional.currency_symbol');
 @endphp
 
 <!DOCTYPE html>

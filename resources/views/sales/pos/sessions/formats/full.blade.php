@@ -1,6 +1,6 @@
 @php
     $config = general_config();
-    $currency = $config->currency_symbol ?? '$';
+    $currency = config('regional.currency_symbol');
 
     // Anchos fijos para la tabla de resumen por forma de pago — DomPDF con
     // table-layout:fixed necesita los anchos declarados en <colgroup> (o en la

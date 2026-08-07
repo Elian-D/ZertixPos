@@ -108,21 +108,21 @@
                                         {{ number_format($item->quantity, 2) }}
                                     </td>
                                     <td class="px-4 py-3 text-right text-gray-500 text-xs">
-                                        ${{ number_format($item->unit_price, 2) }}
+                                        {{ config('regional.currency_symbol') }}{{ number_format($item->unit_price, 2) }}
                                     </td>
                                     <td class="px-4 py-3 text-right text-xs text-amber-600">
                                         @if($itemBruto > 0 && $itemDescuento > 0)
                                             <span class="text-[10px] bg-amber-50 px-1 py-0.5 rounded font-semibold mr-1">
                                                 {{ number_format(($itemDescuento / $itemBruto) * 100, 0) }}%
                                             </span>
-                                            -${{ number_format($itemDescuento, 2) }}
+                                            -{{ config('regional.currency_symbol') }}{{ number_format($itemDescuento, 2) }}
                                         @else
                                             -
                                         @endif
                                     </td>
                                     <td class="px-4 py-3 text-right font-bold text-gray-900">
                                         {{-- El subtotal del item ya almacena el valor neto post-descuento --}}
-                                        ${{ number_format($sale->total_amount - $sale->discount_total, 2) }}
+                                        {{ config('regional.currency_symbol') }}{{ number_format($sale->total_amount - $sale->discount_total, 2) }}
                                     </td>
                                 </tr>
                             @endforeach
@@ -156,7 +156,7 @@
                     {{-- Subtotal Bruto Real --}}
                     <div class="flex justify-between text-xs text-gray-500 px-1">
                         <span>Subtotal Bruto</span>
-                        <span class="font-mono">${{ number_format($sale->total_amount, 2) }}</span>
+                        <span class="font-mono">{{ config('regional.currency_symbol') }}{{ number_format($sale->total_amount, 2) }}</span>
                     </div>
 
                     {{-- Descuentos Aplicados --}}
@@ -166,26 +166,26 @@
                                 <x-heroicon-s-tag class="w-3 h-3"/>
                                 Total Descuentos
                             </span>
-                            <span class="font-mono font-bold">-${{ number_format($sale->discount_total, 2) }}</span>
+                            <span class="font-mono font-bold">-{{ config('regional.currency_symbol') }}{{ number_format($sale->discount_total, 2) }}</span>
                         </div>
                         
                         {{-- Subtotal Neto --}}
                         <div class="flex justify-between text-xs font-semibold text-gray-700 px-1 pb-1 border-b border-gray-100">
                             <span>Subtotal Neto</span>
-                            <span class="font-mono">${{ number_format($sale->total_amount - $sale->discount_total, 2) }}</span>
+                            <span class="font-mono">{{ config('regional.currency_symbol') }}{{ number_format($sale->total_amount - $sale->discount_total, 2) }}</span>
                         </div>
                     @endif
 
                     {{-- Impuesto (ITBIS) --}}
                     <div class="flex justify-between text-xs text-gray-500 px-1">
                         <span>{{ $taxName }} {{ $sale->tax_amount > 0 ? '' : '(Incluido/Exento)' }}</span>
-                        <span class="font-mono">${{ number_format($sale->tax_amount, 2) }}</span>
+                        <span class="font-mono">{{ config('regional.currency_symbol') }}{{ number_format($sale->tax_amount, 2) }}</span>
                     </div>
 
                     {{-- Total Final --}}
                     <div class="flex justify-between items-center bg-indigo-50 p-3 rounded-lg border border-indigo-100">
                         <span class="text-xs font-black text-indigo-700 uppercase">Total Facturado</span>
-                        <span class="text-xl font-black text-indigo-700 font-mono">${{ number_format($sale->total_amount - $sale->discount_total, 2) }}</span>
+                        <span class="text-xl font-black text-indigo-700 font-mono">{{ config('regional.currency_symbol') }}{{ number_format($sale->total_amount - $sale->discount_total, 2) }}</span>
                     </div>
 
                     {{-- Distribución de Métodos Usados --}}
@@ -200,7 +200,7 @@
                                         <span class="text-[9px] text-gray-400">({{ $payment->reference }})</span> 
                                     @endif
                                 </span>
-                                <span class="text-sm font-bold text-gray-700 font-mono">${{ number_format($payment->amount - $sale->discount_total, 2) }}</span>
+                                <span class="text-sm font-bold text-gray-700 font-mono">{{ config('regional.currency_symbol') }}{{ number_format($payment->amount - $sale->discount_total, 2) }}</span>
                             </div>
                         @empty
                             <div class="text-right text-[11px] text-gray-400 italic">

@@ -118,7 +118,7 @@
                         <x-heroicon-o-banknotes class="w-5 h-5 text-emerald-600"/>
                     </div>
                 </div>
-                <p class="mt-2 text-4xl font-bold text-gray-900 tabular-nums">${{ number_format($stats['revenue'], 2) }}</p>
+                <p class="mt-2 text-4xl font-bold text-gray-900 tabular-nums">{{ config('regional.currency_symbol') }}{{ number_format($stats['revenue'], 2) }}</p>
                 <p class="mt-1.5 text-xs text-gray-400">{{ number_format($stats['sales_count']) }} ventas completadas</p>
             </div>
 
@@ -129,7 +129,7 @@
                         <x-heroicon-o-chart-bar class="w-5 h-5 {{ $stats['gross_profit'] >= 0 ? 'text-emerald-600' : 'text-red-500' }}"/>
                     </div>
                 </div>
-                <p class="mt-2 text-4xl font-bold text-gray-900 tabular-nums">${{ number_format($stats['gross_profit'], 2) }}</p>
+                <p class="mt-2 text-4xl font-bold text-gray-900 tabular-nums">{{ config('regional.currency_symbol') }}{{ number_format($stats['gross_profit'], 2) }}</p>
                 <span class="inline-flex items-center mt-1.5 px-1.5 py-0.5 rounded text-xs font-semibold {{ $stats['gross_profit'] >= 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700' }}">
                     {{ number_format($stats['margin'], 1) }}% margen
                 </span>
@@ -145,7 +145,7 @@
                         <x-heroicon-o-cube class="w-4 h-4 text-rose-500"/>
                     </div>
                 </div>
-                <p class="mt-1 text-xl font-bold text-gray-900 tabular-nums">${{ number_format($stats['cost_of_sales'], 2) }}</p>
+                <p class="mt-1 text-xl font-bold text-gray-900 tabular-nums">{{ config('regional.currency_symbol') }}{{ number_format($stats['cost_of_sales'], 2) }}</p>
                 <p class="mt-1 text-[11px] text-gray-400">Salidas de inventario al costo actual</p>
             </div>
 
@@ -156,7 +156,7 @@
                         <x-heroicon-o-check-badge class="w-4 h-4 text-blue-500"/>
                     </div>
                 </div>
-                <p class="mt-1 text-xl font-bold text-gray-900 tabular-nums">${{ number_format($stats['collected'], 2) }}</p>
+                <p class="mt-1 text-xl font-bold text-gray-900 tabular-nums">{{ config('regional.currency_symbol') }}{{ number_format($stats['collected'], 2) }}</p>
                 <p class="mt-1 text-[11px] text-gray-400">Abonos aplicados a facturas</p>
             </div>
 
@@ -167,7 +167,7 @@
                         <x-heroicon-o-clock class="w-4 h-4 text-amber-500"/>
                     </div>
                 </div>
-                <p class="mt-1 text-xl font-bold text-gray-900 tabular-nums">${{ number_format($stats['receivable_pending'], 2) }}</p>
+                <p class="mt-1 text-xl font-bold text-gray-900 tabular-nums">{{ config('regional.currency_symbol') }}{{ number_format($stats['receivable_pending'], 2) }}</p>
                 <p class="mt-1 text-[11px] text-gray-400">Saldo pendiente, todas las facturas</p>
             </div>
         </div>
@@ -220,7 +220,7 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-3 text-right font-semibold tabular-nums {{ $isOverdue ? 'text-red-700' : 'text-gray-900' }}">
-                                    ${{ number_format($receivable->current_balance, 2) }}
+                                    {{ config('regional.currency_symbol') }}{{ number_format($receivable->current_balance, 2) }}
                                 </td>
                             </tr>
                         @empty
@@ -266,7 +266,7 @@
                         plotOptions: { bar: { columnWidth: '60%' } },
                         dataLabels: { enabled: false },
                         xaxis: { categories: trend.labels },
-                        yaxis: { labels: { formatter: (val) => '$' + val.toLocaleString() } },
+                        yaxis: { labels: { formatter: (val) => '{{ config('regional.currency_symbol') }}' + val.toLocaleString() } },
                         legend: { position: 'top' }
                     });
                     trendChart.render();

@@ -13,7 +13,7 @@
 
         <div class="bg-gray-50 rounded-lg p-3 mb-6 flex justify-between items-center border border-gray-100">
             <span class="text-xs font-medium text-gray-600">Total a Facturar:</span>
-            <span class="text-lg font-black text-indigo-700">{{ $config->currency_symbol ?? '$' }}{{ number_format($quote->total, 2) }}</span>
+            <span class="text-lg font-black text-indigo-700">{{ config('regional.currency_symbol') }}{{ number_format($quote->total, 2) }}</span>
         </div>
 
         <div class="space-y-4">

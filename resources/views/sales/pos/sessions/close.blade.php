@@ -51,16 +51,16 @@
                         <div class="bg-gradient-to-br from-gray-50 to-gray-100 rounded-2xl p-5 border-2 border-gray-200 space-y-3 shadow-sm">
                             <div class="flex justify-between text-sm font-medium text-gray-600">
                                 <span>(+) Fondo Inicial:</span>
-                                <span class="font-mono font-bold text-gray-800">${{ number_format($session->opening_balance, 2) }}</span>
+                                <span class="font-mono font-bold text-gray-800">{{ config('regional.currency_symbol') }}{{ number_format($session->opening_balance, 2) }}</span>
                             </div>
                             <div class="flex justify-between text-sm font-medium text-green-600">
                                 <span>(+) Ventas en Efectivo:</span>
-                                <span class="font-mono font-bold">${{ number_format($session->cash_sales, 2) }}</span>
+                                <span class="font-mono font-bold">{{ config('regional.currency_symbol') }}{{ number_format($session->cash_sales, 2) }}</span>
                             </div>
 
                             <div class="pt-3 border-t-2 border-dashed border-gray-300 flex justify-between items-center">
                                 <span class="text-sm font-black text-indigo-900 uppercase tracking-wide">Esperado en Caja:</span>
-                                <span class="font-mono text-2xl font-black text-indigo-600" x-text="'$' + expected.toLocaleString('en-US', {minimumFractionDigits: 2})"></span>
+                                <span class="font-mono text-2xl font-black text-indigo-600" x-text="'{{ config('regional.currency_symbol') }}' + expected.toLocaleString('en-US', {minimumFractionDigits: 2})"></span>
                             </div>
                         </div>
                     </div>
@@ -71,7 +71,7 @@
                             <x-input-label for="closing_balance" value="Monto Real en Caja (Arqueo Físico)" class="font-bold" />
                             <div class="relative mt-2">
                                 <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <span class="text-gray-400 font-bold text-lg">$</span>
+                                    <span class="text-gray-400 font-bold text-lg">{{ config('regional.currency_symbol') }}</span>
                                 </div>
                                 <x-text-input
                                     id="closing_balance"
@@ -79,7 +79,7 @@
                                     type="number"
                                     step="0.01"
                                     x-model="real"
-                                    class="pl-10 block w-full text-2xl font-black text-gray-800 bg-white focus:ring-indigo-500 rounded-xl border-2"
+                                    class="pl-16 block w-full text-2xl font-black text-gray-800 bg-white focus:ring-indigo-500 rounded-xl border-2"
                                     placeholder="0.00"
                                     required
                                     autofocus
@@ -102,7 +102,7 @@
                                 <div class="flex flex-col">
                                     <span class="text-xs font-black uppercase tracking-widest opacity-70"
                                           x-text="difference == 0 ? 'Balance Perfecto' : (difference > 0 ? 'Sobrante (Overage)' : 'Faltante (Shortage)')"></span>
-                                    <span class="text-2xl font-black font-mono mt-1" x-text="(difference > 0 ? '+' : '') + '$' + Math.abs(difference).toFixed(2)"></span>
+                                    <span class="text-2xl font-black font-mono mt-1" x-text="(difference > 0 ? '+' : '') + '{{ config('regional.currency_symbol') }}' + Math.abs(difference).toFixed(2)"></span>
                                 </div>
                                 <template x-if="difference == 0">
                                     <svg class="w-10 h-10 text-green-500" fill="currentColor" viewBox="0 0 20 20">
@@ -189,7 +189,7 @@
                                     <span class="block font-bold text-gray-700">{{ $row['hora'] }}</span>
                                     <span class="block text-gray-400">{{ $row['metodo'] }}</span>
                                 </div>
-                                <span class="font-mono font-bold text-gray-800">${{ number_format($row['total'], 2) }}</span>
+                                <span class="font-mono font-bold text-gray-800">{{ config('regional.currency_symbol') }}{{ number_format($row['total'], 2) }}</span>
                             </div>
                         @endforeach
                     </div>

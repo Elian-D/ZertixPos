@@ -149,12 +149,12 @@
                         <div>
                             <x-input-label value="Monto Total" />
                             <div class="relative mt-1">
-                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">$</span>
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">{{ config('regional.currency_symbol') }}</span>
                                 <input type="number" step="0.01" name="total_amount" 
                                     value="{{ old('total_amount', $item->total_amount) }}"
                                     :readonly="isPartiallyPaid"
                                     :class="isPartiallyPaid ? 'bg-gray-100 cursor-not-allowed text-gray-500' : ''"
-                                    class="w-full pl-7 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500" 
+                                    class="w-full pl-14 border-gray-300 rounded-md shadow-sm focus:ring-indigo-500"
                                     required />
                             </div>
                         </div>

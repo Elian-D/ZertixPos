@@ -42,13 +42,13 @@
 
             @if(in_array('price', $visibleColumns))
                 <td class="whitespace-nowrap px-6 py-4 text-sm font-bold text-gray-900">
-                    {{ general_config()->currency_symbol }} {{ number_format($item->price, 2) }}
+                    {{ config('regional.currency_symbol') }} {{ number_format($item->price, 2) }}
                 </td>
             @endif
 
             @if(in_array('cost', $visibleColumns))
                 <td class="whitespace-nowrap px-6 py-4 text-sm font-bold text-gray-900">
-                    {{ general_config()->currency_symbol }} {{ number_format($item->cost, 2) }}
+                    {{ config('regional.currency_symbol') }} {{ number_format($item->cost, 2) }}
                 </td>
             @endif
 

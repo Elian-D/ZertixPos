@@ -72,13 +72,13 @@
                             
                             <div class="flex justify-between items-center mb-2 text-white/80">
                                 <span class="text-xs">Monto Original:</span>
-                                <span class="text-sm font-bold">${{ number_format($item->total_amount, 2) }}</span>
+                                <span class="text-sm font-bold">{{ config('regional.currency_symbol') }}{{ number_format($item->total_amount, 2) }}</span>
                             </div>
 
                             @if($item->current_balance < $item->total_amount && $item->current_balance > 0)
                                 <div class="flex justify-between items-center mb-2 text-emerald-400">
                                     <span class="text-xs">Total Abonado:</span>
-                                    <span class="text-sm font-bold">-${{ number_format($item->total_amount - $item->current_balance, 2) }}</span>
+                                    <span class="text-sm font-bold">-{{ config('regional.currency_symbol') }}{{ number_format($item->total_amount - $item->current_balance, 2) }}</span>
                                 </div>
                             @endif
                             
@@ -86,7 +86,7 @@
                             
                             <div class="flex justify-between items-center">
                                 <span class="text-xs text-white font-bold uppercase">Saldo Actual:</span>
-                                <span class="text-xl font-black text-white tracking-tight">${{ number_format($item->current_balance, 2) }}</span>
+                                <span class="text-xl font-black text-white tracking-tight">{{ config('regional.currency_symbol') }}{{ number_format($item->current_balance, 2) }}</span>
                             </div>
                         </div>
 
