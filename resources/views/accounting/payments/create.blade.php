@@ -56,7 +56,7 @@
                                     class="w-full mt-1 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded-xl shadow-sm text-sm">
                                 <option value="">Seleccione un cliente...</option>
                                 <template x-for="client in clients" :key="client.id">
-                                    <option :value="client.id" x-text="`${client.name} (Saldo: $${client.balance})`"></option>
+                                    <option :value="client.id" x-text="`${client.name} (Saldo: {{ config('regional.currency_symbol') }}${client.balance})`"></option>
                                 </template>
                             </select>
                         </div>
@@ -69,7 +69,7 @@
                                     class="w-full mt-1 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded-xl shadow-sm text-sm disabled:bg-gray-50">
                                 <option value="">Seleccione factura...</option>
                                 <template x-for="receivable in filteredReceivables" :key="receivable.id">
-                                    <option :value="receivable.id" x-text="`${receivable.document_number} — Saldo: $${receivable.current_balance}`"></option>
+                                    <option :value="receivable.id" x-text="`${receivable.document_number} — Saldo: {{ config('regional.currency_symbol') }}${receivable.current_balance}`"></option>
                                 </template>
                             </select>
                         </div>
@@ -89,10 +89,10 @@
                             <div class="md:col-span-1">
                                 <x-input-label value="Monto del Abono" class="font-bold text-emerald-700" />
                                 <div class="relative mt-1">
-                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 font-bold">$</span>
+                                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-400 font-bold">{{ config('regional.currency_symbol') }}</span>
                                     <input type="number" step="0.01" name="amount" 
                                            x-model="paymentAmount"
-                                           class="w-full pl-7 py-3 border-2 rounded-xl text-lg font-bold transition-all focus:ring-emerald-500"
+                                           class="w-full pl-14 py-3 border-2 rounded-xl text-lg font-bold transition-all focus:ring-emerald-500"
                                            :class="exceedsBalance ? 'border-red-300 bg-red-50 text-red-600' : 'border-gray-200'"
                                            placeholder="0.00" required />
                                 </div>
@@ -147,14 +147,14 @@
                         <div class="flex items-center gap-3 w-full md:w-auto">
                             <div class="bg-white/10 p-3 rounded-lg flex-1 md:flex-none text-center">
                                 <p class="text-[9px] uppercase opacity-70">Deuda Actual</p>
-                                <p class="font-mono font-bold" x-text="'$' + selectedReceivable?.current_balance"></p>
+                                <p class="font-mono font-bold" x-text="'{{ config('regional.currency_symbol') }}' + selectedReceivable?.current_balance"></p>
                             </div>
                             <div class="text-emerald-400 hidden md:block">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
                             </div>
                             <div class="bg-white/10 p-3 rounded-lg flex-1 md:flex-none text-center">
                                 <p class="text-[9px] uppercase opacity-70">Su Abono</p>
-                                <p class="font-mono font-bold" x-text="'- $' + paymentAmount"></p>
+                                <p class="font-mono font-bold" x-text="'- {{ config('regional.currency_symbol') }}' + paymentAmount"></p>
                             </div>
                         </div>
 
@@ -162,7 +162,7 @@
                             <span class="text-[10px] uppercase block text-emerald-400 font-bold">Nuevo Saldo Pendiente</span>
                             <span class="text-2xl md:text-3xl font-black font-mono" 
                                   :class="exceedsBalance ? 'text-red-400' : 'text-white'"
-                                  x-text="'$' + (selectedReceivable?.current_balance - paymentAmount).toFixed(2)">
+                                  x-text="'{{ config('regional.currency_symbol') }}' + (selectedReceivable?.current_balance - paymentAmount).toFixed(2)">
                             </span>
                         </div>
                     </div>

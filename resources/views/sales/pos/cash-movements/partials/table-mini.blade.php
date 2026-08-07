@@ -29,7 +29,7 @@
                         {{ Str::limit($movement->reason, 40) }}
                     </td>
                     <td class="px-4 py-3 whitespace-nowrap text-sm text-right font-bold {{ $movement->type === 'in' ? 'text-green-600' : 'text-amber-600' }}">
-                        {{ $movement->type === 'in' ? '+' : '-' }} ${{ number_format($movement->amount, 2) }}
+                        {{ $movement->type === 'in' ? '+' : '-' }} {{ config('regional.currency_symbol') }}{{ number_format($movement->amount, 2) }}
                     </td>
                 </tr>
             @empty

@@ -1,27 +1,23 @@
 <x-config-layout>
     <div class="min-h-screen bg-slate-50 py-12 px-4"
         x-cloak
-        x-data="{ 
-            countries: {{ $countries->map(fn($c) => ['id' => $c->id, 'name' => $c->name, 'emoji' => $c->emoji, 'phonecode' => $c->phonecode])->toJson() }},
-            states: {{ $states->toJson() }},
+        x-data="{
+            provinces: {{ $provinces->toJson() }},
+            municipalities: {{ $municipalities->toJson() }},
             usaNcf: {{ old('ncf_enabled', module_enabled('sales.ncf')) ? 'true' : 'false' }},
             taxTypes: {{ $taxTypes->toJson() }},
-            
-            searchCountry: '',
-            searchState: '',
-            openCountry: false,
-            openState: false,
 
-            selectedCountry: '{{ old('country_id', $config->country_id ?? 62) }}',
-            selectedState: '{{ old('state_id', $config->state_id ?? '') }}',
-            selectedTaxType: '{{ old('tax_identifier_type_id', $config->tax_identifier_type_id ?? '') }}',
+            searchProvincia: '',
+            openProvincia: false,
+
+            selectedProvincia: '{{ old('provincia_id', $config->provincia_id ?? '') }}',
+            selectedMunicipio: '{{ old('municipio_id', $config->municipio_id ?? '') }}',
+            selectedTaxType: '{{ old('tax_identifier_type', $config->tax_identifier_type?->value ?? '') }}',
             selectedImpuesto: '{{ old('impuesto_id', $config->impuesto_id ?? '') }}',
-            
+
             logoPreview: '{{ $config?->logo ? asset('storage/'.$config->logo) : '' }}',
-            phoneCode: '{{ $countries->where('id', old('country_id', $config->country_id ?? 62))->first()->phonecode ?? '' }}',
-            currency: '{{ old('currency', $config->currency ?? '---') }}',
-            timezone: '{{ old('timezone', $config->timezone ?? 'UTC') }}',
-            isLoading: false,
+            currency: '{{ config('regional.currency') }}',
+            timezone: '{{ config('regional.timezone') }}',
 
             updateLogoPreview(event) {
                 const file = event.target.files[0];
@@ -37,35 +33,20 @@
                 return text.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
             },
 
-            get filteredCountries() {
-                let s = this.formatSearch(this.searchCountry);
-                return this.countries.filter(c => this.formatSearch(c.name).includes(s));
+            get filteredProvincias() {
+                let s = this.formatSearch(this.searchProvincia);
+                return this.provinces.filter(p => this.formatSearch(p.name).includes(s));
             },
 
-            get filteredStates() {
-                let s = this.formatSearch(this.searchState);
-                return this.states.filter(st => this.formatSearch(st.name).includes(s));
+            get municipiosDeProvincia() {
+                return this.municipalities.filter(m => m.province_id == this.selectedProvincia);
             },
 
-            async updateRegionalData(id) {
-                this.selectedCountry = id;
-                this.openCountry = false;
-                this.searchCountry = '';
-                this.isLoading = true;
-                
-                try {
-                    const response = await fetch(`/api/countries/${id}`);
-                    const data = await response.json();
-                    this.states = data.states;
-                    this.taxTypes = data.tax_types;
-                    this.currency = data.currency;
-                    this.timezone = data.timezone;
-                    this.phoneCode = data.phonecode;
-                    this.selectedState = ''; 
-                    this.selectedTaxType = '';
-                    this.searchState = '';
-                } catch (error) { console.error(error); } 
-                finally { this.isLoading = false; }
+            selectProvincia(id) {
+                this.selectedProvincia = id;
+                this.openProvincia = false;
+                this.searchProvincia = '';
+                this.selectedMunicipio = '';
             }
         }">
 
@@ -77,13 +58,6 @@
                 @method('PUT')
 
                 <section class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-visible relative">
-                    <div x-show="isLoading" class="absolute inset-0 bg-white/50 backdrop-blur-[1px] z-10 rounded-3xl flex items-center justify-center">
-                        <div class="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm border border-slate-100">
-                            <div class="w-4 h-4 border-2 border-indigo-600/20 border-t-indigo-600 rounded-full animate-spin"></div>
-                            <span class="text-[10px] font-bold text-slate-500 uppercase tracking-tighter">Cargando datos...</span>
-                        </div>
-                    </div>
-
                     <div class="p-6 border-b border-slate-100 flex items-center gap-4">
                         <span class="flex-none w-10 h-10 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold shadow-lg shadow-indigo-100">1</span>
                         <div>
@@ -95,79 +69,53 @@
                     <div class="p-8 space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="relative">
-                                <label class="text-xs font-bold text-slate-400 uppercase mb-2 block tracking-wider">País</label>
-                                <button type="button" @click="openCountry = !openCountry" 
+                                <label class="text-xs font-bold text-slate-400 uppercase mb-2 block tracking-wider">Provincia</label>
+                                <button type="button" @click="openProvincia = !openProvincia"
                                     class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-left flex justify-between items-center hover:border-indigo-400 transition-all">
-                                    <span class="flex items-center gap-3 font-semibold text-slate-700">
-                                        <span x-text="countries.find(c => c.id == selectedCountry)?.emoji"></span>
-                                        <span x-text="countries.find(c => c.id == selectedCountry)?.name"></span>
-                                    </span>
+                                    <span class="font-semibold text-slate-700 text-sm" x-text="provinces.find(p => p.id == selectedProvincia)?.name || 'Seleccionar...'"></span>
                                     <x-heroicon-s-chevron-down class="w-5 h-5 text-slate-400" />
                                 </button>
-                                <input type="hidden" name="country_id" :value="selectedCountry" required>
-                                
-                                <div x-show="openCountry" @click.outside="openCountry = false" class="absolute z-[100] mt-2 w-full bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+                                <input type="hidden" name="provincia_id" :value="selectedProvincia" required>
+
+                                <div x-show="openProvincia" @click.outside="openProvincia = false" class="absolute z-[100] mt-2 w-full bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
                                     <div class="p-3 bg-slate-50 border-b">
-                                        <input type="text" x-model="searchCountry" placeholder="Buscar país..." class="w-full border-none bg-transparent text-sm focus:ring-0">
+                                        <input type="text" x-model="searchProvincia" placeholder="Buscar provincia..." class="w-full border-none bg-transparent text-sm focus:ring-0">
                                     </div>
                                     <div class="max-h-60 overflow-y-auto">
-                                        <template x-for="country in filteredCountries" :key="country.id">
-                                            <button type="button" @click="updateRegionalData(country.id)" class="w-full text-left px-5 py-3 text-sm hover:bg-indigo-50 flex items-center gap-3">
-                                                <span x-text="country.emoji"></span>
-                                                <span x-text="country.name"></span>
+                                        <template x-for="provincia in filteredProvincias" :key="provincia.id">
+                                            <button type="button" @click="selectProvincia(provincia.id)" class="w-full text-left px-5 py-3 text-sm hover:bg-indigo-50">
+                                                <span x-text="provincia.name"></span>
                                             </button>
                                         </template>
                                     </div>
                                 </div>
                             </div>
 
-                            <div class="relative">
-                                <label class="text-xs font-bold text-slate-400 uppercase mb-2 block tracking-wider">Estado / Provincia</label>
-                                <button type="button" @click="openState = !openState" :disabled="isLoading"
-                                    class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-left flex justify-between items-center disabled:opacity-50 transition-all hover:border-indigo-400">
-                                    <span class="font-semibold text-slate-700 text-sm" x-text="isLoading ? 'Cargando...' : (states.find(s => s.id == selectedState)?.name || 'Seleccionar...')"></span>
-                                    <x-heroicon-s-chevron-down class="w-5 h-5 text-slate-400" />
-                                </button>
-                                <input type="hidden" name="state_id" :value="selectedState">
-
-                                <div x-show="openState" @click.outside="openState = false" class="absolute z-[100] mt-2 w-full bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
-                                    <div class="p-3 bg-slate-50 border-b">
-                                        <input type="text" x-model="searchState" placeholder="Buscar provincia..." class="w-full border-none bg-transparent text-sm focus:ring-0">
-                                    </div>
-                                    <div class="max-h-60 overflow-y-auto">
-                                        <template x-for="state in filteredStates" :key="state.id">
-                                            <button type="button" @click="selectedState = state.id; openState = false; searchState = ''" class="w-full text-left px-5 py-3 text-sm hover:bg-indigo-50">
-                                                <span x-text="state.name"></span>
-                                            </button>
-                                        </template>
-                                    </div>
-                                </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-400 uppercase mb-2 block tracking-wider">Municipio</label>
+                                <select name="municipio_id" x-model="selectedMunicipio"
+                                    class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-semibold text-slate-700 focus:border-indigo-400">
+                                    <option value="">Sin especificar</option>
+                                    <template x-for="municipio in municipiosDeProvincia" :key="municipio.id">
+                                        <option :value="municipio.id" x-text="municipio.name"></option>
+                                    </template>
+                                </select>
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div class="md:col-span-1">
-                                <label class="text-xs font-bold text-slate-400 uppercase mb-2 block">Ciudad</label>
-                                <x-text-input name="ciudad" type="text" class="w-full" placeholder="Ej: Bonao" value="{{ $config->ciudad ?? '' }}" ::disabled="isLoading" />
-                            </div>
-                            <div class="md:col-span-2">
+                        <div class="grid grid-cols-1 gap-6">
+                            <div>
                                 <label class="text-xs font-bold text-slate-400 uppercase mb-2 block">Dirección</label>
-                                <x-text-input name="direccion" type="text" class="w-full" placeholder="Calle, edificio, apto..." value="{{ $config->direccion ?? '' }}" ::disabled="isLoading" />
+                                <x-text-input name="direccion" type="text" class="w-full" placeholder="Calle, edificio, apto..." value="{{ $config->direccion ?? '' }}" />
                             </div>
                         </div>
 
-                        <div class="mt-8 pt-6 border-t border-slate-100" :class="isLoading ? 'opacity-50' : ''">
-                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="mt-8 pt-6 border-t border-slate-100">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div class="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 transition-all">
                                     <p class="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Moneda Local</p>
                                     <div class="flex items-center gap-2">
                                         <span class="text-lg font-bold text-blue-700" x-text="currency"></span>
-                                    </div>
-                                </div>
-                                <div class="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-4 transition-all">
-                                    <p class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-1">Prefijo</p>
-                                    <div class="flex items-center gap-2">
-                                        <span class="text-lg font-bold text-indigo-700" x-text="`+${phoneCode}`"></span>
                                     </div>
                                 </div>
                                 <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 transition-all overflow-hidden">
@@ -199,7 +147,7 @@
                         <div>
                             <label class="text-xs font-bold text-slate-400 uppercase mb-2 block tracking-wider">Teléfono</label>
                             <div class="flex">
-                                <span class="inline-flex items-center px-4 rounded-l-2xl border border-r-0 border-slate-200 bg-slate-50 text-slate-500 font-bold text-xs" x-text="`+${phoneCode}`"></span>
+                                <span class="inline-flex items-center px-4 rounded-l-2xl border border-r-0 border-slate-200 bg-slate-50 text-slate-500 font-bold text-xs">+1</span>
                                 <x-text-input name="telefono" type="text" class="flex-1 rounded-l-none" placeholder="809 000 0000" value="{{ $config->telefono ?? '' }}" />
                             </div>
                         </div>
@@ -241,15 +189,15 @@
                                     <div class="sm:col-span-2">
                                         <label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Identificación Fiscal</label>
                                         <div class="flex flex-col sm:flex-row gap-2">
-                                            <select name="tax_identifier_type_id" 
-                                                class="w-full sm:w-32 border-slate-200 rounded-2xl text-[11px] bg-slate-50 font-bold text-slate-700" 
-                                                x-model="selectedTaxType" :disabled="isLoading" required>
+                                            <select name="tax_identifier_type"
+                                                class="w-full sm:w-32 border-slate-200 rounded-2xl text-[11px] bg-slate-50 font-bold text-slate-700"
+                                                x-model="selectedTaxType">
                                                 <option value="" disabled x-show="!selectedTaxType">Tipo</option>
-                                                <template x-for="type in taxTypes" :key="type.id">
-                                                    <option :value="type.id" x-text="type.code" :selected="type.id == selectedTaxType"></option>
+                                                <template x-for="type in taxTypes" :key="type.value">
+                                                    <option :value="type.value" x-text="type.label" :selected="type.value == selectedTaxType"></option>
                                                 </template>
                                             </select>
-                                            <x-text-input name="tax_id" class="flex-1" placeholder="Número de identificación" value="{{ $config->tax_id ?? '' }}" ::disabled="isLoading" />
+                                            <x-text-input name="tax_id" class="flex-1" placeholder="Número de identificación" value="{{ $config->tax_id ?? '' }}" />
                                         </div>
                                     </div>
                                 </div>
@@ -329,12 +277,11 @@
                         Descartar cambios
                     </button>
 
-                    <x-primary-button class="w-full sm:w-auto bg-indigo-600 px-10 py-4 rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all" ::disabled="isLoading">
-                        <span x-show="!isLoading" class="flex items-center gap-2">
+                    <x-primary-button class="w-full sm:w-auto bg-indigo-600 px-10 py-4 rounded-2xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 transition-all">
+                        <span class="flex items-center gap-2">
                             <x-heroicon-s-cloud-arrow-up class="w-5 h-5" />
                             Guardar Configuración
                         </span>
-                        <span x-show="isLoading">Procesando...</span>
                     </x-primary-button>
                 </div>
             </form>

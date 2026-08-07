@@ -578,7 +578,7 @@
                 },
 
                 formatMoney(amount) {
-                    return '{{ general_config()->currency_symbol ?? "$" }}' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2 }).format(amount || 0);
+                    return '{{ config('regional.currency_symbol') }}' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2 }).format(amount || 0);
                 },
             };
         }

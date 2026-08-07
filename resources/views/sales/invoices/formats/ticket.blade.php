@@ -3,12 +3,9 @@
     $impuestoConfig = $config->impuesto;
     $sale = $invoice->sale;
     $client = $sale->client;
-    $currency = $config->currency_symbol ?? '$';
+    $currency = config('regional.currency_symbol');
 
-    $taxIdentifier = \DB::table('tax_identifier_types')
-                        ->where('id', $config->tax_identifier_type_id)
-                        ->first();
-    $taxLabel = $taxIdentifier->code ?? 'RNC';
+    $taxLabel = $config->tax_identifier_type?->value ?? 'RNC';
     $taxName = $impuestoConfig->nombre ?? 'ITBIS';
     
     $vencimientoPago = $sale->payment_type === 'credit' 

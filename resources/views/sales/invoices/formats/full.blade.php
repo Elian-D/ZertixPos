@@ -3,19 +3,13 @@
     $impuestoConfig = $config->impuesto;
     $sale = $invoice->sale;
     $client = $sale->client;
-    $currency = $config->currency_symbol ?? '$';
+    $currency = config('regional.currency_symbol');
     
     // Identificador fiscal de la EMPRESA
-    $taxIdentifier = \DB::table('tax_identifier_types')
-                        ->where('id', $config->tax_identifier_type_id)
-                        ->first();
-    $taxLabel = $taxIdentifier->code ?? 'RNC';
+    $taxLabel = $config->tax_identifier_type?->value ?? 'RNC';
 
     // Identificador fiscal del CLIENTE (RNC/Cédula)
-    $clientTaxIdentifier = \DB::table('tax_identifier_types')
-                        ->where('id', $client->tax_identifier_type_id)
-                        ->first();
-    $clientTaxLabel = $clientTaxIdentifier->code ?? 'RNC/CED';
+    $clientTaxLabel = $client->tax_identifier_type?->value ?? 'RNC/CED';
 
     // Lógica de impuestos dinámica
     $taxName = $impuestoConfig->nombre ?? 'ITBIS';

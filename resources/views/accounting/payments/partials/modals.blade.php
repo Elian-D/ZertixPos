@@ -75,7 +75,7 @@
                             <div class="flex justify-between items-end">
                                 <div>
                                     <span class="text-[10px] font-bold uppercase block opacity-60 italic">Total Recibido</span>
-                                    <span class="text-2xl font-black tracking-tight">${{ number_format($payment->amount, 2) }}</span>
+                                    <span class="text-2xl font-black tracking-tight">{{ config('regional.currency_symbol') }}{{ number_format($payment->amount, 2) }}</span>
                                 </div>
                                 <x-heroicon-s-banknotes class="w-10 h-10 text-white/20"/>
                             </div>

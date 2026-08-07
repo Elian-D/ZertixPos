@@ -24,7 +24,7 @@
 
             {{-- Monto --}}
             <td class="px-6 py-4 text-sm font-bold text-gray-900">
-                ${{ number_format($item->total_amount, 2) }}
+                {{ config('regional.currency_symbol') }}{{ number_format($item->total_amount, 2) }}
             </td>
 
             {{-- Fecha de eliminación --}}
@@ -82,7 +82,7 @@
             </p>
             @if($item->current_balance > 0)
                 <p class="text-[11px] bg-amber-50 p-2 border border-amber-100 text-amber-700 rounded font-medium">
-                    Nota: Este registro aún tenía un saldo pendiente de ${{ number_format($item->current_balance, 2) }}.
+                    Nota: Este registro aún tenía un saldo pendiente de {{ config('regional.currency_symbol') }}{{ number_format($item->current_balance, 2) }}.
                 </p>
             @endif
         </div>

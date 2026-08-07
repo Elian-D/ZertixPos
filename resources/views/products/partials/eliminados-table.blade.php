@@ -24,7 +24,7 @@
                     </div>
                     <div>
                         <div class="text-sm font-bold text-gray-900">{{ $product->name }}</div>
-                        <div class="text-xs text-gray-500">P. Venta: {{ general_config()->currency_symbol }}{{ number_format($product->price, 2) }}</div>
+                        <div class="text-xs text-gray-500">P. Venta: {{ config('regional.currency_symbol') }}{{ number_format($product->price, 2) }}</div>
                     </div>
                 </div>
             </td>

@@ -1,9 +1,16 @@
 <x-app-layout>
     <div class="max-w-4xl mx-auto py-8 px-4">
         {{-- Acción dinámica: update si existe $client, store si no --}}
-        <form action="{{ isset($client) ? route('clients.update', $client) : route('clients.store') }}" 
+        <form action="{{ isset($client) ? route('clients.update', $client) : route('clients.store') }}"
               method="POST"
-              class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
+              class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100"
+              x-data="{
+                  municipalities: {{ $municipalities->toJson() }},
+                  selectedProvincia: '{{ old('provincia_id', $client->provincia_id ?? '') }}',
+                  get municipiosDeProvincia() {
+                      return this.municipalities.filter(m => m.province_id == this.selectedProvincia);
+                  }
+              }">
             @csrf
             {{-- Método PUT para edición --}}
             @if(isset($client)) 
@@ -42,10 +49,10 @@
                         {{-- 3. Tipo de identificador --}}
                         <div class="md:col-span-2">
                             <x-input-label value="Tipo de ID Fiscal" />
-                            <select name="tax_identifier_type_id" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
+                            <select name="tax_identifier_type" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
                                 @foreach($taxIdentifierTypes as $type)
-                                    <option value="{{ $type->id }}" {{ (old('tax_identifier_type_id', $client->tax_identifier_type_id ?? '') == $type->id) ? 'selected' : '' }}>
-                                        {{ $type->code }} – {{ $type->name }}
+                                    <option value="{{ $type['value'] }}" {{ (old('tax_identifier_type', $client->tax_identifier_type?->value ?? '') == $type['value']) ? 'selected' : '' }}>
+                                        {{ $type['label'] }}
                                     </option>
                                 @endforeach
                             </select>
@@ -88,18 +95,21 @@
                             <x-text-input name="phone" class="w-full mt-1" :value="old('phone', $client->phone ?? '')" />
                         </div>
                         <div>
-                            <x-input-label value="Provincia / Estado" />
-                            <select name="state_id" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
+                            <x-input-label value="Provincia" />
+                            <select name="provincia_id" x-model="selectedProvincia" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
                                 @foreach($states as $s)
-                                    <option value="{{ $s->id }}" {{ (old('state_id', $client->state_id ?? '') == $s->id) ? 'selected' : '' }}>
-                                        {{ $s->name }}
-                                    </option>
+                                    <option value="{{ $s->id }}">{{ $s->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div>
-                            <x-input-label value="Municipio / Ciudad" />
-                            <x-text-input name="city" class="w-full mt-1" :value="old('city', $client->city ?? '')" />
+                            <x-input-label value="Municipio" />
+                            <select name="municipio_id" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
+                                <option value="">Sin especificar</option>
+                                <template x-for="m in municipiosDeProvincia" :key="m.id">
+                                    <option :value="m.id" x-text="m.name" :selected="m.id == {{ old('municipio_id', $client->municipio_id ?? 'null') }}"></option>
+                                </template>
+                            </select>
                         </div>
                         <div class="md:col-span-2">
                             <x-input-label value="Dirección Exacta" />
@@ -114,14 +124,14 @@
                         <h3 class="font-bold text-gray-700 uppercase text-xs tracking-wider">Configuración Contable y Crédito</h3>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-6 gap-6 items-start">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
                         {{-- Límite de Crédito --}}
                         <div class="md:col-span-2">
-                            <x-input-label value="Límite de Crédito ($)" />
+                            <x-input-label value="Límite de Crédito ({{ config('regional.currency_symbol') }})" />
                             <x-text-input name="credit_limit" type="number" step="0.01" class="w-full mt-1 font-mono" 
                                 :value="old('credit_limit', $client->credit_limit)" />
                             <p class="text-[10px] mt-1 {{ $client->balance > 0 ? 'text-red-500' : 'text-gray-400' }}">
-                                Saldo actual: ${{ number_format($client->balance, 2) }}
+                                Saldo actual: {{ config('regional.currency_symbol') }}{{ number_format($client->balance, 2) }}
                             </p>
                         </div>
 
@@ -132,45 +142,47 @@
                                 :value="old('payment_terms', $client->payment_terms)" />
                         </div>
 
-                        {{-- Cuenta Contable --}}
-                        <div class="md:col-span-2" x-data="{ 
-                            createAccount: false, 
-                            hasCustomAccount: {{ ($client->accounting_account_id && $client->accountingAccount && $client->accountingAccount->code !== '1.1.02') ? 'true' : 'false' }} 
-                        }">
-                            <x-input-label value="Cuenta Contable (CxC)" />
-                            
-                            <div class="mt-1 space-y-2">
-                                {{-- Selector: Solo muestra la general y LA PROPIA si existe --}}
-                                <select name="accounting_account_id" 
-                                        x-show="!createAccount"
-                                        class="w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm">
-                                    <option value="">Usar Cuenta General (1.1.02)</option>
-                                    @if($client->accounting_account_id && $client->accountingAccount && $client->accountingAccount->code !== '1.1.02')
+                        @if (module_enabled('accounting.advanced'))
+                            {{-- Cuenta Contable --}}
+                            <div class="md:col-span-4" x-data="{ 
+                                createAccount: false, 
+                                hasCustomAccount: {{ ($client->accounting_account_id && $client->accountingAccount && $client->accountingAccount->code !== '1.1.02') ? 'true' : 'false' }} 
+                                }">
+                                <x-input-label value="Cuenta Contable (CxC)" />
+                                
+                                <div class="mt-1 space-y-2">
+                                    {{-- Selector: Solo muestra la general y LA PROPIA si existe --}}
+                                    <select name="accounting_account_id" 
+                                            x-show="!createAccount"
+                                            class="w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm">
+                                        <option value="">Usar Cuenta General (1.1.02)</option>
+                                        @if($client->accounting_account_id && $client->accountingAccount && $client->accountingAccount->code !== '1.1.02')
                                         <option value="{{ $client->accounting_account_id }}" selected>
                                             {{ $client->accountingAccount->code }} – {{ $client->accountingAccount->name }}
                                         </option>
-                                    @endif
-                                </select>
+                                        @endif
+                                    </select>
 
-                                {{-- Mostrar opción de crear cuenta solo si NO tiene una actualmente --}}
-                                <template x-if="!hasCustomAccount">
-                                    <label class="flex items-center cursor-pointer gap-2 p-2 bg-indigo-50 rounded-lg border border-indigo-100">
-                                        <input type="checkbox" name="create_accounting_account" value="1" 
+                                    {{-- Mostrar opción de crear cuenta solo si NO tiene una actualmente --}}
+                                    <template x-if="!hasCustomAccount">
+                                        <label class="flex items-center cursor-pointer gap-2 p-2 bg-indigo-50 rounded-lg border border-indigo-100">
+                                            <input type="checkbox" name="create_accounting_account" value="1" 
                                             x-model="createAccount"
                                             class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
-                                        <span class="text-[11px] font-bold text-indigo-700 uppercase tracking-tight">¿Asignar cuenta individual?</span>
-                                    </label>
-                                </template>
+                                            <span class="text-[11px] font-bold text-indigo-700 uppercase tracking-tight">¿Asignar cuenta individual?</span>
+                                        </label>
+                                    </template>
+                                    
+                                    <p x-show="createAccount" class="text-[10px] text-indigo-500 italic leading-tight">
+                                        * Al guardar, se generará una sub-cuenta única.
+                                    </p>
 
-                                <p x-show="createAccount" class="text-[10px] text-indigo-500 italic leading-tight">
-                                    * Al guardar, se generará una sub-cuenta única.
-                                </p>
-
-                                <p x-show="hasCustomAccount && !createAccount" class="text-[10px] text-amber-600 italic leading-tight">
-                                    * Si cambia a "General", su cuenta actual será archivada.
-                                </p>
+                                    <p x-show="hasCustomAccount && !createAccount" class="text-[10px] text-amber-600 italic leading-tight">
+                                        * Si cambia a "General", su cuenta actual será archivada.
+                                    </p>
+                                </div>
                             </div>
-                        </div>
+                        @endif        
                     </div>
                 </section>
             </div>

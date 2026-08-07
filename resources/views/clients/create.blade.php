@@ -1,18 +1,24 @@
 <x-app-layout>
     <div class="max-w-4xl mx-auto py-8 px-4">
             <form action="{{ route('clients.store') }}" method="POST"
-                class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
+                class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100"
+                x-data="{
+                    municipalities: {{ $municipalities->toJson() }},
+                    selectedProvincia: '{{ old('provincia_id', $client->provincia_id ?? '') }}',
+                    get municipiosDeProvincia() {
+                        return this.municipalities.filter(m => m.province_id == this.selectedProvincia);
+                    }
+                }">
             @csrf
-            @if(isset($client)) @method('PUT') @endif
             
-        <x-ui.toasts />
-
-        <x-form-header
+            <x-ui.toasts />
+            
+            <x-form-header
             title="Nuevo Cliente"
             subtitle="Complete todos los campos requeridos para la gestión comercial."
             :back-route="route('clients.index')" />
-
-
+            
+            
             <div class="p-8 space-y-8">
                 {{-- Bloque 1: Datos de Identidad --}}
                 <section>
@@ -26,12 +32,13 @@
                         <div class="md:col-span-4">
                             <x-input-label value="Nombre Completo / Razón Social" />
                             <x-text-input name="name" class="w-full mt-1" :value="old('name', $client->name ?? '')" required />
-                        </div>
-
-                        {{-- 2. Tipo de cliente --}}
-                        <div class="md:col-span-2">
-                            <x-input-label value="Tipo de Cliente" />
-                            <select name="type" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
+                            </div>
+                            
+                            {{-- 2. Tipo de cliente --}}
+                            @if(isset($client)) @method('PUT')          @endif
+                            <div class="md:col-span-2">
+                                <x-input-label value="Tipo de Cliente" />
+                                <select name="type" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
                                 <option value="individual" {{ (old('type', $client->type ?? '') == 'individual') ? 'selected' : '' }}>Persona Física</option>
                                 <option value="company" {{ (old('type', $client->type ?? '') == 'company') ? 'selected' : '' }}>Empresa / Corporativo</option>
                             </select>
@@ -40,10 +47,10 @@
                         {{-- 3. Tipo de identificador --}}
                         <div class="md:col-span-2">
                             <x-input-label value="Tipo de ID Fiscal" />
-                            <select name="tax_identifier_type_id" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
+                            <select name="tax_identifier_type" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
                                 @foreach($taxIdentifierTypes as $type)
-                                    <option value="{{ $type->id }}" {{ (old('tax_identifier_type_id', $client->tax_identifier_type_id ?? '') == $type->id) ? 'selected' : '' }}>
-                                        {{ $type->code }} – {{ $type->name }}
+                                    <option value="{{ $type['value'] }}" {{ (old('tax_identifier_type', $client->tax_identifier_type?->value ?? '') == $type['value']) ? 'selected' : '' }}>
+                                        {{ $type['label'] }}
                                     </option>
                                 @endforeach
                             </select>
@@ -86,18 +93,21 @@
                             <x-text-input name="phone" class="w-full mt-1" :value="old('phone', $client->phone ?? '')" />
                         </div>
                         <div>
-                            <x-input-label value="Provincia / Estado" />
-                            <select name="state_id" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
+                            <x-input-label value="Provincia" />
+                            <select name="provincia_id" x-model="selectedProvincia" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
                                 @foreach($states as $s)
-                                    <option value="{{ $s->id }}" {{ (old('state_id', $client->state_id ?? '') == $s->id) ? 'selected' : '' }}>
-                                        {{ $s->name }}
-                                    </option>
+                                    <option value="{{ $s->id }}">{{ $s->name }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div>
-                            <x-input-label value="Municipio / Ciudad" />
-                            <x-text-input name="city" class="w-full mt-1" :value="old('city', $client->city ?? '')" />
+                            <x-input-label value="Municipio" />
+                            <select name="municipio_id" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
+                                <option value="">Sin especificar</option>
+                                <template x-for="m in municipiosDeProvincia" :key="m.id">
+                                    <option :value="m.id" x-text="m.name" :selected="m.id == {{ old('municipio_id', $client->municipio_id ?? 'null') }}"></option>
+                                </template>
+                            </select>
                         </div>
                         <div class="md:col-span-2">
                             <x-input-label value="Dirección Exacta" />
@@ -113,10 +123,10 @@
                         <h3 class="font-bold text-gray-700 uppercase text-xs tracking-wider">Configuración Contable y Crédito</h3>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-6 gap-6 items-start"> {{-- items-start asegura alineación superior --}}
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-start"> {{-- items-start asegura alineación superior --}}
                         {{-- Límite de Crédito --}}
                         <div class="md:col-span-2">
-                            <x-input-label value="Límite de Crédito ($)" />
+                            <x-input-label value="Límite de Crédito ({{ config('regional.currency_symbol') }})" />
                             <x-text-input name="credit_limit" type="number" step="0.01" class="w-full mt-1 font-mono" 
                                 :value="old('credit_limit', '0.00')" placeholder="0.00" />
                         </div>
@@ -127,17 +137,18 @@
                             <x-text-input name="payment_terms" type="number" class="w-full mt-1" 
                                 :value="old('payment_terms', '0')" placeholder="Ej: 30" />
                         </div>
-
+                        @if (module_enabled('accounting.advanced'))
+                            
                         {{-- Cuenta Contable --}}
-                        <div class="md:col-span-2" x-data="{ createAccount: false }">
+                        <div class="md:col-span-4" x-data="{ createAccount: false }">
                             <x-input-label value="Cuenta Contable (CxC)" />
                             
                             <div class="mt-1 space-y-2"> {{-- Ajustado a mt-1 para alinear con los otros inputs --}}
                                 {{-- Selector: Solo muestra la General en Create --}}
                                 <select name="accounting_account_id" 
-                                        x-show="!createAccount"
-                                        class="w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm">
-                                    <option value="">Usar Cuenta General (1.1.02)</option>
+                                x-show="!createAccount"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm">
+                                <option value="">Usar Cuenta General (1.1.02)</option>
                                 </select>
 
                                 {{-- Toggle para creación automática --}}
@@ -153,6 +164,7 @@
                                 </p>
                             </div>
                         </div>
+                        @endif            
                     </div>
                 </section>
             </div>
