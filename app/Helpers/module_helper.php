@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\Configuration\InstallationModule;
+use App\Models\Configuration\Plan;
 
 if (! function_exists('module_enabled')) {
     /**
@@ -13,5 +14,17 @@ if (! function_exists('module_enabled')) {
         $cache ??= InstallationModule::pluck('is_enabled', 'module_key');
 
         return (bool) ($cache[$key] ?? false);
+    }
+}
+
+if (! function_exists('current_plan')) {
+    /**
+     * Resuelve qué Plan tiene asignada esta instalación (configuraciones_generales.plan_id).
+     */
+    function current_plan(): ?Plan
+    {
+        $planId = general_config()?->plan_id;
+
+        return $planId ? Plan::find($planId) : null;
     }
 }
