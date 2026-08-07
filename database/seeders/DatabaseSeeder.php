@@ -32,6 +32,9 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             UserSeeder::class,
 
+            // Datos geográficos (RD-only)
+            \Database\Seeders\AppInit\GeoDataSeeder::class,
+
             // Configuration Seeders
             \Database\Seeders\ConfigurationSeeders\PlanSeeder::class,
             \Database\Seeders\ConfigurationSeeders\InstallationModuleSeeder::class,
@@ -47,7 +50,6 @@ class DatabaseSeeder extends Seeder
             \Database\Seeders\ConfigurationSeeders\TipoPagoSeeder::class,
             \Database\Seeders\ConfigurationSeeders\ImpuestoSeeder::class,
             \Database\Seeders\ConfigurationSeeders\ConfiguracionGeneralSeeder::class,
-            \Database\Seeders\ConfigurationSeeders\TaxIdentifierTypeSeeder::class,
 
             // Clients Configuration Seeders
             \Database\Seeders\ClientsConfigSeeders\BusinessTypeSeeder::class,

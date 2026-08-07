@@ -11,7 +11,7 @@ return new class extends Migration
         Schema::table('configuraciones_generales', function (Blueprint $table) {
             // true = Modo Fiscal Activo (Exige NCF y secuencias)
             // false = Modo Documento Interno (Ventas simples)
-            $table->boolean('usa_ncf')->default(false)->after('tax_identifier_type_id');
+            $table->boolean('usa_ncf')->default(false)->after('tax_id');
         });
     }
 

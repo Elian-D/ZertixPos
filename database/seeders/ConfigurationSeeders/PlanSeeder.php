@@ -19,7 +19,7 @@ class PlanSeeder extends Seeder
                 'name' => 'Emprendedor',
                 'slug' => 'emprendedor',
                 'price' => 29.00,
-                'modules' => ['sales.ncf', 'sales.credit_notes_b04',],
+                'modules' => ['sales.ncf', 'sales.credit_notes_b04'],
             ],
             [
                 'name' => 'PyME',
@@ -33,11 +33,11 @@ class PlanSeeder extends Seeder
                 'price' => 89.00,
                 'modules' => [
                     'sales.ncf',
-                    'sales.credit_notes_b04', 
-                    'sales.delivery_points', 
-                    'inventory.advanced', 
-                    'purchases.vendors', 
-                    'clients.field_assets',],
+                    'sales.credit_notes_b04',
+                    'sales.delivery_points',
+                    'inventory.advanced',
+                    'purchases.vendors',
+                    'clients.field_assets', ],
             ],
         ];
 
