@@ -33,6 +33,7 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
 
             // Configuration Seeders
+            \Database\Seeders\ConfigurationSeeders\PlanSeeder::class,
             \Database\Seeders\ConfigurationSeeders\InstallationModuleSeeder::class,
 
             // Accounting Seeders

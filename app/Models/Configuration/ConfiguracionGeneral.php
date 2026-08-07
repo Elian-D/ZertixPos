@@ -14,6 +14,7 @@ class ConfiguracionGeneral extends Model
     protected $table = 'configuraciones_generales';
 
     protected $fillable = [
+        'plan_id',
         'nombre_empresa',
         'logo',
         'tax_id',
