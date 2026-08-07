@@ -2,37 +2,50 @@
 
 namespace App\Exports\Sales;
 
-use App\Models\Sales\Sale;
 use App\Models\Clients\Client;
 use App\Models\Inventory\Warehouse;
-use App\Models\Pos\PosSession;
 use App\Models\Sales\Pos\PosTerminal;
+use App\Models\Sales\Sale;
 use App\Models\User;
-use Maatwebsite\Excel\Concerns\{FromQuery, WithHeadings, WithMapping, WithStyles, WithDefaultStyles, WithColumnWidths};
+use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithDefaultStyles;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Border;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Style;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\{Style, Fill, Alignment, Border};
 
-class SalesExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithDefaultStyles, WithColumnWidths
+class SalesExport implements FromQuery, WithColumnWidths, WithDefaultStyles, WithHeadings, WithMapping, WithStyles
 {
     protected $query;
+
     private $clientsCache = [];
+
     private $warehousesCache = [];
+
     private $terminalsCache = [];
+
     private $usersCache = [];
+
     private $statusLabels = [];
+
     private $paymentLabels = [];
 
     public function __construct($query)
     {
         $this->query = $query;
-        
+
         // Carga de caches para optimizar performance
-        $this->clientsCache    = Client::pluck('name', 'id')->toArray();
+        $this->clientsCache = Client::pluck('name', 'id')->toArray();
         $this->warehousesCache = Warehouse::pluck('name', 'id')->toArray();
-        $this->terminalsCache  = PosTerminal::pluck('name', 'id')->toArray();
-        $this->usersCache      = User::pluck('name', 'id')->toArray();
-        $this->statusLabels    = Sale::getStatuses();
-        $this->paymentLabels   = Sale::getPaymentTypes();
+        $this->terminalsCache = PosTerminal::pluck('name', 'id')->toArray();
+        $this->usersCache = User::pluck('name', 'id')->toArray();
+        $this->statusLabels = Sale::getStatuses();
+        $this->paymentLabels = Sale::getPaymentTypes();
     }
 
     /**
@@ -42,9 +55,9 @@ class SalesExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
     {
         return $this->query->with(['payments.tipoPago'])
             ->select([
-                'id', 'number', 'created_at', 'sale_date', 'client_id', 
+                'id', 'number', 'created_at', 'sale_date', 'client_id',
                 'warehouse_id', 'pos_terminal_id', 'pos_session_id',
-                'payment_type', 'total_amount', 'status', 'user_id', 'notes'
+                'payment_type', 'total_amount', 'status', 'user_id', 'notes',
             ])->latest('sale_date');
     }
 
@@ -65,7 +78,7 @@ class SalesExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
             'Total Venta',
             'Estado',
             'Vendedor',
-            'Observaciones'
+            'Observaciones',
         ];
     }
 
@@ -75,7 +88,7 @@ class SalesExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
     public function map($sale): array
     {
         // Lógica para mostrar métodos de pago (Ej: "Efectivo, Tarjeta")
-        $paymentMethods = $sale->payments->map(function($p) {
+        $paymentMethods = $sale->payments->map(function ($p) {
             return $p->tipoPago->nombre ?? 'N/A';
         })->unique()->implode(', ');
 
@@ -122,7 +135,7 @@ class SalesExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
     {
         $lastRow = $sheet->getHighestRow();
         $range = 'A1:L1';
-        $fullRange = 'A1:L' . $lastRow;
+        $fullRange = 'A1:L'.$lastRow;
 
         // Encabezado Indigo 600
         $sheet->getStyle($range)->applyFromArray([
@@ -132,8 +145,8 @@ class SalesExport implements FromQuery, WithHeadings, WithMapping, WithStyles, W
         ]);
 
         // Formato Moneda para la columna de Total (I)
-        $sheet->getStyle('I2:I' . $lastRow)->getNumberFormat()
-            ->setFormatCode('"$"#,##0.00');
+        $sheet->getStyle('I2:I'.$lastRow)->getNumberFormat()
+            ->setFormatCode('"'.config('regional.currency_symbol').'"#,##0.00');
 
         // Bordes de tabla
         $sheet->getStyle($fullRange)->applyFromArray([

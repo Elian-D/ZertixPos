@@ -2,8 +2,6 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\RoleController;
-
 
 Route::get('/', function () {
     return view('welcome');
@@ -20,7 +18,6 @@ Route::middleware('auth')->group(function () {
 });
 
 require __DIR__.'/auth.php';
-require __DIR__.'/admin/geo.php';
 
 // Rutas administrativas (panel) — antes vivía en RouteServiceProvider::boot()
 Route::middleware(['web', 'auth'])
@@ -30,4 +27,3 @@ Route::middleware(['web', 'auth'])
             require $routeFile;
         }
     });
-

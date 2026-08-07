@@ -32,11 +32,11 @@ class POSService
             $count = count($ids);
 
             match ($action) {
-                'delete'           => $query->delete(),
-                'change_active'    => $query->update(['active' => $value]),
-                'change_geo_state' => $query->update(['state_id' => $value]),
-                'change_client'    => $query->update(['client_id' => $value]),
-                default => throw new \InvalidArgumentException("Acción no soportada"),
+                'delete' => $query->delete(),
+                'change_active' => $query->update(['active' => $value]),
+                'change_geo_state' => $query->update(['provincia_id' => $value]),
+                'change_client' => $query->update(['client_id' => $value]),
+                default => throw new \InvalidArgumentException('Acción no soportada'),
             };
 
             return $count;
@@ -46,11 +46,11 @@ class POSService
     public function getActionLabel(string $action): string
     {
         return match ($action) {
-            'delete'           => 'eliminado',
-            'change_active'    => 'actualizado el estado operativo',
+            'delete' => 'eliminado',
+            'change_active' => 'actualizado el estado operativo',
             'change_geo_state' => 'actualizado la ubicación',
-            'change_client'    => 'actualizado el cliente asociado',
-            default            => 'procesado',
+            'change_client' => 'actualizado el cliente asociado',
+            default => 'procesado',
         };
     }
 }
