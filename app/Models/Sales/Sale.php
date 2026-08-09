@@ -10,6 +10,7 @@ use App\Models\Sales\Pos\PosSession;
 use App\Models\Sales\Pos\PosTerminal;
 use App\Models\Sales\Quotes\Quote;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -18,7 +19,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Sale extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'document_type_id',
