@@ -21,7 +21,6 @@ use Database\Seeders\AppInit\PosSettingSeeder;
 use Database\Seeders\AppInit\RoleSeeder;
 use Database\Seeders\AppInit\TipoPagoSeeder;
 use Database\Seeders\AppInit\UnitSeeder;
-use Database\Seeders\AppInit\UserSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -32,14 +31,16 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database. Solo `core` — el catálogo de ejemplo
      * (categorías, productos, almacenes, puntos de venta, equipos, clientes
-     * ficticios) vive en `zertix:seed-demo` (REQ-07.9, aún no construido).
+     * ficticios, usuarios de fábrica) vive en `zertix:seed-demo`. Ningún
+     * usuario se crea aquí — la instalación real lo hace el Wizard (Fase 8,
+     * REQ-07.13): sin admin todavía, `ConfiguracionGeneral.nombre_empresa`
+     * queda vacío y `EnsureInstallationWizardCompleted` redirige al wizard.
      */
     public function run(): void
     {
         $this->call([
             PermissionSeeder::class, // consolidado — antes 13 clases en PermissionSeeder/* — debe correr antes que RoleSeeder
-            RoleSeeder::class, // syncPermissions() necesita que los permisos ya existan
-            UserSeeder::class, // credenciales hardcodeadas — necesario hasta que exista el Wizard (Fase 8)
+            RoleSeeder::class, // syncPermissions() necesita que los permisos ya existan — el usuario lo crea el Wizard, no un seeder
 
             // Datos geográficos (RD-only, Fase 6)
             GeoDataSeeder::class,

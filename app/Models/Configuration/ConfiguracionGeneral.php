@@ -55,6 +55,19 @@ class ConfiguracionGeneral extends Model
     }
 
     /**
+     * Indica si el Wizard de Instalación (Fase 8) ya se completó. ConfiguracionGeneralSeeder
+     * deja `nombre_empresa` en '' (string vacío, no NULL) hasta que el Wizard lo llena de
+     * verdad — un whereNotNull() plano ya daría true con la fila recién sembrada, por eso
+     * también se excluye la cadena vacía.
+     */
+    public static function isInstalled(): bool
+    {
+        return static::whereNotNull('nombre_empresa')
+            ->where('nombre_empresa', '!=', '')
+            ->exists();
+    }
+
+    /**
      * Determina si el sistema opera bajo normativa de la DGII (NCF/e-NCF).
      * Delega al registro de módulos (Fase 3/4) — el booleano que antes vivía en
      * esta tabla ahora es el flag 'sales.ncf' en installation_modules.

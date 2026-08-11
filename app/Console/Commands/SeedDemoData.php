@@ -28,6 +28,7 @@ use Database\Seeders\Demo\EquipmentTypeSeeder;
 use Database\Seeders\Demo\InventoryStockSeeder;
 use Database\Seeders\Demo\PointOfSaleSeeder;
 use Database\Seeders\Demo\ProductSeeder;
+use Database\Seeders\Demo\UserSeeder;
 use Database\Seeders\Demo\WarehouseSeeder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
@@ -102,11 +103,20 @@ class SeedDemoData extends Command
      * SaleService/PaymentService/InventoryMovementService dependen de Auth::id()
      * (igual que en producción, donde corre bajo una sesión HTTP autenticada) —
      * un comando de consola no tiene usuario logueado por defecto, así que se
-     * autentica aquí para el resto del proceso. Se usa el admin real si existe
-     * (sembrado siempre por UserSeeder), nunca un usuario inventado.
+     * autentica aquí para el resto del proceso.
+     *
+     * `UserSeeder` ya no corre en `core` (REQ-07.13) — la instalación real crea
+     * su administrador desde el Wizard (Fase 8). Si este comando corre sobre
+     * una base recién migrada, sin pasar por el Wizard ni por un `User` real
+     * todavía, se siembra el usuario de fábrica de `Demo\UserSeeder` para tener
+     * a quién autenticar — nunca si ya existe alguien (real o de fábrica).
      */
     private function authenticateAsSeedUser(): void
     {
+        if (User::query()->doesntExist()) {
+            (new UserSeeder)->run();
+        }
+
         $user = User::where('email', 'admin@local.com')->first() ?? User::query()->firstOrFail();
         Auth::login($user);
     }

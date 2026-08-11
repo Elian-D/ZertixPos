@@ -2,12 +2,30 @@
 
 namespace App\Models\Configuration;
 
+use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 class Plan extends Model
 {
-    protected $fillable = ['name', 'slug', 'description', 'price', 'currency'];
+    protected $fillable = ['name', 'slug', 'description', 'price', 'currency', 'features', 'users_limit'];
+
+    protected $casts = [
+        'features' => 'array',
+    ];
+
+    /**
+     * null = sin techo (PyME/Pro/Corporativo). Emprendedor es 1 — pensado para
+     * un único dueño/operador (REQ-05.6).
+     */
+    public function canCreateMoreUsers(): bool
+    {
+        if (is_null($this->users_limit)) {
+            return true;
+        }
+
+        return User::count() < $this->users_limit;
+    }
 
     public function moduleKeys(): array
     {
