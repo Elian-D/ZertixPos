@@ -93,7 +93,14 @@
 
                             <div>
                                 <label class="text-xs font-bold text-slate-400 uppercase mb-2 block tracking-wider">Municipio</label>
+                                {{-- x-init + $nextTick: las <option> las genera x-for dentro del propio
+                                     <select>, y Alpine aplica x-model ANTES de que ese x-for termine de
+                                     renderizarlas en el primer render — el municipio guardado en BD
+                                     nunca quedaba seleccionado visualmente (aunque sí estaba guardado,
+                                     bug reportado y confirmado por consulta directa a la BD). Forzamos
+                                     la sincronización una vez el DOM ya tiene las opciones montadas. --}}
                                 <select name="municipio_id" x-model="selectedMunicipio"
+                                    x-init="$nextTick(() => { $el.value = selectedMunicipio })"
                                     class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-semibold text-slate-700 focus:border-indigo-400">
                                     <option value="">Sin especificar</option>
                                     <template x-for="municipio in municipiosDeProvincia" :key="municipio.id">
