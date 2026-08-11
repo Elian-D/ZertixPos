@@ -10,6 +10,14 @@ class AccountingAccountSeeder extends Seeder
 {
     public function run()
     {
+        // Idempotencia: inserts crudos por `code` (único) — correrlo dos veces
+        // revienta con clave duplicada. Pasa en la práctica cuando el Wizard de
+        // Instalación (Fase 8) llama a `db:seed` en su paso final sobre una
+        // instalación que ya tenía el plan de cuentas sembrado de antes.
+        if (DB::table('accounting_accounts')->exists()) {
+            return;
+        }
+
         $accounts = [
             // ACTIVOS
             ['code' => '1', 'name' => 'Activos', 'type' => AccountingAccount::TYPE_ASSET, 'is_selectable' => false, 'level' => 1],

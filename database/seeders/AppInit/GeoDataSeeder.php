@@ -9,6 +9,18 @@ class GeoDataSeeder extends Seeder
 {
     public function run(): void
     {
+        // Idempotencia: el dump son INSERT crudos, sin ON DUPLICATE KEY/INSERT
+        // IGNORE — correrlo dos veces sin este guard revienta con clave
+        // duplicada en `provinces`. Pasa en la práctica: el Wizard de
+        // Instalación (Fase 8) llama a `db:seed` en su paso final aunque
+        // GeoDataSeeder ya haya corrido antes (al montar el propio Wizard, o
+        // en un `migrate --seed` previo).
+        if (DB::table('provinces')->exists()) {
+            $this->command?->info('Datos geográficos de RD ya existen, se omite.');
+
+            return;
+        }
+
         $path = database_path('seeders/sql/geo_data_rd.sql');
 
         if (! file_exists($path)) {

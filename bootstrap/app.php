@@ -24,6 +24,13 @@ return Application::configure(basePath: dirname(__DIR__))
             // Módulos base/satélite
             'module' => \App\Http\Middleware\EnsureModuleEnabled::class,
         ]);
+
+        // Corre antes que cualquier ruta del grupo 'web' — sin esto, una instalación
+        // recién migrada (sin ConfiguracionGeneral.nombre_empresa real) dejaría entrar
+        // a /login o /admin/* directo, sin pasar nunca por el Wizard (Fase 8).
+        $middleware->web(append: [
+            \App\Http\Middleware\EnsureInstallationWizardCompleted::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

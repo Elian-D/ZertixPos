@@ -1,28 +1,29 @@
 <?php
 
-namespace Database\Seeders\AppInit;
+namespace Database\Seeders\Demo;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
+/**
+ * Usuarios de fábrica hardcodeados (admin@local.com/usuario@local.com,
+ * contraseña 12345678) — solo para desarrollo local, vía zertix:seed-demo.
+ * La instalación real crea su administrador desde el Wizard (REQ-08.2/08.5),
+ * con sus propias credenciales; no depende de este seeder (REQ-07.13).
+ */
 class UserSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        // USUARIO ADMIN
         $admin = User::firstOrCreate(
             ['email' => 'admin@local.com'],
             [
                 'name' => 'Administrador',
-                'password' => Hash::make('12345678'), // cámbialo si quieres
+                'password' => Hash::make('12345678'),
             ]
         );
 
-        // USUARIO NORMAL
         $normal = User::firstOrCreate(
             ['email' => 'usuario@local.com'],
             [
@@ -31,7 +32,6 @@ class UserSeeder extends Seeder
             ]
         );
 
-        // Asignacion de roles
         $admin->assignRole('admin');
         $normal->assignRole('Usuario Genérico');
     }
