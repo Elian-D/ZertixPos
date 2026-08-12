@@ -17,10 +17,10 @@ return new class extends Migration
             // Tipo de cliente
             $table->string('type', 20); // individual / company
 
-            // Estado del cliente
-            $table->foreignId('estado_cliente_id')
-                ->constrained('estados_clientes')
-                ->restrictOnDelete();
+            // Estado de ciclo de vida — decisión manual, dos valores (Fase 11,
+            // REQ-11.3). El estado financiero (moroso) es un cálculo aparte,
+            // nunca almacenado — ver Client::esMoroso().
+            $table->boolean('is_active')->default(true);
 
             // Datos legales / contacto
             $table->string('name'); // Nombre del cliente o razón social

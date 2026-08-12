@@ -42,7 +42,6 @@ class PermissionSeeder extends Seeder
                 'view configuration',
                 'configure general data',
                 'configure payments',
-                'configure client-states',
                 'configure dias-semana',
             ],
 

@@ -4,7 +4,6 @@ namespace Database\Seeders\AppInit;
 
 use App\Enums\TaxIdentifierType;
 use App\Models\Clients\Client;
-use App\Models\Configuration\EstadosCliente;
 use App\Models\Geo\Province;
 use Illuminate\Database\Seeder;
 
@@ -20,7 +19,7 @@ class ClientSeeder extends Seeder
             ['tax_id' => '00000000000'], // Identificador genérico
             [
                 'type' => 'individual',
-                'estado_cliente_id' => EstadosCliente::where('nombre', 'Activo')->value('id') ?? 1,
+                'is_active' => true,
                 'name' => 'Consumidor Final',
                 'email' => 'consumidor@final.com',
                 'phone' => '0000000000',
