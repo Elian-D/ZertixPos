@@ -6,7 +6,6 @@ use App\Enums\TaxIdentifierType;
 use App\Models\Accounting\AccountingAccount;
 use App\Models\Accounting\Payment;
 use App\Models\Accounting\Receivable;
-use App\Models\Configuration\EstadosCliente; // Nueva importación
 use App\Models\Geo\Municipality;
 use App\Models\Geo\Province;
 use App\Models\Sales\Quotes\Quote;
@@ -23,7 +22,7 @@ class Client extends Model
 
     protected $fillable = [
         'type',
-        'estado_cliente_id',
+        'is_active',
         'name',
         'commercial_name',
         'email',
@@ -41,6 +40,7 @@ class Client extends Model
     ];
 
     protected $casts = [
+        'is_active' => 'boolean',
         'credit_limit' => 'decimal:2',
         'balance' => 'decimal:2',
         'payment_terms' => 'integer',
@@ -54,11 +54,6 @@ class Client extends Model
     public function pos(): HasMany
     {
         return $this->hasMany(PointOfSale::class, 'client_id');
-    }
-
-    public function estadoCliente(): BelongsTo
-    {
-        return $this->belongsTo(EstadosCliente::class, 'estado_cliente_id');
     }
 
     public function provincia(): BelongsTo
@@ -146,6 +141,43 @@ class Client extends Model
         return ! is_null($this->accounting_account_id);
     }
 
+    /**
+     * Estado de ciclo de vida — decisión manual (Fase 11, REQ-11.3). Mismo
+     * patrón que Warehouse/Category/Unit/BusinessType.
+     */
+    public function toggleActivo(): bool
+    {
+        $this->is_active = ! $this->is_active;
+        $this->save();
+
+        return $this->is_active;
+    }
+
+    /**
+     * Atributo financiero — calculado, nunca almacenado (Fase 11, REQ-11.4).
+     * Deliberadamente sin columna ni job de recálculo: a la escala de
+     * ZertixPOS un whereHas en vivo no es un problema de rendimiento real, y
+     * un valor guardado se desincroniza en cuanto alguien paga.
+     */
+    public function esMoroso(): bool
+    {
+        $diasGracia = general_config()->dias_gracia_mora ?? 0;
+
+        return $this->receivables()
+            ->where('status', '!=', Receivable::STATUS_PAID)
+            ->where('due_date', '<', now()->subDays($diasGracia))
+            ->exists();
+    }
+
+    public function scopeMorosos($query)
+    {
+        return $query->whereHas('receivables', function ($q) {
+            $diasGracia = general_config()->dias_gracia_mora ?? 0;
+            $q->where('status', '!=', Receivable::STATUS_PAID)
+                ->where('due_date', '<', now()->subDays($diasGracia));
+        });
+    }
+
     /* ===========================
     |      SCOPES
     =========================== */
@@ -153,7 +185,6 @@ class Client extends Model
     public function scopeWithIndexRelations($query)
     {
         return $query->with([
-            'estadoCliente:id,nombre,clase_fondo,clase_texto',
             'provincia:id,name',
             'municipio:id,name',
             'accountingAccount:id,code,name', // Añadido a la carga por defecto
