@@ -60,17 +60,6 @@
         </x-sidebar.item>
     </x-sidebar.group>
 
-    {{-- ===== CLIENTES ===== --}}
-    <x-sidebar.group>
-        <x-sidebar.title>Clientes y Documentos</x-sidebar.title>
-
-        <x-sidebar.item
-            href="{{ route('configuration.estados.index') }}"
-            icon="heroicon-s-user-circle">
-            Estados de clientes
-        </x-sidebar.item>
-    </x-sidebar.group>
-
     {{-- ===== FINANZAS ===== --}}
     <x-sidebar.group>
         <x-sidebar.title>Finanzas</x-sidebar.title>

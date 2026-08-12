@@ -26,6 +26,7 @@ class ConfiguracionGeneral extends Model
         'provincia_id',
         'municipio_id',
         'impuesto_id',
+        'dias_gracia_mora',
     ];
 
     protected $casts = [

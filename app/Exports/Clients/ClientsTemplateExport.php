@@ -22,7 +22,7 @@ class ClientsTemplateExport implements FromCollection, ShouldAutoSize, WithHeadi
                 'Av. Libertad #123',
                 'Cédula',
                 '001-0000000-0',
-                'Activo',
+                'Sí',
             ],
             [
                 'Empresa',
@@ -35,7 +35,7 @@ class ClientsTemplateExport implements FromCollection, ShouldAutoSize, WithHeadi
                 'Calle Principal #456',
                 'RNC',
                 '130123456',
-                'Prospecto',
+                'No',
             ],
         ]);
     }
@@ -45,7 +45,7 @@ class ClientsTemplateExport implements FromCollection, ShouldAutoSize, WithHeadi
         return [
             'tipo', 'nombre_o_razon_social', 'nombre_comercial', 'email',
             'telefono', 'provincia_estado', 'ciudad', 'direccion', 'tipo_identificacion',
-            'rnc_cedula', 'estado_cliente',
+            'rnc_cedula', 'activo',
         ];
     }
 }

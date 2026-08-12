@@ -5,7 +5,6 @@ namespace Database\Factories\Clients;
 use App\Enums\TaxIdentifierType;
 use App\Models\Accounting\AccountingAccount;
 use App\Models\Clients\Client;
-use App\Models\Configuration\EstadosCliente;
 use App\Models\Geo\Municipality;
 use App\Models\Geo\Province;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -23,7 +22,6 @@ class ClientFactory extends Factory
 
         return [
             'type' => $type,
-            'estado_cliente_id' => EstadosCliente::inRandomOrder()->value('id') ?? 1,
             'name' => $type === 'individual' ? fake()->name() : fake()->company(),
             'email' => fake()->unique()->safeEmail(),
             'phone' => fake()->phoneNumber(),

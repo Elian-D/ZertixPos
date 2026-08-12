@@ -26,10 +26,17 @@
                             </div>
                         </div>
                     </div>
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ring-1 ring-inset shadow-sm {{ $client->estadoCliente->clase_fondo }} {{ $client->estadoCliente->clase_texto }} ring-black/5">
-                        <span class="w-1.5 h-1.5 rounded-full mr-2 bg-current animate-pulse"></span>
-                        {{ $client->estadoCliente->nombre }}
-                    </span>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ring-1 ring-inset shadow-sm {{ $client->is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500' }} ring-black/5">
+                            <span class="w-1.5 h-1.5 rounded-full mr-2 bg-current animate-pulse"></span>
+                            {{ $client->is_active ? 'Activo' : 'Inactivo' }}
+                        </span>
+                        @if($client->esMoroso())
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-50 text-red-600 ring-1 ring-red-200">
+                                Moroso
+                            </span>
+                        @endif
+                    </div>
                 </div>
             </div>
 

@@ -6,11 +6,9 @@ use Database\Seeders\AppInit\AccountingAccountRoleSeeder;
 use Database\Seeders\AppInit\AccountingAccountSeeder;
 use Database\Seeders\AppInit\BusinessTypeSeeder;
 use Database\Seeders\AppInit\ClientSeeder;
-use Database\Seeders\AppInit\ClientStateCategorySeeder;
 use Database\Seeders\AppInit\ConfiguracionGeneralSeeder;
 use Database\Seeders\AppInit\DiaSemanaSeeder;
 use Database\Seeders\AppInit\DocumentTypeSeeder;
-use Database\Seeders\AppInit\EstadosClienteSeeder;
 use Database\Seeders\AppInit\GeoDataSeeder;
 use Database\Seeders\AppInit\ImpuestoSeeder;
 use Database\Seeders\AppInit\InstallationModuleSeeder;
@@ -47,8 +45,6 @@ class DatabaseSeeder extends Seeder
 
             PlanSeeder::class,
             InstallationModuleSeeder::class,
-            ClientStateCategorySeeder::class,
-            EstadosClienteSeeder::class,
             DiaSemanaSeeder::class,
             TipoPagoSeeder::class,
             ImpuestoSeeder::class,

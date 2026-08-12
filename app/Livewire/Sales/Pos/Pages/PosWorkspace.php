@@ -81,10 +81,7 @@ class PosWorkspace extends Component
      */
     private function getClients(): array
     {
-        return Client::whereHas('estadoCliente.categoria', function ($query) {
-            $query->whereIn('code', ['OPERATIVO', 'FINANCIERO_RESTRICTO']);
-        })
-            ->with('estadoCliente.categoria')
+        return Client::where('is_active', true)
             ->select('id', 'name', 'tax_id', 'credit_limit', 'balance')
             ->orderByRaw("CASE WHEN name = 'Consumidor Final' THEN 0 ELSE 1 END")
             ->orderBy('name')
@@ -94,7 +91,7 @@ class PosWorkspace extends Component
                 'name' => $client->name,
                 'tax_id' => $client->tax_id,
                 'available' => (float) ($client->credit_limit - $client->balance),
-                'is_moroso' => in_array($client->estadoCliente?->categoria?->code, ['BLOQUEO_TOTAL', 'FINANCIERO_RESTRICTO']),
+                'is_moroso' => $client->esMoroso(),
             ])
             ->toArray();
     }

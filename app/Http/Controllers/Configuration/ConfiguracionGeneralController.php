@@ -51,6 +51,7 @@ class ConfiguracionGeneralController extends Controller
             'direccion' => 'nullable|string',
             'provincia_id' => 'required|exists:provinces,id',
             'municipio_id' => 'nullable|exists:municipalities,id',
+            'dias_gracia_mora' => 'nullable|integer|min:0',
 
             // Flag de módulo — ver manejo aparte más abajo, no es columna de esta tabla.
             'ncf_enabled' => 'nullable|boolean',

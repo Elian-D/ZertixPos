@@ -20,8 +20,6 @@ class ClientsExport implements FromQuery, WithColumnWidths, WithDefaultStyles, W
 
     private $municipalitiesCache = [];
 
-    private $estadosCache = [];
-
     public function __construct($query)
     {
         $this->query = $query;
@@ -32,7 +30,6 @@ class ClientsExport implements FromQuery, WithColumnWidths, WithDefaultStyles, W
     {
         $this->provincesCache = \App\Models\Geo\Province::pluck('name', 'id')->toArray();
         $this->municipalitiesCache = \App\Models\Geo\Municipality::pluck('name', 'id')->toArray();
-        $this->estadosCache = \App\Models\Configuration\EstadosCliente::pluck('nombre', 'id')->toArray();
     }
 
     public function query()
@@ -41,7 +38,7 @@ class ClientsExport implements FromQuery, WithColumnWidths, WithDefaultStyles, W
             ->select([
                 'id', 'type', 'name', 'commercial_name', 'email', 'phone',
                 'provincia_id', 'municipio_id', 'address', 'tax_identifier_type', 'tax_id',
-                'estado_cliente_id', 'created_at', 'updated_at',
+                'is_active', 'created_at', 'updated_at',
             ])
             ->withoutGlobalScopes() // Desactiva scopes globales si tienes
             ->orderBy('id');
@@ -52,7 +49,7 @@ class ClientsExport implements FromQuery, WithColumnWidths, WithDefaultStyles, W
         return [
             'tipo', 'nombre_o_razon_social', 'nombre_comercial', 'email',
             'telefono', 'provincia_estado', 'ciudad', 'direccion', 'tipo_identificacion',
-            'rnc_cedula', 'estado_cliente', 'fecha_registro', 'ultima_actualizacion',
+            'rnc_cedula', 'activo', 'fecha_registro', 'ultima_actualizacion',
         ];
     }
 
@@ -72,7 +69,7 @@ class ClientsExport implements FromQuery, WithColumnWidths, WithDefaultStyles, W
             $data['address'] ?? '',
             $data['tax_identifier_type'] ?? '',
             $data['tax_id'],
-            $this->estadosCache[$data['estado_cliente_id']] ?? '',
+            $data['is_active'] ? 'Sí' : 'No',
             \Carbon\Carbon::parse($data['created_at'])->format('d-m-Y H:i'),
             \Carbon\Carbon::parse($data['updated_at'])->format('d-m-Y H:i'),
         ];

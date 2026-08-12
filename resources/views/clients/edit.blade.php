@@ -65,15 +65,16 @@
                         </div>
 
                         {{-- 5. Estado --}}
-                        <div class="md:col-span-2">
-                            <x-input-label value="Estado Operativo" />
-                            <select name="estado_cliente_id" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
-                                @foreach($estados as $e)
-                                    <option value="{{ $e->id }}" {{ (old('estado_cliente_id', $client->estado_cliente_id ?? '') == $e->id) ? 'selected' : '' }}>
-                                        {{ $e->nombre }}
-                                    </option>
-                                @endforeach
-                            </select>
+                        <div class="md:col-span-2 flex items-center gap-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                            <x-input-label value="Cliente Activo" class="mb-0" />
+                            <input type="hidden" name="is_active" value="0">
+                            <input type="checkbox" name="is_active" value="1" {{ old('is_active', $client->is_active ?? true) ? 'checked' : '' }}
+                                class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 w-5 h-5 cursor-pointer">
+                            @if(isset($client) && $client->esMoroso())
+                                <span class="ml-auto inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-red-50 text-red-600 ring-1 ring-red-200">
+                                    <x-heroicon-s-exclamation-triangle class="w-3 h-3" /> Moroso
+                                </span>
+                            @endif
                         </div>
                     </div>
                 </section>

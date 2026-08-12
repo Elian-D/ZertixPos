@@ -118,7 +118,7 @@
                         </div>
 
                         <div class="mt-8 pt-6 border-t border-slate-100">
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div class="bg-blue-50/50 border border-blue-100 rounded-2xl p-4 transition-all">
                                     <p class="text-[10px] font-bold text-blue-400 uppercase tracking-widest mb-1">Moneda Local</p>
                                     <div class="flex items-center gap-2">
@@ -130,6 +130,11 @@
                                     <div class="flex items-center gap-2">
                                         <span class="text-xs font-bold text-slate-700 truncate" x-text="timezone"></span>
                                     </div>
+                                </div>
+                                <div class="bg-amber-50/50 border border-amber-100 rounded-2xl p-4 transition-all">
+                                    <label class="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1 block">Días de Gracia (Mora)</label>
+                                    <input type="number" name="dias_gracia_mora" min="0" value="{{ old('dias_gracia_mora', $config->dias_gracia_mora ?? 0) }}"
+                                        class="w-full bg-transparent border-0 p-0 text-lg font-bold text-amber-700 focus:ring-0" />
                                 </div>
                             </div>
                         </div>

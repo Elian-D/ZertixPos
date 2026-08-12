@@ -151,7 +151,7 @@ class ClientService
 
             match ($action) {
                 'delete' => $query->delete(),
-                'change_status' => $query->update(['estado_cliente_id' => $value]),
+                'change_status' => $query->update(['is_active' => (bool) $value]),
                 'change_geo_state' => $query->update(['provincia_id' => $value]),
                 'reset_credit' => $query->update(['credit_limit' => 0]),
                 default => throw new \InvalidArgumentException('Acción no soportada'),

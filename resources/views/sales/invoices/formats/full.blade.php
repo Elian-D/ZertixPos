@@ -17,9 +17,11 @@
     // Usar directamente el valor de la base de datos, si es nulo o cero, mostrará 0.00
     $taxCalculado = $sale->tax_amount ?? 0.00; 
 
-    // Vencimiento de factura (Crédito comercial)
-    $vencimientoPago = $sale->payment_type === 'credit' 
-        ? $sale->created_at->addDays($client->credit_limit_days ?? 30)->format('d/m/Y') 
+    // Vencimiento de factura (Crédito comercial) — se lee de la Receivable, nunca
+    // se recalcula acá (REQ-11.10): es la única fuente de verdad, la misma que
+    // controla esMoroso().
+    $vencimientoPago = $sale->payment_type === 'credit'
+        ? $sale->receivable?->due_date?->format('d/m/Y')
         : null;
 
     // Lógica de NCF y su Vencimiento Fiscal

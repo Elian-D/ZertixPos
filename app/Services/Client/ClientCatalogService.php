@@ -4,7 +4,6 @@ namespace App\Services\Client;
 
 use App\Enums\TaxIdentifierType;
 use App\Models\Accounting\AccountingAccount;
-use App\Models\Configuration\EstadosCliente;
 use App\Models\Geo\Municipality;
 use App\Models\Geo\Province; // Importante
 
@@ -18,8 +17,6 @@ class ClientCatalogService
             'taxIdentifierTypes' => collect(TaxIdentifierType::cases())
                 ->map(fn (TaxIdentifierType $type) => ['value' => $type->value, 'label' => $type->label()]),
 
-            'estadosClientes' => EstadosCliente::select('id', 'nombre')->get(),
-
             // Opciones estáticas para los nuevos filtros de deuda
             'debtOptions' => [
                 'yes' => 'Con Saldo Pendiente',
@@ -31,7 +28,6 @@ class ClientCatalogService
     public function getForForm(): array
     {
         return [
-            'estados' => EstadosCliente::activos()->get(),
             'types' => [
                 'individual' => 'Persona Física',
                 'company' => 'Empresa / Jurídica',

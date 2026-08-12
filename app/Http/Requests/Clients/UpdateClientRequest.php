@@ -22,7 +22,7 @@ class UpdateClientRequest extends FormRequest
             'commercial_name' => 'nullable|string|max:255',
             'email' => 'nullable|email|max:255',
             'phone' => 'nullable|string|max:20',
-            'estado_cliente_id' => 'required|exists:estados_clientes,id',
+            'is_active' => 'nullable|boolean',
             'provincia_id' => 'required|exists:provinces,id',
             'municipio_id' => 'nullable|exists:municipalities,id',
             'address' => 'nullable|string|max:500',
@@ -44,7 +44,6 @@ class UpdateClientRequest extends FormRequest
             'credit_limit.min' => 'El límite de crédito no puede ser un número negativo.',
             'payment_terms.integer' => 'Los términos de pago deben ser un número de días válido.',
             'accounting_account_id.exists' => 'La cuenta contable seleccionada no es válida.',
-            'estado_cliente_id.required' => 'Debe asignar un estado operativo al cliente.',
             'tax_identifier_type.required' => 'El tipo de documento fiscal es obligatorio.',
         ];
     }
