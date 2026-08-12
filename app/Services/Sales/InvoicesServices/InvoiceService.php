@@ -2,8 +2,8 @@
 
 namespace App\Services\Sales\InvoicesServices;
 
-use App\Models\Sales\Sale;
 use App\Models\Sales\Invoice;
+use App\Models\Sales\Sale;
 use Illuminate\Support\Facades\Auth;
 
 class InvoiceService
@@ -14,13 +14,15 @@ class InvoiceService
     public function createFromSale(Sale $sale): Invoice
     {
         return Invoice::create([
-            'sale_id'        => $sale->id,
+            'sale_id' => $sale->id,
             'invoice_number' => $sale->number, // Usamos el mismo folio de la venta por consistencia legal
-            'type'           => $sale->payment_type,
-            'format_type'    => $this->determineFormat($sale),
-            'status'         => Invoice::STATUS_ACTIVE,
-            'due_date'       => $sale->payment_type === Sale::PAYMENT_CREDIT ? $sale->sale_date->copy()->addDays(30) : null,
-            'generated_by'   => Auth::user()->name ?? 'Sistema',
+            'type' => $sale->payment_type,
+            'format_type' => $this->determineFormat($sale),
+            'status' => Invoice::STATUS_ACTIVE,
+            // Se lee de la Receivable ya creada por SaleService (REQ-11.9) — nunca se
+            // recalcula acá, para no divergir del dato que de verdad rige esMoroso().
+            'due_date' => $sale->receivable?->due_date,
+            'generated_by' => Auth::user()->name ?? 'Sistema',
         ]);
     }
 
@@ -40,10 +42,14 @@ class InvoiceService
     private function determineFormat(Sale $sale): string
     {
         // Si la venta tiene una ruta asignada (ajustar según tu modelo de rutas futuro)
-        if (isset($sale->route_id)) return Invoice::FORMAT_ROUTE;
-        
+        if (isset($sale->route_id)) {
+            return Invoice::FORMAT_ROUTE;
+        }
+
         // Si es crédito en oficina, suele ser hoja completa
-        if ($sale->payment_type === Sale::PAYMENT_CREDIT) return Invoice::FORMAT_LETTER;
+        if ($sale->payment_type === Sale::PAYMENT_CREDIT) {
+            return Invoice::FORMAT_LETTER;
+        }
 
         // Por defecto, ticket de planta
         return Invoice::FORMAT_TICKET;

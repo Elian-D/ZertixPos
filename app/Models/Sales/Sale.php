@@ -2,6 +2,7 @@
 
 namespace App\Models\Sales;
 
+use App\Models\Accounting\Receivable;
 use App\Models\Clients\Client;
 use App\Models\Configuration\TipoPago;
 use App\Models\Inventory\Warehouse;
@@ -15,6 +16,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Sale extends Model
@@ -218,5 +220,14 @@ class Sale extends Model
     public function ncfLog(): HasOne
     {
         return $this->hasOne(NcfLog::class, 'sale_id');
+    }
+
+    /**
+     * Única fuente de verdad del vencimiento de una venta a crédito (REQ-11.9) —
+     * Invoice y los tickets impresos leen su due_date de acá, nunca lo recalculan.
+     */
+    public function receivable(): MorphOne
+    {
+        return $this->morphOne(Receivable::class, 'reference');
     }
 }

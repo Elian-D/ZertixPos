@@ -270,15 +270,17 @@ class SaleService
     }
 
     /**
-     * Genera la cuenta por cobrar en el módulo de créditos fijando un vencimiento estándar a 30 días.
+     * Genera la cuenta por cobrar en el módulo de créditos con vencimiento con base al plazo del cliente.
      */
     protected function createReceivableEntry(Sale $sale, float $amount): void
     {
+        $plazo = $sale->client->payment_terms ?? 0;
+
         $this->receivableService->createReceivable([
             'client_id' => $sale->client_id,
             'total_amount' => $amount,
             'emission_date' => $sale->sale_date,
-            'due_date' => $sale->sale_date->copy()->addDays(30), // Término de crédito neto estándar
+            'due_date' => $sale->sale_date->copy()->addDays($plazo),
             'document_number' => $sale->number,
             'reference_type' => Sale::class,
             'reference_id' => $sale->id,

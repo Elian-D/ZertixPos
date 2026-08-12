@@ -8,8 +8,10 @@
     $taxLabel = $config->tax_identifier_type?->value ?? 'RNC';
     $taxName = $impuestoConfig->nombre ?? 'ITBIS';
     
-    $vencimientoPago = $sale->payment_type === 'credit' 
-        ? $sale->created_at->addDays($client->credit_limit_days ?? 30)->format('d/m/Y') 
+    // Se lee de la Receivable, nunca se recalcula acá (REQ-11.10) — es la única
+    // fuente de verdad del vencimiento, la misma que controla esMoroso().
+    $vencimientoPago = $sale->payment_type === 'credit'
+        ? $sale->receivable?->due_date?->format('d/m/Y')
         : null;
 
     $ncfLog = $sale->ncfLog;
