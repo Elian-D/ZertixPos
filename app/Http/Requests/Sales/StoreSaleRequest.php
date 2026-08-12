@@ -95,7 +95,7 @@ class StoreSaleRequest extends FormRequest
                 return;
             }
 
-            $client = Client::with('estadoCliente.categoria')->find($this->client_id);
+            $client = Client::find($this->client_id);
 
             // --- VALIDACIÓN DE NCF ---
             // Solo se valida si REALMENTE se pidió un comprobante (ncf_type_id presente).
@@ -221,9 +221,11 @@ class StoreSaleRequest extends FormRequest
                     $validator->errors()->add('payment_type', 'El Consumidor Final no puede procesar ventas a crédito.');
                 }
 
-                $categoryCode = $client->estadoCliente->category->code ?? null;
-                if (in_array($categoryCode, ['BLOQUEO_TOTAL', 'FINANCIERO_RESTRICTO'])) {
-                    $validator->errors()->add('client_id', "Crédito denegado: El cliente tiene un estado de {$client->estadoCliente->nombre}.");
+                // Antes: ->estadoCliente->category->code (relación inexistente, siempre
+                // null) — el bloqueo de crédito nunca se disparaba en el servidor, solo
+                // había un botón deshabilitado en el frontend (Fase 11, REQ-11.6).
+                if ($client->esMoroso()) {
+                    $validator->errors()->add('client_id', 'Crédito denegado: el cliente tiene facturas vencidas pendientes de pago.');
                 }
 
                 // <-- CAMBIO AQUÍ: Sumamos el Neto al balance actual

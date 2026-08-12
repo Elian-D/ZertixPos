@@ -2,9 +2,9 @@
 
 namespace App\Filters\Client;
 
+use App\Filters\Contracts\FilterInterface;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use App\Filters\Contracts\FilterInterface;
 
 class ClientBusinessStatusFilter implements FilterInterface
 {
@@ -17,11 +17,8 @@ class ClientBusinessStatusFilter implements FilterInterface
 
     public function apply(Builder $query): Builder
     {
-        if ($this->request->filled('estado_cliente')) {
-            $query->where(
-                'estado_cliente_id',
-                $this->request->input('estado_cliente')
-            );
+        if ($this->request->filled('is_active')) {
+            $query->where('is_active', $this->request->boolean('is_active'));
         }
 
         return $query;

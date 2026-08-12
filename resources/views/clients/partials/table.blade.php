@@ -35,6 +35,12 @@
                 </td>
             @endif
 
+            @if(in_array('type', $visibleColumns))
+                <td class="px-6 py-4 text-xs text-gray-700">
+                    {{ $client->type === 'company' ? 'Empresa' : 'Individual' }}
+                </td>
+            @endif
+
             {{-- Columnas Financieras --}}
             @if(in_array('balance', $visibleColumns))
                 <td class="px-6 py-4 text-sm">
@@ -59,18 +65,6 @@
                             Solo Contado
                         </span>
                     @endif
-                </td>
-            @endif
-
-            @if(in_array('accounting_account', $visibleColumns))
-                <td class="px-6 py-4 text-xs text-gray-500">
-                    {{ $client->accountingAccount->code ?? 'General' }}
-                </td>
-            @endif
-
-            @if(in_array('type', $visibleColumns))
-                <td class="px-6 py-4 text-xs text-gray-700">
-                    {{ $client->type === 'company' ? 'Empresa' : 'Individual' }}
                 </td>
             @endif
 
@@ -99,11 +93,18 @@
                 <td class="px-6 py-4 text-sm text-gray-600">{{ $client->address ?? '—' }}</td>
             @endif
 
-            @if(in_array('estado_cliente', $visibleColumns))
+            @if(in_array('is_active', $visibleColumns))
                 <td class="px-6 py-4">
-                    <span class="px-2 py-1 text-xs rounded font-bold {{ $client->estadoCliente->clase_fondo }} {{ $client->estadoCliente->clase_texto }}">
-                        {{ $client->estadoCliente->nombre }}
-                    </span>
+                    <div class="flex items-center gap-1.5">
+                        <span class="px-2 py-1 text-xs rounded font-bold {{ $client->is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500' }}">
+                            {{ $client->is_active ? 'Activo' : 'Inactivo' }}
+                        </span>
+                        @if($client->esMoroso())
+                            <span class="px-2 py-1 text-xs rounded font-bold bg-red-50 text-red-600 ring-1 ring-red-200">
+                                Moroso
+                            </span>
+                        @endif
+                    </div>
                 </td>
             @endif
 

@@ -2,8 +2,6 @@
 
 namespace App\DTOs\Clients;
 
-use App\Models\Configuration\EstadosCliente;
-
 class QuickClientDTO
 {
     public function __construct(
@@ -16,7 +14,7 @@ class QuickClientDTO
         public ?int $provincia_id = null,
         public ?int $municipio_id = null,
         public string $type = 'individual',
-        public ?int $estado_cliente_id = null,
+        public bool $is_active = true,
         public float $credit_limit = 0,
         public int $payment_terms = 0,
     ) {}
@@ -34,8 +32,6 @@ class QuickClientDTO
             address: $data['address'] ?? null,
             provincia_id: $data['provincia_id'] ?? $config?->provincia_id,
             municipio_id: $data['municipio_id'] ?? $config?->municipio_id,
-            estado_cliente_id: EstadosCliente::where('nombre', 'Activo')->value('id')
-                ?? EstadosCliente::query()->value('id'),
         );
     }
 

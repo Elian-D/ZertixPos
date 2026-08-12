@@ -4,7 +4,6 @@ namespace App\Imports;
 
 use App\Enums\TaxIdentifierType;
 use App\Models\Clients\Client;
-use App\Models\Configuration\EstadosCliente;
 use App\Models\Geo\Municipality;
 use App\Models\Geo\Province;
 use Illuminate\Support\Collection;
@@ -21,8 +20,6 @@ class ClientsImport implements SkipsEmptyRows, ToCollection, WithChunkReading, W
 
     private static $municipalitiesByProvince;
 
-    private static $estadosClientes;
-
     private static $taxTypes;
 
     private static $initialized = false;
@@ -33,7 +30,7 @@ class ClientsImport implements SkipsEmptyRows, ToCollection, WithChunkReading, W
     const REQUIRED_HEADERS = [
         'tipo', 'nombre_o_razon_social', 'nombre_comercial', 'email', 'telefono',
         'provincia_estado', 'ciudad', 'direccion', 'tipo_identificacion', 'rnc_cedula',
-        'estado_cliente',
+        'activo',
     ];
 
     // Columnas que el sistema IGNORARÁ si vienen en el archivo (del export)
@@ -53,8 +50,6 @@ class ClientsImport implements SkipsEmptyRows, ToCollection, WithChunkReading, W
                 ->groupBy(fn (Municipality $m) => $m->province->name)
                 ->map(fn (Collection $group) => $group->pluck('id', 'name')->toArray())
                 ->toArray();
-
-            self::$estadosClientes = EstadosCliente::pluck('id', 'nombre')->toArray();
 
             self::$taxTypes = collect(TaxIdentifierType::cases())
                 ->flatMap(fn (TaxIdentifierType $type) => [
@@ -91,7 +86,7 @@ class ClientsImport implements SkipsEmptyRows, ToCollection, WithChunkReading, W
 
             $dataToUpsert[] = [
                 'type' => strtolower($row['tipo']) == 'empresa' ? 'company' : 'individual',
-                'estado_cliente_id' => self::$estadosClientes[$row['estado_cliente']] ?? null,
+                'is_active' => ! in_array(strtolower(trim($row['activo'] ?? '')), ['no', '0', 'false', 'inactivo'], true),
                 'name' => $row['nombre_o_razon_social'],
                 'commercial_name' => $row['nombre_comercial'] ?? null,
                 'email' => $row['email'] ?? null,
@@ -113,7 +108,7 @@ class ClientsImport implements SkipsEmptyRows, ToCollection, WithChunkReading, W
                 Client::upsert(
                     $dataToUpsert,
                     ['tax_id'], // Clave única para decidir si inserta o actualiza
-                    ['type', 'estado_cliente_id', 'name', 'commercial_name', 'email',
+                    ['type', 'is_active', 'name', 'commercial_name', 'email',
                         'phone', 'provincia_id', 'municipio_id', 'address', 'tax_identifier_type', 'updated_at']
                 );
 
@@ -157,9 +152,6 @@ class ClientsImport implements SkipsEmptyRows, ToCollection, WithChunkReading, W
             return false;
         }
         if (! isset(self::$provinces[$row['provincia_estado']])) {
-            return false;
-        }
-        if (! isset(self::$estadosClientes[$row['estado_cliente']])) {
             return false;
         }
         if (! isset(self::$taxTypes[strtoupper($row['tipo_identificacion'])])) {

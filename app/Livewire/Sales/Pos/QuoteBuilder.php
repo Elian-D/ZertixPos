@@ -2,31 +2,34 @@
 
 namespace App\Livewire\Sales\Pos;
 
-use Livewire\Component;
-use Livewire\Attributes\On;
-use App\Models\Products\Product;
 use App\Models\Clients\Client;
+use App\Models\Inventory\InventoryStock;
+use App\Models\Products\Product;
 use App\Models\Sales\Quotes\Quote;
 use App\Services\Sales\Quotes\QuoteService;
-use App\Models\Inventory\InventoryStock; // Importado para la validación
+use Livewire\Attributes\On;
+use Livewire\Component; // Importado para la validación
 
 class QuoteBuilder extends Component
 {
     public $clientId;
+
     public $notes = '';
-    
+
     public $items = [];
-    
+
     public $subtotal = 0;
+
     public $discountTotal = 0;
+
     public $total = 0;
 
     public ?Quote $quoteModel = null;
 
-    #[On('product-selected')] 
+    #[On('product-selected')]
     public function addProduct($productId)
     {
-        $existingIndex = collect($this->items)->search(fn($item) => $item['product_id'] == $productId);
+        $existingIndex = collect($this->items)->search(fn ($item) => $item['product_id'] == $productId);
 
         if ($existingIndex !== false) {
             $this->items[$existingIndex]['quantity']++;
@@ -40,7 +43,7 @@ class QuoteBuilder extends Component
                     'quantity' => 1,
                     'discount_amount' => 0,
                     'discount_percentage' => 0, // Nuevo campo fase 5
-                    'subtotal' => $product->price
+                    'subtotal' => $product->price,
                 ];
             }
         }
@@ -72,16 +75,16 @@ class QuoteBuilder extends Component
         $maxDiscountPct = 100;
 
         foreach ($this->items as $index => &$item) {
-            $item['quantity'] = max(1, (float)$item['quantity']);
-            
+            $item['quantity'] = max(1, (float) $item['quantity']);
+
             // FASE 5: Validar Reglas de Descuento por Porcentaje
-            if (!$allowItemDiscount) {
+            if (! $allowItemDiscount) {
                 $item['discount_percentage'] = 0;
                 $item['discount_amount'] = 0;
             } else {
                 // Forzar que el porcentaje esté entre 0 y 100
-                $item['discount_percentage'] = max(0, min(100, (float)$item['discount_percentage']));
-                
+                $item['discount_percentage'] = max(0, min(100, (float) $item['discount_percentage']));
+
                 // Si el porcentaje ingresado supera el permitido por la configuración del POS
                 if ($item['discount_percentage'] > $maxDiscountPct) {
                     $item['discount_percentage'] = $maxDiscountPct;
@@ -92,7 +95,7 @@ class QuoteBuilder extends Component
                 $originalItemTotal = $item['price'] * $item['quantity'];
                 $item['discount_amount'] = ($originalItemTotal * $item['discount_percentage']) / 100;
             }
-            
+
             // Calcular subtotal del ítem seguro
             $itemSubtotal = ($item['price'] * $item['quantity']) - $item['discount_amount'];
             $item['subtotal'] = max(0, $itemSubtotal);
@@ -111,7 +114,7 @@ class QuoteBuilder extends Component
             $this->quoteModel = $quote;
             $this->clientId = $quote->customer_id;
             $this->notes = $quote->notes;
-            
+
             foreach ($quote->items as $item) {
                 $this->items[] = [
                     'product_id' => $item->product_id,
@@ -120,7 +123,7 @@ class QuoteBuilder extends Component
                     'quantity' => $item->quantity,
                     'discount_amount' => $item->discount_amount,
                     'discount_percentage' => $item->discount_percentage ?? 0,
-                    'subtotal' => $item->subtotal
+                    'subtotal' => $item->subtotal,
                 ];
             }
             $this->recalculateTotals();
@@ -140,7 +143,7 @@ class QuoteBuilder extends Component
         $hasStockErrors = false;
         foreach ($this->items as $index => $item) {
             $totalStock = InventoryStock::where('product_id', $item['product_id'])->sum('quantity');
-            
+
             if ($totalStock < $item['quantity']) {
                 $this->addError("items.{$index}.quantity", "Stock global insuficiente. Disp: {$totalStock}.");
                 $hasStockErrors = true;
@@ -149,39 +152,41 @@ class QuoteBuilder extends Component
 
         if ($hasStockErrors) {
             $this->addError('general', 'Verifique la disponibilidad de inventario en los ítems marcados.');
+
             return; // Bloqueamos el guardado si no hay stock
         }
 
         $data = [
-            'client_id'  => $this->clientId,
-            'notes'      => $this->notes,
-            'items'      => $this->items,
-            'origin'     => $this->quoteModel ? $this->quoteModel->origin : 'backoffice',
+            'client_id' => $this->clientId,
+            'notes' => $this->notes,
+            'items' => $this->items,
+            'origin' => $this->quoteModel ? $this->quoteModel->origin : 'backoffice',
             'expires_at' => $this->quoteModel ? $this->quoteModel->expires_at : now()->addDays(15),
         ];
 
         try {
             if ($this->quoteModel) {
                 $quoteService->update($this->quoteModel, $data);
-                session()->flash('success', 'Cotización #' . $this->quoteModel->id . ' actualizada.');
+                session()->flash('success', 'Cotización #'.$this->quoteModel->id.' actualizada.');
             } else {
                 $quote = $quoteService->store($data);
-                session()->flash('success', 'Cotización #' . $quote->id . ' creada.');
+                session()->flash('success', 'Cotización #'.$quote->id.' creada.');
             }
 
             return redirect()->route('sales.quotes.index');
-            
+
         } catch (\Exception $e) {
-            $this->addError('general', 'Error al procesar: ' . $e->getMessage());
+            $this->addError('general', 'Error al procesar: '.$e->getMessage());
         }
     }
 
     private function getOperativeClients()
     {
-        return Client::whereHas('estadoCliente.categoria', function ($query) {
-                $query->whereIn('code', ['OPERATIVO', 'FINANCIERO_RESTRICTO']);
-            })
-            ->select('id', 'name', 'tax_id') 
+        // Un cliente moroso sigue operativo para cotizar (una cotización no es una
+        // venta a crédito todavía) — is_active es la única condición acá, igual que
+        // en SaleCatalogService/PosWorkspace (Fase 11, REQ-11.6).
+        return Client::where('is_active', true)
+            ->select('id', 'name', 'tax_id')
             ->orderByRaw("CASE WHEN name = 'Consumidor Final' THEN 0 ELSE 1 END")
             ->orderBy('name')
             ->get();
@@ -190,7 +195,7 @@ class QuoteBuilder extends Component
     public function render()
     {
         return view('livewire.sales.pos.quote-builder', [
-            'clients' => $this->getOperativeClients()
+            'clients' => $this->getOperativeClients(),
         ]);
     }
 }
