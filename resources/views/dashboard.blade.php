@@ -7,7 +7,9 @@
 
     <div class="py-6 sm:py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
-            
+
+            <livewire:onboarding.onboarding-checklist />
+
             <section>
                 <h3 class="text-xl font-semibold text-gray-700 mb-4">Métricas Principales</h3>
                 <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
