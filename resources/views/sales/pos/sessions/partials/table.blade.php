@@ -75,7 +75,7 @@
             {{-- Balances --}}
             @if(in_array('opening_balance', $visibleColumns))
                 <td class="px-6 py-4 text-sm text-right text-gray-600">
-                    <span class="text-[10px] text-gray-400 mr-1">$</span>{{ number_format($session->opening_balance, 2) }}
+                    <span class="text-[10px] text-gray-400 mr-1">{{ config('regional.currency_symbol') }}</span>{{ number_format($session->opening_balance, 2) }}
                 </td>
             @endif
 
@@ -83,7 +83,7 @@
             @if(in_array('expected_balance', $visibleColumns))
                 <td class="px-6 py-4 text-sm text-right text-gray-600">
                     @if($session->status === \App\Models\Sales\Pos\PosSession::STATUS_CLOSED)
-                        <span class="text-[10px] text-gray-400 mr-1">$</span>{{ number_format($session->expected_balance, 2) }}
+                        <span class="text-[10px] text-gray-400 mr-1">{{ config('regional.currency_symbol') }}</span>{{ number_format($session->expected_balance, 2) }}
                     @else
                         <span class="text-gray-300 italic text-[10px]">Calculando...</span>
                     @endif
@@ -94,7 +94,7 @@
             @if(in_array('closing_balance', $visibleColumns))
                 <td class="px-6 py-4 text-sm text-right font-bold text-gray-900">
                     @if($session->status === \App\Models\Sales\Pos\PosSession::STATUS_CLOSED)
-                        <span class="text-[10px] font-normal text-gray-400 mr-1">$</span>{{ number_format($session->closing_balance, 2) }}
+                        <span class="text-[10px] font-normal text-gray-400 mr-1">{{ config('regional.currency_symbol') }}</span>{{ number_format($session->closing_balance, 2) }}
                     @else
                         <span class="text-gray-300">---</span>
                     @endif
@@ -107,7 +107,7 @@
                     @if($session->status === \App\Models\Sales\Pos\PosSession::STATUS_CLOSED)
                         {{-- Usamos directamente el campo difference de la migración --}}
                         <span class="{{ $session->difference >= 0 ? ($session->difference == 0 ? 'text-gray-500' : 'text-green-600') : 'text-red-600' }} font-bold">
-                            <span class="text-[10px] font-normal mr-1">$</span>{{ number_format($session->difference, 2) }}
+                            <span class="text-[10px] font-normal mr-1">{{ config('regional.currency_symbol') }}</span>{{ number_format($session->difference, 2) }}
                         </span>
                     @else
                         <span class="text-gray-300">---</span>

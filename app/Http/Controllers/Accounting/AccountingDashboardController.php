@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Accounting;
 
 use App\Http\Controllers\Controller;
 use App\Models\Accounting\AccountingAccount;
+use App\Models\Accounting\AccountingAccountRole;
 use App\Models\Accounting\JournalItem;
 use App\Models\Accounting\JournalEntry;
 use Illuminate\Http\Request;
@@ -40,17 +41,17 @@ class AccountingDashboardController extends Controller
         }
 
         // 2. BALANCES DE CUENTAS (CORRECCIÓN TERMINALES E INVENTARIO)
-        // 1.1.01 ahora incluye recursivamente todas las sub-cajas de terminales.
-        $cashBalance = $this->getAccountBalanceByCode('1.1.01', $startDay, $endDay);
-        $cxcBalance = $this->getAccountBalanceByCode('1.1.02', $startDay, $endDay);
-        
-        // 1.1.03 ahora es PURA (solo inventario físico) porque las terminales ya no cuelgan de aquí.
-        $inventoryValue = $this->getAccountBalanceByCode('1.1.03', $startDay, $endDay);
-        $cxpBalance = abs($this->getAccountBalanceByCode('2.1', $startDay, $endDay));
+        // Cuenta de rol 'cash_default' — incluye recursivamente todas las sub-cajas de terminales.
+        $cashBalance = $this->getAccountBalanceByCode(AccountingAccountRole::resolveCode('cash_default'), $startDay, $endDay);
+        $cxcBalance = $this->getAccountBalanceByCode(AccountingAccountRole::resolveCode('receivable_default'), $startDay, $endDay);
+
+        // Cuenta de rol 'inventory_default' — PURA (solo inventario físico) porque las terminales ya no cuelgan de aquí.
+        $inventoryValue = $this->getAccountBalanceByCode(AccountingAccountRole::resolveCode('inventory_default'), $startDay, $endDay);
+        $cxpBalance = abs($this->getAccountBalanceByCode(AccountingAccountRole::resolveCode('payable_default'), $startDay, $endDay));
 
         // 3. CÁLCULOS DE RENDIMIENTO
-        $income = abs($this->getAccountBalanceByCode('4.1', $startDay, $endDay));
-        $costOfSales = $this->getAccountBalanceByCode('5.1', $startDay, $endDay);
+        $income = abs($this->getAccountBalanceByCode(AccountingAccountRole::resolveCode('sales_revenue'), $startDay, $endDay));
+        $costOfSales = $this->getAccountBalanceByCode(AccountingAccountRole::resolveCode('cost_of_sales'), $startDay, $endDay);
         $grossProfit = $income - $costOfSales;
 
         // 4. LIQUIDEZ (CORRECCIÓN DE RATIO ALTO)

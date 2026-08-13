@@ -59,9 +59,9 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
             <x-dashboard.kpi-card 
                 title="Ingresos Totales" 
-                :value="'$' . number_format($stats['total_revenue'], 2)" 
+                :value="config('regional.currency_symbol') . number_format($stats['total_revenue'], 2)" 
                 icon="banknotes" color="green" 
-                :trend="'$' . number_format($stats['avg_ticket'], 2) . ' Promedio'"
+                :trend="config('regional.currency_symbol') . number_format($stats['avg_ticket'], 2) . ' Promedio'"
             />
 
             <x-dashboard.kpi-card 
@@ -72,28 +72,28 @@
 
             <x-dashboard.kpi-card 
                 title="Efectividad de Cobro" 
-                :value="'$' . number_format($stats['collected'], 2)" 
+                :value="config('regional.currency_symbol') . number_format($stats['collected'], 2)" 
                 icon="check-badge" color="blue" 
                 secondary-text="Pagos aplicados a facturas"
             />
 
             <x-dashboard.kpi-card 
                 title="Ventas a Crédito" 
-                :value="'$' . number_format($stats['credit_total'], 2)" 
+                :value="config('regional.currency_symbol') . number_format($stats['credit_total'], 2)" 
                 icon="clock" color="orange" 
                 secondary-text="Pendiente por ingresar a caja"
             />
 
             <x-dashboard.kpi-card 
                 title="Ventas al Contado" 
-                :value="'$' . number_format($stats['cash_total'], 2)" 
+                :value="config('regional.currency_symbol') . number_format($stats['cash_total'], 2)" 
                 icon="currency-dollar" color="green" 
                 secondary-text="Ingreso inmediato"
             />
 
             <x-dashboard.kpi-card 
                 title="Ticket Promedio" 
-                :value="'$' . number_format($stats['avg_ticket'], 2)" 
+                :value="config('regional.currency_symbol') . number_format($stats['avg_ticket'], 2)" 
                 icon="presentation-chart-line" color="blue" 
                 secondary-text="Valor medio por transacción"
             />
@@ -127,7 +127,7 @@
                     @foreach($topClients as $client)
                         <div class="py-3 flex items-center justify-between">
                             <span class="text-sm text-gray-600 font-medium">{{ $client->name }}</span>
-                            <span class="text-sm font-bold text-gray-900">${{ number_format($client->total, 2) }}</span>
+                            <span class="text-sm font-bold text-gray-900">{{ config('regional.currency_symbol') }}{{ number_format($client->total, 2) }}</span>
                         </div>
                     @endforeach
                 </div>
@@ -193,7 +193,7 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-right font-bold text-gray-900">
-                                ${{ number_format($sale->total_amount, 2) }}
+                                {{ config('regional.currency_symbol') }}{{ number_format($sale->total_amount, 2) }}
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold {{ $sale->status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
@@ -230,14 +230,14 @@
                 const timelineEl = document.querySelector("#chart-sales-timeline");
                 if (timelineEl) {
                     timelineChart = new ApexCharts(timelineEl, {
-                        series: [{ name: 'Ventas ($)', data: data.timeline.values.map(Number) }],
+                        series: [{ name: 'Ventas ({{ config('regional.currency_symbol') }})', data: data.timeline.values.map(Number) }],
                         chart: { type: 'area', height: 350, toolbar: { show: false }, zoom: { enabled: false } },
                         colors: ['#6366F1'],
                         stroke: { curve: 'smooth', width: 3 },
                         fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.45, opacityTo: 0.05 } },
                         dataLabels: { enabled: false },
                         xaxis: { categories: data.timeline.labels },
-                        yaxis: { labels: { formatter: (val) => '$' + val.toLocaleString() } }
+                        yaxis: { labels: { formatter: (val) => '{{ config('regional.currency_symbol') }}' + val.toLocaleString() } }
                     });
                     timelineChart.render();
                 }

@@ -83,7 +83,7 @@
                             <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 space-y-3">
                                 <div>
                                     <span class="text-[10px] text-gray-400 uppercase block">Provincia / Ciudad</span>
-                                    <p class="text-sm font-medium">{{ $item->state->name ?? 'N/A' }}, {{ $item->city ?? 'N/A' }}</p>
+                                    <p class="text-sm font-medium">{{ $item->provincia->name ?? 'N/A' }}, {{ $item->city ?? 'N/A' }}</p>
                                 </div>
                                 <div>
                                     <span class="text-[10px] text-gray-400 uppercase block">Dirección Exacta</span>

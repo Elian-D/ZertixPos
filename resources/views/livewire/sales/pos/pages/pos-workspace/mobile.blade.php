@@ -31,9 +31,9 @@
     <div class="flex-1 overflow-y-auto px-3 pb-28">
         <div class="grid grid-cols-2 gap-2.5">
             <template x-for="product in filteredProducts" :key="'m-'+product.id">
-                <button type="button" @click="addItem(product)" :disabled="product.is_stockable && product.stock <= 0"
+                <button type="button" @click="addItem(product)" :disabled="inventoryTrackingEnabled && product.is_stockable && product.stock <= 0"
                         class="text-left bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm active:scale-95 transition-transform"
-                        :class="product.is_stockable && product.stock <= 0 ? 'opacity-50 grayscale cursor-not-allowed' : ''">
+                        :class="inventoryTrackingEnabled && product.is_stockable && product.stock <= 0 ? 'opacity-50 grayscale cursor-not-allowed' : ''">
                     <div class="aspect-square w-full bg-gray-50 flex items-center justify-center overflow-hidden">
                         <template x-if="product.image">
                             <img :src="product.image" :alt="product.name" class="w-full h-full object-cover" loading="lazy">
@@ -49,12 +49,15 @@
                         <div class="text-xs font-bold text-gray-800 leading-snug line-clamp-2 mb-1.5 min-h-[2rem]" x-text="product.name"></div>
                         <div class="flex items-center justify-between gap-1">
                             <span class="text-sm font-black text-gray-900" x-text="formatMoney(product.price)"></span>
-                            <template x-if="product.is_stockable">
+                            <template x-if="product.is_stockable && inventoryTrackingEnabled">
                                 <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
                                       :class="product.stock <= 0
                                           ? 'bg-red-50 text-red-500'
                                           : (product.stock <= product.min_stock ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600')"
                                       x-text="product.stock <= 0 ? 'Agotado' : product.stock"></span>
+                            </template>
+                            <template x-if="product.is_stockable && !inventoryTrackingEnabled">
+                                <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0 bg-gray-100 text-gray-500">Sin inventario</span>
                             </template>
                             <template x-if="!product.is_stockable">
                                 <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0 bg-gray-100 text-gray-500">Servicio</span>

@@ -1,31 +1,29 @@
 <?php
 
 // app/Models/Products/Product.php
+
 namespace App\Models\Products;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Builder;
 
 class Product extends Model
 {
     use SoftDeletes;
 
     protected $fillable = [
-        'category_id', 'unit_id', 'name', 'slug', 'sku', 'description', 
-        'image_path', 'price', 'cost', 'is_active', 'is_stockable'
+        'category_id', 'unit_id', 'name', 'slug', 'sku', 'description',
+        'image_path', 'price', 'cost', 'is_active', 'is_stockable',
     ];
 
     /* ===========================
-     |  ASESORES    
+     |  ASESORES
      =========================== */
 
     public function getFormattedPriceAttribute(): string
     {
-        $config = general_config();
-        $symbol = $config->currency_symbol ?? '$';
-
-        return $symbol . ' ' . number_format($this->price, 2);
+        return config('regional.currency_symbol').' '.number_format($this->price, 2);
     }
 
     /**
@@ -34,7 +32,7 @@ class Product extends Model
      */
     public function getImageUrlAttribute(): ?string
     {
-        return $this->image_path ? '/storage/' . $this->image_path : null;
+        return $this->image_path ? '/storage/'.$this->image_path : null;
     }
 
     /* ===========================
@@ -50,13 +48,12 @@ class Product extends Model
     {
         return $this->belongsTo(Unit::class);
     }
-    
+
     // Para saber el stock en todos los almacenes
     public function stocks()
     {
         return $this->hasMany(\App\Models\Inventory\InventoryStock::class);
     }
-
 
     /* ===========================
      |  SCOPES
@@ -68,7 +65,7 @@ class Product extends Model
     {
         $query->with([
             'category:id,name',
-            'unit:id,name,abbreviation'
+            'unit:id,name,abbreviation',
         ]); // Solo traemos lo necesario
     }
 
@@ -87,7 +84,7 @@ class Product extends Model
         return $query->where('is_stockable', true);
     }
 
-        // Para obtener la suma total de stock de este producto (el que borramos de la tabla)
+    // Para obtener la suma total de stock de este producto (el que borramos de la tabla)
     public function getTotalStockAttribute()
     {
         return $this->stocks()->sum('quantity');

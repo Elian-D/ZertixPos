@@ -3,19 +3,13 @@
     $impuestoConfig = $config->impuesto;
     $sale = $invoice->sale;
     $client = $sale->client;
-    $currency = $config->currency_symbol ?? '$';
+    $currency = config('regional.currency_symbol');
     
     // Identificador fiscal de la EMPRESA
-    $taxIdentifier = \DB::table('tax_identifier_types')
-                        ->where('id', $config->tax_identifier_type_id)
-                        ->first();
-    $taxLabel = $taxIdentifier->code ?? 'RNC';
+    $taxLabel = $config->tax_identifier_type?->value ?? 'RNC';
 
     // Identificador fiscal del CLIENTE (RNC/Cédula)
-    $clientTaxIdentifier = \DB::table('tax_identifier_types')
-                        ->where('id', $client->tax_identifier_type_id)
-                        ->first();
-    $clientTaxLabel = $clientTaxIdentifier->code ?? 'RNC/CED';
+    $clientTaxLabel = $client->tax_identifier_type?->value ?? 'RNC/CED';
 
     // Lógica de impuestos dinámica
     $taxName = $impuestoConfig->nombre ?? 'ITBIS';
@@ -23,9 +17,11 @@
     // Usar directamente el valor de la base de datos, si es nulo o cero, mostrará 0.00
     $taxCalculado = $sale->tax_amount ?? 0.00; 
 
-    // Vencimiento de factura (Crédito comercial)
-    $vencimientoPago = $sale->payment_type === 'credit' 
-        ? $sale->created_at->addDays($client->credit_limit_days ?? 30)->format('d/m/Y') 
+    // Vencimiento de factura (Crédito comercial) — se lee de la Receivable, nunca
+    // se recalcula acá (REQ-11.10): es la única fuente de verdad, la misma que
+    // controla esMoroso().
+    $vencimientoPago = $sale->payment_type === 'credit'
+        ? $sale->receivable?->due_date?->format('d/m/Y')
         : null;
 
     // Lógica de NCF y su Vencimiento Fiscal
@@ -39,7 +35,7 @@
     $isMultiPay = $payments->count() > 1;
 
     // NUEVO: Lógica de visibilidad fiscal
-    $mostrarFiscal = $config->usa_ncf && $sale->ncf;
+    $mostrarFiscal = module_enabled('sales.ncf') && $sale->ncf;
 
     // 11.2.6: mismo desglose y misma lógica de reconstrucción que ticket.blade.php —
     // ver el comentario allá para el porqué de usar discount_percentage como señal.

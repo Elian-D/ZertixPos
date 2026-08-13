@@ -2,7 +2,7 @@
 
 namespace App\Services\Accounting\Receivable;
 
-use App\Models\Accounting\{AccountingAccount, Receivable, JournalEntry};
+use App\Models\Accounting\{AccountingAccountRole, Receivable, JournalEntry};
 use App\Models\Clients\Client;
 use App\Models\Sales\Sale;
 use App\Services\Accounting\JournalEntries\JournalEntryService;
@@ -23,8 +23,8 @@ class ReceivableService
         return DB::transaction(function () use ($data) {
             $client = Client::findOrFail($data['client_id']);
             
-            $receivableAccountId = $client->accounting_account_id 
-                ?? $this->getAccountIdByCode('1.1.02');
+            $receivableAccountId = $client->accounting_account_id
+                ?? AccountingAccountRole::resolve('receivable_default');
 
             return Receivable::create([
                 'client_id'             => $data['client_id'],
@@ -77,10 +77,5 @@ class ReceivableService
         }
         
         $receivable->save();
-    }
-
-    protected function getAccountIdByCode(string $code): int
-    {
-        return AccountingAccount::where('code', $code)->firstOrFail()->id;
     }
 }

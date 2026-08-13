@@ -3,10 +3,8 @@
 namespace App\Services\Sales\Quotes;
 
 use App\Models\Clients\Client;
-use App\Models\Products\Product;
 use App\Models\Sales\Quotes\Quote;
 use App\Models\User;
-use Illuminate\Support\Facades\DB;
 
 class QuoteCatalogService
 {
@@ -29,10 +27,10 @@ class QuoteCatalogService
                 ->get(),
 
             'statuses' => Quote::getStatuses(),
-            
+
             'origins' => [
                 'backoffice' => 'Administración',
-                'pos'        => 'POS'
+                'pos' => 'POS',
             ],
         ];
     }
@@ -44,34 +42,31 @@ class QuoteCatalogService
     {
         return [
             // Clientes operativos, priorizando Consumidor Final para rapidez en el POS
-            'customers' => Client::with('estadoCliente.categoria')
-                        ->whereHas('estadoCliente.categoria', function ($query) {
-                            // Solo clientes que pueden realizar transacciones comerciales
-                            $query->whereIn('code', ['OPERATIVO', 'FINANCIERO_RESTRICTO']);
-                        })
-                        ->select('id', 'name', 'tax_id', 'email') 
-                        ->orderByRaw("CASE WHEN name = 'Consumidor Final' THEN 0 ELSE 1 END")
-                        ->orderBy('name')
-                        ->get()
-                        ->map(fn($client) => [
-                            'id'     => $client->id,
-                            'name'   => $client->name,
-                            'tax_id' => $client->tax_id ?? 'N/A',
-                            'email'  => $client->email,
-                        ]),
+            // (Fase 11, REQ-11.6: solo clientes activos pueden cotizar)
+            'customers' => Client::where('is_active', true)
+                ->select('id', 'name', 'tax_id', 'email')
+                ->orderByRaw("CASE WHEN name = 'Consumidor Final' THEN 0 ELSE 1 END")
+                ->orderBy('name')
+                ->get()
+                ->map(fn ($client) => [
+                    'id' => $client->id,
+                    'name' => $client->name,
+                    'tax_id' => $client->tax_id ?? 'N/A',
+                    'email' => $client->email,
+                ]),
             // Corregimos la carga de productos para usar InventoryStock y el nombre de columna 'price'
-            'products' => \App\Models\Inventory\InventoryStock::with(['product' => function($query) {
-                    $query->select('id', 'name', 'price', 'sku');
-                }])
+            'products' => \App\Models\Inventory\InventoryStock::with(['product' => function ($query) {
+                $query->select('id', 'name', 'price', 'sku');
+            }])
                 ->where('quantity', '>', 0)
                 ->get()
-                ->filter(fn($stock) => $stock->product !== null)
+                ->filter(fn ($stock) => $stock->product !== null)
                 ->map(function ($stock) {
                     return [
-                        'id'    => $stock->product_id,
-                        'name'  => $stock->product->name,
+                        'id' => $stock->product_id,
+                        'name' => $stock->product->name,
                         'price' => $stock->product->price, // Cambiado de sale_price a price
-                        'sku'   => $stock->product->sku,
+                        'sku' => $stock->product->sku,
                         'stock' => $stock->quantity,
                     ];
                 })->values()->toArray(),

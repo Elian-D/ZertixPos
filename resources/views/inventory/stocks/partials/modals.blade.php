@@ -109,11 +109,11 @@
                                 </div>
                                 <div class="flex justify-between border-b border-gray-50 pb-2">
                                     <span class="text-xs text-gray-500">Costo Unitario</span>
-                                    <span class="text-xs font-bold text-gray-700">${{ number_format($item->product->cost, 2) }}</span>
+                                    <span class="text-xs font-bold text-gray-700">{{ config('regional.currency_symbol') }}{{ number_format($item->product->cost, 2) }}</span>
                                 </div>
                                 <div class="flex justify-between border-b border-gray-50 pb-2">
                                     <span class="text-xs text-gray-500">Precio Venta</span>
-                                    <span class="text-xs font-bold text-emerald-600">${{ number_format($item->product->price, 2) }}</span>
+                                    <span class="text-xs font-bold text-emerald-600">{{ config('regional.currency_symbol') }}{{ number_format($item->product->price, 2) }}</span>
                                 </div>
                             </div>
                         </section>

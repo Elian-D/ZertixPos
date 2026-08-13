@@ -2,28 +2,25 @@
 
 namespace App\Models\Accounting;
 
+use App\Models\Sales\Sale;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DocumentType extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = [
-        'name', 
-        'code', 
-        'prefix', 
-        'current_number', 
-        'default_debit_account_id', 
-        'default_credit_account_id', 
-        'is_active'
-    ];
+    protected $fillable = ['name', 'code', 'prefix', 'current_number', 'is_active'];
+
+    /**
+     * Códigos que el propio sistema consulta por texto (SaleService, PaymentService...).
+     * Cambiar el 'code' de uno de estos rompería esas búsquedas hardcodeadas.
+     */
+    const SYSTEM_PROTECTED_CODES = ['FAC', 'PAG'];
 
     protected $casts = [
         'is_active' => 'boolean',
     ];
-
 
     protected static function booted()
     {
@@ -48,22 +45,28 @@ class DocumentType extends Model
     }
 
     /* ===========================
-     |  RELACIONES
-     =========================== */
-
-    public function defaultDebitAccount(): BelongsTo
-    {
-        return $this->belongsTo(AccountingAccount::class, 'default_debit_account_id');
-    }
-
-    public function defaultCreditAccount(): BelongsTo
-    {
-        return $this->belongsTo(AccountingAccount::class, 'default_credit_account_id');
-    }
-
-    /* ===========================
      |  LÓGICA DE NEGOCIO
      =========================== */
+
+    public function isSystemProtected(): bool
+    {
+        return in_array($this->code, self::SYSTEM_PROTECTED_CODES, true);
+    }
+
+    /**
+     * Indica si ya se emitió al menos un documento con este tipo — a partir de ahí
+     * el correlativo (current_number) deja de ser editable, para no comprometer la
+     * integridad de la numeración y de los NCF ya emitidos.
+     */
+    public function hasIssuedDocuments(): bool
+    {
+        return match ($this->code) {
+            'FAC' => Sale::where('document_type_id', $this->id)->exists(),
+            // Payment no guarda document_type_id; se identifica por el prefijo de su receipt_number.
+            'PAG' => Payment::where('receipt_number', 'like', $this->prefix.'-%')->exists(),
+            default => false,
+        };
+    }
 
     /**
      * Genera el siguiente número formateado (Ej: FAC-000001)
@@ -72,6 +75,7 @@ class DocumentType extends Model
     public function getNextNumberFormatted(): string
     {
         $next = $this->current_number + 1;
+
         return sprintf(
             '%s-%06d',
             strtoupper($this->prefix),
@@ -81,9 +85,6 @@ class DocumentType extends Model
 
     public function scopeWithIndexRelations($query)
     {
-        return $query->with([
-            'defaultDebitAccount:id,code,name',
-            'defaultCreditAccount:id,code,name',
-        ]);
+        return $query;
     }
 }

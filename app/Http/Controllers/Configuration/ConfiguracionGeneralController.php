@@ -2,45 +2,39 @@
 
 namespace App\Http\Controllers\Configuration;
 
+use App\Enums\TaxIdentifierType;
 use App\Http\Controllers\Controller;
 use App\Models\Configuration\ConfiguracionGeneral;
 use App\Models\Configuration\Impuesto;
-use App\Models\Configuration\TaxIdentifierType;
-use App\Models\Geo\Country;
-use App\Models\Geo\State;
+use App\Models\Geo\Municipality;
+use App\Models\Geo\Province;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class ConfiguracionGeneralController extends Controller
 {
-
-
-
     public function edit()
     {
         $config = ConfiguracionGeneral::actual();
-        $countries = Country::ordered()->get();
+        $provinces = Province::ordered()->get();
         $impuestos = Impuesto::all();
 
-        // Obtener estados del país configurado
-        $states = $config?->country_id
-            ? State::byCountry($config->country_id)->orderBy('name')->get()
-            : collect();
-        
-        //Obtener identificadores fiscales del país configurado
-        $taxTypes = $config?->country_id
-            ? TaxIdentifierType::byCountry($config->country_id)->get()
-            : collect();
+        // Precargado completo (~158 filas) — filtrado cascada provincia->municipio
+        // se hace en Alpine.js del lado del cliente, sin request AJAX (Fase 6.9).
+        $municipalities = Municipality::select('id', 'name', 'province_id')->orderBy('name')->get();
+
+        $taxTypes = collect(TaxIdentifierType::cases())
+            ->map(fn (TaxIdentifierType $type) => ['value' => $type->value, 'label' => $type->label()]);
 
         return view('configuration.general.edit', compact(
             'config',
-            'countries',
-            'states',
+            'provinces',
+            'municipalities',
             'taxTypes',
             'impuestos'
         ));
     }
-
 
     public function update(Request $request)
     {
@@ -50,42 +44,24 @@ class ConfiguracionGeneralController extends Controller
             'nombre_empresa' => 'required|string|max:255',
             'logo' => 'nullable|image|max:2048',
             'tax_id' => 'nullable|string|max:50',
+            'tax_identifier_type' => ['nullable', Rule::enum(TaxIdentifierType::class)],
             'telefono' => 'nullable|string|max:20',
             'email' => 'nullable|email|max:255',
             'direccion' => 'nullable|string',
-            'ciudad' => 'nullable|string|max:255',
-            'country_id' => 'required|exists:countries,id',
-
-            // Nuevo campo
-            'usa_ncf' => 'nullable|boolean',
-
+            'provincia_id' => 'required|exists:provinces,id',
+            'municipio_id' => 'nullable|exists:municipalities,id',
+            'dias_gracia_mora' => 'nullable|integer|min:0',
 
             'impuesto_nombre' => 'required|string|max:255',
-            'impuesto_tipo'   => 'required|in:porcentaje,fijo',
-            'impuesto_valor'  => 'required|numeric|min:0',
+            'impuesto_tipo' => 'required|in:porcentaje,fijo',
+            'impuesto_valor' => 'required|numeric|min:0',
             'impuesto_incluido' => 'nullable|boolean',
-
-            'state_id' => 'nullable|exists:states,id',
-            'tax_identifier_type_id' => 'nullable|exists:tax_identifier_types,id',
         ]);
 
-        $country = Country::findOrFail($validated['country_id']);
-        $state = $validated['state_id']
-            ? State::find($validated['state_id'])
-            : null;
-            
-        // Manejo del checkbox usa_ncf (si no llega en el request, es false)
-        $validated['usa_ncf'] = $request->has('usa_ncf');
-
-        // Moneda automática desde país
-        $validated['currency'] = $country->currency;
-        $validated['currency_name'] = $country->currency_name;
-        $validated['currency_symbol'] = $country->currency_symbol;
-
-        // Timezone (prioridad estado > país)
-        $validated['timezone'] = $state?->timezone
-            ?? json_decode($country->timezones, true)[0]['zoneName']
-            ?? config('app.timezone');
+        // El toggle de NCF (antes acá, 'ncf_enabled') se eliminó de esta pantalla
+        // (REQ-10.9) — el flag 'sales.ncf' del registro de módulos se administra
+        // desde Configuración → Funcionalidades del Sistema (REQ-10.6), un solo
+        // lugar para editarlo en vez de dos pantallas que podían desincronizarse.
 
         // Logo
         if ($request->hasFile('logo')) {
@@ -108,12 +84,12 @@ class ConfiguracionGeneralController extends Controller
             ['id' => $config?->impuesto_id], // Si existe lo edita, si no, crea uno nuevo
             [
                 'nombre' => $validated['impuesto_nombre'],
-                'tipo'   => $validated['impuesto_tipo'],
-                'valor'  => $validated['impuesto_valor'],
-                'es_incluido' => $request->has('impuesto_incluido')
+                'tipo' => $validated['impuesto_tipo'],
+                'valor' => $validated['impuesto_valor'],
+                'es_incluido' => $request->has('impuesto_incluido'),
             ]
         );
-    
+
         $validated['impuesto_id'] = $impuesto->id;
 
         ConfiguracionGeneral::updateOrCreate(['id' => 1], $validated);

@@ -2,14 +2,15 @@
 
 namespace App\Services\Sales\SalesServices;
 
-use App\Models\Sales\Sale;
+use App\Models\Accounting\AccountingAccount;
+use App\Models\Accounting\DocumentType;
 use App\Models\Clients\Client;
-use App\Models\Inventory\{Warehouse, InventoryStock};
-use App\Models\Accounting\{AccountingAccount, DocumentType};
 use App\Models\Configuration\TipoPago;
+use App\Models\Inventory\InventoryStock;
+use App\Models\Inventory\Warehouse;
 use App\Models\Sales\Pos\PosSession;
 use App\Models\Sales\Pos\PosTerminal;
-use Illuminate\Support\Facades\DB;
+use App\Models\Sales\Sale;
 
 class SaleCatalogService
 {
@@ -33,18 +34,17 @@ class SaleCatalogService
             'tipo_pagos' => TipoPago::sortByPriority(
                 TipoPago::activo()->select('id', 'nombre', 'slug')->get()
             ),
-            
+
             // Sesiones activas o recientes (últimos 30 días) para evitar saturación
             'pos_sessions' => PosSession::where('created_at', '>=', now()->subDays(30))
                 ->orderBy('id', 'desc')
                 ->pluck('id', 'id'), // O un formato más legible como "Sesión #ID (Fecha)"
-                
+
             'pos_terminals' => PosTerminal::select('id', 'name')
                 ->get()
                 ->pluck('name', 'id'),
-            
 
-            'statuses'      => Sale::getStatuses(),
+            'statuses' => Sale::getStatuses(),
         ];
     }
 
@@ -54,26 +54,25 @@ class SaleCatalogService
     public function getForForm(): array
     {
         return [
-            // 1. Clientes: Priorizando Consumidor Final
-            'clients' => Client::with('estadoCliente.categoria')
-                ->whereHas('estadoCliente.categoria', function ($query) {
-                    $query->whereIn('code', ['OPERATIVO', 'FINANCIERO_RESTRICTO']);
-                })
+            // 1. Clientes: Priorizando Consumidor Final — solo clientes operables
+            // (Fase 11, REQ-11.6: is_active reemplaza al estado de categoría;
+            // moroso es un cálculo aparte, ver Client::esMoroso()).
+            'clients' => Client::where('is_active', true)
                 // AGREGAMOS 'tax_id' AQUÍ ABAJO:
-                ->select('id', 'name', 'tax_id', 'credit_limit', 'balance', 'estado_cliente_id') 
+                ->select('id', 'name', 'tax_id', 'credit_limit', 'balance', 'is_active')
                 ->orderByRaw("CASE WHEN name = 'Consumidor Final' THEN 0 ELSE 1 END")
                 ->orderBy('name')
                 ->get()
                 ->map(function ($client) {
                     return [
-                        'id'           => $client->id,
-                        'name'         => $client->name,
-                        'tax_id'       => $client->tax_id, // Ahora esto ya no será null
+                        'id' => $client->id,
+                        'name' => $client->name,
+                        'tax_id' => $client->tax_id, // Ahora esto ya no será null
                         'credit_limit' => $client->credit_limit,
-                        'balance'      => $client->balance,
-                        'available'    => $client->credit_limit - $client->balance,
-                        'is_moroso'    => ($client->estadoCliente->categoria->code ?? '') === 'FINANCIERO_RESTRICTO',
-                        'status_name'  => $client->estadoCliente->nombre ?? 'N/A',
+                        'balance' => $client->balance,
+                        'available' => $client->credit_limit - $client->balance,
+                        'is_moroso' => $client->esMoroso(),
+                        'status_name' => $client->is_active ? 'Activo' : 'Inactivo',
                     ];
                 }),
 
@@ -83,21 +82,21 @@ class SaleCatalogService
 
             // 3. Productos con Stock: Relacionados con sus almacenes
             // Traemos los productos que tienen existencia en al menos un lugar
-            'products' => InventoryStock::with(['product' => function($query) {
+            'products' => InventoryStock::with(['product' => function ($query) {
                 $query->select('id', 'name', 'price');
             }])
-            ->where('quantity', '>', 0)
-            ->get()
-            ->filter(fn($stock) => $stock->product !== null) // Evita errores si un stock no tiene producto
-            ->map(function ($stock) {
-                return [
-                    'id'           => $stock->product_id,
-                    'name'         => $stock->product->name,
-                    'price'        => $stock->product->price,
-                    'warehouse_id' => $stock->warehouse_id,
-                    'stock'        => $stock->quantity,
-                ];
-            })->values()->toArray(),
+                ->where('quantity', '>', 0)
+                ->get()
+                ->filter(fn ($stock) => $stock->product !== null) // Evita errores si un stock no tiene producto
+                ->map(function ($stock) {
+                    return [
+                        'id' => $stock->product_id,
+                        'name' => $stock->product->name,
+                        'price' => $stock->product->price,
+                        'warehouse_id' => $stock->warehouse_id,
+                        'stock' => $stock->quantity,
+                    ];
+                })->values()->toArray(),
 
             // 4. Configuración de Documento (Para previsualizar el siguiente folio)
             'document_config' => DocumentType::where('code', 'FAC')
@@ -105,27 +104,27 @@ class SaleCatalogService
                 ->first(),
 
             'payment_types' => Sale::getPaymentTypes(),
-            
+
             // Cuenta contable para ventas al contado (Default: Caja)
             'default_cash_account' => AccountingAccount::where('code', '1.1.01')
                 ->select('id', 'name', 'code')
                 ->first(),
 
-            'ncf_types' => \App\Models\Sales\Ncf\NcfType::whereHas('sequences', function($q) {
-                    $q->where('status', \App\Models\Sales\Ncf\NcfSequence::STATUS_ACTIVE)
+            'ncf_types' => \App\Models\Sales\Ncf\NcfType::whereHas('sequences', function ($q) {
+                $q->where('status', \App\Models\Sales\Ncf\NcfSequence::STATUS_ACTIVE)
                     ->where('expiry_date', '>=', now())
                     ->whereColumn('current', '<', 'to');
-                })
+            })
                 ->get()
-                ->map(function($type) {
+                ->map(function ($type) {
                     return [
                         'id' => $type->id,
                         'name' => $type->name,
                         'code' => $type->code,
-                        'is_electronic' => $type->is_electronic
+                        'is_electronic' => $type->is_electronic,
                     ];
                 }),
-                
+
             'tipo_pagos' => TipoPago::sortByPriority(
                 TipoPago::activo()->select('id', 'nombre', 'slug', 'accounting_account_id')->get()
             ),

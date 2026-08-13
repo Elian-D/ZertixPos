@@ -20,6 +20,16 @@ return Application::configure(basePath: dirname(__DIR__))
             'pos.config.integrity' => \App\Http\Middleware\Sales\Pos\EnsurePosConfig::class,
             'pos.session' => \App\Http\Middleware\Sales\Pos\EnsurePosSession::class,
             'check.terminal.access' => \App\Http\Middleware\Sales\Pos\CheckTerminalAccess::class,
+
+            // Módulos base/satélite
+            'module' => \App\Http\Middleware\EnsureModuleEnabled::class,
+        ]);
+
+        // Corre antes que cualquier ruta del grupo 'web' — sin esto, una instalación
+        // recién migrada (sin ConfiguracionGeneral.nombre_empresa real) dejaría entrar
+        // a /login o /admin/* directo, sin pasar nunca por el Wizard (Fase 8).
+        $middleware->web(append: [
+            \App\Http\Middleware\EnsureInstallationWizardCompleted::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

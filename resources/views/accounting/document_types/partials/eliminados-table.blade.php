@@ -26,7 +26,7 @@
             <td class="px-6 py-4 text-right">
                 <div class="flex justify-end gap-2">
                     {{-- Botón Restaurar --}}
-                    <form action="{{ route('accounting.document_types.restaurar', $item->id) }}" method="POST">
+                    <form action="{{ route('configuration.document_types.restaurar', $item->id) }}" method="POST">
                         @csrf @method('PATCH')
                         <button type="submit" title="Restaurar Tipo de Documento" class="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors">
                             <x-heroicon-s-arrow-path class="w-5 h-5" />
@@ -60,7 +60,7 @@
         :id="$item->id"
         :title="'¿Borrar Documento Permanentemente?'"
         :itemName="$item->code . ' - ' . $item->name"
-        :route="route('accounting.document_types.borrarDefinitivo', $item->id)"
+        :route="route('configuration.document_types.borrarDefinitivo', $item->id)"
     >
         <div>
             <p class="text-sm text-red-600 font-bold uppercase tracking-tighter">Acción Irreversible</p>

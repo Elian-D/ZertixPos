@@ -57,13 +57,13 @@
                                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
                                     <span class="text-[10px] text-gray-400 uppercase font-bold block">Precio Venta</span>
                                     <p class="text-lg font-bold text-gray-800">
-                                        {{ general_config()->currency_symbol }} {{ number_format($item->price, 2) }}
+                                        {{ config('regional.currency_symbol') }} {{ number_format($item->price, 2) }}
                                     </p>
                                 </div>
                                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
                                     <span class="text-[10px] text-gray-400 uppercase font-bold block">Costo Base</span>
                                     <p class="text-lg font-bold text-gray-600">
-                                        {{ general_config()->currency_symbol }} {{ number_format($item->cost, 2) }}
+                                        {{ config('regional.currency_symbol') }} {{ number_format($item->cost, 2) }}
                                     </p>
                                 </div>
                             </div>

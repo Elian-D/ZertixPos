@@ -56,12 +56,17 @@
                                 <x-heroicon-s-building-library class="w-4 h-4"/> Integración Contable
                             </h4>
                             <div class="space-y-3">
-                                <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                                    <span class="text-[10px] text-gray-400 uppercase font-bold block">Cuenta de Caja</span>
-                                    <p class="text-sm font-bold text-gray-800">
-                                        {{ $item->cashAccount->code ?? 'N/A' }} - {{ $item->cashAccount->name ?? 'No vinculada' }}
-                                    </p>
-                                </div>
+                                {{-- Cuenta de Caja solo aplica con accounting.advanced activo
+                                     (REQ-02.16) — el checkout POS ya no depende de esta cuenta
+                                     desde REQ-02.9, así que no tiene sentido mostrarla apagado. --}}
+                                @if (module_enabled('accounting.advanced'))
+                                    <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                        <span class="text-[10px] text-gray-400 uppercase font-bold block">Cuenta de Caja</span>
+                                        <p class="text-sm font-bold text-gray-800">
+                                            {{ $item->cashAccount->code ?? 'N/A' }} - {{ $item->cashAccount->name ?? 'No vinculada' }}
+                                        </p>
+                                    </div>
+                                @endif
                                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
                                     <span class="text-[10px] text-gray-400 uppercase font-bold block">Almacén de Despacho</span>
                                     <p class="text-sm font-semibold text-gray-700">

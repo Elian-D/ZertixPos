@@ -17,10 +17,10 @@ return new class extends Migration
             // Tipo de cliente
             $table->string('type', 20); // individual / company
 
-            // Estado del cliente
-            $table->foreignId('estado_cliente_id')
-                ->constrained('estados_clientes')
-                ->restrictOnDelete();
+            // Estado de ciclo de vida — decisión manual, dos valores (Fase 11,
+            // REQ-11.3). El estado financiero (moroso) es un cálculo aparte,
+            // nunca almacenado — ver Client::esMoroso().
+            $table->boolean('is_active')->default(true);
 
             // Datos legales / contacto
             $table->string('name'); // Nombre del cliente o razón social
@@ -28,17 +28,13 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('phone')->nullable();
 
-            // Ubicación del cliente (geográfica, país heredado)
-            $table->unsignedMediumInteger('state_id');
-            $table->string('city', 100);
+            // Ubicación del cliente (RD-only, ver docs/features/v1.1.0.md Fase 6)
+            $table->foreignId('provincia_id')->constrained('provinces')->restrictOnDelete();
+            $table->foreignId('municipio_id')->nullable()->constrained('municipalities')->nullOnDelete();
             $table->string('address')->nullable();
 
-
             // Identificación fiscal
-            $table->foreignId('tax_identifier_type_id')
-                ->nullable()
-                ->constrained('tax_identifier_types')
-                ->nullOnDelete();
+            $table->string('tax_identifier_type')->nullable();
             $table->string('tax_id', 50)
                 ->nullable()
                 ->unique();
@@ -46,15 +42,10 @@ return new class extends Migration
             $table->timestamps();
             $table->softDeletes();
 
-            // Relaciones
-            $table->foreign('state_id')
-                ->references('id')->on('states')
-                ->restrictOnDelete();
-            
             // Índices
             $table->index('tax_id');
         });
-        ;
+
     }
 
     /**

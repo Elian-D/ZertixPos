@@ -36,29 +36,6 @@
                 </td>
             @endif
 
-            {{-- Cuentas por Defecto --}}
-            @if(in_array('default_debit', $visibleColumns))
-                <td class="px-6 py-4 text-xs">
-                    @if($type->defaultDebitAccount)
-                        <span class="font-bold text-gray-700 block">{{ $type->defaultDebitAccount->code }}</span>
-                        <span class="text-gray-400 truncate block max-w-[150px]">{{ $type->defaultDebitAccount->name }}</span>
-                    @else
-                        <span class="text-gray-300 italic">No configurada</span>
-                    @endif
-                </td>
-            @endif
-
-            @if(in_array('default_credit', $visibleColumns))
-                <td class="px-6 py-4 text-xs">
-                    @if($type->defaultCreditAccount)
-                        <span class="font-bold text-gray-700 block">{{ $type->defaultCreditAccount->code }}</span>
-                        <span class="text-gray-400 truncate block max-w-[150px]">{{ $type->defaultCreditAccount->name }}</span>
-                    @else
-                        <span class="text-gray-300 italic">No configurada</span>
-                    @endif
-                </td>
-            @endif
-
             {{-- Estado --}}
             @if(in_array('is_active', $visibleColumns))
                 <td class="px-6 py-4 text-center">
@@ -86,7 +63,7 @@
                     </button>
 
                     @can('edit document types')
-                        <a href="{{ route('accounting.document_types.edit', $type) }}" 
+                        <a href="{{ route('configuration.document_types.edit', $type) }}" 
                            class="text-indigo-600 hover:text-indigo-900 p-2 rounded-full hover:bg-indigo-50"
                            title="Editar">
                             <x-heroicon-s-pencil-square class="w-5 h-5" />

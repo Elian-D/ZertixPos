@@ -140,7 +140,7 @@
                                     <span class="text-[10px] text-indigo-400 uppercase font-bold block leading-none mb-1">Cliente Asociado</span>
                                     <p class="text-sm font-bold text-gray-800">{{ $item->client->name }}</p>
                                     <div class="flex items-center gap-2 mt-0.5">
-                                        <span class="text-[9px] px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded font-mono">{{ $item->client->taxIdentifierType->code ?? 'N/A' }}:  {{ $item->client->tax_id }}</span>
+                                        <span class="text-[9px] px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded font-mono">{{ $item->client->tax_label }}:  {{ $item->client->tax_id }}</span>
                                         <a href="{{ route('clients.edit', $item->client->id) }}" class="text-[9px] text-indigo-600 hover:underline font-bold uppercase">Ver Perfil</a>
                                     </div>
                                 </div>

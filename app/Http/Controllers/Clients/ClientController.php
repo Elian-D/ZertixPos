@@ -2,33 +2,28 @@
 
 namespace App\Http\Controllers\Clients;
 
-use App\Exports\Clients\ClientsTemplateExport;
-use App\Models\Clients\Client;
-use App\Models\Configuration\EstadosCliente;
-use App\Models\Geo\State;
-use App\Http\Controllers\Controller;
-use App\Traits\SoftDeletesTrait;
-use Illuminate\Http\Request;
-use App\Filters\Client\ClientFilters;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use App\Exports\Clients\ClientsExport;
+use App\Exports\Clients\ClientsTemplateExport;
+use App\Filters\Client\ClientFilters;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\Clients\BulkClientRequest;
 use App\Http\Requests\Clients\StoreClientRequest;
 use App\Http\Requests\Clients\UpdateClientRequest;
 use App\Imports\ClientsImport;
+use App\Models\Clients\Client;
 use App\Services\Client\ClientCatalogService;
 use App\Services\Client\ClientService;
 use App\Tables\ClientTable;
+use App\Traits\SoftDeletesTrait;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
-
 use Maatwebsite\Excel\Validators\ValidationException;
 
 class ClientController extends Controller
 {
     use SoftDeletesTrait;
-
-
 
     public function index(Request $request, ClientCatalogService $catalogService)
     {
@@ -45,24 +40,24 @@ class ClientController extends Controller
         // 3. Respuesta AJAX (Solo la tabla)
         if ($request->ajax()) {
             return view('clients.partials.table', [
-                'clients'        => $clients,
+                'clients' => $clients,
                 'visibleColumns' => $visibleColumns,
-                'allColumns'     => ClientTable::allColumns(),
+                'allColumns' => ClientTable::allColumns(),
                 'defaultDesktop' => ClientTable::defaultDesktop(),
-                'defaultMobile'  => ClientTable::defaultMobile(),
-                'bulkActions'    => true,
+                'defaultMobile' => ClientTable::defaultMobile(),
+                'bulkActions' => true,
             ])->render();
         }
 
         // 4. Respuesta Vista Completa
         return view('clients.index', array_merge(
             [
-                'clients'        => $clients,
+                'clients' => $clients,
                 'visibleColumns' => $visibleColumns,
-                'allColumns'     => ClientTable::allColumns(),
+                'allColumns' => ClientTable::allColumns(),
                 'defaultDesktop' => ClientTable::defaultDesktop(),
-                'defaultMobile'  => ClientTable::defaultMobile(),
-                'bulkActions'    => true,
+                'defaultMobile' => ClientTable::defaultMobile(),
+                'bulkActions' => true,
             ],
             $catalogService->getForFilters() // Inyecta states, taxIdentifierTypes, etc.
         ));
@@ -75,8 +70,8 @@ class ClientController extends Controller
     {
         try {
             $count = $clientService->performBulkAction(
-                $request->ids, 
-                $request->action, 
+                $request->ids,
+                $request->action,
                 $request->value
             );
 
@@ -87,30 +82,30 @@ class ClientController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => $message
+                'message' => $message,
             ]);
 
         } catch (\Exception $e) {
-            Log::error("Error en acción masiva de clientes: " . $e->getMessage());
+            Log::error('Error en acción masiva de clientes: '.$e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'message' => 'No se pudo completar la operación masiva.'
+                'message' => 'No se pudo completar la operación masiva.',
             ], 422);
         }
     }
 
     // Exportar clientes a Excel
-    public function export(Request $request) 
+    public function export(Request $request)
     {
         // 1. Aplicamos tus filtros existentes
         $query = (new ClientFilters($request))
-        ->apply(Client::query()->withIndexRelations());
+            ->apply(Client::query()->withIndexRelations());
 
-        // 2. IMPORTANTE: Ignoramos las columnas seleccionadas de la vista    
+        // 2. IMPORTANTE: Ignoramos las columnas seleccionadas de la vista
         return Excel::download(
-            new ClientsExport($query), 
-            'respaldo-clientes-' . now()->format('d-m-Y-h:ia') . '.xlsx'
+            new ClientsExport($query),
+            'respaldo-clientes-'.now()->format('d-m-Y-h:ia').'.xlsx'
         );
     }
 
@@ -131,7 +126,6 @@ class ClientController extends Controller
         return Excel::download(new ClientsTemplateExport, 'plantilla-importacion-clientes.xlsx');
     }
 
-
     /**
      * Procesa la importación
      */
@@ -144,17 +138,17 @@ class ClientController extends Controller
         try {
             // Desactivar logs temporalmente para máximo rendimiento
             DB::connection()->disableQueryLog();
-            
+
             Excel::import(new ClientsImport, $request->file('file'));
-            
+
             return redirect()
                 ->route('clients.index')
                 ->with('success', 'Importación completada exitosamente.');
-                
+
         } catch (ValidationException $e) {
             return back()->withErrors(['file' => $e->getMessage()]);
         } catch (\Exception $e) {
-            return back()->withErrors(['file' => 'Error en la importación: ' . $e->getMessage()]);
+            return back()->withErrors(['file' => 'Error en la importación: '.$e->getMessage()]);
         }
     }
 
@@ -172,7 +166,7 @@ class ClientController extends Controller
      */
     public function store(StoreClientRequest $request, ClientService $clientService)
     {
-        // El Request ya validó que el tax_identifier_type_id sea correcto
+        // El Request ya validó que el tax_identifier_type sea correcto
         $client = $clientService->createClient($request->validated());
 
         return redirect()
@@ -217,9 +211,28 @@ class ClientController extends Controller
     /* ===========================
      |  CONFIGURACIÓN DEL TRAIT
      =========================== */
-    protected function getModelClass(): string { return Client::class; }
-    protected function getViewFolder(): string { return 'clients'; }
-    protected function getRouteIndex(): string { return 'clients.index'; }
-    protected function getRouteEliminadas(): string { return 'clients.eliminados'; }
-    protected function getEntityName(): string { return 'Cliente'; }
+    protected function getModelClass(): string
+    {
+        return Client::class;
+    }
+
+    protected function getViewFolder(): string
+    {
+        return 'clients';
+    }
+
+    protected function getRouteIndex(): string
+    {
+        return 'clients.index';
+    }
+
+    protected function getRouteEliminadas(): string
+    {
+        return 'clients.eliminados';
+    }
+
+    protected function getEntityName(): string
+    {
+        return 'Cliente';
+    }
 }

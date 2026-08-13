@@ -2,6 +2,7 @@
 
 namespace App\Models\Sales;
 
+use App\Models\Accounting\Receivable;
 use App\Models\Clients\Client;
 use App\Models\Configuration\TipoPago;
 use App\Models\Inventory\Warehouse;
@@ -10,15 +11,17 @@ use App\Models\Sales\Pos\PosSession;
 use App\Models\Sales\Pos\PosTerminal;
 use App\Models\Sales\Quotes\Quote;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Sale extends Model
 {
-    use SoftDeletes;
+    use HasFactory, SoftDeletes;
 
     protected $fillable = [
         'document_type_id',
@@ -121,10 +124,8 @@ class Sale extends Model
 
     public function requiresNcf(): bool
     {
-        $config = general_config();
-
         // Si el sistema no usa NCF, nada lo requiere.
-        if (! $config?->usa_ncf) {
+        if (! module_enabled('sales.ncf')) {
             return false;
         }
 
@@ -219,5 +220,14 @@ class Sale extends Model
     public function ncfLog(): HasOne
     {
         return $this->hasOne(NcfLog::class, 'sale_id');
+    }
+
+    /**
+     * Única fuente de verdad del vencimiento de una venta a crédito (REQ-11.9) —
+     * Invoice y los tickets impresos leen su due_date de acá, nunca lo recalculan.
+     */
+    public function receivable(): MorphOne
+    {
+        return $this->morphOne(Receivable::class, 'reference');
     }
 }

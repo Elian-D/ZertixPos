@@ -3,28 +3,22 @@
 namespace App\Exports\Clients;
 
 use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithDefaultStyles;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\WithDefaultStyles;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\Style;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Style;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class ClientsExport implements 
-    FromQuery, 
-    WithHeadings, 
-    WithMapping, 
-    WithStyles, 
-    WithDefaultStyles,
-    WithColumnWidths
+class ClientsExport implements FromQuery, WithColumnWidths, WithDefaultStyles, WithHeadings, WithMapping, WithStyles
 {
     protected $query;
-    
-    private $statesCache = [];
-    private $estadosCache = [];
-    private $taxTypesCache = [];
+
+    private $provincesCache = [];
+
+    private $municipalitiesCache = [];
 
     public function __construct($query)
     {
@@ -34,9 +28,8 @@ class ClientsExport implements
 
     private function loadCaches()
     {
-        $this->statesCache = \App\Models\Geo\State::pluck('name', 'id')->toArray();
-        $this->estadosCache = \App\Models\Configuration\EstadosCliente::pluck('nombre', 'id')->toArray();
-        $this->taxTypesCache = \App\Models\Configuration\TaxIdentifierType::pluck('name', 'id')->toArray();
+        $this->provincesCache = \App\Models\Geo\Province::pluck('name', 'id')->toArray();
+        $this->municipalitiesCache = \App\Models\Geo\Municipality::pluck('name', 'id')->toArray();
     }
 
     public function query()
@@ -44,8 +37,8 @@ class ClientsExport implements
         return $this->query
             ->select([
                 'id', 'type', 'name', 'commercial_name', 'email', 'phone',
-                'state_id', 'city', 'address', 'tax_identifier_type_id', 'tax_id',
-                'estado_cliente_id', 'created_at', 'updated_at'
+                'provincia_id', 'municipio_id', 'address', 'tax_identifier_type', 'tax_id',
+                'is_active', 'created_at', 'updated_at',
             ])
             ->withoutGlobalScopes() // Desactiva scopes globales si tienes
             ->orderBy('id');
@@ -54,9 +47,9 @@ class ClientsExport implements
     public function headings(): array
     {
         return [
-            'tipo', 'nombre_o_razon_social', 'nombre_comercial', 'email', 
-            'telefono', 'provincia_estado', 'ciudad', 'direccion', 'tipo_identificacion', 
-            'rnc_cedula', 'estado_cliente', 'fecha_registro', 'ultima_actualizacion'
+            'tipo', 'nombre_o_razon_social', 'nombre_comercial', 'email',
+            'telefono', 'provincia_estado', 'ciudad', 'direccion', 'tipo_identificacion',
+            'rnc_cedula', 'activo', 'fecha_registro', 'ultima_actualizacion',
         ];
     }
 
@@ -64,19 +57,19 @@ class ClientsExport implements
     {
         // ✅ CRÍTICO: Convertir a array para evitar accessors
         $data = is_array($client) ? $client : $client->getAttributes();
-        
+
         return [
             $data['type'] === 'company' ? 'Empresa' : 'Individual',
             $data['name'],
             $data['commercial_name'] ?? '',
             $data['email'] ?? '',
             $data['phone'] ?? '',
-            $this->statesCache[$data['state_id']] ?? '',
-            $data['city'],
+            $this->provincesCache[$data['provincia_id']] ?? '',
+            $this->municipalitiesCache[$data['municipio_id']] ?? '',
             $data['address'] ?? '',
-            $this->taxTypesCache[$data['tax_identifier_type_id']] ?? '',
+            $data['tax_identifier_type'] ?? '',
             $data['tax_id'],
-            $this->estadosCache[$data['estado_cliente_id']] ?? '',
+            $data['is_active'] ? 'Sí' : 'No',
             \Carbon\Carbon::parse($data['created_at'])->format('d-m-Y H:i'),
             \Carbon\Carbon::parse($data['updated_at'])->format('d-m-Y H:i'),
         ];
@@ -104,7 +97,7 @@ class ClientsExport implements
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
                     'startColor' => ['argb' => '4F46E5'],
-                ]
+                ],
             ],
         ];
     }

@@ -39,10 +39,12 @@
                                     <x-heroicon-s-currency-dollar class="w-4 h-4"/>
                                     Contado
                                 </button>
-                                <button type="button" 
+                                <button type="button"
                                     @click="formData.payment_type = 'credit'; handlePaymentTypeChange()"
+                                    :disabled="!config.receivablesEnabled"
+                                    :title="!config.receivablesEnabled ? 'Cuentas por Cobrar está desactivado en Funcionalidades del Sistema' : ''"
                                     :class="formData.payment_type === 'credit' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'"
-                                    class="flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all">
+                                    class="flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed">
                                     <x-heroicon-s-credit-card class="w-4 h-4"/>
                                     Crédito
                                 </button>
@@ -81,7 +83,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100/50 flex items-center gap-4">
                             
-                            <template x-if="config.usa_ncf">
+                            <template x-if="config.ncfEnabled">
                                 <div class="flex-1">
                                     <x-input-label value="Comprobante Fiscal" class="mb-1 text-[10px] text-indigo-400 uppercase font-bold" />
                                     <select name="ncf_type_id" x-model="formData.ncf_type_id"
@@ -94,7 +96,7 @@
                                 </div>
                             </template>
 
-                            <template x-if="!config.usa_ncf">
+                            <template x-if="!config.ncfEnabled">
                                 <div class="flex-1">
                                     <x-input-label value="Tipo de Documento" class="mb-1 text-[10px] text-gray-400 uppercase font-bold" />
                                     <div class="text-sm font-black text-gray-600 uppercase tracking-tight">
@@ -317,13 +319,13 @@
                                     <div>
                                         <label class="text-[10px] font-bold text-gray-400 uppercase block mb-1">Efectivo Recibido</label>
                                         <div class="relative">
-                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-mono">$</span>
+                                            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 font-mono">{{ config('regional.currency_symbol') }}</span>
                                             <input type="number" 
                                                 name="cash_received" 
                                                 x-model.number="formData.cash_received" 
                                                 @input="calculateChange()" 
                                                 step="0.01"
-                                                class="w-full bg-white/5 border-white/10 rounded-lg pl-7 py-2 text-lg font-mono focus:ring-indigo-500 focus:bg-white/10 transition-all">
+                                                class="w-full bg-white/5 border-white/10 rounded-lg pl-14 py-2 text-lg font-mono focus:ring-indigo-500 focus:bg-white/10 transition-all">
                                         </div>
                                     </div>
                                 </template>
@@ -395,7 +397,8 @@
                 config: {
                     tax_rate: {{ general_config()->impuesto->valor ?? 0 }},
                     apply_tax: false,
-                    usa_ncf: {{ general_config()->usa_ncf ? 'true' : 'false' }}
+                    ncfEnabled: {{ module_enabled('sales.ncf') ? 'true' : 'false' }},
+                    receivablesEnabled: {{ module_enabled('sales.receivables') ? 'true' : 'false' }}
                 },
                 formData: {
                     payment_type: 'cash',
@@ -412,7 +415,7 @@
                 totals: { gross: 0, net: 0, subtotal: 0, tax: 0, total: 0 },
 
                 init() {
-                    if (!this.config.usa_ncf) {
+                    if (!this.config.ncfEnabled) {
                         this.formData.ncf_type_id = null;
                     }
                     this.$watch('formData.ncf_type_id', () => this.validateNcfAndClient());
@@ -473,7 +476,7 @@
                     const hasItems = this.items.length > 0;
                     const hasTotal = this.totals.total > 0;
 
-                    if (this.config.usa_ncf && this.ncfRequiresRnc) return true;
+                    if (this.config.ncfEnabled && this.ncfRequiresRnc) return true;
 
                     if (this.formData.payment_type === 'credit') {
                         return !hasItems || !this.selectedClient || this.selectedClient.is_moroso || this.exceedsCreditLimit;
@@ -613,7 +616,7 @@
                 },
 
                 formatMoney(amount) {
-                    return '$' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2 }).format(amount);
+                    return '{{ config('regional.currency_symbol') }}' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2 }).format(amount);
                 }
             }
         }

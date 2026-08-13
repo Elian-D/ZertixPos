@@ -15,7 +15,7 @@
       encima de un input pequeño para cambiar la cantidad.
 --}}
 @php $qtyBtn = ($touch ?? false) ? 'w-8 h-8' : 'w-6 h-7'; @endphp
-<div class="py-3" :class="item.is_stockable && item.quantity > item.stock ? 'bg-red-50/50 -mx-4 px-4 rounded-lg' : ''">
+<div class="py-3" :class="inventoryTrackingEnabled && item.is_stockable && item.quantity > item.stock ? 'bg-red-50/50 -mx-4 px-4 rounded-lg' : ''">
     <div class="flex justify-between items-start gap-2">
         <div class="min-w-0">
             <p class="text-sm font-bold text-gray-800 truncate" x-text="item.name"></p>
@@ -57,7 +57,7 @@
         <span class="flex-1 text-right text-xs font-bold text-gray-700" x-text="formatMoney(item.price * item.quantity)"></span>
     </div>
 
-    <template x-if="item.is_stockable && item.quantity > item.stock">
+    <template x-if="inventoryTrackingEnabled && item.is_stockable && item.quantity > item.stock">
         <p class="text-[10px] text-red-600 font-bold mt-1">Stock insuficiente (disp. <span x-text="item.stock"></span>)</p>
     </template>
 </div>

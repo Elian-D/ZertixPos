@@ -37,8 +37,8 @@
                     <img src="{{ storage_path('app/public/' . $config->logo) }}" class="logo">
                 @endif
                 <h2>{{ $config->nombre_empresa ?? 'Plaza Merengue SRL' }}</h2>
-                <p><strong>{{ $config->taxIdentifierType->code ?? 'RNC' }}:</strong> {{ $config->tax_id ?? 'N/A' }}</p>
-                <p>{{ $config->direccion ?? 'Dirección no configurada' }}, {{ $config->ciudad ?? '' }}</p>
+                <p><strong>{{ $config->tax_identifier_type?->value ?? 'RNC' }}:</strong> {{ $config->tax_id ?? 'N/A' }}</p>
+                <p>{{ $config->direccion ?? 'Dirección no configurada' }}, {{ $config->municipio->name ?? $config->provincia->name ?? '' }}</p>
                 <p>Tel: {{ $config->telefono ?? 'N/A' }} | Email: {{ $config->email ?? 'N/A' }}</p>
             </td>
             <td class="text-right" style="width: 40%; vertical-align: top;">
@@ -79,7 +79,7 @@
                 <td>{{ $payment->tipoPago->nombre }}</td>
                 <td>{{ $payment->reference ?? 'N/A' }}</td>
                 <td class="text-right total-amount">
-                    {{ $config->currency_symbol ?? '$' }} {{ number_format($payment->amount, 2) }}
+                    {{ config('regional.currency_symbol') }} {{ number_format($payment->amount, 2) }}
                 </td>
             </tr>
         </tbody>
@@ -90,14 +90,14 @@
             <tr>
                 <td style="width: 65%;">
                     <p style="font-size: 11px; color: #6b7280;">
-                        <strong>Balance Pendiente Factura:</strong> {{ $config->currency_symbol ?? '$' }} {{ number_format($payment->receivable->current_balance, 2) }}<br>
-                        <strong>Balance Total Cliente:</strong> {{ $config->currency_symbol ?? '$' }} {{ number_format($payment->client->balance, 2) }}
+                        <strong>Balance Pendiente Factura:</strong> {{ config('regional.currency_symbol') }} {{ number_format($payment->receivable->current_balance, 2) }}<br>
+                        <strong>Balance Total Cliente:</strong> {{ config('regional.currency_symbol') }} {{ number_format($payment->client->balance, 2) }}
                     </p>
                 </td>
                 <td class="text-right">
                     <div style="background: #f3f4f6; padding: 10px; border-radius: 4px; border: 1px solid #e5e7eb;">
                         <small>TOTAL</small><br>
-                        <span class="total-amount">{{ $config->currency_symbol ?? '$' }} {{ number_format($payment->amount, 2) }}</span>
+                        <span class="total-amount">{{ config('regional.currency_symbol') }} {{ number_format($payment->amount, 2) }}</span>
                     </div>
                 </td>
             </tr>

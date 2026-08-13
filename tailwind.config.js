@@ -31,6 +31,13 @@ export default {
     
     theme: {
         extend: {
+            colors: {
+                'zertix-primary': {
+                    DEFAULT: '#7AC943', // verde de marca — CTAs, estados activos
+                    dark: '#538331',    // hover/pressed — lo que en la guía de Stitch aparece como "Tertiary"
+                },
+                'zertix-secondary': '#1E4F8C', // navy del logo — usar como acento, no como color dominante
+            },
             fontFamily: {
                 sans: ['Poppins', ...defaultTheme.fontFamily.sans],
             },

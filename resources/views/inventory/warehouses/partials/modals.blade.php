@@ -130,37 +130,40 @@
 
                 {{-- Columna Derecha: Configuración Contable --}}
                 <div class="space-y-6">
-                    {{-- Card Informativa de Cuenta Contable --}}
-                    <div class="p-5 bg-slate-900 rounded-2xl shadow-lg relative overflow-hidden">
-                        <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl"></div>
-                        
-                        <span class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest block mb-4">Enlace Contable (Kardex)</span>
-                        
-                        <div class="flex items-start gap-3">
-                            <div class="p-2 bg-white/10 rounded-lg">
-                                <x-heroicon-s-book-open class="w-5 h-5 text-white"/>
-                            </div>
-                            <div>
-                                @if($item->accountingAccount)
-                                    <p class="text-sm font-mono font-bold text-white tracking-wider">
-                                        {{ $item->accountingAccount->code }}
-                                    </p>
-                                    <p class="text-[11px] text-indigo-200 font-medium leading-tight mt-1">
-                                        {{ $item->accountingAccount->name }}
-                                    </p>
-                                @else
-                                    <p class="text-xs text-amber-400 italic">Sin cuenta vinculada</p>
-                                @endif
-                            </div>
-                        </div>
+                    {{-- Card Informativa de Cuenta Contable — solo con accounting.advanced activo
+                         (REQ-02.12), un almacén no depende de Contabilidad para nada más. --}}
+                    @if (module_enabled('accounting.advanced'))
+                        <div class="p-5 bg-slate-900 rounded-2xl shadow-lg relative overflow-hidden">
+                            <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl"></div>
 
-                        <hr class="border-white/10 my-4">
-                        
-                        <div class="flex justify-between items-center">
-                            <span class="text-[9px] text-white/50 uppercase font-bold">Uso de Cuenta:</span>
-                            <span class="px-2 py-0.5 bg-indigo-500/20 text-[9px] text-indigo-200 rounded border border-indigo-500/30 font-black">ACTIVO CIRCULANTE</span>
+                            <span class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest block mb-4">Enlace Contable (Kardex)</span>
+
+                            <div class="flex items-start gap-3">
+                                <div class="p-2 bg-white/10 rounded-lg">
+                                    <x-heroicon-s-book-open class="w-5 h-5 text-white"/>
+                                </div>
+                                <div>
+                                    @if($item->accountingAccount)
+                                        <p class="text-sm font-mono font-bold text-white tracking-wider">
+                                            {{ $item->accountingAccount->code }}
+                                        </p>
+                                        <p class="text-[11px] text-indigo-200 font-medium leading-tight mt-1">
+                                            {{ $item->accountingAccount->name }}
+                                        </p>
+                                    @else
+                                        <p class="text-xs text-amber-400 italic">Sin cuenta vinculada</p>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <hr class="border-white/10 my-4">
+
+                            <div class="flex justify-between items-center">
+                                <span class="text-[9px] text-white/50 uppercase font-bold">Uso de Cuenta:</span>
+                                <span class="px-2 py-0.5 bg-indigo-500/20 text-[9px] text-indigo-200 rounded border border-indigo-500/30 font-black">ACTIVO CIRCULANTE</span>
+                            </div>
                         </div>
-                    </div>
+                    @endif
 
                     {{-- Indicador de Stock --}}
                     <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 flex items-center justify-between">

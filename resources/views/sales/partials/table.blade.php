@@ -117,7 +117,7 @@
             {{-- Total Venta --}}
             @if(in_array('total_amount', $visibleColumns))
                 <td class="px-6 py-4 text-sm text-right font-bold text-gray-900">
-                    <span class="text-[10px] font-normal text-gray-400 mr-1">$</span>{{ number_format($sale->total_amount, 2) }}
+                    <span class="text-[10px] font-normal text-gray-400 mr-1">{{ config('regional.currency_symbol') }}</span>{{ number_format($sale->total_amount, 2) }}
                 </td>
             @endif
 

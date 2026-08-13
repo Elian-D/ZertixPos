@@ -80,25 +80,25 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">
             <x-dashboard.kpi-card 
                 title="Efectivo Disponible" 
-                :value="'$' . number_format($stats['cash_balance'], 2)" 
+                :value="config('regional.currency_symbol') . number_format($stats['cash_balance'], 2)" 
                 icon="banknotes" color="green" 
             />
 
             <x-dashboard.kpi-card 
                 title="Cuentas por Cobrar" 
-                :value="'$' . number_format($stats['cxc_balance'], 2)" 
+                :value="config('regional.currency_symbol') . number_format($stats['cxc_balance'], 2)" 
                 icon="user-group" color="blue" secondary-text="Pendiente de cobro"
             />
 
             <x-dashboard.kpi-card 
                 title="Patrimonio en Productos" 
-                :value="'$' . number_format($stats['inventory_value'], 2)" 
+                :value="config('regional.currency_symbol') . number_format($stats['inventory_value'], 2)" 
                 icon="square-3-stack-3d" color="indigo" secondary-text="Valor en almacenes"
             />
 
             <x-dashboard.kpi-card 
                 title="Utilidad Bruta" 
-                :value="'$' . number_format($stats['gross_profit'], 2)" 
+                :value="config('regional.currency_symbol') . number_format($stats['gross_profit'], 2)" 
                 icon="chart-bar" 
                 color="{{ $stats['gross_profit'] >= 0 ? 'green' : 'red' }}" 
                 :trend="number_format($stats['profit_margin'], 1) . '% Margen'"
@@ -106,7 +106,7 @@
 
             <x-dashboard.kpi-card 
                 title="Cuentas por Pagar" 
-                :value="'$' . number_format($stats['cxp_balance'], 2)" 
+                :value="config('regional.currency_symbol') . number_format($stats['cxp_balance'], 2)" 
                 icon="credit-card" color="red" secondary-text="Deuda a proveedores"
             />
 
@@ -189,7 +189,7 @@
                                 <div class="text-[11px] text-gray-400 font-normal">Registrado por {{ $entry->creator->name }}</div>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <span class="font-bold text-gray-900">${{ number_format($entry->total_debit ?? 0, 2) }}</span>
+                                <span class="font-bold text-gray-900">{{ config('regional.currency_symbol') }}{{ number_format($entry->total_debit ?? 0, 2) }}</span>
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold {{ $entry->status === 'posted' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
@@ -245,7 +245,7 @@
                         plotOptions: { bar: { columnWidth: '60%' } },
                         dataLabels: { enabled: false },
                         xaxis: { categories: chartsData.performance.labels },
-                        yaxis: { labels: { formatter: (val) => '$' + val.toLocaleString() } },
+                        yaxis: { labels: { formatter: (val) => '{{ config('regional.currency_symbol') }}' + val.toLocaleString() } },
                         legend: { position: 'top' }
                     });
                     perfChart.render();
@@ -279,7 +279,7 @@
                         fill: { type: 'gradient', gradient: { shadeIntensity: 1, opacityFrom: 0.4, opacityTo: 0.1 } },
                         dataLabels: { enabled: false },
                         xaxis: { categories: chartsData.cashflow.labels },
-                        yaxis: { labels: { formatter: (val) => '$' + val.toLocaleString() } },
+                        yaxis: { labels: { formatter: (val) => '{{ config('regional.currency_symbol') }}' + val.toLocaleString() } },
                         legend: { position: 'top' }
                     });
                     cashflowChart.render();

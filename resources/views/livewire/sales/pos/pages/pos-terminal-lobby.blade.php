@@ -120,7 +120,7 @@
                 <label for="opening_balance" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Fondo de Caja Inicial</label>
                 <div class="relative rounded-xl">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <span class="text-gray-400 font-semibold text-sm">RD$</span>
+                        <span class="text-gray-400 font-semibold text-sm">{{ config('regional.currency_symbol') }}</span>
                     </div>
                     <input type="number"
                            step="0.01"

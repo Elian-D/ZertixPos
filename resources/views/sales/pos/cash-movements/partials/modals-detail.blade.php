@@ -45,7 +45,7 @@
                         <div class="p-3 rounded-lg border {{ $movement->type === 'in' ? 'bg-green-50 border-green-100' : 'bg-amber-50 border-amber-100' }}">
                             <span class="text-[10px] {{ $movement->type === 'in' ? 'text-green-500' : 'text-amber-500' }} uppercase font-bold block">Monto Registrado</span>
                             <p class="text-xl font-black {{ $movement->type === 'in' ? 'text-green-700' : 'text-amber-700' }}">
-                                {{ $movement->type === 'in' ? '+' : '-' }} ${{ number_format($movement->amount, 2) }}
+                                {{ $movement->type === 'in' ? '+' : '-' }} {{ config('regional.currency_symbol') }}{{ number_format($movement->amount, 2) }}
                             </p>
                         </div>
                     </div>

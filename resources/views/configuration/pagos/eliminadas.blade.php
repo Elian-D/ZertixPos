@@ -1,4 +1,4 @@
-<x-config-layout>
+<x-app-layout>
 
     <div class="max-w-7xl mx-auto">
         <div class="bg-white shadow-xl rounded-lg p-6">
@@ -126,4 +126,4 @@
         </x-modal>
     @endforeach
 
-</x-config-layout>
+</x-app-layout>

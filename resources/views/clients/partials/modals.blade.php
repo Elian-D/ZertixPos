@@ -26,10 +26,17 @@
                             </div>
                         </div>
                     </div>
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ring-1 ring-inset shadow-sm {{ $client->estadoCliente->clase_fondo }} {{ $client->estadoCliente->clase_texto }} ring-black/5">
-                        <span class="w-1.5 h-1.5 rounded-full mr-2 bg-current animate-pulse"></span>
-                        {{ $client->estadoCliente->nombre }}
-                    </span>
+                    <div class="flex items-center gap-2">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ring-1 ring-inset shadow-sm {{ $client->is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500' }} ring-black/5">
+                            <span class="w-1.5 h-1.5 rounded-full mr-2 bg-current animate-pulse"></span>
+                            {{ $client->is_active ? 'Activo' : 'Inactivo' }}
+                        </span>
+                        @if($client->esMoroso())
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-50 text-red-600 ring-1 ring-red-200">
+                                Moroso
+                            </span>
+                        @endif
+                    </div>
                 </div>
             </div>
 
@@ -46,17 +53,19 @@
                                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
                                     <span class="text-[10px] text-gray-400 uppercase font-bold block">Tipo y Documento</span>
                                     <p class="text-sm font-semibold text-gray-700">
-                                        {{ $client->taxIdentifierType->name ?? 'N/A' }}: 
+                                        {{ $client->tax_label }}:
                                         <span class="text-indigo-600 ml-1 font-mono">{{ $client->tax_id ?? 'N/A' }}</span>
                                     </p>
                                 </div>
-                                <div class="bg-indigo-50/30 p-3 rounded-lg border border-indigo-100/50">
-                                    <span class="text-[10px] text-indigo-400 uppercase font-bold block">Cuenta Contable</span>
-                                    <p class="text-sm font-bold text-indigo-900">
-                                        {{ $client->accountingAccount->name ?? 'Cuentas por Cobrar Clientes' }}
-                                        <span class="block text-[10px] font-normal text-indigo-500">{{ $client->accountingAccount->code ?? '1102-01' }}</span>
-                                    </p>
-                                </div>
+                                @if (module_enabled('accounting.advanced'))
+                                    <div class="bg-indigo-50/30 p-3 rounded-lg border border-indigo-100/50">
+                                        <span class="text-[10px] text-indigo-400 uppercase font-bold block">Cuenta Contable</span>
+                                        <p class="text-sm font-bold text-indigo-900">
+                                            {{ $client->accountingAccount->name ?? 'Cuentas por Cobrar Clientes' }}
+                                            <span class="block text-[10px] font-normal text-indigo-500">{{ $client->accountingAccount->code ?? '1102-01' }}</span>
+                                        </p>
+                                    </div>
+                                @endif
                             </div>
                         </section>
 
@@ -74,21 +83,21 @@
                                         @endif
                                         <span class="text-[10px] text-gray-400 uppercase font-bold block">Saldo Actual</span>
                                         <p class="text-sm font-black {{ $client->balance > $client->credit_limit ? 'text-red-600' : ($client->balance > 0 ? 'text-amber-600' : 'text-emerald-600') }}">
-                                            ${{ number_format($client->balance, 2) }}
+                                            {{ config('regional.currency_symbol') }}{{ number_format($client->balance, 2) }}
                                         </p>
                                     </div>
 
                                     {{-- Límite --}}
                                     <div class="bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
                                         <span class="text-[10px] text-gray-400 uppercase font-bold block">Límite Autorizado</span>
-                                        <p class="text-sm font-bold text-gray-700">${{ number_format($client->credit_limit, 2) }}</p>
+                                        <p class="text-sm font-bold text-gray-700">{{ config('regional.currency_symbol') }}{{ number_format($client->credit_limit, 2) }}</p>
                                     </div>
 
                                     {{-- Alerta de Exceso (Solo si aplica) --}}
                                     @if($client->balance > $client->credit_limit)
                                         <div class="col-span-2 bg-red-50 border border-red-100 p-2 rounded flex items-center gap-2">
                                             <x-heroicon-s-exclamation-triangle class="w-4 h-4 text-red-600"/>
-                                            <span class="text-[10px] font-bold text-red-700 uppercase">El cliente ha superado su límite por ${{ number_format($client->balance - $client->credit_limit, 2) }}</span>
+                                            <span class="text-[10px] font-bold text-red-700 uppercase">El cliente ha superado su límite por {{ config('regional.currency_symbol') }}{{ number_format($client->balance - $client->credit_limit, 2) }}</span>
                                         </div>
                                     @endif
 
@@ -118,7 +127,7 @@
                             <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 space-y-2">
                                 <div>
                                     <span class="text-[10px] text-gray-400 uppercase block">Provincia y Ciudad</span>
-                                    <p class="text-sm font-medium">{{ $client->state->name ?? 'N/A' }}, {{ $client->city }}</p>
+                                    <p class="text-sm font-medium">{{ $client->provincia->name ?? 'N/A' }}, {{ $client->municipio->name ?? 'N/A' }}</p>
                                 </div>
                                 <div>
                                     <span class="text-[10px] text-gray-400 uppercase block">Dirección</span>

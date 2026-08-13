@@ -2,13 +2,13 @@
 
 namespace App\Services\Inventory;
 
+use App\Models\Accounting\AccountingAccountRole;
+use App\Models\Accounting\JournalEntry;
 use App\Models\Inventory\InventoryMovement;
 use App\Models\Inventory\InventoryStock;
-use App\Models\Accounting\JournalEntry;
-use App\Models\Accounting\AccountingAccount;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
 use Exception;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class InventoryMovementService
 {
@@ -25,11 +25,11 @@ class InventoryMovementService
             $previousStock = $stock->quantity;
             $type = $data['type'];
             $rawQty = $data['quantity'];
-            $absQty = abs($rawQty); 
+            $absQty = abs($rawQty);
 
             $isNegativeOperation = in_array($type, [
-                InventoryMovement::TYPE_OUTPUT, 
-                InventoryMovement::TYPE_TRANSFER
+                InventoryMovement::TYPE_OUTPUT,
+                InventoryMovement::TYPE_TRANSFER,
             ]);
 
             // 2. Cálculo de Stock Físico
@@ -40,22 +40,22 @@ class InventoryMovementService
             }
 
             if ($newStockQuantity < 0) {
-                throw new Exception("Stock insuficiente en el almacén de origen.");
+                throw new Exception('Stock insuficiente en el almacén de origen.');
             }
 
             // 3. Crear el Movimiento Físico
             $movement = InventoryMovement::create([
-                'warehouse_id'    => $data['warehouse_id'],
+                'warehouse_id' => $data['warehouse_id'],
                 'to_warehouse_id' => $data['to_warehouse_id'] ?? null,
-                'product_id'      => $data['product_id'],
-                'user_id'         => Auth::id(),
-                'quantity'        => ($type === InventoryMovement::TYPE_ADJUSTMENT) ? $rawQty : ($isNegativeOperation ? -$absQty : $absQty),
-                'type'            => $type,
-                'previous_stock'  => $previousStock,
-                'current_stock'   => $newStockQuantity,
-                'description'     => $data['description'],
-                'reference_type'  => $data['reference_type'] ?? null,
-                'reference_id'    => $data['reference_id'] ?? null,
+                'product_id' => $data['product_id'],
+                'user_id' => Auth::id(),
+                'quantity' => ($type === InventoryMovement::TYPE_ADJUSTMENT) ? $rawQty : ($isNegativeOperation ? -$absQty : $absQty),
+                'type' => $type,
+                'previous_stock' => $previousStock,
+                'current_stock' => $newStockQuantity,
+                'description' => $data['description'],
+                'reference_type' => $data['reference_type'] ?? null,
+                'reference_id' => $data['reference_id'] ?? null,
             ]);
 
             $stock->update(['quantity' => $newStockQuantity]);
@@ -72,75 +72,85 @@ class InventoryMovementService
         });
     }
 
-private function generateAccountingEntry(InventoryMovement $movement, $product, $quantity)
-{
-    $totalValue = $quantity * $product->cost;
-    if ($totalValue <= 0) return; 
+    private function generateAccountingEntry(InventoryMovement $movement, $product, $quantity)
+    {
+        // Sin contabilidad avanzada, un movimiento de inventario no necesita asiento —
+        // es una operación base (Sale/InventoryMovement bastan para reportar).
+        if (! module_enabled('accounting.advanced')) {
+            return;
+        }
 
-    // Cuentas fijas
-    $cashAccount = AccountingAccount::where('code', '1.1.01')->first(); 
-    $costOfSalesAccount = AccountingAccount::where('code', '5.1')->first(); 
-    $productionAccount = AccountingAccount::where('code', '5.2')->first(); // Costo de Producción propia
+        $totalValue = $quantity * $product->cost;
+        if ($totalValue <= 0) {
+            return;
+        }
 
-    $entry = JournalEntry::create([
-        'entry_date'  => now(),
-        'reference'   => "INV-MOV-{$movement->id}",
-        'description' => "{$movement->type_label}: {$product->name}",
-        'status'      => JournalEntry::STATUS_POSTED,
-        'created_by'  => Auth::id(),
-    ]);
+        // Cuentas resueltas por rol (antes hardcodeadas por código)
+        $cashAccountId = AccountingAccountRole::resolve('cash_default');
+        $costOfSalesAccountId = AccountingAccountRole::resolve('cost_of_sales');
+        $productionAccountId = AccountingAccountRole::resolve('production_cost');
 
-    switch ($movement->type) {
-        case InventoryMovement::TYPE_INPUT:
-            // Diferenciamos si es Compra o Producción
-            if ($movement->reference_type === 'Production') {
-                $this->createItem($entry, $movement->warehouse->accounting_account_id, $totalValue, 0, "Entrada por producción");
-                $this->createItem($entry, $productionAccount->id, 0, $totalValue, "Costo de producción propia");
-            } else {
-                $this->createItem($entry, $movement->warehouse->accounting_account_id, $totalValue, 0, "Compra de mercancía");
-                $this->createItem($entry, $cashAccount->id, 0, $totalValue, "Pago en efectivo");
-            }
-            break;
+        $entry = JournalEntry::create([
+            'entry_date' => now(),
+            'reference' => "INV-MOV-{$movement->id}",
+            'description' => "{$movement->type_label}: {$product->name}",
+            'status' => JournalEntry::STATUS_POSTED,
+            'created_by' => Auth::id(),
+        ]);
 
-        case InventoryMovement::TYPE_OUTPUT:
-            // La salida de inventario es el COSTO, no la VENTA.
-            $this->createItem($entry, $costOfSalesAccount->id, $totalValue, 0, "Costo de ventas devengado");
-            $this->createItem($entry, $movement->warehouse->accounting_account_id, 0, $totalValue, "Salida física de inventario");
-            break;
+        switch ($movement->type) {
+            case InventoryMovement::TYPE_INPUT:
+                // Diferenciamos si es Compra o Producción
+                if ($movement->reference_type === 'Production') {
+                    $this->createItem($entry, $movement->warehouse->accounting_account_id, $totalValue, 0, 'Entrada por producción');
+                    $this->createItem($entry, $productionAccountId, 0, $totalValue, 'Costo de producción propia');
+                } else {
+                    $this->createItem($entry, $movement->warehouse->accounting_account_id, $totalValue, 0, 'Compra de mercancía');
+                    $this->createItem($entry, $cashAccountId, 0, $totalValue, 'Pago en efectivo');
+                }
+                break;
 
-        case InventoryMovement::TYPE_TRANSFER:
-            // Reclasificación entre almacenes
-            $this->createItem($entry, $movement->toWarehouse->accounting_account_id, $totalValue, 0, "Entrada por traspaso");
-            $this->createItem($entry, $movement->warehouse->accounting_account_id, 0, $totalValue, "Salida por traspaso");
-            break;
+            case InventoryMovement::TYPE_OUTPUT:
+                // La salida de inventario es el COSTO, no la VENTA.
+                $this->createItem($entry, $costOfSalesAccountId, $totalValue, 0, 'Costo de ventas devengado');
+                $this->createItem($entry, $movement->warehouse->accounting_account_id, 0, $totalValue, 'Salida física de inventario');
+                break;
 
-        case InventoryMovement::TYPE_ADJUSTMENT:
-            if ($movement->quantity > 0) {
-                // --- CAMBIO AQUÍ ---
-                // Si el ajuste viene de una anulación de Venta, afectamos Costo de Ventas
-                $contraAccount = ($movement->reference_type === \App\Models\Sales\Sale::class) 
-                    ? $costOfSalesAccount->id 
-                    : $productionAccount->id;
+            case InventoryMovement::TYPE_TRANSFER:
+                // Reclasificación entre almacenes
+                $this->createItem($entry, $movement->toWarehouse->accounting_account_id, $totalValue, 0, 'Entrada por traspaso');
+                $this->createItem($entry, $movement->warehouse->accounting_account_id, 0, $totalValue, 'Salida por traspaso');
+                break;
 
-                $this->createItem($entry, $movement->warehouse->accounting_account_id, $totalValue, 0, "Reingreso de inventario");
-                $this->createItem($entry, $contraAccount, 0, $totalValue, "Reversión de costo/ajuste positivo");
-            } else {
-                $this->createItem($entry, $costOfSalesAccount->id, $totalValue, 0, "Gasto por merma o pérdida");
-                $this->createItem($entry, $movement->warehouse->accounting_account_id, 0, $totalValue, "Baja por merma");
-            }
-            break;
+            case InventoryMovement::TYPE_ADJUSTMENT:
+                if ($movement->quantity > 0) {
+                    // --- CAMBIO AQUÍ ---
+                    // Si el ajuste viene de una anulación de Venta, afectamos Costo de Ventas
+                    $contraAccount = ($movement->reference_type === \App\Models\Sales\Sale::class)
+                        ? $costOfSalesAccountId
+                        : $productionAccountId;
+
+                    $this->createItem($entry, $movement->warehouse->accounting_account_id, $totalValue, 0, 'Reingreso de inventario');
+                    $this->createItem($entry, $contraAccount, 0, $totalValue, 'Reversión de costo/ajuste positivo');
+                } else {
+                    $this->createItem($entry, $costOfSalesAccountId, $totalValue, 0, 'Gasto por merma o pérdida');
+                    $this->createItem($entry, $movement->warehouse->accounting_account_id, 0, $totalValue, 'Baja por merma');
+                }
+                break;
+        }
     }
-}
 
     private function createItem($entry, $accountId, $debit, $credit, $note)
     {
-        if (!$accountId) throw new Exception("Error Contable: Almacén o Contrapartida no tiene cuenta asignada.");
-        
+        if (! $accountId) {
+            throw new Exception('Error Contable: Almacén o Contrapartida no tiene cuenta asignada.');
+        }
+
         $entry->items()->create([
             'accounting_account_id' => $accountId,
-            'debit'  => $debit,
+            'debit' => $debit,
             'credit' => $credit,
-            'note'   => $note
+            'note' => $note,
         ]);
     }
 
@@ -156,16 +166,16 @@ private function generateAccountingEntry(InventoryMovement $movement, $product, 
         $newDestStock = $prevDestStock + $qty;
 
         InventoryMovement::create([
-            'warehouse_id'    => $data['to_warehouse_id'],
-            'product_id'      => $data['product_id'],
-            'user_id'         => Auth::id(),
-            'quantity'        => $qty,
-            'type'            => InventoryMovement::TYPE_TRANSFER,
-            'previous_stock'  => $prevDestStock,
-            'current_stock'   => $newDestStock,
-            'description'     => "Entrada por transferencia desde: " . $parentMovement->warehouse->name,
-            'reference_type'  => get_class($parentMovement),
-            'reference_id'    => $parentMovement->id,
+            'warehouse_id' => $data['to_warehouse_id'],
+            'product_id' => $data['product_id'],
+            'user_id' => Auth::id(),
+            'quantity' => $qty,
+            'type' => InventoryMovement::TYPE_TRANSFER,
+            'previous_stock' => $prevDestStock,
+            'current_stock' => $newDestStock,
+            'description' => 'Entrada por transferencia desde: '.$parentMovement->warehouse->name,
+            'reference_type' => get_class($parentMovement),
+            'reference_id' => $parentMovement->id,
         ]);
 
         $destStock->update(['quantity' => $newDestStock]);
