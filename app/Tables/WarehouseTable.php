@@ -4,30 +4,36 @@ namespace App\Tables;
 
 class WarehouseTable
 {
+    /**
+     * accounting_account_id solo existe como columna ofrecible con
+     * accounting.advanced activo (REQ-02.12) — sin esto, el selector de
+     * columnas y el desktop por defecto ofrecen una cuenta contable de un
+     * módulo apagado.
+     */
     public static function allColumns(): array
     {
-        return [
-            'code'                  => 'Código',
-            'name'                  => 'Nombre',
-            'types'                 => 'Tipo',
-            'accounting_account_id' => 'Cuenta Contable', // Nueva columna
-            'address'               => 'Ubicación',
-            'description'           => 'Descripción',
-            'is_active'             => 'Estado',
-            'created_at'            => 'Fecha Creación',
-            'updated_at'            => 'Última Actualización',
-        ];
+        return array_filter([
+            'code' => 'Código',
+            'name' => 'Nombre',
+            'types' => 'Tipo',
+            'accounting_account_id' => module_enabled('accounting.advanced') ? 'Cuenta Contable' : null,
+            'address' => 'Ubicación',
+            'description' => 'Descripción',
+            'is_active' => 'Estado',
+            'created_at' => 'Fecha Creación',
+            'updated_at' => 'Última Actualización',
+        ]);
     }
 
     public static function defaultDesktop(): array
     {
-        return [
+        return array_values(array_filter([
             'code',
             'name',
             'types',
-            'accounting_account_id', // Visible por defecto en Desktop
+            module_enabled('accounting.advanced') ? 'accounting_account_id' : null,
             'is_active',
-        ];
+        ]));
     }
 
     public static function defaultMobile(): array
