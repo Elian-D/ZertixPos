@@ -63,7 +63,7 @@
                     </button>
 
                     @can('edit document types')
-                        <a href="{{ route('accounting.document_types.edit', $type) }}" 
+                        <a href="{{ route('configuration.document_types.edit', $type) }}" 
                            class="text-indigo-600 hover:text-indigo-900 p-2 rounded-full hover:bg-indigo-50"
                            title="Editar">
                             <x-heroicon-s-pencil-square class="w-5 h-5" />

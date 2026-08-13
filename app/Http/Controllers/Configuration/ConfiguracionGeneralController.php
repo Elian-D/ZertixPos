@@ -6,7 +6,6 @@ use App\Enums\TaxIdentifierType;
 use App\Http\Controllers\Controller;
 use App\Models\Configuration\ConfiguracionGeneral;
 use App\Models\Configuration\Impuesto;
-use App\Models\Configuration\InstallationModule;
 use App\Models\Geo\Municipality;
 use App\Models\Geo\Province;
 use Illuminate\Http\Request;
@@ -53,24 +52,16 @@ class ConfiguracionGeneralController extends Controller
             'municipio_id' => 'nullable|exists:municipalities,id',
             'dias_gracia_mora' => 'nullable|integer|min:0',
 
-            // Flag de módulo — ver manejo aparte más abajo, no es columna de esta tabla.
-            'ncf_enabled' => 'nullable|boolean',
-
             'impuesto_nombre' => 'required|string|max:255',
             'impuesto_tipo' => 'required|in:porcentaje,fijo',
             'impuesto_valor' => 'required|numeric|min:0',
             'impuesto_incluido' => 'nullable|boolean',
         ]);
 
-        // El toggle de NCF ya no es una columna de configuraciones_generales — es el
-        // flag 'sales.ncf' del registro de módulos (Fase 3/4). Se escribe aparte y se
-        // saca de $validated antes de guardar, para no intentar escribirlo en una
-        // columna que ya no existe.
-        InstallationModule::updateOrCreate(
-            ['module_key' => 'sales.ncf'],
-            ['is_enabled' => $request->has('ncf_enabled')]
-        );
-        unset($validated['ncf_enabled']);
+        // El toggle de NCF (antes acá, 'ncf_enabled') se eliminó de esta pantalla
+        // (REQ-10.9) — el flag 'sales.ncf' del registro de módulos se administra
+        // desde Configuración → Funcionalidades del Sistema (REQ-10.6), un solo
+        // lugar para editarlo en vez de dos pantallas que podían desincronizarse.
 
         // Logo
         if ($request->hasFile('logo')) {

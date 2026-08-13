@@ -3,7 +3,7 @@
     // Tipos de Pago es configuración base, siempre accesible.
     $showAccountingColumn = module_enabled('accounting.advanced');
 @endphp
-<x-config-layout>
+<x-app-layout>
 
     <div class="max-w-7xl mx-auto">
         <div class="bg-white shadow-xl rounded-lg p-6">
@@ -376,4 +376,4 @@
             </form>
         </x-modal>
     @endforeach
-</x-config-layout>
+</x-app-layout>

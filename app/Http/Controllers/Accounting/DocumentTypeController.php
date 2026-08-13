@@ -66,7 +66,7 @@ class DocumentTypeController extends Controller
         try {
             $this->service->create($request->validated());
 
-            return redirect()->route('accounting.document_types.index')
+            return redirect()->route('configuration.document_types.index')
                 ->with('success', 'Tipo de documento creado correctamente.');
         } catch (\Exception $e) {
             return back()->withInput()->with('error', 'Error al crear: '.$e->getMessage());
@@ -86,7 +86,7 @@ class DocumentTypeController extends Controller
         try {
             $this->service->update($document_type, $request->validated());
 
-            return redirect()->route('accounting.document_types.index')
+            return redirect()->route('configuration.document_types.index')
                 ->with('success', 'Tipo de documento actualizado.');
         } catch (\Exception $e) {
             return back()->withInput()->with('error', 'Error al actualizar: '.$e->getMessage());
@@ -114,12 +114,12 @@ class DocumentTypeController extends Controller
 
     protected function getRouteIndex(): string
     {
-        return 'accounting.document_types.index';
+        return 'configuration.document_types.index';
     }
 
     protected function getRouteEliminadas(): string
     {
-        return 'accounting.document_types.eliminados';
+        return 'configuration.document_types.eliminados';
     }
 
     protected function getEntityName(): string

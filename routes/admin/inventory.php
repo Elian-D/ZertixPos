@@ -6,7 +6,10 @@ use App\Http\Controllers\Inventory\InventoryStockController;
 use App\Http\Controllers\Inventory\WarehouseController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('inventory')->as('inventory.')->group(function () {
+// Inventario es núcleo flexible (REQ-10.4/10.8) — encendido por defecto, pero un
+// negocio 100% servicios puede apagarlo desde "Funcionalidades del Sistema". Con el
+// flag apagado, todo este grupo devuelve 404 (mismo criterio que un satélite).
+Route::middleware('module:inventory.tracking')->prefix('inventory')->as('inventory.')->group(function () {
 
     Route::middleware('permission:configure warehouses')->group(function () {
 

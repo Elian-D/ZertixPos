@@ -140,7 +140,10 @@ class SaleService
 
                 $isStockable = $products->get($item['product_id'])?->is_stockable ?? true;
 
-                if ($isStockable) {
+                // inventory.tracking es núcleo flexible (REQ-10.5) — apagado, la venta
+                // sigue funcionando pero no se escribe ningún InventoryMovement ni se
+                // toca InventoryStock: "se congela", no se salta solo la validación.
+                if ($isStockable && module_enabled('inventory.tracking')) {
                     // Registrar salida física de almacén (Kardex / Costeo) con referencia cruzada al modelo Sale
                     $this->inventoryService->register([
                         'warehouse_id' => $warehouseId,
@@ -182,6 +185,11 @@ class SaleService
 
         // Flujo Crédito: No genera movimientos de efectivo, se envía directo al auxiliar de CxC.
         if ($sale->payment_type === 'credit') {
+            // Defensa en profundidad (REQ-10.5) — StoreSaleRequest ya no debería ofrecer
+            // 'credit' con sales.receivables apagado, pero esta es la escritura real:
+            // si de algún modo llega hasta acá, no se crea ningún Receivable.
+            abort_unless(module_enabled('sales.receivables'), 403);
+
             $this->createReceivableEntry($sale, $sale->total_amount);
 
             return;
@@ -418,19 +426,24 @@ class SaleService
             // Revierte de forma contable el asiento de diario original mediante un contra-asiento de diario automático.
             $this->generateCancellationAccountingEntry($sale);
 
-            // Reingreso físico de mercancía al stock.
+            // Reingreso físico de mercancía al stock — simétrico al gate de creación
+            // (REQ-10.5): si inventory.tracking estaba apagado cuando se vendió, no
+            // existe ningún InventoryMovement que revertir; intentarlo igual
+            // corrompería el stock con un ajuste sin contrapartida real.
             // NOTA ARQUITECTÓNICA: Se usa TYPE_ADJUSTMENT en lugar de TYPE_INPUT para no inflar artificialmente las
             // métricas de compras/entradas ordinarias en los reportes analíticos de inventario.
-            foreach ($sale->items as $item) {
-                $this->inventoryService->register([
-                    'warehouse_id' => $sale->warehouse_id,
-                    'product_id' => $item->product_id,
-                    'quantity' => $item->quantity,
-                    'type' => InventoryMovement::TYPE_ADJUSTMENT,
-                    'description' => "Reversión de costo por anulación {$sale->number}",
-                    'reference_type' => Sale::class,
-                    'reference_id' => $sale->id,
-                ]);
+            if (module_enabled('inventory.tracking')) {
+                foreach ($sale->items as $item) {
+                    $this->inventoryService->register([
+                        'warehouse_id' => $sale->warehouse_id,
+                        'product_id' => $item->product_id,
+                        'quantity' => $item->quantity,
+                        'type' => InventoryMovement::TYPE_ADJUSTMENT,
+                        'description' => "Reversión de costo por anulación {$sale->number}",
+                        'reference_type' => Sale::class,
+                        'reference_id' => $sale->id,
+                    ]);
+                }
             }
 
             // Cancela el estado de la entidad Invoice vinculada de forma interna.

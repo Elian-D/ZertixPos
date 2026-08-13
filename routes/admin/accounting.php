@@ -2,7 +2,6 @@
 
 use App\Http\Controllers\Accounting\AccountingAccountController;
 use App\Http\Controllers\Accounting\AccountingDashboardController;
-use App\Http\Controllers\Accounting\DocumentTypeController;
 use App\Http\Controllers\Accounting\FinancialOverviewController;
 use App\Http\Controllers\Accounting\JournalEntryController;
 use App\Http\Controllers\Accounting\PaymentController;
@@ -67,43 +66,12 @@ Route::prefix('accounting')->as('accounting.')->group(function () {
         });
     });
 
-    Route::middleware(['auth'])->group(function () {
+    // document_types se movió a routes/admin/configuration.php (REQ-10.3) — es un
+    // catálogo del sistema completo, no algo específico de Contabilidad.
 
-        Route::get('document_types/eliminados', [DocumentTypeController::class, 'eliminadas'])
-            ->name('document_types.eliminados');
-
-        Route::get('document_types', [DocumentTypeController::class, 'index'])
-            ->middleware('permission:view document types')
-            ->name('document_types.index');
-
-        Route::get('document_types/create', [DocumentTypeController::class, 'create'])
-            ->middleware('permission:create document types')
-            ->name('document_types.create');
-
-        Route::post('document_types', [DocumentTypeController::class, 'store'])
-            ->middleware('permission:create document types')
-            ->name('document_types.store');
-
-        Route::get('document_types/{document_type}/edit', [DocumentTypeController::class, 'edit'])
-            ->middleware('permission:edit document types')
-            ->name('document_types.edit');
-
-        Route::put('document_types/{document_type}', [DocumentTypeController::class, 'update'])
-            ->middleware('permission:edit document types')
-            ->name('document_types.update');
-
-        Route::delete('document_types/{document_type}', [DocumentTypeController::class, 'destroy'])
-            ->middleware('permission:delete document types')
-            ->name('document_types.destroy');
-
-        Route::patch('document_types/{id}/restaurar', [DocumentTypeController::class, 'restaurar'])
-            ->name('document_types.restaurar');
-
-        Route::delete('document_types/{id}/borrar', [DocumentTypeController::class, 'borrarDefinitivo'])
-            ->name('document_types.borrarDefinitivo');
-    });
-
-    Route::middleware(['auth'])->group(function () {
+    // CxC es núcleo flexible (REQ-10.4/10.8) — encendido por defecto, pero un negocio
+    // 100% contado puede apagarlo. Con el flag apagado, todo el grupo devuelve 404.
+    Route::middleware(['auth', 'module:sales.receivables'])->group(function () {
 
         Route::prefix('receivables')->name('receivables.')->group(function () {
 
@@ -122,7 +90,11 @@ Route::prefix('accounting')->as('accounting.')->group(function () {
         });
     });
 
-    Route::middleware(['auth'])->group(function () {
+    // Pagos (cobros contra CxC) — mismo flag que receivables/*: sin CxC no hay nada que
+    // cobrar, así que todo el grupo (incluido el historial) sigue la misma regla de
+    // "apagado = 404 completo" que ya aplica al grupo receivables/* de arriba
+    // (REQ-10.9 bis).
+    Route::middleware(['auth', 'module:sales.receivables'])->group(function () {
 
         Route::get('payments/export', [PaymentController::class, 'export'])
             ->middleware('permission:export payments')

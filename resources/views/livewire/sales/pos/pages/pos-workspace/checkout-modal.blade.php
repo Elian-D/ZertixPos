@@ -25,7 +25,10 @@
             </template>
         </div>
 
-        {{-- Tipo de pago: Crédito no aplica para el Consumidor Final --}}
+        {{-- Tipo de pago: Crédito no aplica para el Consumidor Final, y requiere
+             el módulo sales.receivables (Cuentas por Cobrar) activo — si está
+             apagado, el botón se deshabilita en vez de dejar elegirlo y fallar
+             luego con "The selected payment type is invalid." (REQ-10.9 bis) --}}
         <div class="grid gap-1.5 p-1 bg-gray-100 rounded-lg mb-3"
              :class="formData.client_id == walkinClientId ? 'grid-cols-1' : 'grid-cols-2'">
             <button type="button" @click="formData.payment_type = 'cash'; onPaymentTypeChange()"
@@ -33,8 +36,10 @@
                     class="py-2 rounded-md text-sm font-bold transition-all">Contado</button>
             <template x-if="formData.client_id != walkinClientId">
                 <button type="button" @click="formData.payment_type = 'credit'; onPaymentTypeChange()"
+                        :disabled="!receivablesEnabled"
+                        :title="!receivablesEnabled ? 'Cuentas por Cobrar está desactivado en Funcionalidades del Sistema' : ''"
                         :class="formData.payment_type === 'credit' ? 'bg-white shadow-sm text-gray-900' : 'text-gray-500'"
-                        class="py-2 rounded-md text-sm font-bold transition-all">Crédito</button>
+                        class="py-2 rounded-md text-sm font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed">Crédito</button>
             </template>
         </div>
 

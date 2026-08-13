@@ -21,6 +21,8 @@
         autoPrint: @js((bool) ($posConfig?->auto_print_receipt ?? false)),
         lastSale: @js($lastSale),
         terminalId: @js($terminal->id),
+        inventoryTrackingEnabled: @js(module_enabled('inventory.tracking')),
+        receivablesEnabled: @js(module_enabled('sales.receivables')),
      })"
      x-init="init()">
 
@@ -202,7 +204,10 @@
                 // focusTarget: 'search' (flujo de escáner, mantiene el foco para seguir leyendo códigos)
                 // o 'received' (clic con mouse, el foco pasa directo al campo de efectivo recibido).
                 addItem(product, focusTarget = 'received') {
-                    if (product.is_stockable && product.stock <= 0) return;
+                    // Con inventory.tracking apagado (núcleo flexible, REQ-10.5) el stock
+                    // real nunca se descuenta ni se actualiza — validar contra un número
+                    // congelado no tiene sentido y solo bloquea ventas reales sin motivo.
+                    if (this.inventoryTrackingEnabled && product.is_stockable && product.stock <= 0) return;
 
                     const existing = this.items.find(i => i.product_id === product.id);
                     if (existing) {
@@ -520,7 +525,9 @@
 
                 get isSubmitDisabled() {
                     if (this.items.length === 0 || this.totals.total <= 0) return true;
-                    if (this.items.some(i => i.is_stockable && i.quantity > i.stock)) return true;
+                    // Mismo criterio que addItem(): sin inventory.tracking el stock
+                    // mostrado está congelado, no tiene sentido bloquear el cobro por él.
+                    if (this.inventoryTrackingEnabled && this.items.some(i => i.is_stockable && i.quantity > i.stock)) return true;
 
                     // Crédito Fiscal exige un RNC ya sea en archivo o verificado en esta misma venta.
                     if (this.ncfChoice === 'credito' && !this.selectedClient?.tax_id && !this.rncLookup.data) {
