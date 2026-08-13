@@ -81,23 +81,30 @@
                             </div>
                         </div>
 
-                        {{-- Info de Contabilización --}}
-                        <div class="flex gap-3 px-1">
-                            <div class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 shrink-0">
-                                <x-heroicon-s-book-open class="w-5 h-5"/>
+                        {{-- Info de Contabilización — solo con accounting.advanced activo
+                             (REQ-02.14): con el módulo apagado journal_entry_id siempre es
+                             null (ver PaymentService::createPayment/REQ-02.8), así que este
+                             bloque mostraba permanentemente "Pendiente de Contabilizar",
+                             dando a entender que algo quedó a medias cuando el módulo nunca
+                             debió mostrarse acá. --}}
+                        @if (module_enabled('accounting.advanced'))
+                            <div class="flex gap-3 px-1">
+                                <div class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 shrink-0">
+                                    <x-heroicon-s-book-open class="w-5 h-5"/>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Asiento Contable</span>
+                                    @if($payment->journal_entry_id)
+                                        <p class="text-xs font-mono text-indigo-600">
+                                            #{{ str_pad($payment->journal_entry_id, 6, '0', STR_PAD_LEFT) }} <br>
+                                            <span class="font-sans font-bold text-gray-800">Transacción Contabilizada</span>
+                                        </p>
+                                    @else
+                                        <p class="text-xs text-amber-500 italic">Pendiente de Contabilizar</p>
+                                    @endif
+                                </div>
                             </div>
-                            <div>
-                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Asiento Contable</span>
-                                @if($payment->journal_entry_id)
-                                    <p class="text-xs font-mono text-indigo-600">
-                                        #{{ str_pad($payment->journal_entry_id, 6, '0', STR_PAD_LEFT) }} <br>
-                                        <span class="font-sans font-bold text-gray-800">Transacción Contabilizada</span>
-                                    </p>
-                                @else
-                                    <p class="text-xs text-amber-500 italic">Pendiente de Contabilizar</p>
-                                @endif
-                            </div>
-                        </div>
+                        @endif
                     </div>
 
                     {{-- Nota --}}
@@ -139,9 +146,9 @@
             
             <h3 class="text-lg font-bold text-gray-900">¿Anular este Pago?</h3>
             <p class="text-sm text-gray-500 mt-2">
-                Se anulará el recibo <strong>{{ $payment->receipt_number }}</strong>. 
+                Se anulará el recibo <strong>{{ $payment->receipt_number }}</strong>.
                 <span class="block mt-2 font-bold text-red-600 bg-red-50 p-2 rounded border border-red-100">
-                    Esto revertirá el saldo de la cuenta por cobrar y generará un contra-asiento contable.
+                    Esto revertirá el saldo de la cuenta por cobrar{{ module_enabled('accounting.advanced') ? ' y anulará su asiento contable' : '' }}.
                 </span>
             </p>
 

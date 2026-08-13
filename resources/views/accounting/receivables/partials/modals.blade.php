@@ -90,29 +90,32 @@
                             </div>
                         </div>
 
-                        {{-- Validación de Cuenta Contable --}}
-                        <div class="flex gap-3 px-1">
-                            <div class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 shrink-0">
-                                <x-heroicon-s-book-open class="w-5 h-5"/>
+                        {{-- Validación de Cuenta Contable — solo con accounting.advanced activo
+                             (REQ-02.13), CxC en sí no depende de Contabilidad para nada más. --}}
+                        @if (module_enabled('accounting.advanced'))
+                            <div class="flex gap-3 px-1">
+                                <div class="w-10 h-10 bg-gray-50 rounded-lg flex items-center justify-center text-gray-400 shrink-0">
+                                    <x-heroicon-s-book-open class="w-5 h-5"/>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Cuenta Contable Destino</span>
+                                    @if($item->client->accounting_account_id)
+                                        {{-- Cuenta propia del cliente --}}
+                                        <p class="text-xs font-mono text-indigo-600">
+                                            {{ $item->client->accountingAccount->code }} <br>
+                                            <span class="font-sans font-bold text-gray-800">{{ $item->client->accountingAccount->name }}</span>
+                                            <span class="block text-[9px] text-indigo-400 font-sans italic underline decoration-indigo-200">Cuenta específica del cliente</span>
+                                        </p>
+                                    @else
+                                        {{-- Cuenta general de la CxC --}}
+                                        <p class="text-xs font-mono text-gray-600">
+                                            {{ $item->accountingAccount->code ?? '1.1.02' }} <br>
+                                            <span class="font-sans font-bold text-gray-800">{{ $item->accountingAccount->name ?? 'Cuenta Por Cobrar General' }}</span>
+                                        </p>
+                                    @endif
+                                </div>
                             </div>
-                            <div>
-                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Cuenta Contable Destino</span>
-                                @if($item->client->accounting_account_id)
-                                    {{-- Cuenta propia del cliente --}}
-                                    <p class="text-xs font-mono text-indigo-600">
-                                        {{ $item->client->accountingAccount->code }} <br>
-                                        <span class="font-sans font-bold text-gray-800">{{ $item->client->accountingAccount->name }}</span>
-                                        <span class="block text-[9px] text-indigo-400 font-sans italic underline decoration-indigo-200">Cuenta específica del cliente</span>
-                                    </p>
-                                @else
-                                    {{-- Cuenta general de la CxC --}}
-                                    <p class="text-xs font-mono text-gray-600">
-                                        {{ $item->accountingAccount->code ?? '1.1.02' }} <br>
-                                        <span class="font-sans font-bold text-gray-800">{{ $item->accountingAccount->name ?? 'Cuenta Por Cobrar General' }}</span>
-                                    </p>
-                                @endif
-                            </div>
-                        </div>
+                        @endif
                     </div>
 
                     {{-- Concepto --}}
