@@ -48,7 +48,12 @@ class StoreSaleRequest extends FormRequest
             'client_rnc' => ['nullable', 'string', 'max:20'],
 
             'sale_date' => ['required', 'date', 'after_or_equal:today', 'before_or_equal:today'],
-            'payment_type' => ['required', Rule::in([Sale::PAYMENT_CASH, Sale::PAYMENT_CREDIT])],
+            // Con sales.receivables apagado (núcleo flexible, REQ-10.5) el form deja de
+            // ofrecer 'credit' — no solo se oculta el botón, la validación en sí lo rechaza.
+            'payment_type' => [
+                'required',
+                Rule::in(module_enabled('sales.receivables') ? [Sale::PAYMENT_CASH, Sale::PAYMENT_CREDIT] : [Sale::PAYMENT_CASH]),
+            ],
             'tipo_pago_id' => [
                 Rule::requiredIf($this->payment_type === Sale::PAYMENT_CASH),
                 'nullable',
@@ -159,12 +164,15 @@ class StoreSaleRequest extends FormRequest
                 $subtotalBruto += $itemBruto;
                 $descuentoTotalCalculado += $itemDescuento;
 
-                // Stock: solo aplica a productos físicos. Si el producto no está en el
-                // catálogo cargado (no debería pasar, ya se validó `exists` arriba) se
-                // valida igual, por seguridad.
+                // Stock: solo aplica a productos físicos, y solo con inventory.tracking
+                // activo (núcleo flexible, REQ-10.5/10.9) — apagado, InventoryStock nunca
+                // se actualiza (queda congelado), así que validar contra ese número
+                // rechazaría ventas reales por un dato que ya no significa nada. Si el
+                // producto no está en el catálogo cargado (no debería pasar, ya se validó
+                // `exists` arriba) se valida igual, por seguridad.
                 $isStockable = $products->get($item['product_id'])?->is_stockable ?? true;
 
-                if ($isStockable) {
+                if ($isStockable && module_enabled('inventory.tracking')) {
                     $stock = InventoryStock::where('warehouse_id', $this->warehouse_id)
                         ->where('product_id', $item['product_id'])
                         ->first();

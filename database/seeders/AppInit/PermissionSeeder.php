@@ -43,6 +43,7 @@ class PermissionSeeder extends Seeder
                 'configure general data',
                 'configure payments',
                 'configure dias-semana',
+                'configure system modules',
             ],
 
             'clients' => [

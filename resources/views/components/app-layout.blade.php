@@ -75,31 +75,35 @@
                         </x-sidebar.dropdown>
                     @endcanany
 
-                    @can('view quotes')
-                        <x-sidebar.item href="/admin/sales/quotes" icon="heroicon-s-document-currency-dollar">
-                            Cotizaciones
-                        </x-sidebar.item>
-                    @endcan
+                    @if (module_enabled('sales.quotes'))
+                        @can('view quotes')
+                            <x-sidebar.item href="/admin/sales/quotes" icon="heroicon-s-document-currency-dollar">
+                                Cotizaciones
+                            </x-sidebar.item>
+                        @endcan
+                    @endif
 
                     <x-sidebar.item href="/rutas" icon="heroicon-s-map">
                         Rutas y Entregas
                     </x-sidebar.item>
 
-                    @can('view inventory dashboard')
-                        <x-sidebar.dropdown 
-                            id="inventario" 
-                            icon="heroicon-s-cube" 
-                            :activeRoutes="['admin/inventory*']"
-                        >
-                            Inventario
-                            <x-slot name="submenu">
-                                <x-sidebar.subitem href="/admin/inventory/dashboard">Dashboard</x-sidebar.subitem>
-                                <x-sidebar.subitem href="/admin/inventory/stocks">Stock Actual</x-sidebar.subitem>
-                                <x-sidebar.subitem href="/admin/inventory/movements">Movimientos</x-sidebar.subitem>
-                                <x-sidebar.subitem href="/admin/inventory/warehouses">Almacenes</x-sidebar.subitem>
-                            </x-slot>
-                        </x-sidebar.dropdown>
-                    @endcan
+                    @if (module_enabled('inventory.tracking'))
+                        @can('view inventory dashboard')
+                            <x-sidebar.dropdown
+                                id="inventario"
+                                icon="heroicon-s-cube"
+                                :activeRoutes="['admin/inventory*']"
+                            >
+                                Inventario
+                                <x-slot name="submenu">
+                                    <x-sidebar.subitem href="/admin/inventory/dashboard">Dashboard</x-sidebar.subitem>
+                                    <x-sidebar.subitem href="/admin/inventory/stocks">Stock Actual</x-sidebar.subitem>
+                                    <x-sidebar.subitem href="/admin/inventory/movements">Movimientos</x-sidebar.subitem>
+                                    <x-sidebar.subitem href="/admin/inventory/warehouses">Almacenes</x-sidebar.subitem>
+                                </x-slot>
+                            </x-sidebar.dropdown>
+                        @endcan
+                    @endif
                 </x-sidebar.group>
 
                 {{-- GRUPO 2: Finanzas --}}
@@ -118,9 +122,10 @@
                                 @if(module_enabled('accounting.advanced'))
                                     <x-sidebar.subitem href="/admin/accounting/dashboard">Dashboard Contable</x-sidebar.subitem>
                                 @endif
-                                <x-sidebar.subitem href="/admin/accounting/receivables">Cuentas por Cobrar</x-sidebar.subitem>
-                                <x-sidebar.subitem href="/admin/accounting/payments">Pagos</x-sidebar.subitem>
-                                <x-sidebar.subitem href="/admin/accounting/document_types">Tipos de Documento</x-sidebar.subitem>
+                                @if(module_enabled('sales.receivables'))
+                                    <x-sidebar.subitem href="/admin/accounting/receivables">Cuentas por Cobrar</x-sidebar.subitem>
+                                    <x-sidebar.subitem href="/admin/accounting/payments">Pagos</x-sidebar.subitem>
+                                @endif
                                 @if(module_enabled('accounting.advanced'))
                                     <div class="h-px bg-gray-700/30 my-1.5"></div>
                                     <x-sidebar.subitem href="/admin/accounting/journal_entries">Asientos Contables</x-sidebar.subitem>
@@ -184,14 +189,6 @@
                 <x-sidebar.group>
                     <x-sidebar.title>Sistema</x-sidebar.title>
 
-                    <x-sidebar.item href="/admin/users" icon="heroicon-s-users">
-                        Usuarios
-                    </x-sidebar.item>
-
-                    <x-sidebar.item href="/admin/roles" icon="heroicon-s-lock-closed">
-                        Roles
-                    </x-sidebar.item>
-
                     <x-sidebar.dropdown
                         id="configuracion"
                         icon="heroicon-s-cog-6-tooth"
@@ -199,7 +196,15 @@
                     >
                         Configuración
                         <x-slot name="submenu">
-                            <x-sidebar.subitem href="/admin/config">General</x-sidebar.subitem>
+                            <x-sidebar.subitem href="{{ route('configuration.general.edit') }}">Configuración General</x-sidebar.subitem>
+                            <x-sidebar.subitem href="{{ route('users.index') }}">Usuarios</x-sidebar.subitem>
+                            <x-sidebar.subitem href="{{ route('roles.index') }}">Roles/Permisos</x-sidebar.subitem>
+                            @can('configure system modules')
+                                <x-sidebar.subitem href="{{ route('configuration.features') }}">Funcionalidades del Sistema</x-sidebar.subitem>
+                            @endcan
+                            <x-sidebar.subitem href="{{ route('configuration.dias.index') }}">Días de la Semana</x-sidebar.subitem>
+                            <x-sidebar.subitem href="{{ route('configuration.pagos.index') }}">Métodos de Pago</x-sidebar.subitem>
+                            <x-sidebar.subitem href="{{ route('configuration.document_types.index') }}">Tipos de Documento</x-sidebar.subitem>
 
                             {{-- Solo mostrar si el módulo sales.ncf está activo --}}
                             @if(module_enabled('sales.ncf'))

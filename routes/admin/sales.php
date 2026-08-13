@@ -281,7 +281,13 @@ Route::prefix('sales')->as('sales.')->group(function () {
     });
 
     // routes/admin/sales/quotes.php
-    Route::middleware(['auth'])->prefix('quotes')->name('quotes.')->group(function () {
+    // Cotizaciones es núcleo flexible (REQ-10.4/10.8) — encendido por defecto, pero un
+    // negocio de venta directa que nunca cotiza puede apagarlo. Con el flag apagado,
+    // todo el grupo devuelve 404 — incluye approve/cancel/convert sobre cotizaciones
+    // ya existentes, no solo la creación de nuevas (mismo criterio "se congela" de
+    // REQ-10.5: si el módulo está pausado, tampoco se debería seguir operando sobre
+    // lo que ya existe).
+    Route::middleware(['auth', 'module:sales.quotes'])->prefix('quotes')->name('quotes.')->group(function () {
 
         // Listado principal (DataTables / AJAX)
         Route::get('/', [QuoteController::class, 'index'])

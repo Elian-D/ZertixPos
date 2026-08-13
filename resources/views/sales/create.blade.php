@@ -39,10 +39,12 @@
                                     <x-heroicon-s-currency-dollar class="w-4 h-4"/>
                                     Contado
                                 </button>
-                                <button type="button" 
+                                <button type="button"
                                     @click="formData.payment_type = 'credit'; handlePaymentTypeChange()"
+                                    :disabled="!config.receivablesEnabled"
+                                    :title="!config.receivablesEnabled ? 'Cuentas por Cobrar está desactivado en Funcionalidades del Sistema' : ''"
                                     :class="formData.payment_type === 'credit' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'"
-                                    class="flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all">
+                                    class="flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed">
                                     <x-heroicon-s-credit-card class="w-4 h-4"/>
                                     Crédito
                                 </button>
@@ -395,7 +397,8 @@
                 config: {
                     tax_rate: {{ general_config()->impuesto->valor ?? 0 }},
                     apply_tax: false,
-                    ncfEnabled: {{ module_enabled('sales.ncf') ? 'true' : 'false' }}
+                    ncfEnabled: {{ module_enabled('sales.ncf') ? 'true' : 'false' }},
+                    receivablesEnabled: {{ module_enabled('sales.receivables') ? 'true' : 'false' }}
                 },
                 formData: {
                     payment_type: 'cash',

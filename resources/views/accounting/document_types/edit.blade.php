@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="max-w-4xl mx-auto py-8 px-4">
         
-        <form action="{{ route('accounting.document_types.update', $item) }}" method="POST"
+        <form action="{{ route('configuration.document_types.update', $item) }}" method="POST"
             class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
             @csrf
             @method('PUT')
@@ -11,7 +11,7 @@
             <x-form-header
                 title="Editar: {{ $item->name }}"
                 subtitle="Modifique la configuración del documento. Tenga cuidado al cambiar correlativos."
-                :back-route="route('accounting.document_types.index')" />
+                :back-route="route('configuration.document_types.index')" />
 
             <div class="p-8 space-y-8">
                 
@@ -73,7 +73,7 @@
             </div>
 
             <div class="p-6 bg-gray-50 flex justify-end gap-3 border-t">
-                <a href="{{ route('accounting.document_types.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500">Volver</a>
+                <a href="{{ route('configuration.document_types.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500">Volver</a>
                 <x-primary-button class="bg-indigo-600 px-8">
                     Actualizar Cambios
                 </x-primary-button>

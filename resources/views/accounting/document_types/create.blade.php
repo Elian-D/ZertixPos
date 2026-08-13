@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="max-w-4xl mx-auto py-8 px-4">
         
-        <form action="{{ route('accounting.document_types.store') }}" method="POST"
+        <form action="{{ route('configuration.document_types.store') }}" method="POST"
             class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
             @csrf
 
@@ -10,7 +10,7 @@
             <x-form-header
                 title="Nuevo Tipo de Documento"
                 subtitle="Configure las siglas, correlativos y cuentas automáticas para los documentos del sistema."
-                :back-route="route('accounting.document_types.index')" />
+                :back-route="route('configuration.document_types.index')" />
 
             <div class="p-8 space-y-8">
                 
@@ -71,7 +71,7 @@
             </div>
 
             <div class="p-6 bg-gray-100 flex justify-end items-center gap-3 border-t">
-                <a href="{{ route('accounting.document_types.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition">Cancelar</a>
+                <a href="{{ route('configuration.document_types.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition">Cancelar</a>
                 <x-primary-button class="bg-indigo-600 shadow-lg px-8">
                     Crear Tipo de Documento
                 </x-primary-button>

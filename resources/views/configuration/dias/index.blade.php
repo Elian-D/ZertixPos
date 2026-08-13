@@ -1,4 +1,4 @@
-<x-config-layout>
+<x-app-layout>
 
     <div class="max-w-7xl mx-auto">
         <div class="bg-white shadow-xl rounded-lg p-6">
@@ -143,4 +143,4 @@
             </x-data-table>
         </div>
     </div>
-</x-config-layout>
+</x-app-layout>

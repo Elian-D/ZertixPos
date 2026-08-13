@@ -121,19 +121,37 @@
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 items-start"> {{-- items-start asegura alineación superior --}}
+                        {{-- Límite de Crédito y Días de Crédito solo son editables con
+                             sales.receivables activo (núcleo flexible, REQ-10.5) — se
+                             deshabilitan, no se ocultan: pueden traer datos de cuando el
+                             módulo estaba activo, y ocultarlos da la sensación de que se
+                             perdieron. --}}
+                        @php $creditDisabled = ! module_enabled('sales.receivables'); @endphp
                         {{-- Límite de Crédito --}}
                         <div class="md:col-span-2">
                             <x-input-label value="Límite de Crédito ({{ config('regional.currency_symbol') }})" />
-                            <x-text-input name="credit_limit" type="number" step="0.01" class="w-full mt-1 font-mono" 
-                                :value="old('credit_limit', '0.00')" placeholder="0.00" />
+                            {{-- readonly, no disabled: ambos campos son 'required' en
+                                 StoreClientRequest — un input disabled no se envía en el
+                                 POST y el formulario fallaría con "campo requerido". --}}
+                            <x-text-input name="credit_limit" type="number" step="0.01"
+                                class="w-full mt-1 font-mono {{ $creditDisabled ? 'bg-gray-50 cursor-not-allowed text-gray-400' : '' }}"
+                                :value="old('credit_limit', '0.00')" placeholder="0.00"
+                                :readonly="$creditDisabled" />
                         </div>
 
                         {{-- Días de Crédito --}}
                         <div class="md:col-span-2">
                             <x-input-label value="Días de Crédito (Vencimiento)" />
-                            <x-text-input name="payment_terms" type="number" class="w-full mt-1" 
-                                :value="old('payment_terms', '0')" placeholder="Ej: 30" />
+                            <x-text-input name="payment_terms" type="number"
+                                class="w-full mt-1 {{ $creditDisabled ? 'bg-gray-50 cursor-not-allowed text-gray-400' : '' }}"
+                                :value="old('payment_terms', '0')" placeholder="Ej: 30"
+                                :readonly="$creditDisabled" />
                         </div>
+                        @unless (module_enabled('sales.receivables'))
+                            <p class="md:col-span-4 -mt-2 text-xs text-amber-600 italic">
+                                Se activa cuando el módulo de Cuentas por Cobrar está activo.
+                            </p>
+                        @endunless
                         @if (module_enabled('accounting.advanced'))
                             
                         {{-- Cuenta Contable --}}

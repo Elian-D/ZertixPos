@@ -63,8 +63,9 @@ Confirmado contra código para los cuatro: hoy `PaymentService::createPayment()`
 | **Inventario avanzado — multi-almacén, transferencias, tomas físicas, mermas** | Más de un almacén, transferencias entre almacenes con estados, conteos, pérdidas | Inventario (núcleo) | Negocios con más de un punto de almacenamiento (la embasadora, si tiene planta + camión/ruta) | Transferencias/tomas físicas/mermas están **pendientes de construir** (`docs/promts.md`, sección Logística) — construirlas ya de una vez como satélite, no como parte del núcleo |
 | **Rutas y Entregas** | Planificación de rutas de reparto | Ventas, Clientes, `sales.delivery_points` | Justo el caso de la embasadora de agua (reparto a domicilio) y el del hielo original | El link "Rutas y Entregas" en el sidebar **no tiene ruta real detrás** (`/rutas` no está registrado en `routes/`) — es un placeholder de la época del hielo. Hay que decidir: revivirlo como satélite real (probablemente lo necesite la embasadora) o quitarlo del menú mientras no exista. |
 | **`purchases.vendors`** — Compras / Proveedores formales | Órdenes de compra, catálogo de proveedores, y una CxP que nace de una compra real (no de un gasto suelto) | Productos, `sales.payables` (flexible), y **dependencia dura de `inventory.tracking`** (flexible) — una orden de compra recibida existe para aumentar stock, no tiene sentido si Inventario está apagado | Cualquier negocio que reabastece con proveedores formales y quiere trazabilidad de orden de compra | **No existe todavía** (pendiente en `docs/promts.md`). La CxP *operativa* (gastos del día a día) ya es núcleo flexible (ver §2.1.5) — este satélite es solo para cuando además se quiere Proveedor + Orden de Compra formal. La dependencia dura con `inventory.tracking` se resuelve con **bloqueo explícito al guardar, nunca cascada automática** (ver `v1.1.0.md` §10.7, tabla corta mantenida a mano para evitar explosión combinatoria) |
-| **`sales.credit_notes_b04`** — Nota de Crédito Fiscal (B04) | Emitir el comprobante fiscal de una devolución | `sales.ncf` | Solo negocios con NCF activo que necesiten devolver con comprobante fiscal formal | **No existe todavía.** Depende explícitamente de `sales.ncf` — sin NCF activo no se puede emitir un B04, pero **la devolución/reembolso en sí es base** (ver tabla de módulos base arriba) y funciona sin este satélite. Si `sales.ncf` está apagado, `sales.credit_notes_b04` debe forzarse apagado también (dependencia dura, no solo sugerida). |
 | **POS — variantes/modos** | Ej.: POS simplificado sin sesión/terminal formal para vendedor ambulante, o un modo tipo "comanda" para cafetería | Ventas/POS (núcleo) | Cada perfil de cliente necesita un modo distinto del mismo módulo base | Idea a futuro, todavía no diseñado — es la satelización "de segundo nivel" que mencionaste (módulos dentro de módulos) |
+
+**Revisión (2026-08-13, v1.1.0 §10.9):** la Nota de Crédito Fiscal (B04) **no es un módulo satélite propio** — se sacó de esta tabla. Es el comprobante fiscal de una acción concreta de Devoluciones (todavía sin construir, ver roadmap): cuando exista, "emitir con B04" valida `module_enabled('sales.ncf')` directo en su propio código, sin un flag intermedio. Registrarlo como satélite aparte (con cascada automática al apagar `sales.ncf`) fue sobre-ingeniería temprana — un flag para algo que no es una funcionalidad independiente, es un detalle de implementación de otra.
 
 ### 2.3 Hallazgo transversal
 
@@ -122,12 +123,9 @@ return [
         'route_prefixes' => ['admin/purchases'],
     ],
     'sales.ncf' => [ /* ... */ ], // ya existe, migrado desde el viejo usa_ncf
-    'sales.credit_notes_b04' => [
-        'label' => 'Nota de Crédito Fiscal (B04)',
-        'category' => 'satellite',
-        'depends_on' => ['sales.ncf'], // dependencia dura satélite→satélite: sí cascadea automático (pocos casos, bajo riesgo)
-        'route_prefixes' => ['admin/sales/credit-notes'],
-    ],
+    // 'sales.credit_notes_b04' NO va acá — no es un módulo propio (revisión v1.1.0
+    // §10.9). El B04 es el comprobante fiscal de una acción de Devoluciones, valida
+    // module_enabled('sales.ncf') directo en su propio código cuando se construya.
 
     // Núcleo flexible (revisión 2026-08-13, ver §2.1.5) — encendidos por defecto en TODO plan,
     // nunca gateados por Plan::assignTo() (se filtra solo category==='satellite'), el dueño los apaga

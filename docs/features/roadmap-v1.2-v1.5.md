@@ -45,13 +45,13 @@ Todo lo que se construya después hereda este hueco si no se corrige antes:
 ### Dependencias
 
 - Depende de **Impuestos (v1.2.0)** — sin el monto de impuesto real persistido en la venta original, no hay forma correcta de calcular cuánto revertir en una devolución.
-- `sales.ncf` y su infraestructura de módulos (v1.1.0 Fase 4) ya están listas — aquí sí se construye el módulo `sales.credit_notes_b04` en sí, no solo se registra (como quedó en v1.1.0 REQ-04.4).
+- `sales.ncf` y su infraestructura de módulos (v1.1.0 Fase 4) ya están listas — el B04 se construye como parte de Devoluciones, sin un flag propio (revisión v1.1.0 §10.9, ver nota abajo).
 
 ### Alcance
 
 1. **Rename `is_stockable` → campo `type` enum** (Producto/Servicio) en el modelo, clases, rutas y UI — se hace primero dentro de esta versión porque es barato y Devoluciones ya tiene un bug conocido (revierte stock de un servicio que nunca tuvo stock real, ver `docs/promts.md` sección Logística) que se resuelve limpio si el enum existe antes de tocar esa lógica.
 2. **Flujo de Devoluciones y Reembolsos** — módulo base (confirmado en `modulos-base-satelite.md`), funciona con o sin NCF activo.
-3. **Nota de Crédito Fiscal (B04)** — satélite `sales.credit_notes_b04`, depende estrictamente de `sales.ncf` activo (dependencia dura ya documentada).
+3. **Nota de Crédito Fiscal (B04)** — **ya no es el satélite `sales.credit_notes_b04`** (esa entrada se eliminó de `config/modules.php` en v1.1.0 §10.9: no es una funcionalidad independiente, es el comprobante fiscal de esta misma acción de Devoluciones). Se construye como una rama de este mismo flujo — "emitir devolución con B04" — que valida `module_enabled('sales.ncf')` directo, sin flag intermedio.
 4. Vistas `show` específicas para desglose de venta (ítems, pagos, descuentos aplicados) — pedido explícito en `docs/promts.md`, mismo módulo.
 
 ---

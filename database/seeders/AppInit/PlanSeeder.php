@@ -27,7 +27,7 @@ class PlanSeeder extends Seeder
                     'Control de caja diario',
                     'Envío de facturas por WhatsApp',
                 ],
-                'modules' => ['sales.ncf', 'sales.credit_notes_b04'],
+                'modules' => ['sales.ncf'],
             ],
             [
                 'name' => 'PyME',
@@ -41,7 +41,7 @@ class PlanSeeder extends Seeder
                     'Margen de ganancia por producto',
                     'Automatización WhatsApp ilimitada',
                 ],
-                'modules' => ['sales.ncf', 'sales.credit_notes_b04', 'inventory.advanced'],
+                'modules' => ['sales.ncf', 'inventory.advanced'],
             ],
             [
                 'name' => 'Pro',
@@ -57,7 +57,6 @@ class PlanSeeder extends Seeder
                 ],
                 'modules' => [
                     'sales.ncf',
-                    'sales.credit_notes_b04',
                     'sales.delivery_points',
                     'inventory.advanced',
                     'purchases.vendors',

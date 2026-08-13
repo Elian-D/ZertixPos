@@ -32,9 +32,17 @@ class WarehousesStep implements OnboardingStepInterface
         return 'inventory.warehouses.index';
     }
 
+    /**
+     * Bug real encontrado probando el checklist con inventory.tracking apagado
+     * (REQ-10.9): el paso seguía pidiéndose igual porque OnboardingStepRegistry ya
+     * sabía filtrar pasos por módulo SATÉLITE (ver NcfStep), pero Almacenes se
+     * construyó en la Fase 9 cuando Inventario todavía era base fijo — nunca se
+     * actualizó al pasar a núcleo flexible en la Fase 10. Un negocio 100%
+     * servicios que apaga Inventario ya no debería ver este paso.
+     */
     public function requiredModule(): ?string
     {
-        return null;
+        return 'inventory.tracking';
     }
 
     /**
