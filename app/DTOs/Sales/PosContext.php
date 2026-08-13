@@ -11,7 +11,7 @@ class PosContext
     public function __construct(
         public int $terminal_id,
         public int $session_id,
-        public int $cash_account_id,                 // Cuenta contable de la caja de la terminal
+        public ?int $cash_account_id,                 // Cuenta contable de la caja — null si accounting.advanced no está activo
         public int $warehouse_id,                    // Almacén vinculado a la terminal
         public string $sale_origin = 'pos',          // 'pos' | 'backoffice'
         public bool $is_walkin_customer = false,     // True si es un cliente casual de mostrador

@@ -3,13 +3,12 @@
 namespace App\Services\Sales\Ncf;
 
 use App\Contracts\Sales\NcfGeneratorInterface;
-use App\Models\Sales\Sale;
-use App\Models\Sales\Ncf\NcfType;
-use App\Models\Sales\Ncf\NcfSequence;
 use App\Models\Sales\Ncf\NcfLog;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Sales\Ncf\NcfSequence;
+use App\Models\Sales\Sale;
 use Exception;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class LocalNcfGenerator implements NcfGeneratorInterface
 {
@@ -18,15 +17,13 @@ class LocalNcfGenerator implements NcfGeneratorInterface
      */
     public function generate(Sale $sale, int $ncfTypeId): ?string
     {
-        $config = general_config();
-
         // Si el switch principal está apagado, no generamos nada.
-        if (!$config->usa_ncf) {
+        if (! module_enabled('sales.ncf')) {
             return null;
         }
 
         return DB::transaction(function () use ($sale, $ncfTypeId) {
-            
+
             // 1. Bloqueo de fila: Buscamos la secuencia activa con lockForUpdate
             $sequence = NcfSequence::where('ncf_type_id', $ncfTypeId)
                 ->where('status', NcfSequence::STATUS_ACTIVE)
@@ -35,8 +32,8 @@ class LocalNcfGenerator implements NcfGeneratorInterface
                 ->first();
 
             // En modo fiscal, si no hay secuencia, es un error fatal.
-            if (!$sequence) {
-                throw new Exception("No hay secuencias activas o vigentes para este tipo de comprobante.");
+            if (! $sequence) {
+                throw new Exception('No hay secuencias activas o vigentes para este tipo de comprobante.');
             }
 
             // 2. Incrementar el contador
@@ -45,15 +42,15 @@ class LocalNcfGenerator implements NcfGeneratorInterface
             if ($nextNumber > $sequence->to) {
                 // Si llegamos al límite, marcamos como agotada
                 $sequence->update(['status' => NcfSequence::STATUS_EXHAUSTED]);
-                throw new Exception("La secuencia de comprobantes se ha agotado.");
+                throw new Exception('La secuencia de comprobantes se ha agotado.');
             }
 
             // 3. Determinar la longitud de la secuencia (Padding)
             $padding = $sequence->type->is_electronic ? 10 : 8;
 
             // 4. Formatear el NCF Completo
-            $fullNcf = $sequence->series . 
-                    str_pad($sequence->type->code, 2, '0', STR_PAD_LEFT) . 
+            $fullNcf = $sequence->series.
+                    str_pad($sequence->type->code, 2, '0', STR_PAD_LEFT).
                     str_pad($nextNumber, $padding, '0', STR_PAD_LEFT);
 
             // 5. Actualizar la secuencia
@@ -78,9 +75,7 @@ class LocalNcfGenerator implements NcfGeneratorInterface
      */
     public function hasAvailability(int $ncfTypeId): bool
     {
-        $config = general_config();
-
-        if (!$config->usa_ncf) {
+        if (! module_enabled('sales.ncf')) {
             return true;
         }
 

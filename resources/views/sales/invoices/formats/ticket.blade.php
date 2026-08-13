@@ -3,16 +3,15 @@
     $impuestoConfig = $config->impuesto;
     $sale = $invoice->sale;
     $client = $sale->client;
-    $currency = $config->currency_symbol ?? '$';
+    $currency = config('regional.currency_symbol');
 
-    $taxIdentifier = \DB::table('tax_identifier_types')
-                        ->where('id', $config->tax_identifier_type_id)
-                        ->first();
-    $taxLabel = $taxIdentifier->code ?? 'RNC';
+    $taxLabel = $config->tax_identifier_type?->value ?? 'RNC';
     $taxName = $impuestoConfig->nombre ?? 'ITBIS';
     
-    $vencimientoPago = $sale->payment_type === 'credit' 
-        ? $sale->created_at->addDays($client->credit_limit_days ?? 30)->format('d/m/Y') 
+    // Se lee de la Receivable, nunca se recalcula acá (REQ-11.10) — es la única
+    // fuente de verdad del vencimiento, la misma que controla esMoroso().
+    $vencimientoPago = $sale->payment_type === 'credit'
+        ? $sale->receivable?->due_date?->format('d/m/Y')
         : null;
 
     $ncfLog = $sale->ncfLog;
@@ -27,7 +26,7 @@
     $isMultiPay = $payments->count() > 1;
 
     // NUEVO: Determinar si mostramos info fiscal
-    $mostrarFiscal = $config->usa_ncf && $sale->ncf;
+    $mostrarFiscal = module_enabled('sales.ncf') && $sale->ncf;
 
     // Usar directamente el valor de la base de datos, si es nulo o cero, mostrará 0.00
     $taxCalculado = $sale->tax_amount ?? 0.00;

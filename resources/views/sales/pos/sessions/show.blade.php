@@ -140,11 +140,11 @@
                         <div class="space-y-3">
                             <div class="flex justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
                                 <span class="text-xs text-gray-600 font-medium">(+) Fondo Inicial</span>
-                                <span class="text-xs font-mono font-bold">${{ number_format($posSession->opening_balance, 2) }}</span>
+                                <span class="text-xs font-mono font-bold">{{ config('regional.currency_symbol') }}{{ number_format($posSession->opening_balance, 2) }}</span>
                             </div>
                             <div class="flex justify-between p-3 bg-green-50/50 rounded-xl border border-green-100 text-green-700">
                                 <span class="text-xs font-medium">(+) Ventas en Efectivo</span>
-                                <span class="text-xs font-mono font-bold">${{ number_format($posSession->cash_sales ?? 0, 2) }}</span>
+                                <span class="text-xs font-mono font-bold">{{ config('regional.currency_symbol') }}{{ number_format($posSession->cash_sales ?? 0, 2) }}</span>
                             </div>
 
                             @php
@@ -156,7 +156,7 @@
 
                             <div class="flex justify-between p-5 bg-indigo-600 rounded-xl text-white shadow-lg shadow-indigo-100 mt-4">
                                 <span class="font-bold">(=) Monto Esperado en Caja</span>
-                                <span class="text-lg font-mono font-black">${{ number_format($displayExpected, 2) }}</span>
+                                <span class="text-lg font-mono font-black">{{ config('regional.currency_symbol') }}{{ number_format($displayExpected, 2) }}</span>
                             </div>
                         </div>
 
@@ -164,11 +164,11 @@
                         <div class="flex flex-col justify-center items-center p-8 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
                             @if($posSession->isClosed())
                                 <p class="text-[10px] uppercase font-black text-gray-400 mb-2">Monto Real Reportado</p>
-                                <h4 class="text-4xl font-black text-gray-900 mb-4">${{ number_format($posSession->closing_balance, 2) }}</h4>
+                                <h4 class="text-4xl font-black text-gray-900 mb-4">{{ config('regional.currency_symbol') }}{{ number_format($posSession->closing_balance, 2) }}</h4>
                                 
                                 {{-- ¡USAMOS LA COLUMNA DIRECTA! --}}
                                 <div class="inline-flex items-center px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest {{ $posSession->difference >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
-                                    {{ $posSession->difference == 0 ? 'Caja Cuadrada' : ($posSession->difference > 0 ? 'Sobrante' : 'Faltante') }} de ${{ number_format(abs($posSession->difference), 2) }}
+                                    {{ $posSession->difference == 0 ? 'Caja Cuadrada' : ($posSession->difference > 0 ? 'Sobrante' : 'Faltante') }} de {{ config('regional.currency_symbol') }}{{ number_format(abs($posSession->difference), 2) }}
                                 </div>
                             @else
                                 <div class="text-center">
@@ -211,7 +211,7 @@
                                         <td class="py-2 pr-4 text-gray-600">{{ $row['cajero'] }}</td>
                                         <td class="py-2 pr-4 text-right text-gray-600">{{ rtrim(rtrim(number_format($row['cantidad'], 2), '0'), '.') }}</td>
                                         <td class="py-2 pr-4 text-gray-600">{{ $row['metodo'] }}</td>
-                                        <td class="py-2 text-right font-mono font-bold text-gray-800">${{ number_format($row['total'], 2) }}</td>
+                                        <td class="py-2 text-right font-mono font-bold text-gray-800">{{ config('regional.currency_symbol') }}{{ number_format($row['total'], 2) }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -246,9 +246,9 @@
                                     <tr class="border-b border-gray-50">
                                         <td class="py-2 pr-4 font-medium text-gray-700">{{ $row['concepto'] }}</td>
                                         @foreach($columns as $col)
-                                            <td class="py-2 pr-4 text-right font-mono text-gray-600">${{ number_format($row['methods'][$col] ?? 0, 2) }}</td>
+                                            <td class="py-2 pr-4 text-right font-mono text-gray-600">{{ config('regional.currency_symbol') }}{{ number_format($row['methods'][$col] ?? 0, 2) }}</td>
                                         @endforeach
-                                        <td class="py-2 text-right font-mono font-bold text-gray-800">${{ number_format($row['total'], 2) }}</td>
+                                        <td class="py-2 text-right font-mono font-bold text-gray-800">{{ config('regional.currency_symbol') }}{{ number_format($row['total'], 2) }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -260,8 +260,8 @@
 
                 @if($creditTotal > 0)
                     <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-4">
-                        Ventas totales del turno: <span class="font-bold">${{ number_format($totalSalesWithCredit, 2) }}</span>
-                        — de las cuales <span class="font-bold">${{ number_format($creditTotal, 2) }}</span> fueron a
+                        Ventas totales del turno: <span class="font-bold">{{ config('regional.currency_symbol') }}{{ number_format($totalSalesWithCredit, 2) }}</span>
+                        — de las cuales <span class="font-bold">{{ config('regional.currency_symbol') }}{{ number_format($creditTotal, 2) }}</span> fueron a
                         <span class="font-bold">Crédito (CxC)</span>, no exigible en caja (no forma parte del arqueo).
                     </p>
                 @endif

@@ -39,9 +39,12 @@
         <div class="flex-1 overflow-y-auto -mx-1 px-1">
             <div class="grid grid-cols-3 sm:grid-cols-4 xl:grid-cols-5 gap-2.5 pb-4">
                 <template x-for="product in filteredProducts" :key="product.id">
-                    <button type="button" @click="addItem(product)" :disabled="product.is_stockable && product.stock <= 0"
+                    {{-- El bloqueo/badge por stock solo aplica con inventory.tracking activo
+                         (núcleo flexible, REQ-10.5) — apagado, el número está congelado y no
+                         debe impedir ni desalentar la venta. --}}
+                    <button type="button" @click="addItem(product)" :disabled="inventoryTrackingEnabled && product.is_stockable && product.stock <= 0"
                             class="text-left bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm transition-all group"
-                            :class="product.is_stockable && product.stock <= 0
+                            :class="inventoryTrackingEnabled && product.is_stockable && product.stock <= 0
                                 ? 'opacity-50 grayscale cursor-not-allowed'
                                 : 'hover:shadow-md hover:border-[#58c03f]/40 hover:-translate-y-0.5'">
                         <div class="aspect-square w-full bg-gray-50 flex items-center justify-center overflow-hidden">
@@ -59,12 +62,20 @@
                             <div class="text-xs font-bold text-gray-800 leading-snug line-clamp-2 mb-1.5 min-h-[2rem] group-hover:text-[#58c03f]" x-text="product.name"></div>
                             <div class="flex items-center justify-between gap-1">
                                 <span class="text-sm font-black text-gray-900" x-text="formatMoney(product.price)"></span>
-                                <template x-if="product.is_stockable">
+                                <template x-if="product.is_stockable && inventoryTrackingEnabled">
                                     <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
                                           :class="product.stock <= 0
                                               ? 'bg-red-50 text-red-500'
                                               : (product.stock <= product.min_stock ? 'bg-amber-50 text-amber-600' : 'bg-emerald-50 text-emerald-600')"
                                           x-text="product.stock <= 0 ? 'Agotado' : product.stock"></span>
+                                </template>
+                                {{-- Con inventory.tracking apagado el número de stock está congelado
+                                     y ya no significa nada — mostrarlo (o "Agotado") sería mentir
+                                     sobre disponibilidad real. Badge neutro en su lugar. --}}
+                                <template x-if="product.is_stockable && !inventoryTrackingEnabled">
+                                    <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0 bg-gray-100 text-gray-500">
+                                        Sin inventario
+                                    </span>
                                 </template>
                                 <template x-if="!product.is_stockable">
                                     <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0 bg-gray-100 text-gray-500">

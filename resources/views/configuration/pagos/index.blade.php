@@ -1,4 +1,9 @@
-<x-config-layout>
+@php
+    // Cuenta Contable solo aplica con accounting.advanced activo (REQ-02.15) —
+    // Tipos de Pago es configuración base, siempre accesible.
+    $showAccountingColumn = module_enabled('accounting.advanced');
+@endphp
+<x-app-layout>
 
     <div class="max-w-7xl mx-auto">
         <div class="bg-white shadow-xl rounded-lg p-6">
@@ -100,7 +105,7 @@
             {{-- TABLA RESPONSIVA --}}
             <x-data-table
                 :items="$tipoPago"
-                :headers="['Nombre', 'Cuenta Contable', 'Estado', 'Creado', 'Actualizado']">
+                :headers="$showAccountingColumn ? ['Nombre', 'Cuenta Contable', 'Estado', 'Creado', 'Actualizado'] : ['Nombre', 'Estado', 'Creado', 'Actualizado']">
 
                 @forelse($tipoPago as $pago)
                     {{-- Fila responsiva: Card en móvil, Fila de tabla en md+ --}}
@@ -122,11 +127,13 @@
                         </td>
                         
                         {{-- COLUMNA 2: CUENTA CONTABLE (Oculto en móvil, visible en md+) --}}
-                        <td class="hidden md:table-cell px-6 py-4 text-sm text-gray-600">
-                            <span class="whitespace-nowrap font-mono text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
-                                {{ $pago->account->code ?? 'S/N' }} - {{ $pago->account->name ?? 'Sin cuenta' }}
-                            </span>
-                        </td>
+                        @if ($showAccountingColumn)
+                            <td class="hidden md:table-cell px-6 py-4 text-sm text-gray-600">
+                                <span class="whitespace-nowrap font-mono text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
+                                    {{ $pago->account->code ?? 'S/N' }} - {{ $pago->account->name ?? 'Sin cuenta' }}
+                                </span>
+                            </td>
+                        @endif
 
                         {{-- COLUMNA 2: ESTADO (Oculto en móvil, visible en md+) --}}
                         <td class="hidden md:table-cell px-6 py-4 text-sm text-gray-600 w-2/12">
@@ -193,7 +200,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="text-center py-6 text-gray-500">
+                        <td colspan="{{ $showAccountingColumn ? 5 : 4 }}" class="text-center py-6 text-gray-500">
                             No hay tipos de pago registrados.
                         </td>
                     </tr>
@@ -226,17 +233,19 @@
                 <x-input-error :messages="$errors->get('nombre')" class="mt-2" />
             </div>
 
-            <div class="mt-4">
-                <x-input-label for="accounting_account_id" value="Cuenta Contable Asociada" />
-                <select name="accounting_account_id" id="accounting_account_id" 
-                        class="mt-1 block w-full rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="">-- Seleccione una cuenta --</option>
-                    @foreach($cuentasContables as $cuenta)
-                        <option value="{{ $cuenta->id }}">{{ $cuenta->code }} - {{ $cuenta->name }}</option>
-                    @endforeach
-                </select>
-                <x-input-error :messages="$errors->get('accounting_account_id')" class="mt-2" />
-            </div>
+            @if ($showAccountingColumn)
+                <div class="mt-4">
+                    <x-input-label for="accounting_account_id" value="Cuenta Contable Asociada" />
+                    <select name="accounting_account_id" id="accounting_account_id"
+                            class="mt-1 block w-full rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">-- Seleccione una cuenta --</option>
+                        @foreach($cuentasContables as $cuenta)
+                            <option value="{{ $cuenta->id }}">{{ $cuenta->code }} - {{ $cuenta->name }}</option>
+                        @endforeach
+                    </select>
+                    <x-input-error :messages="$errors->get('accounting_account_id')" class="mt-2" />
+                </div>
+            @endif
 
             {{-- Botones --}}
             <div class="mt-6 flex justify-end">
@@ -298,18 +307,20 @@
                 <x-input-error :messages="$errors->get('nombre')" class="mt-2" />
             </div>
 
-            <div class="mt-4">
-                <x-input-label for="edit_account_{{ $pago->id }}" value="Cuenta Contable Asociada" />
-                <select name="accounting_account_id" id="edit_account_{{ $pago->id }}" 
-                        class="mt-1 block w-full rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
-                    <option value="">-- Seleccione una cuenta --</option>
-                    @foreach($cuentasContables as $cuenta)
-                        <option value="{{ $cuenta->id }}" {{ $pago->accounting_account_id == $cuenta->id ? 'selected' : '' }}>
-                            {{ $cuenta->code }} - {{ $cuenta->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+            @if ($showAccountingColumn)
+                <div class="mt-4">
+                    <x-input-label for="edit_account_{{ $pago->id }}" value="Cuenta Contable Asociada" />
+                    <select name="accounting_account_id" id="edit_account_{{ $pago->id }}"
+                            class="mt-1 block w-full rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">-- Seleccione una cuenta --</option>
+                        @foreach($cuentasContables as $cuenta)
+                            <option value="{{ $cuenta->id }}" {{ $pago->accounting_account_id == $cuenta->id ? 'selected' : '' }}>
+                                {{ $cuenta->code }} - {{ $cuenta->name }}
+                            </option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif
 
             {{-- BOTONES --}}
             <div class="mt-6 flex justify-end gap-3">
@@ -365,4 +376,4 @@
             </form>
         </x-modal>
     @endforeach
-</x-config-layout>
+</x-app-layout>

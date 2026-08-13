@@ -7,7 +7,7 @@
                 <x-page-toolbar title="Configuración de Documentos">
                     <x-slot name="actions">
                         @can('create document types')
-                            <a href="{{ route('accounting.document_types.create') }}"
+                            <a href="{{ route('configuration.document_types.create') }}"
                                class="inline-flex items-center px-4 py-2 bg-indigo-600 rounded-md text-xs font-semibold text-white uppercase hover:bg-indigo-700 transition">
                                 <x-heroicon-s-plus class="w-4 h-4 mr-2" />
                                 Nuevo Tipo
@@ -15,7 +15,7 @@
                         @endcan
 
                         @can('delete document types')
-                        <a href="{{ route('accounting.document_types.eliminados') }}"
+                        <a href="{{ route('configuration.document_types.eliminados') }}"
                             class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100">
                             <x-heroicon-s-trash class="w-4 h-4 mr-2" />
                             Papelera

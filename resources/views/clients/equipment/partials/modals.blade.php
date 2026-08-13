@@ -80,7 +80,7 @@
                             <div>
                                 <span class="text-[10px] text-gray-400 uppercase block">Dirección de Operación</span>
                                 <p class="text-sm text-gray-600 leading-snug">{{ $item->pointOfSale->address ?? 'N/A' }}</p>
-                                <p class="text-[11px] text-gray-400 mt-1 italic">{{ $item->pointOfSale->city ?? '' }}, {{ $item->pointOfSale->state->name ?? '' }}</p>
+                                <p class="text-[11px] text-gray-400 mt-1 italic">{{ $item->pointOfSale->city ?? '' }}, {{ $item->pointOfSale->provincia->name ?? '' }}</p>
                             </div>
                         </div>
                     </section>

@@ -27,7 +27,7 @@
                             <span class="block font-medium text-gray-900">{{ $product['name'] }}</span>
                             <span class="block text-sm text-gray-500">Cod: {{ $product['sku'] }}</span>
                         </div>
-                        <span class="font-bold text-gray-700">${{ number_format($product['price'], 2) }}</span>
+                        <span class="font-bold text-gray-700">{{ config('regional.currency_symbol') }}{{ number_format($product['price'], 2) }}</span>
                     </button>
                 </li>
             @endforeach

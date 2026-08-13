@@ -88,7 +88,7 @@
             @if(in_array('amount', $visibleColumns))
                 <td class="px-6 py-4 text-sm font-bold whitespace-nowrap">
                     <span class="{{ $movement->type === 'in' ? 'text-green-600' : 'text-amber-600' }}">
-                        {{ $movement->type === 'in' ? '+' : '-' }} ${{ number_format($movement->amount, 2) }}
+                        {{ $movement->type === 'in' ? '+' : '-' }} {{ config('regional.currency_symbol') }}{{ number_format($movement->amount, 2) }}
                     </span>
                 </td>
             @endif

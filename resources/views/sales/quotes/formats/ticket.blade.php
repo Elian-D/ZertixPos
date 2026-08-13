@@ -1,6 +1,6 @@
 @php
     $config = general_config();
-    $currency = $config->currency_symbol ?? '$';
+    $currency = config('regional.currency_symbol');
 @endphp
 <!DOCTYPE html>
 <html>

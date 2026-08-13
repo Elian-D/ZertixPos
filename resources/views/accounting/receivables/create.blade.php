@@ -161,8 +161,8 @@
                         <div>
                             <x-input-label value="Monto Total" />
                             <div class="relative mt-1">
-                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">$</span>
-                                <x-text-input type="number" step="0.01" name="total_amount" class="w-full pl-7" 
+                                <span class="absolute inset-y-0 left-0 pl-3 flex items-center text-gray-500">{{ config('regional.currency_symbol') }}</span>
+                                <x-text-input type="number" step="0.01" name="total_amount" class="w-full pl-14"
                                     :value="old('total_amount')" placeholder="0.00" required />
                             </div>
                             <x-input-error :messages="$errors->get('total_amount')" class="mt-2" />

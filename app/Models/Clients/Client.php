@@ -2,20 +2,19 @@
 
 namespace App\Models\Clients;
 
-use App\Models\Configuration\EstadosCliente;
-use App\Models\Geo\State;
-use App\Models\Accounting\AccountingAccount; // Nueva importación
+use App\Enums\TaxIdentifierType;
+use App\Models\Accounting\AccountingAccount;
 use App\Models\Accounting\Payment;
 use App\Models\Accounting\Receivable;
+use App\Models\Geo\Municipality;
+use App\Models\Geo\Province;
+use App\Models\Sales\Quotes\Quote;
+use App\Models\Sales\Sale;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Configuration\ConfiguracionGeneral;
-use App\Models\Configuration\TaxIdentifierType;
-use App\Models\Sales\Quotes\Quote;
-use App\Models\Sales\Sale;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Client extends Model
 {
@@ -23,15 +22,15 @@ class Client extends Model
 
     protected $fillable = [
         'type',
-        'estado_cliente_id',
+        'is_active',
         'name',
         'commercial_name',
         'email',
         'phone',
-        'state_id',
-        'city',
+        'provincia_id',
+        'municipio_id',
         'address',
-        'tax_identifier_type_id',
+        'tax_identifier_type',
         'tax_id',
         // Nuevos campos financieros
         'credit_limit',
@@ -41,9 +40,11 @@ class Client extends Model
     ];
 
     protected $casts = [
+        'is_active' => 'boolean',
         'credit_limit' => 'decimal:2',
         'balance' => 'decimal:2',
         'payment_terms' => 'integer',
+        'tax_identifier_type' => TaxIdentifierType::class,
     ];
 
     /* ===========================
@@ -55,19 +56,14 @@ class Client extends Model
         return $this->hasMany(PointOfSale::class, 'client_id');
     }
 
-    public function estadoCliente(): BelongsTo
+    public function provincia(): BelongsTo
     {
-        return $this->belongsTo(EstadosCliente::class, 'estado_cliente_id');
+        return $this->belongsTo(Province::class, 'provincia_id');
     }
 
-    public function state(): BelongsTo
+    public function municipio(): BelongsTo
     {
-        return $this->belongsTo(State::class, 'state_id');
-    }
-
-    public function taxIdentifierType(): BelongsTo
-    {
-        return $this->belongsTo(TaxIdentifierType::class, 'tax_identifier_type_id');
+        return $this->belongsTo(Municipality::class, 'municipio_id');
     }
 
     /**
@@ -99,11 +95,10 @@ class Client extends Model
         return $this->hasMany(Quote::class, 'customer_id');
     }
 
-    
     /* ===========================
      |    Mutadores
      =========================== */
-        /**
+    /**
      * Recalcula el saldo actual del cliente basado en sus facturas pendientes.
      */
     public function refreshBalance(): bool
@@ -111,7 +106,7 @@ class Client extends Model
         $this->balance = $this->receivables()
             ->whereIn('status', [Receivable::STATUS_UNPAID, Receivable::STATUS_PARTIAL])
             ->sum('current_balance');
-            
+
         return $this->save();
     }
 
@@ -134,29 +129,53 @@ class Client extends Model
 
     public function getTaxLabelAttribute(): string
     {
-        if ($this->taxIdentifierType) {
-            return $this->taxIdentifierType->code ?? $this->taxIdentifierType->name;
-        }
-
-        $config = general_config();
-        if (!$config) return 'ID Fiscal';
-
-        $entityType = $this->type === 'individual' ? 'person' : 'company';
-        
-        $default = TaxIdentifierType::where('country_id', $config->country_id)
-                    ->whereIn('entity_type', [$entityType, 'both'])
-                    ->first();
-
-        return $default?->code ?? 'ID Fiscal';
+        return $this->tax_identifier_type?->label() ?? 'ID Fiscal';
     }
 
     /**
-     * Determina si el cliente tiene una cuenta contable propia 
+     * Determina si el cliente tiene una cuenta contable propia
      * o si debe usar la cuenta general de CxC.
      */
     public function hasCustomAccount(): bool
     {
-        return !is_null($this->accounting_account_id);
+        return ! is_null($this->accounting_account_id);
+    }
+
+    /**
+     * Estado de ciclo de vida — decisión manual (Fase 11, REQ-11.3). Mismo
+     * patrón que Warehouse/Category/Unit/BusinessType.
+     */
+    public function toggleActivo(): bool
+    {
+        $this->is_active = ! $this->is_active;
+        $this->save();
+
+        return $this->is_active;
+    }
+
+    /**
+     * Atributo financiero — calculado, nunca almacenado (Fase 11, REQ-11.4).
+     * Deliberadamente sin columna ni job de recálculo: a la escala de
+     * ZertixPOS un whereHas en vivo no es un problema de rendimiento real, y
+     * un valor guardado se desincroniza en cuanto alguien paga.
+     */
+    public function esMoroso(): bool
+    {
+        $diasGracia = general_config()->dias_gracia_mora ?? 0;
+
+        return $this->receivables()
+            ->where('status', '!=', Receivable::STATUS_PAID)
+            ->where('due_date', '<', now()->subDays($diasGracia))
+            ->exists();
+    }
+
+    public function scopeMorosos($query)
+    {
+        return $query->whereHas('receivables', function ($q) {
+            $diasGracia = general_config()->dias_gracia_mora ?? 0;
+            $q->where('status', '!=', Receivable::STATUS_PAID)
+                ->where('due_date', '<', now()->subDays($diasGracia));
+        });
     }
 
     /* ===========================
@@ -166,9 +185,8 @@ class Client extends Model
     public function scopeWithIndexRelations($query)
     {
         return $query->with([
-            'estadoCliente:id,nombre,clase_fondo,clase_texto',
-            'state:id,name',
-            'taxIdentifierType:id,name,code',
+            'provincia:id,name',
+            'municipio:id,name',
             'accountingAccount:id,code,name', // Añadido a la carga por defecto
         ]);
     }

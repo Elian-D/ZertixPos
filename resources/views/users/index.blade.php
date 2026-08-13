@@ -2,7 +2,10 @@
     <div class="py-6 sm:py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
-                
+
+                {{-- Toast de error (ej. límite de usuarios del plan al entrar directo a /users/create) --}}
+                <x-ui.toasts />
+
                 {{-- 1. MENSAJE DE SESIÓN --}}
                 @if(session('success'))
                     <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg relative mb-6" role="alert">
@@ -26,12 +29,33 @@
                         </div>
                     </form>
 
-                    {{-- Botón Estilizado para Crear Usuario (Corregido el texto del botón) --}}
-                    <a href="{{ route('users.create') }}"
-                       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
-                        <x-heroicon-s-plus class="w-5 h-5 mr-2 -ml-1" />
-                        {{ __('Crear Nuevo Usuario') }}
-                    </a>
+                    {{-- Botón Crear Usuario — deshabilitado (no oculto) al llegar al límite del
+                         plan (REQ-05.6): el dueño necesita saber POR QUÉ no puede, no que el
+                         botón simplemente desaparezca. --}}
+                    <div class="flex flex-col items-end gap-1">
+                        @if ($canCreateMoreUsers)
+                            <a href="{{ route('users.create') }}"
+                               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
+                                <x-heroicon-s-plus class="w-5 h-5 mr-2 -ml-1" />
+                                {{ __('Crear Nuevo Usuario') }}
+                            </a>
+                            @if (! is_null($usersLimit))
+                                <p class="text-xs text-gray-400">
+                                    {{ $totalUsersCount }}/{{ $usersLimit }} usuarios utilizados
+                                </p>
+                            @endif
+                        @else
+                            <button type="button" disabled
+                                    title="Tu plan actual permite un máximo de {{ $usersLimit }} usuario(s). Actualizá tu plan para agregar más."
+                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-300 cursor-not-allowed">
+                                <x-heroicon-s-plus class="w-5 h-5 mr-2 -ml-1" />
+                                {{ __('Crear Nuevo Usuario') }}
+                            </button>
+                            <p class="text-xs text-amber-600 font-medium">
+                                Límite del plan alcanzado ({{ $totalUsersCount }}/{{ $usersLimit }} usuarios) — actualizá tu plan para agregar más.
+                            </p>
+                        @endif
+                    </div>
                 </div>
 
                 {{-- 3. TABLA ESTILIZADA Y RESPONSIVE (USANDO COMPONENTE) --}}

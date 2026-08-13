@@ -1,12 +1,9 @@
 @php
     $config = general_config();
-    $currency = $config->currency_symbol ?? '$';
+    $currency = config('regional.currency_symbol');
     $quote = isset($quote) ? $quote : null;
     
-    $taxIdentifier = \DB::table('tax_identifier_types')
-                        ->where('id', $config->tax_identifier_type_id)
-                        ->first();
-    $taxLabel = $taxIdentifier->code ?? 'RNC';
+    $taxLabel = $config->tax_identifier_type?->value ?? 'RNC';
     
     // ESTILOS DE ESTADO
     $statusStyles = \App\Models\Sales\Quotes\Quote::getStatusStyles();

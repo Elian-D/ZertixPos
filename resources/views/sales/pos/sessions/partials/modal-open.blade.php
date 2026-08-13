@@ -167,7 +167,7 @@
                 <x-input-label for="opening_balance" value="Monto Inicial (Fondo de Caja)" />
                 <div class="relative mt-1">
                     <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <span class="text-gray-500 text-lg font-bold">$</span>
+                        <span class="text-gray-500 text-lg font-bold">{{ config('regional.currency_symbol') }}</span>
                     </div>
                     <x-text-input 
                         id="opening_balance" 
@@ -175,7 +175,7 @@
                         type="number" 
                         step="0.01" 
                         x-model="balance"
-                        class="pl-9 block w-full bg-white font-bold text-xl text-emerald-700 rounded-lg" 
+                        class="pl-16 block w-full bg-white font-bold text-xl text-emerald-700 rounded-lg"
                         placeholder="0.00" 
                         required 
                     />

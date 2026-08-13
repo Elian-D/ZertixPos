@@ -1,7 +1,7 @@
 <x-app-layout>
     <div class="max-w-4xl mx-auto py-8 px-4">
         
-        <form action="{{ route('accounting.document_types.store') }}" method="POST"
+        <form action="{{ route('configuration.document_types.store') }}" method="POST"
             class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
             @csrf
 
@@ -10,7 +10,7 @@
             <x-form-header
                 title="Nuevo Tipo de Documento"
                 subtitle="Configure las siglas, correlativos y cuentas automáticas para los documentos del sistema."
-                :back-route="route('accounting.document_types.index')" />
+                :back-route="route('configuration.document_types.index')" />
 
             <div class="p-8 space-y-8">
                 
@@ -45,49 +45,18 @@
                     </div>
                 </section>
 
-                {{-- SECCIÓN 2: CONTROL Y CUENTAS --}}
+                {{-- SECCIÓN 2: CORRELATIVO --}}
                 <section>
                     <h3 class="font-bold text-gray-800 uppercase text-xs tracking-wider flex items-center gap-2 mb-4">
                         <span class="w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-[10px]">2</span>
-                        Correlativo y Cuentas Contables
+                        Correlativo
                     </h3>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {{-- Correlativo Visual (No modificable) --}}
-                        <div class="md:col-span-1">
-                            <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 flex flex-col items-center justify-center">
-                                <x-input-label value="Correlativo Inicial" class="text-gray-400" />
-                                <span class="text-3xl font-mono font-bold text-gray-400">0</span>
-                                <p class="text-[10px] text-gray-400 mt-2 uppercase text-center tracking-widest">Inicia automáticamente</p>
-                                {{-- No enviamos input, el Service/Migración pone el default 0 --}}
-                            </div>
-                        </div>
-                        {{-- Cuentas Automáticas --}}
-                        <div class="md:col-span-2 space-y-4">
-                            <div>
-                                <x-input-label value="Cuenta Débito por Defecto" />
-                                <select name="default_debit_account_id" class="w-full mt-1 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
-                                    <option value="">Ninguna (Selección manual en asiento)</option>
-                                    @foreach($accounts as $acc)
-                                        <option value="{{ $acc->id }}" {{ old('default_debit_account_id') == $acc->id ? 'selected' : '' }}>
-                                            {{ $acc->code }} - {{ $acc->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
-                            <div>
-                                <x-input-label value="Cuenta Crédito por Defecto" />
-                                <select name="default_credit_account_id" class="w-full mt-1 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
-                                    <option value="">Ninguna (Selección manual en asiento)</option>
-                                    @foreach($accounts as $acc)
-                                        <option value="{{ $acc->id }}" {{ old('default_credit_account_id') == $acc->id ? 'selected' : '' }}>
-                                            {{ $acc->code }} - {{ $acc->name }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
+                    <div class="bg-gray-50 p-4 rounded-xl border border-gray-200 flex flex-col items-center justify-center max-w-xs">
+                        <x-input-label value="Correlativo Inicial" class="text-gray-400" />
+                        <span class="text-3xl font-mono font-bold text-gray-400">0</span>
+                        <p class="text-[10px] text-gray-400 mt-2 uppercase text-center tracking-widest">Inicia automáticamente</p>
+                        {{-- No enviamos input, el Service/Migración pone el default 0 --}}
                     </div>
                 </section>
 
@@ -102,7 +71,7 @@
             </div>
 
             <div class="p-6 bg-gray-100 flex justify-end items-center gap-3 border-t">
-                <a href="{{ route('accounting.document_types.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition">Cancelar</a>
+                <a href="{{ route('configuration.document_types.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition">Cancelar</a>
                 <x-primary-button class="bg-indigo-600 shadow-lg px-8">
                     Crear Tipo de Documento
                 </x-primary-button>

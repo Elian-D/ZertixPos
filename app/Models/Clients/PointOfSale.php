@@ -2,12 +2,11 @@
 
 namespace App\Models\Clients;
 
-use App\Models\Geo\State;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\Geo\Province;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use App\Models\Clients\BusinessType;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PointOfSale extends Model
 {
@@ -20,7 +19,7 @@ class PointOfSale extends Model
         'business_type_id',
         'name',
         'code',
-        'state_id',
+        'provincia_id',
         'city',
         'address',
         'latitude',
@@ -30,7 +29,6 @@ class PointOfSale extends Model
         'notes',
         'active',
     ];
-
 
     /* ===========================
     | COMPORTAMIENTO AUTOMÁTICO
@@ -52,7 +50,7 @@ class PointOfSale extends Model
     public function generateCode(): void
     {
         // Cargamos la relación si no existe para evitar errores
-        if (!$this->businessType) {
+        if (! $this->businessType) {
             $this->load('businessType');
         }
 
@@ -65,9 +63,9 @@ class PointOfSale extends Model
         );
 
         $this->updateQuietly([
-            'code' => $generatedCode
+            'code' => $generatedCode,
         ]);
-        
+
         $this->syncOriginal();
     }
 
@@ -92,11 +90,11 @@ class PointOfSale extends Model
     }
 
     /**
-     * Provincia / Estado geográfico
+     * Provincia geográfica
      */
-    public function state(): BelongsTo
+    public function provincia(): BelongsTo
     {
-        return $this->belongsTo(State::class, 'state_id');
+        return $this->belongsTo(Province::class, 'provincia_id');
     }
 
     /* ===========================
@@ -125,7 +123,7 @@ class PointOfSale extends Model
         return $query->with([
             'client:id,name,commercial_name,tax_id',
             'businessType:id,nombre',
-            'state:id,name',
+            'provincia:id,name',
         ]);
     }
 

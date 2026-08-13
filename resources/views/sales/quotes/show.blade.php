@@ -124,18 +124,18 @@
                         <div class="space-y-3 border-b border-indigo-400 pb-3 mb-3">
                             <div class="flex justify-between items-center">
                                 <span class="text-[11px] opacity-70">Subtotal:</span>
-                                <span class="text-sm font-bold">{{ $config->currency_symbol ?? '$' }}{{ number_format($quote->subtotal, 2) }}</span>
+                                <span class="text-sm font-bold">{{ config('regional.currency_symbol') }}{{ number_format($quote->subtotal, 2) }}</span>
                             </div>
                             @if($quote->discount_total > 0)
                             <div class="flex justify-between items-center text-amber-300">
                                 <span class="text-[11px] opacity-90">Descuento:</span>
-                                <span class="text-sm font-bold">-{{ $config->currency_symbol ?? '$' }}{{ number_format($quote->discount_total, 2) }}</span>
+                                <span class="text-sm font-bold">-{{ config('regional.currency_symbol') }}{{ number_format($quote->discount_total, 2) }}</span>
                             </div>
                             @endif
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-sm font-black">TOTAL:</span>
-                            <span class="text-2xl font-black">{{ $config->currency_symbol ?? '$' }}{{ number_format($quote->total, 2) }}</span>
+                            <span class="text-2xl font-black">{{ config('regional.currency_symbol') }}{{ number_format($quote->total, 2) }}</span>
                         </div>
                     </div>
 

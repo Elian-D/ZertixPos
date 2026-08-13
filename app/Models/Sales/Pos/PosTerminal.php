@@ -2,16 +2,16 @@
 
 namespace App\Models\Sales\Pos;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\Inventory\Warehouse;
 use App\Models\Accounting\AccountingAccount;
-use App\Models\Sales\Ncf\NcfType;
 use App\Models\Clients\Client;
+use App\Models\Inventory\Warehouse;
+use App\Models\Sales\Ncf\NcfType;
 use App\Models\Sales\Sale;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class PosTerminal extends Model
 {
@@ -36,13 +36,13 @@ class PosTerminal extends Model
     ];
 
     protected $casts = [
-        'is_mobile'                        => 'boolean',
-        'is_active'                        => 'boolean',
-        'requires_pin'                     => 'boolean', // Añadido
-        'allow_item_discount'              => 'boolean',
-        'allow_global_discount'            => 'boolean',
-        'max_item_discount_percentage'     => 'float',
-        'max_global_discount_percentage'   => 'float',
+        'is_mobile' => 'boolean',
+        'is_active' => 'boolean',
+        'requires_pin' => 'boolean', // Añadido
+        'allow_item_discount' => 'boolean',
+        'allow_global_discount' => 'boolean',
+        'max_item_discount_percentage' => 'float',
+        'max_global_discount_percentage' => 'float',
     ];
 
     protected $hidden = [
@@ -55,8 +55,9 @@ class PosTerminal extends Model
     protected static function booted()
     {
         static::created(function (PosTerminal $terminal) {
-            // Generar cuenta contable de efectivo si no se especificó una
-            if (!$terminal->cash_account_id) {
+            // La cuenta contable de efectivo solo se crea si hay contabilidad formal
+            // activa — abrir una terminal POS no debe depender de Contabilidad.
+            if (! $terminal->cash_account_id && module_enabled('accounting.advanced')) {
                 $terminal->createAccountingAccount();
             }
         });
@@ -70,28 +71,30 @@ class PosTerminal extends Model
         DB::transaction(function () {
             // 1. Localizar la cuenta padre (Caja y Bancos)
             $parent = AccountingAccount::where('code', '1.1.01')->first();
-            if (!$parent) return;
+            if (! $parent) {
+                return;
+            }
 
             // 2. Determinar el nuevo código correlativo
             $lastChild = AccountingAccount::where('parent_id', $parent->id)
                 ->orderBy('code', 'desc')
                 ->first();
 
-            if (!$lastChild) {
-                $newCode = $parent->code . '.01';
+            if (! $lastChild) {
+                $newCode = $parent->code.'.01';
             } else {
                 $parts = explode('.', $lastChild->code);
                 $lastPart = (int) end($parts);
-                $newCode = $parent->code . '.' . str_pad($lastPart + 1, 2, '0', STR_PAD_LEFT);
+                $newCode = $parent->code.'.'.str_pad($lastPart + 1, 2, '0', STR_PAD_LEFT);
             }
 
             // 3. Crear la cuenta
             $account = AccountingAccount::create([
-                'parent_id'     => $parent->id,
-                'code'          => $newCode,
-                'name'          => 'Caja: ' . $this->name,
-                'type'          => AccountingAccount::TYPE_ASSET,
-                'level'         => $parent->level + 1,
+                'parent_id' => $parent->id,
+                'code' => $newCode,
+                'name' => 'Caja: '.$this->name,
+                'type' => AccountingAccount::TYPE_ASSET,
+                'level' => $parent->level + 1,
                 'is_selectable' => true,
             ]);
 
@@ -107,7 +110,7 @@ class PosTerminal extends Model
      */
     protected function setAccessPinAttribute($value)
     {
-        if (!empty($value)) {
+        if (! empty($value)) {
             $this->attributes['access_pin'] = Hash::make($value);
         }
     }
@@ -120,7 +123,7 @@ class PosTerminal extends Model
      */
     public function requiresPinVerification(): bool
     {
-        return $this->requires_pin && !empty($this->access_pin);
+        return $this->requires_pin && ! empty($this->access_pin);
     }
 
     /**
@@ -128,7 +131,9 @@ class PosTerminal extends Model
      */
     public function verifyPin(string $pin): bool
     {
-        if (!$this->requiresPinVerification()) return true;
+        if (! $this->requiresPinVerification()) {
+            return true;
+        }
 
         return Hash::check($pin, $this->access_pin);
     }
@@ -167,17 +172,18 @@ class PosTerminal extends Model
         // El segundo parámetro es la columna real en la tabla pos_sessions
         return $this->hasMany(PosSession::class, 'terminal_id');
     }
+
     /**
      * Obtiene una configuración específica resolviendo la jerarquía:
      * Terminal (si existe) -> Global (fallback)
      */
     public function getSetting(string $key)
     {
-        return match($key) {
+        return match ($key) {
             'printer_format' => $this->printer_format ?? pos_config('receipt_size'),
             'default_client' => $this->default_client_id ?? pos_config('default_walkin_customer_id'),
-            'auto_print'     => pos_config('auto_print_receipt'), // No sobreescribible por ahora
-            default          => pos_config($key)
+            'auto_print' => pos_config('auto_print_receipt'), // No sobreescribible por ahora
+            default => pos_config($key)
         };
     }
 }

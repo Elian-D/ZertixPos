@@ -48,7 +48,12 @@ class StoreSaleRequest extends FormRequest
             'client_rnc' => ['nullable', 'string', 'max:20'],
 
             'sale_date' => ['required', 'date', 'after_or_equal:today', 'before_or_equal:today'],
-            'payment_type' => ['required', Rule::in([Sale::PAYMENT_CASH, Sale::PAYMENT_CREDIT])],
+            // Con sales.receivables apagado (núcleo flexible, REQ-10.5) el form deja de
+            // ofrecer 'credit' — no solo se oculta el botón, la validación en sí lo rechaza.
+            'payment_type' => [
+                'required',
+                Rule::in(module_enabled('sales.receivables') ? [Sale::PAYMENT_CASH, Sale::PAYMENT_CREDIT] : [Sale::PAYMENT_CASH]),
+            ],
             'tipo_pago_id' => [
                 Rule::requiredIf($this->payment_type === Sale::PAYMENT_CASH),
                 'nullable',
@@ -95,18 +100,17 @@ class StoreSaleRequest extends FormRequest
                 return;
             }
 
-            $client = Client::with('estadoCliente.categoria')->find($this->client_id);
-            $config = general_config();
+            $client = Client::find($this->client_id);
 
             // --- VALIDACIÓN DE NCF ---
             // Solo se valida si REALMENTE se pidió un comprobante (ncf_type_id presente).
-            // "Sin Comprobante" (ncf_type_id vacío) no pasa por aquí, sin importar usa_ncf.
-            if ($config?->usa_ncf && $this->ncf_type_id) {
+            // "Sin Comprobante" (ncf_type_id vacío) no pasa por aquí, sin importar el módulo.
+            if (module_enabled('sales.ncf') && $this->ncf_type_id) {
                 $ncfType = NcfType::find($this->ncf_type_id);
                 if ($ncfType && $ncfType->requires_rnc && $client) {
                     // El RNC es válido si ya está en el cliente O si se acaba de capturar en esta venta.
-                    $hasRnc = !empty($client->tax_id) || !empty($this->client_rnc);
-                    if (!$hasRnc) {
+                    $hasRnc = ! empty($client->tax_id) || ! empty($this->client_rnc);
+                    if (! $hasRnc) {
                         $validator->errors()->add('ncf_type_id', "El tipo {$ncfType->nombre} requiere un RNC/Cédula.");
                     }
                 }
@@ -132,7 +136,7 @@ class StoreSaleRequest extends FormRequest
                 }
             }
 
-            if ($this->payment_type === Sale::PAYMENT_CASH && !empty($payments)) {
+            if ($this->payment_type === Sale::PAYMENT_CASH && ! empty($payments)) {
                 foreach ($payments as $index => $p) {
                     $tipoPago = TipoPago::find($p['tipo_pago_id'] ?? null);
                     if ($tipoPago && $tipoPago->slug !== TipoPago::EFECTIVO && empty($p['reference'] ?? null)) {
@@ -160,12 +164,15 @@ class StoreSaleRequest extends FormRequest
                 $subtotalBruto += $itemBruto;
                 $descuentoTotalCalculado += $itemDescuento;
 
-                // Stock: solo aplica a productos físicos. Si el producto no está en el
-                // catálogo cargado (no debería pasar, ya se validó `exists` arriba) se
-                // valida igual, por seguridad.
+                // Stock: solo aplica a productos físicos, y solo con inventory.tracking
+                // activo (núcleo flexible, REQ-10.5/10.9) — apagado, InventoryStock nunca
+                // se actualiza (queda congelado), así que validar contra ese número
+                // rechazaría ventas reales por un dato que ya no significa nada. Si el
+                // producto no está en el catálogo cargado (no debería pasar, ya se validó
+                // `exists` arriba) se valida igual, por seguridad.
                 $isStockable = $products->get($item['product_id'])?->is_stockable ?? true;
 
-                if ($isStockable) {
+                if ($isStockable && module_enabled('inventory.tracking')) {
                     $stock = InventoryStock::where('warehouse_id', $this->warehouse_id)
                         ->where('product_id', $item['product_id'])
                         ->first();
@@ -199,13 +206,13 @@ class StoreSaleRequest extends FormRequest
             }
 
             // --- VALIDACIÓN DE EFECTIVO / PAGO DIVIDIDO ---
-            if ($this->payment_type === Sale::PAYMENT_CASH && !empty($payments)) {
+            if ($this->payment_type === Sale::PAYMENT_CASH && ! empty($payments)) {
                 // Pago dividido: a diferencia del pago único (que permite recibir de más y dar
                 // vuelto), cada línea es exactamente lo que se aplica a la venta — deben sumar
                 // el total exacto, ni de más ni de menos.
                 $sumaPagos = collect($payments)->sum(fn ($p) => (float) ($p['amount'] ?? 0));
                 if (abs($sumaPagos - $totalFinalNeto) > 0.01) {
-                    $validator->errors()->add('payments', 'La suma de los pagos (' . number_format($sumaPagos, 2) . ') no coincide con el total a cobrar (' . number_format($totalFinalNeto, 2) . ').');
+                    $validator->errors()->add('payments', 'La suma de los pagos ('.number_format($sumaPagos, 2).') no coincide con el total a cobrar ('.number_format($totalFinalNeto, 2).').');
                 }
             } elseif ($this->payment_type === Sale::PAYMENT_CASH) {
                 $recibido = (float) $this->cash_received;
@@ -222,9 +229,11 @@ class StoreSaleRequest extends FormRequest
                     $validator->errors()->add('payment_type', 'El Consumidor Final no puede procesar ventas a crédito.');
                 }
 
-                $categoryCode = $client->estadoCliente->category->code ?? null;
-                if (in_array($categoryCode, ['BLOQUEO_TOTAL', 'FINANCIERO_RESTRICTO'])) {
-                    $validator->errors()->add('client_id', "Crédito denegado: El cliente tiene un estado de {$client->estadoCliente->nombre}.");
+                // Antes: ->estadoCliente->category->code (relación inexistente, siempre
+                // null) — el bloqueo de crédito nunca se disparaba en el servidor, solo
+                // había un botón deshabilitado en el frontend (Fase 11, REQ-11.6).
+                if ($client->esMoroso()) {
+                    $validator->errors()->add('client_id', 'Crédito denegado: el cliente tiene facturas vencidas pendientes de pago.');
                 }
 
                 // <-- CAMBIO AQUÍ: Sumamos el Neto al balance actual

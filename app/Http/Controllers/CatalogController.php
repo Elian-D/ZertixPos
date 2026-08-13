@@ -2,10 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\Catalogs\StatesCatalogExport;
-use App\Exports\Catalogs\ClientStatusCatalogExport;
 use App\Exports\Catalogs\TaxTypesCatalogExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class CatalogController extends Controller
 {
@@ -23,13 +22,5 @@ class CatalogController extends Controller
     public function taxTypes()
     {
         return Excel::download(new TaxTypesCatalogExport, 'catalogo-tipos-identificacion.xlsx');
-    }
-
-    /**
-     * Catálogo de Estados (Específico de clientes, pero centralizado aquí)
-     */
-    public function clientStatus()
-    {
-        return Excel::download(new ClientStatusCatalogExport, 'catalogo-estados-cliente.xlsx');
     }
 }

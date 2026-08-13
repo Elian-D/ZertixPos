@@ -10,7 +10,7 @@
             errorMessage: '',
             name: '',
             tax_id: '',
-            tax_identifier_type_id: '',
+            tax_identifier_type: '',
             phone: '',
             address: '',
 
@@ -20,14 +20,14 @@
             get docTypeLabel() {
                 const len = this.tax_id.replace(/\\D/g, '').length;
                 if (len === 9) {
-                    this.tax_identifier_type_id = 198;
+                    this.tax_identifier_type = 'RNC';
                     return 'RNC Detectado';
                 }
                 if (len === 11) {
-                    this.tax_identifier_type_id = 197;
+                    this.tax_identifier_type = 'CEDULA';
                     return 'Cédula Detectada';
                 }
-                this.tax_identifier_type_id = '';
+                this.tax_identifier_type = '';
                 return 'Documento (Opcional)';
             },
 
@@ -92,7 +92,7 @@
                         body: JSON.stringify({
                             name: this.name,
                             tax_id: this.tax_id || null,
-                            tax_identifier_type_id: this.tax_identifier_type_id || null,
+                            tax_identifier_type: this.tax_identifier_type || null,
                             phone: this.phone || null,
                             address: this.address || null
                         })
@@ -137,7 +137,7 @@
             reset() {
                 this.name = '';
                 this.tax_id = '';
-                this.tax_identifier_type_id = '';
+                this.tax_identifier_type = '';
                 this.phone = '';
                 this.address = '';
                 this.errorMessage = '';
@@ -172,7 +172,7 @@
                 <div class="flex justify-between items-center">
                     <x-input-label for="q-tax" x-text="docTypeLabel" />
                     <span class="text-[10px] font-bold text-indigo-600"
-                          x-show="tax_identifier_type_id"
+                          x-show="tax_identifier_type"
                           x-transition.opacity.duration.300ms
                           x-cloak>
                         AUTO-DETECTADO
@@ -223,7 +223,7 @@
                         <svg class="w-3 h-3 inline-block mr-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
                         </svg>
-                        {{ general_config()->ciudad }}, {{ general_config()->state->name ?? 'Configurada' }}
+                        {{ general_config()->municipio->name ?? general_config()->provincia->name ?? 'Configurada' }}
                     </div>
                 </div>
             </div>

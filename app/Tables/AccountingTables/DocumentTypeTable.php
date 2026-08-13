@@ -7,15 +7,13 @@ class DocumentTypeTable
     public static function allColumns(): array
     {
         return [
-            'name'           => 'Nombre del Documento',
-            'code'           => 'Código / Sigla',
-            'prefix'         => 'Prefijo',
+            'name' => 'Nombre del Documento',
+            'code' => 'Código / Sigla',
+            'prefix' => 'Prefijo',
             'current_number' => 'Último Correlativo',
-            'next_number'    => 'Próximo Número', // Calculado: current + 1
-            'default_debit'  => 'Cuenta Débito Defecto',
-            'default_credit' => 'Cuenta Crédito Defecto',
-            'is_active'      => 'Estado',
-            'updated_at'     => 'Última Modificación',
+            'next_number' => 'Próximo Número', // Calculado: current + 1
+            'is_active' => 'Estado',
+            'updated_at' => 'Última Modificación',
         ];
     }
 
@@ -34,9 +32,9 @@ class DocumentTypeTable
     {
         // En móvil, con el nombre y el código basta para identificar el tipo
         return [
-            'name', 
-            'code', 
-            'is_active'
+            'name',
+            'code',
+            'is_active',
         ];
     }
 }

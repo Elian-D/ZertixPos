@@ -4,28 +4,25 @@ namespace App\Exports\PointOfSale;
 
 use App\Models\Clients\BusinessType;
 use App\Models\Clients\Client;
-use App\Models\Geo\State;
+use App\Models\Geo\Province;
 use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\WithColumnWidths;
+use Maatwebsite\Excel\Concerns\WithDefaultStyles;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithStyles;
-use Maatwebsite\Excel\Concerns\WithDefaultStyles;
-use Maatwebsite\Excel\Concerns\WithColumnWidths;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\Style;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Style;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class PointsOfSaleExport implements 
-    FromQuery, 
-    WithHeadings, 
-    WithMapping, 
-    WithStyles, 
-    WithDefaultStyles,
-    WithColumnWidths
+class PointsOfSaleExport implements FromQuery, WithColumnWidths, WithDefaultStyles, WithHeadings, WithMapping, WithStyles
 {
     protected $query;
+
     private $statesCache = [];
+
     private $businessTypesCache = [];
+
     private $clientsCache = [];
 
     public function __construct($query)
@@ -36,7 +33,7 @@ class PointsOfSaleExport implements
 
     private function loadCaches()
     {
-        $this->statesCache = State::pluck('name', 'id')->toArray();
+        $this->statesCache = Province::pluck('name', 'id')->toArray();
         $this->businessTypesCache = BusinessType::pluck('nombre', 'id')->toArray();
         $this->clientsCache = Client::pluck('name', 'id')->toArray();
     }
@@ -46,9 +43,9 @@ class PointsOfSaleExport implements
         // Seleccionamos los campos exactos de tu tabla de POS
         return $this->query
             ->select([
-                'id', 'client_id', 'business_type_id', 'name', 'state_id', 
-                'city', 'address', 'latitude', 'longitude', 'contact_name', 
-                'contact_phone', 'active', 'created_at'
+                'id', 'client_id', 'business_type_id', 'name', 'provincia_id',
+                'city', 'address', 'latitude', 'longitude', 'contact_name',
+                'contact_phone', 'active', 'created_at',
             ])
             ->withoutGlobalScopes()
             ->orderBy('id');
@@ -57,22 +54,22 @@ class PointsOfSaleExport implements
     public function headings(): array
     {
         return [
-            'ID', 'Cliente Propietario', 'Tipo de Negocio', 'Nombre POS', 
-            'Provincia', 'Ciudad', 'Dirección', 'Latitud', 'Longitud', 
-            'Contacto', 'Teléfono', 'Estado', 'Fecha Registro'
+            'ID', 'Cliente Propietario', 'Tipo de Negocio', 'Nombre POS',
+            'Provincia', 'Ciudad', 'Dirección', 'Latitud', 'Longitud',
+            'Contacto', 'Teléfono', 'Estado', 'Fecha Registro',
         ];
     }
 
     public function map($pos): array
     {
         $data = is_array($pos) ? $pos : $pos->getAttributes();
-        
+
         return [
             $data['id'],
             $this->clientsCache[$data['client_id']] ?? 'N/A',
             $this->businessTypesCache[$data['business_type_id']] ?? 'N/A',
             $data['name'],
-            $this->statesCache[$data['state_id']] ?? 'N/A',
+            $this->statesCache[$data['provincia_id']] ?? 'N/A',
             $data['city'],
             $data['address'] ?? '',
             $data['latitude'],
@@ -106,7 +103,7 @@ class PointsOfSaleExport implements
                 'fill' => [
                     'fillType' => Fill::FILL_SOLID,
                     'startColor' => ['argb' => '10B981'], // Verde Emerald-600 para diferenciar de Clientes
-                ]
+                ],
             ],
         ];
     }

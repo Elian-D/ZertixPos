@@ -12,13 +12,9 @@
                 :route="route('catalog.states')" 
                 label="Lista de Provincias permitidas" 
             />
-            <x-data-table.import.catalog-link 
-                :route="route('catalog.tax-types')" 
-                label="Lista de Tipos de Identificación" 
-            />
-            <x-data-table.import.catalog-link 
-                :route="route('catalog.client-status')" 
-                label="Lista de Estados de Clientes" 
+            <x-data-table.import.catalog-link
+                :route="route('catalog.tax-types')"
+                label="Lista de Tipos de Identificación"
             />
         </x-slot:catalogs>
     </x-data-table.import.main-container>

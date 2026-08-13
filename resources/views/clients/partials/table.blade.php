@@ -35,10 +35,16 @@
                 </td>
             @endif
 
+            @if(in_array('type', $visibleColumns))
+                <td class="px-6 py-4 text-xs text-gray-700">
+                    {{ $client->type === 'company' ? 'Empresa' : 'Individual' }}
+                </td>
+            @endif
+
             {{-- Columnas Financieras --}}
             @if(in_array('balance', $visibleColumns))
                 <td class="px-6 py-4 text-sm">
-                    <span class="font-semibold {{ $client->balance > 0 ? 'text-red-600' : 'text-green-600' }}">${{ number_format($client->balance, 2) }}</span>
+                    <span class="font-semibold {{ $client->balance > 0 ? 'text-red-600' : 'text-green-600' }}">{{ config('regional.currency_symbol') }}{{ number_format($client->balance, 2) }}</span>
                 </td>
             @endif
 
@@ -46,7 +52,7 @@
                 <td class="px-6 py-4 text-sm">
                     @if($client->credit_limit > 0)
                         <div class="flex items-center gap-2">
-                            <span class="text-gray-700 font-medium">${{ number_format($client->credit_limit, 2) }}</span>
+                            <span class="text-gray-700 font-medium">{{ config('regional.currency_symbol') }}{{ number_format($client->credit_limit, 2) }}</span>
                             
                             @if($client->balance > $client->credit_limit)
                                 <span class="whitespace-nowrap inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-700 animate-pulse ring-1 ring-red-400">
@@ -59,18 +65,6 @@
                             Solo Contado
                         </span>
                     @endif
-                </td>
-            @endif
-
-            @if(in_array('accounting_account', $visibleColumns))
-                <td class="px-6 py-4 text-xs text-gray-500">
-                    {{ $client->accountingAccount->code ?? 'General' }}
-                </td>
-            @endif
-
-            @if(in_array('type', $visibleColumns))
-                <td class="px-6 py-4 text-xs text-gray-700">
-                    {{ $client->type === 'company' ? 'Empresa' : 'Individual' }}
                 </td>
             @endif
 
@@ -87,11 +81,11 @@
             @endif
 
             @if(in_array('state', $visibleColumns))
-                <td class="px-6 py-4 text-sm text-gray-600">{{ $client->state->name ?? '—' }}</td>
+                <td class="px-6 py-4 text-sm text-gray-600">{{ $client->provincia->name ?? '—' }}</td>
             @endif
-            
+
             @if(in_array('city', $visibleColumns))
-                <td class="px-6 py-4 text-sm text-gray-700">{{ $client->city }}</td>
+                <td class="px-6 py-4 text-sm text-gray-700">{{ $client->municipio->name ?? '—' }}</td>
             @endif
 
 
@@ -99,11 +93,18 @@
                 <td class="px-6 py-4 text-sm text-gray-600">{{ $client->address ?? '—' }}</td>
             @endif
 
-            @if(in_array('estado_cliente', $visibleColumns))
+            @if(in_array('is_active', $visibleColumns))
                 <td class="px-6 py-4">
-                    <span class="px-2 py-1 text-xs rounded font-bold {{ $client->estadoCliente->clase_fondo }} {{ $client->estadoCliente->clase_texto }}">
-                        {{ $client->estadoCliente->nombre }}
-                    </span>
+                    <div class="flex items-center gap-1.5">
+                        <span class="px-2 py-1 text-xs rounded font-bold {{ $client->is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500' }}">
+                            {{ $client->is_active ? 'Activo' : 'Inactivo' }}
+                        </span>
+                        @if($client->esMoroso())
+                            <span class="px-2 py-1 text-xs rounded font-bold bg-red-50 text-red-600 ring-1 ring-red-200">
+                                Moroso
+                            </span>
+                        @endif
+                    </div>
                 </td>
             @endif
 

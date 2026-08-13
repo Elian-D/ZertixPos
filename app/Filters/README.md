@@ -56,8 +56,8 @@ class ClientStatusFilter implements FilterInterface
 
     public function apply(Builder $query): Builder 
     {
-        $value = $this->request->input('estado_cliente');
-        return $value ? $query->where('estado_cliente_id', $value) : $query;
+        $value = $this->request->input('is_active');
+        return $value !== null ? $query->where('is_active', $value) : $query;
     }
 }
 ```
@@ -70,8 +70,8 @@ En la clase `Filters` de tu módulo, añade el filtro al array `filters()`. La l
 class ClientFilters extends QueryFilter {
     protected function filters(): array {
         return [
-            'search'         => ClientSearchFilter::class,
-            'estado_cliente' => ClientStatusFilter::class, // 'estado_cliente' es el name del <select>
+            'search'    => ClientSearchFilter::class,
+            'is_active' => ClientStatusFilter::class, // 'is_active' es el name del toggle
         ];
     }
 }
@@ -101,27 +101,22 @@ Para mantener la consistencia visual, utiliza los componentes de `data-table`:
 
 ```html
 <x-data-table.filter-dropdown>
-    <x-data-table.filter-select label="Estado" name="estado_cliente" formId="main-filters">
-        <option value="">Todos</option>
-        @foreach($estados as $estado)
-            <option value="{{ $estado->id }}" @selected(request('estado_cliente') == $estado->id)>
-                {{ $estado->nombre }}
-            </option>
-        @endforeach
-    </x-data-table.filter-select>
+    <x-data-table.filter-toggle label="Estado" name="is_active"
+        :options="['' => 'Todos', '1' => 'Activos', '0' => 'Inactivos']"
+        formId="main-filters" />
 </x-data-table.filter-dropdown>
 ```
 
 ### 2. Gestión de Chips de Filtro (JS)
 
-Para que el sistema de "Chips" (etiquetas de filtros activos) muestre nombres legibles en lugar de IDs, debemos exponer un diccionario al objeto global `window`.
+Para que el sistema de "Chips" (etiquetas de filtros activos) muestre nombres legibles en lugar de IDs, debemos exponer un diccionario al objeto global `window`. Solo hace falta para filtros basados en catálogo (`<select>` con IDs numéricos) — un `filter-toggle` como el de arriba ya se autoexplica y no necesita entrada en `filterSources`.
 
 En tu vista parcial de filtros:
 
 ```js
 window.filterSources = {
     // nombre_del_parametro: { id: "Nombre Legible" }
-    estado_cliente: JSON.parse('{!! json_encode($estados->pluck("nombre", "id")) !!}'),
+    state: JSON.parse('{!! json_encode($states->pluck("name", "id")) !!}'),
 };
 ```
 ---

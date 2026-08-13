@@ -11,11 +11,14 @@
 
 ## 1. Definiciones
 
-- **Módulo base (core):** lo que el sistema necesita para funcionar como lo que es — un punto de venta con catálogo, cobro e inventario mínimo. Sin esto no hay producto. No es opt-out en ninguna instalación.
-- **Módulo satélite:** agrega o profundiza funcionalidad sobre uno o más módulos base. Casi siempre depende de un módulo base para alimentarse (usa sus datos/eventos) pero el base nunca depende del satélite. Se activa por instalación/cliente, vía flag.
+**Revisión (2026-08-13):** este documento originalmente definía solo dos niveles (base / satélite). Se agrega un tercer nivel intermedio — **núcleo flexible** — porque en la práctica hay módulos que *todo* negocio necesita disponible por defecto (a diferencia de un satélite, que no viene incluido si no se pidió) pero que un negocio concreto puede decidir que no le aplica (a diferencia de un base fijo, que nunca es opt-out). Ver el detalle completo en `docs/features/v1.1.0.md`, Fase 10 (§10.4 en adelante) — ese es el documento de implementación; este sigue siendo la referencia de la taxonomía.
+
+- **Módulo base fijo (core):** lo que el sistema necesita para funcionar como lo que es — un punto de venta con catálogo y cobro. Sin esto no hay producto. No es opt-out en ninguna instalación, no tiene flag, nunca aparece en ninguna pantalla de configuración.
+- **Núcleo flexible (nuevo):** funcionalidad que *todo* negocio tiene disponible desde el día uno (encendida por defecto, sin importar el Plan — no es algo que el Plan venda) pero que el dueño puede apagar si genuinamente no le aplica a su operación (ej. un negocio 100% servicios no necesita Inventario; uno 100% contado no necesita CxC). A diferencia de un satélite, nunca empieza apagado. A diferencia de un base fijo, sí se puede apagar — y al apagarse, el módulo **se pausa en el tiempo**: deja de registrar información nueva de ese dominio (no solo se oculta la UI), pero nada de lo ya existente se borra. Ver la tabla completa en §2.1.5.
+- **Módulo satélite:** agrega o profundiza funcionalidad sobre uno o más módulos base/flexibles. Casi siempre depende de un módulo base para alimentarse (usa sus datos/eventos) pero el base nunca depende del satélite. Empieza **apagado** por defecto y solo se activa si el Plan del cliente lo incluye y el dueño lo enciende explícitamente.
 - Dentro de un módulo satélite puede haber **variantes** (la idea que mencionaste de "POS pero para cafetería" vs. POS actual, o "POS simplificado" para vendedor ambulante) — eso es una satelización de segundo nivel: no es un módulo nuevo, es un *modo* dentro de un módulo existente, activado por el mismo mecanismo de flags.
 
-Regla de dependencia (para que el mapa de abajo tenga sentido): **un módulo base nunca importa/consulta un módulo satélite**. Hoy esa regla se rompe en varios puntos (ver §3) — es la deuda a limpiar antes de que activar/desactivar flags sea seguro.
+Regla de dependencia (para que el mapa de abajo tenga sentido): **un módulo base fijo nunca importa/consulta un módulo flexible o satélite**. Hoy esa regla se rompe en varios puntos (ver §3) — es la deuda a limpiar antes de que activar/desactivar flags sea seguro. Entre **satélite y flexible** sí puede haber una dependencia dura real (ej. Compras necesita Inventario encendido para tener sentido) — se resuelve con **bloqueo explícito, nunca cascada automática ni un resolver genérico de dependencias** (evita la explosión combinatoria de validar 2^n combinaciones); ver la tabla corta y mantenida a mano en `docs/features/v1.1.0.md` §10.7.
 
 ---
 
@@ -23,33 +26,46 @@ Regla de dependencia (para que el mapa de abajo tenga sentido): **un módulo bas
 
 Basado en `routes/admin/*`, `app/Models/*`, y el menú real en [app-layout.blade.php](resources/views/components/app-layout.blade.php).
 
-### 2.1 Módulos BASE (obligatorios en toda instalación)
+### 2.1 Módulos BASE FIJOS (obligatorios en toda instalación, sin flag, no opt-out)
 
-| Módulo | Qué hace | Por qué es base |
+| Módulo | Qué hace | Por qué es base fijo |
 |---|---|---|
 | **Auth / Usuarios / Roles** (Spatie Permission) | Login, control de acceso, roles y permisos por acción | Ningún sistema multiusuario funciona sin esto |
 | **Configuración General** (`ConfiguracionGeneral`, `TipoPago`, `Impuesto`, `TaxIdentifierType`) | Datos de la empresa, moneda, tasa de impuesto, métodos de pago | Todo el resto (ventas, POS, facturación) lee de aquí |
 | **Productos** (`Product`, `Category`, `Unit`) | Catálogo vendible: nombre, precio, SKU, unidad, categoría | Sin catálogo no hay qué vender |
-| **Clientes — núcleo** (`Client`, solo campos: nombre, contacto, tax_id, crédito, estado) | Identifica a quién se le vende/factura | Necesario incluso para "Consumidor Final" walk-in y para crédito básico |
-| **Inventario — núcleo** (`Warehouse` con 1 almacén por defecto, `InventoryStock`, `InventoryMovement`) | Existencia y salida de producto por venta | Cualquier negocio que vende físico necesita saber si hay stock, aunque sea 1 solo almacén |
-| **Ventas / POS — núcleo** (`Sale`, `SaleItem`, `SalePayment`, POS Workspace, `PosTerminal`/`PosSession` mínimos) | El producto en sí: cobrar, generar la venta, descontar inventario | Es la razón de ser de ZertixPOS |
-| **Cuentas por Cobrar simples** (`Receivable`, solo el registro de saldo/estado, sin `Payment`/`JournalEntry` formales) | Saber quién debe y cuánto quedó pendiente de una venta a crédito | Es información operativa mínima, no contabilidad formal — cualquier negocio que vende "fiado" la necesita |
+| **Clientes — núcleo** (`Client`, solo campos: nombre, contacto, tax_id, crédito, estado) | Identifica a quién se le vende/factura | Necesario incluso para "Consumidor Final" walk-in |
+| **Ventas / POS — núcleo** (`Sale`, `SaleItem`, `SalePayment`, POS Workspace, `PosTerminal`/`PosSession` mínimos) | El producto en sí: cobrar, generar la venta | Es la razón de ser de ZertixPOS |
+| **Devoluciones / Reembolsos** (`Sale::cancel()`/flujo de devolución, sin comprobante fiscal) | Anular o devolver una venta mal hecha | No es "un módulo que alguien no usa" como los de §2.1.5 — es la red de seguridad para corregir un error de cobro. Hasta el negocio más simple la necesita alguna vez; apagarla es un riesgo operativo, no una preferencia de UX, por eso se queda fija y no pasa a flexible |
 
 **Nota sobre Geo:** `Country`/`State` hoy son genéricos (multi-país) pero el ítem "Depuración Geográfica" de `docs/promts.md` ya pide dejarlo fijo a RD. Una vez hecho eso, Geo deja de ser un "módulo" propiamente — pasa a ser configuración fija dentro de Configuración General, no algo que activar/desactivar.
+
+### 2.1.5 Núcleo FLEXIBLE (encendido por defecto en todo Plan, apagable por el dueño)
+
+**Revisión (2026-08-13):** estos 4 módulos vivían en §2.1 como base fijo hasta esta ronda. Se reclasifican porque, a diferencia de Auth/Productos/Ventas, sí hay negocios reales que legítimamente no los usan — y forzarlos encendidos les agrega ruido de UI (alertas de stock a quien no vende físico, campos de crédito a quien solo vende de contado) sin aportarles nada. La diferencia con un satélite es que **no dependen del Plan** — vienen encendidos siempre, sin importar qué se contrató, porque no son parte de lo que el Plan vende, son preferencia de operación.
+
+| Módulo | Flag | Por qué es candidato a apagarse | Qué se congela al apagar (nunca se borra nada) |
+|---|---|---|---|
+| **Inventario** (`Warehouse`, `InventoryStock`, `InventoryMovement`) | `inventory.tracking` | Negocio 100% servicios (barbería, consultoría) — nunca necesita saber "cuánto stock queda" | `SaleService`/`InventoryMovementService` dejan de crear `InventoryMovement`/tocar `InventoryStock` para cualquier producto (no solo se salta la *validación* de stock, se salta la *escritura*). Menú Inventario y columnas/badges de stock ocultos en Productos y POS. Rutas de `routes/admin/inventory.php` gateadas por `module:inventory.tracking`. |
+| **Cuentas por Cobrar + Abonos operativos** (`Receivable`) | `sales.receivables` | Negocio 100% contado, nunca da crédito | El formulario de venta deja de ofrecer `payment_type=credit`. No se crean `Receivable` nuevos. `credit_limit`/`payment_terms` del Cliente y `dias_gracia_mora` de Configuración General pasan a `disabled` (visibles, no editables) en vez de ocultarse — son datos que pueden existir de cuando el módulo estaba activo. |
+| **Cuentas por Pagar operativas** (deudas/gastos del día a día del dueño — luz, agua, alquiler, adelantos sin nómina formal) | `sales.payables` | Negocio que lleva sus gastos aparte del sistema | No se crean registros de gasto/deuda nuevos. Módulo **pendiente de construir** (ver roadmap §5, ítem 3.5) — nace ya con este flag desde el día uno, para no repetir el error de Contabilidad (construirlo fijo y desacoplarlo después). |
+| **Cotizaciones** (`Quote`, `QuoteItem`) | `sales.quotes` | Negocio de venta directa que nunca cotiza antes de vender | No se crean `Quote` nuevos. Rutas de Cotizaciones gateadas. |
+
+Confirmado contra código para los cuatro: hoy `PaymentService::createPayment()` acopla el abono de CxC a un `JournalEntry` obligatorio y a `AccountingAccount::where('code','1.1.01')` hardcodeado — ese es el bug a corregir (REQ-02.8 en `v1.1.0.md`), no el diseño deseado; el abono en sí (CxC) es independiente del asiento contable que genera (satélite, `accounting.advanced`). `QuoteService` solo depende de `Product`/`SaleService`, no de Contabilidad ni NCF, así que apagar Cotizaciones no arrastra nada más. Detalle completo de implementación (middleware, vista de toggles, reglas de dependencia con satélites) en `docs/features/v1.1.0.md` Fase 10, §10.4 en adelante — este documento se queda como la referencia de la taxonomía, no repite el detalle de construcción.
 
 ### 2.2 Módulos SATÉLITE (opt-in por instalación)
 
 | Módulo | Qué hace | Depende de (base) | Encaja con qué perfil | Estado actual |
 |---|---|---|---|---|
 | **NCF / Fiscal RD** (`Sales/Ncf/*`: `NcfType`, `NcfSequence`, `NcfLog`) | Comprobantes fiscales dominicanos, secuencias, validación RNC | Ventas | Cualquier negocio formal en RD que facture con NCF | **Ya es el ejemplo correcto**: gateado por `general_config()->usa_ncf`, aislado en su propio namespace. Es la plantilla a replicar para todo lo demás. |
-| **Contabilidad formal** (`AccountingAccount`, `JournalEntry`, `JournalItem`, `Payment`, `DocumentType` correlativos) | Partida doble, plan de cuentas, asientos, pagos con recibo formal | Ventas, CxC | Solo el cliente que explícitamente pide contabilidad formal / tiene contador que la exige dentro del sistema | Analizado a fondo en [sobre-ingenieria-modulos.md §1](sobre-ingenieria-modulos.md); acoplado por código a códigos de cuenta hardcodeados — **hay que desacoplar antes de poder apagarlo con un flag de forma segura** (ver §3) |
-| **Clientes — Activos en Campo** (`PointOfSale`, `Equipment`, `EquipmentType`, `BusinessType`) | Puntos de venta del cliente + equipos (freezers) prestados con serial | Clientes (núcleo) | Distribución con activos prestados en campo — el caso original de hielo. La embasadora de agua *podría* reusar esto si presta enfriadores/dispensadores, pero el vendedor ambulante no | Hoy vive dentro del núcleo de `Clients`, cargado siempre |
-| **Cotizaciones** (`Quote`, `QuoteItem`) | Presupuestos formales antes de la venta | Ventas, Clientes | Negocios con venta mayorista/por encargo (la embasadora podría necesitarlo para pedidos grandes); el vendedor ambulante no | Ya está en namespace propio `Sales/Quotes` |
+| **Contabilidad formal** (`AccountingAccount`, `JournalEntry`, `JournalItem`, `DocumentType` correlativos, y el **asiento derivado** de un abono vía `accounting_account_roles`) | Partida doble, plan de cuentas, asientos automáticos por rol de cuenta | Ventas, CxC/CxP (como dato de entrada, no como dueño de su flujo) | Solo el cliente que explícitamente pide contabilidad formal / tiene contador que la exige dentro del sistema | Analizado a fondo en [sobre-ingenieria-modulos.md §1](sobre-ingenieria-modulos.md); acoplado por código a códigos de cuenta hardcodeados en `PaymentService`/`ReceivableService` — **ya no incluye el abono en sí** (eso es CxC/CxP base, ver arriba), solo la posición contable que ese abono genera si el módulo está activo — **hay que desacoplar antes de poder apagarlo con un flag de forma segura** (ver §3) |
+| **`sales.delivery_points`** — Puntos de Venta / Clientes Físicos de Ruta (`PointOfSale`, `BusinessType`) | Geolocalización del colmado/negocio, dirección física, días de visita, tipo de negocio | Clientes (núcleo) | **Casi todos.** La embasadora de agua para sus camiones, un cliente tipo "Plaza Merengue", y también el vendedor ambulante para agendar y registrar los colmados fijos de su ruta | Hoy vive mezclado con `Equipment` bajo un solo satélite de "Activos en Campo" — separado en esta revisión porque el perfil que lo usa es mucho más amplio que el que usa equipos en préstamo |
+| **`clients.field_assets`** — Gestión de Equipos en Préstamo/Alquiler (`Equipment`, `EquipmentType`) | Neveras, freezers, anaqueles, exhibidores, dispensadores con número de serie, en comodato | Clientes (núcleo) | **Solo distribuidoras/envasadoras grandes** que firman contratos de comodato y prestan activos caros para amarrar al cliente (la embasadora, un cliente tipo "Plaza Merengue"). El vendedor ambulante no tiene capital ni espacio para prestar equipos — este flag va en `false` para ese perfil | Hoy vive dentro del núcleo de `Clients`, cargado siempre — separar de `sales.delivery_points` (arriba), no son el mismo caso de uso aunque compartían el mismo satélite hasta esta revisión |
 | **Inventario avanzado — multi-almacén, transferencias, tomas físicas, mermas** | Más de un almacén, transferencias entre almacenes con estados, conteos, pérdidas | Inventario (núcleo) | Negocios con más de un punto de almacenamiento (la embasadora, si tiene planta + camión/ruta) | Transferencias/tomas físicas/mermas están **pendientes de construir** (`docs/promts.md`, sección Logística) — construirlas ya de una vez como satélite, no como parte del núcleo |
-| **Rutas y Entregas** | Planificación de rutas de reparto | Ventas, Clientes | Justo el caso de la embasadora de agua (reparto a domicilio) y el del hielo original | El link "Rutas y Entregas" en el sidebar **no tiene ruta real detrás** (`/rutas` no está registrado en `routes/`) — es un placeholder de la época del hielo. Hay que decidir: revivirlo como satélite real (probablemente lo necesite la embasadora) o quitarlo del menú mientras no exista. |
-| **Compras / Proveedores** | Órdenes de compra, proveedores | Inventario, Productos | Cualquier negocio que reabastece formalmente | **No existe todavía** (pendiente en `docs/promts.md`) — construirlo ya dentro del modelo de flags desde el día 1 |
-| **Devoluciones / Notas de Crédito (B04)** | Reembolsos con comprobante fiscal | Ventas, NCF | Cualquier negocio con NCF activo que necesite anular/devolver | **No existe todavía** (pendiente) — depende de NCF, debería heredar su flag |
+| **Rutas y Entregas** | Planificación de rutas de reparto | Ventas, Clientes, `sales.delivery_points` | Justo el caso de la embasadora de agua (reparto a domicilio) y el del hielo original | El link "Rutas y Entregas" en el sidebar **no tiene ruta real detrás** (`/rutas` no está registrado en `routes/`) — es un placeholder de la época del hielo. Hay que decidir: revivirlo como satélite real (probablemente lo necesite la embasadora) o quitarlo del menú mientras no exista. |
+| **`purchases.vendors`** — Compras / Proveedores formales | Órdenes de compra, catálogo de proveedores, y una CxP que nace de una compra real (no de un gasto suelto) | Productos, `sales.payables` (flexible), y **dependencia dura de `inventory.tracking`** (flexible) — una orden de compra recibida existe para aumentar stock, no tiene sentido si Inventario está apagado | Cualquier negocio que reabastece con proveedores formales y quiere trazabilidad de orden de compra | **No existe todavía** (pendiente en `docs/promts.md`). La CxP *operativa* (gastos del día a día) ya es núcleo flexible (ver §2.1.5) — este satélite es solo para cuando además se quiere Proveedor + Orden de Compra formal. La dependencia dura con `inventory.tracking` se resuelve con **bloqueo explícito al guardar, nunca cascada automática** (ver `v1.1.0.md` §10.7, tabla corta mantenida a mano para evitar explosión combinatoria) |
 | **POS — variantes/modos** | Ej.: POS simplificado sin sesión/terminal formal para vendedor ambulante, o un modo tipo "comanda" para cafetería | Ventas/POS (núcleo) | Cada perfil de cliente necesita un modo distinto del mismo módulo base | Idea a futuro, todavía no diseñado — es la satelización "de segundo nivel" que mencionaste (módulos dentro de módulos) |
+
+**Revisión (2026-08-13, v1.1.0 §10.9):** la Nota de Crédito Fiscal (B04) **no es un módulo satélite propio** — se sacó de esta tabla. Es el comprobante fiscal de una acción concreta de Devoluciones (todavía sin construir, ver roadmap): cuando exista, "emitir con B04" valida `module_enabled('sales.ncf')` directo en su propio código, sin un flag intermedio. Registrarlo como satélite aparte (con cascada automática al apagar `sales.ncf`) fue sobre-ingeniería temprana — un flag para algo que no es una funcionalidad independiente, es un detalle de implementación de otra.
 
 ### 2.3 Hallazgo transversal
 
@@ -69,7 +85,9 @@ Ya viste con NCF y con el bug de `apply_tax` en el formulario clásico que un fl
 
 ---
 
-## 4. Mecanismo técnico propuesto (flags + middleware)
+## 4. Mecanismo técnico (flags + middleware)
+
+**Estado real (2026-08-13):** todo lo de esta sección ya dejó de ser una propuesta — `config/modules.php`, `InstallationModule`, `module_enabled()` y el middleware `EnsureModuleEnabled`/`module:<key>` ya existen y ya están aplicados a `accounting.advanced`, `sales.delivery_points` y `clients.field_assets` (`routes/admin/accounting.php`, `routes/admin/clients.php`). Lo que falta, documentado en `docs/features/v1.1.0.md` Fase 10, es extender el mismo middleware a los 4 módulos que pasan a núcleo flexible en §2.1.5 (`inventory.tracking`, `sales.receivables`, `sales.payables`, `sales.quotes`), que hoy no tienen ningún gate de ruta porque siempre fueron base fijo.
 
 Diseñado para que hoy sea "una instalación, una fila de flags" y mañana sea "una fila de flags por tenant" sin rediseñar nada — es el mismo shape de dato.
 
@@ -79,21 +97,59 @@ Un archivo de config (no tabla) que declara **todos** los módulos que el códig
 
 ```php
 return [
-    'clients.field_assets' => [
-        'label' => 'Clientes: Puntos de Venta y Equipos',
+    'sales.delivery_points' => [
+        'label' => 'Puntos de Venta / Clientes de Ruta',
         'category' => 'satellite',
         'depends_on' => ['clients.core'],
-        'route_prefixes' => ['admin/clients/pos', 'admin/clients/equipments', 'admin/clients/businessTypes', 'admin/clients/equipmentTypes'],
+        'route_prefixes' => ['admin/clients/pos', 'admin/clients/businessTypes'],
+    ],
+    'clients.field_assets' => [
+        'label' => 'Equipos en Préstamo/Comodato',
+        'category' => 'satellite',
+        'depends_on' => ['clients.core'],
+        'route_prefixes' => ['admin/clients/equipments', 'admin/clients/equipmentTypes'],
     ],
     'accounting.advanced' => [
         'label' => 'Contabilidad formal (partida doble)',
         'category' => 'satellite',
         'depends_on' => ['sales.core'],
-        'route_prefixes' => ['admin/accounting/journal_entries', 'admin/accounting/accounts', 'admin/accounting/document_types', 'admin/accounting/payments'],
+        // OJO: no incluye receivables/payables — CxC y CxP operativas son núcleo flexible, se gatean aparte (categoría 'base_flexible', ver abajo)
+        'route_prefixes' => ['admin/accounting/journal_entries', 'admin/accounting/accounts', 'admin/accounting/payments'],
     ],
-    'sales.quotes' => [ /* ... */ ],
-    'sales.ncf' => [ /* ... */ ], // ya existe como usa_ncf, se migra a este mismo registro
-    // ...
+    'purchases.vendors' => [
+        'label' => 'Compras / Proveedores formales',
+        'category' => 'satellite',
+        'depends_on' => ['inventory.tracking'], // dependencia dura satélite→flexible: BLOQUEO explícito al guardar, nunca cascada (ver §2.1.5 y v1.1.0.md §10.7)
+        'route_prefixes' => ['admin/purchases'],
+    ],
+    'sales.ncf' => [ /* ... */ ], // ya existe, migrado desde el viejo usa_ncf
+    // 'sales.credit_notes_b04' NO va acá — no es un módulo propio (revisión v1.1.0
+    // §10.9). El B04 es el comprobante fiscal de una acción de Devoluciones, valida
+    // module_enabled('sales.ncf') directo en su propio código cuando se construya.
+
+    // Núcleo flexible (revisión 2026-08-13, ver §2.1.5) — encendidos por defecto en TODO plan,
+    // nunca gateados por Plan::assignTo() (se filtra solo category==='satellite'), el dueño los apaga
+    // desde "Funcionalidades del Sistema" si no le aplican a su operación.
+    'inventory.tracking' => [
+        'label' => 'Control de Inventario',
+        'category' => 'base_flexible',
+        'route_prefixes' => ['admin/inventory'],
+    ],
+    'sales.receivables' => [
+        'label' => 'Cuentas por Cobrar',
+        'category' => 'base_flexible',
+        'route_prefixes' => ['admin/accounting/receivables'],
+    ],
+    'sales.payables' => [
+        'label' => 'Cuentas por Pagar',
+        'category' => 'base_flexible',
+        'route_prefixes' => ['admin/accounting/payables'], // aún no existe, ver roadmap §5 ítem 3.5
+    ],
+    'sales.quotes' => [
+        'label' => 'Cotizaciones',
+        'category' => 'base_flexible',
+        'route_prefixes' => ['admin/sales/quotes'],
+    ],
 ];
 ```
 
@@ -136,8 +192,9 @@ Este es el hilo conductor que conecta con el roadmap específico de Contabilidad
 
 1. **(Ya, sin bloquear el viernes)** No agregar más módulos nuevos sin registrarlos mentalmente como base o satélite — aunque el flag técnico no exista todavía, decide desde ya en qué categoría cae cada cosa nueva de `docs/promts.md` (Compras, Devoluciones, Transferencias → todas satélite).
 2. **Semana post-viernes:** construir el mecanismo técnico de §4 (config de módulos, tabla `installation_modules`, helper, middleware) — pero con **todos los flags en `true` por defecto**. Cero cambio de comportamiento, solo se instala el riel. Se prueba que nada se rompe.
-3. **Desacoplar Contabilidad** (roadmap ya detallado en `sobre-ingenieria-modulos.md §1`, paso 1: quitar los `AccountingAccount::where('code', ...)` hardcodeados de `SaleService`, `ReceivableService`, `PaymentService`, el listener POS y el dashboard). Es el más urgente de desacoplar porque es el que más se autoinyecta.
-4. **Desacoplar Clientes→Activos en Campo**: sacar `PointOfSale`/`Equipment` del núcleo de `Client`, mover sus rutas/vistas a su propio flag `clients.field_assets`, off por defecto en instalaciones nuevas.
+3. **Desacoplar Contabilidad** (roadmap ya detallado en `sobre-ingenieria-modulos.md §1`, paso 1: quitar los `AccountingAccount::where('code', ...)` hardcodeados de `SaleService`, `ReceivableService`, `PaymentService`, el listener POS y el dashboard). Incluye separar `PaymentService::createPayment()` en dos pasos: el abono operativo (siempre corre, actualiza `Receivable`/CxP) y el asiento contable derivado (solo si `accounting.advanced` está activo). Es el más urgente de desacoplar porque es el que más se autoinyecta.
+3.5. **Construir CxP operativa** como módulo base, simétrico a CxC — deudas/gastos del dueño con su salida de caja, sin Proveedor ni orden de compra.
+4. **Desacoplar Clientes→Activos en Campo**: sacar `PointOfSale`/`BusinessType` (→ `sales.delivery_points`) y `Equipment`/`EquipmentType` (→ `clients.field_assets`) del núcleo de `Client` — dos flags separados, no uno solo, porque el perfil que usa cada uno es distinto (casi todos necesitan puntos de venta de ruta; solo las distribuidoras grandes prestan equipos). Off por defecto en instalaciones nuevas.
 5. **Desacoplar Inventario→Warehouse→Contabilidad**: sacar `createAccountingAccount()` del `booted()` de `Warehouse`.
 6. **Apagar por defecto** en el registro de módulos: `accounting.advanced`, `clients.field_assets`, `sales.quotes` (evaluar caso a caso por cliente), dejar todo lo demás (§2.1) siempre en `true`.
 7. **Construir el wizard de instalación** que lee `config/modules.php` y escribe `installation_modules` — este es el que mencionaste, ligado 1:1 al mismo dato que luego migra a multi-tenant.
@@ -148,7 +205,7 @@ Este es el hilo conductor que conecta con el roadmap específico de Contabilidad
 
 ## 6. Ajuste al caso de los dos clientes actuales
 
-- **Embasadora de agua (instalación viernes):** perfil parecido al original de hielo (producción + reparto), así que probablemente **sí** necesite Rutas y Entregas más adelante, y tal vez Cotizaciones para pedidos mayoristas. No necesita Activos en Campo (equipos prestados) salvo que también preste dispensadores — a confirmar con el cliente. Contabilidad formal: probablemente no, a menos que tengan contador que la pida explícitamente — usar CxC simple + NCF si facturan formal.
+- **Embasadora de agua (instalación viernes):** perfil parecido al original de hielo (producción + reparto), así que probablemente **sí** necesite Rutas y Entregas más adelante. Cotizaciones para pedidos mayoristas ya está disponible por defecto (es base, no hay que activar nada). No necesita Activos en Campo (equipos prestados) salvo que también preste dispensadores — a confirmar con el cliente. Contabilidad formal: probablemente no, a menos que tengan contador que la pida explícitamente — usar CxC/CxP operativas + NCF si facturan formal.
 - **Vendedor ambulante:** el caso más "mínimo" posible — valida que el núcleo (§2.1) realmente pueda operar solo, sin ningún satélite encendido. Es también el mejor caso de prueba para la futura "variante de POS simplificado" (§2.2, última fila): sesión/terminal/PIN de POS tal como existen hoy son demasiada ceremonia para una sola persona vendiendo desde un carrito.
 
 ## 7. Qué hacer antes del viernes (para que quede explícito)

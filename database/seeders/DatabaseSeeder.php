@@ -2,7 +2,23 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use Database\Seeders\AppInit\AccountingAccountRoleSeeder;
+use Database\Seeders\AppInit\AccountingAccountSeeder;
+use Database\Seeders\AppInit\BusinessTypeSeeder;
+use Database\Seeders\AppInit\ClientSeeder;
+use Database\Seeders\AppInit\ConfiguracionGeneralSeeder;
+use Database\Seeders\AppInit\DiaSemanaSeeder;
+use Database\Seeders\AppInit\DocumentTypeSeeder;
+use Database\Seeders\AppInit\GeoDataSeeder;
+use Database\Seeders\AppInit\ImpuestoSeeder;
+use Database\Seeders\AppInit\InstallationModuleSeeder;
+use Database\Seeders\AppInit\NcfTypeSeeder;
+use Database\Seeders\AppInit\PermissionSeeder;
+use Database\Seeders\AppInit\PlanSeeder;
+use Database\Seeders\AppInit\PosSettingSeeder;
+use Database\Seeders\AppInit\RoleSeeder;
+use Database\Seeders\AppInit\TipoPagoSeeder;
+use Database\Seeders\AppInit\UnitSeeder;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -11,62 +27,42 @@ class DatabaseSeeder extends Seeder
     use WithoutModelEvents;
 
     /**
-     * Seed the application's database.
+     * Seed the application's database. Solo `core` — el catálogo de ejemplo
+     * (categorías, productos, almacenes, puntos de venta, equipos, clientes
+     * ficticios, usuarios de fábrica) vive en `zertix:seed-demo`. Ningún
+     * usuario se crea aquí — la instalación real lo hace el Wizard (Fase 8,
+     * REQ-07.13): sin admin todavía, `ConfiguracionGeneral.nombre_empresa`
+     * queda vacío y `EnsureInstallationWizardCompleted` redirige al wizard.
      */
     public function run(): void
     {
         $this->call([
-            // Permission Seeders
-            \Database\Seeders\PermissionSeeder\DashboardPermissionsSeeder::class,
-            \Database\Seeders\PermissionSeeder\RolesPermissionsSeeder::class,
-            \Database\Seeders\PermissionSeeder\UsersPermissionsSeeder::class,
-            \Database\Seeders\PermissionSeeder\ConfigPermissionsSeeder::class,
-            \Database\Seeders\PermissionSeeder\GeographyPermissionsSeeder::class,
-            \Database\Seeders\PermissionSeeder\ClientPermissionsSeeder::class,
-            \Database\Seeders\PermissionSeeder\POSPermissionsSeeder::class,
-            \Database\Seeders\PermissionSeeder\EquipmentPermissionsSeeder::class,
-            \Database\Seeders\PermissionSeeder\ProductsPermissionsSeeder::class,
-            \Database\Seeders\PermissionSeeder\InventoryPermissionsSeeder::class,
-            \Database\Seeders\PermissionSeeder\AccountingPermissionsSeeder::class,
-            \Database\Seeders\PermissionSeeder\SalesPermissionsSeeder::class,
-            \Database\Seeders\PermissionSeeder\SalePosPermissionsSeeder::class,
-            RoleSeeder::class,
-            UserSeeder::class,
+            PermissionSeeder::class, // consolidado — antes 13 clases en PermissionSeeder/* — debe correr antes que RoleSeeder
+            RoleSeeder::class, // syncPermissions() necesita que los permisos ya existan — el usuario lo crea el Wizard, no un seeder
 
-            // Configuration Seeders
+            // Datos geográficos (RD-only, Fase 6)
+            GeoDataSeeder::class,
 
-                //Accounting Seeders
-                \Database\Seeders\AccountingSeeders\AccountingAccountSeeder::class,
-                \Database\Seeders\AccountingSeeders\DocumentTypeSeeder::class,
-                
-            \Database\Seeders\ConfigurationSeeders\ClientStateCategorySeeder::class,
-            \Database\Seeders\ConfigurationSeeders\EstadosClienteSeeder::class,
-            \Database\Seeders\ConfigurationSeeders\DiaSemanaSeeder::class,
-            \Database\Seeders\ConfigurationSeeders\TipoPagoSeeder::class,
-            \Database\Seeders\ConfigurationSeeders\ImpuestoSeeder::class,
-            \Database\Seeders\ConfigurationSeeders\ConfiguracionGeneralSeeder::class,
-            \Database\Seeders\ConfigurationSeeders\TaxIdentifierTypeSeeder::class,
+            PlanSeeder::class,
+            InstallationModuleSeeder::class,
+            DiaSemanaSeeder::class,
+            TipoPagoSeeder::class,
+            ImpuestoSeeder::class,
+            ConfiguracionGeneralSeeder::class, // sin 'Empresa Demo' (REQ-07.4)
 
-            // Clients Configuration Seeders
-            \Database\Seeders\ClientsConfigSeeders\BusinessTypeSeeder::class,
-            \Database\Seeders\ClientsConfigSeeders\EquipmentTypeSeeder::class,
-            \Database\Seeders\ClientsConfigSeeders\ClientSeeder::class,
-            \Database\Seeders\ClientsConfigSeeders\PointOfSaleSeeder::class,
-            \Database\Seeders\ClientsConfigSeeders\EquipmentSeeder::class,
+            AccountingAccountSeeder::class,
+            AccountingAccountRoleSeeder::class,
+            DocumentTypeSeeder::class,
 
-            // Products Seeders
-            \Database\Seeders\ProductsSeeders\CategorySeeder::class,
-            \Database\Seeders\ProductsSeeders\UnitSeeder::class,
-            \Database\Seeders\ProductsSeeders\ProductSeeder::class,
-            
+            BusinessTypeSeeder::class,
+            ClientSeeder::class, // solo "Consumidor Final" (REQ-07.3)
 
+            UnitSeeder::class,
+            NcfTypeSeeder::class,
 
-            // Inventory Seeders
-            \Database\Seeders\InventorySeeders\WarehouseSeeder::class,
-            \Database\Seeders\InventorySeeders\InventoryStockSeeder::class,
-
-            //Sales Seeders
-            \Database\Seeders\SalesSeeders\NcfTypeSeeder::class,
+            // Depende de que ClientSeeder ya haya corrido (usa el tax_id de
+            // Consumidor Final) — huérfano hasta ahora, nunca se registraba (REQ-07.5).
+            PosSettingSeeder::class,
         ]);
     }
 }
