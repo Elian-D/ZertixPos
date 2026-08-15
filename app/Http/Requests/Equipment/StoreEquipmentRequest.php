@@ -14,13 +14,13 @@ class StoreEquipmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'point_of_sale_id'  => 'required|exists:point_of_sales,id',
+            'point_of_sale_id' => 'required|exists:point_of_sales,id',
             'equipment_type_id' => 'required|exists:equipment_types,id',
-            'serial_number'     => 'nullable|string|max:100',
-            'name'              => 'nullable|string|max:100',
-            'model'             => 'nullable|string|max:100',
-            'notes'             => 'nullable|string',
-            'active'            => 'boolean',
+            'serial_number' => 'nullable|string|max:100|unique:equipments,serial_number',
+            'name' => 'nullable|string|max:100',
+            'model' => 'nullable|string|max:100',
+            'notes' => 'nullable|string',
+            'active' => 'boolean',
         ];
     }
 }

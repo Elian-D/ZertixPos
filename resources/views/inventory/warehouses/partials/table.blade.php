@@ -7,13 +7,6 @@
     @forelse($warehouses as $item)
         <tr class="hover:bg-gray-50 transition border-b border-gray-100">
 
-            {{-- Código --}}
-            @if(in_array('code', $visibleColumns))
-                <td class="whitespace-nowrap px-6 py-4 text-sm font-mono font-medium text-gray-600">
-                    {{ $item->code ?? 'PENDIENTE' }}
-                </td>
-            @endif
-
             {{-- Nombre --}}
             @if(in_array('name', $visibleColumns))
                 <td class="px-6 py-4 text-sm font-medium text-gray-900">

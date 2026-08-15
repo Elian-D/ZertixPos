@@ -166,24 +166,28 @@
                         <x-secondary-button x-on:click="$dispatch('close')" class="flex-1 sm:flex-none justify-center">
                             Cerrar
                         </x-secondary-button>
-                        <a href="{{ route('clients.edit', $client) }}" class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2 bg-indigo-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition duration-150">
-                            <x-heroicon-s-pencil class="w-4 h-4 mr-2" /> Editar
-                        </a>
+                        @unless($client->isConsumidorFinal())
+                            <a href="{{ route('clients.edit', $client) }}" class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2 bg-indigo-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition duration-150">
+                                <x-heroicon-s-pencil class="w-4 h-4 mr-2" /> Editar
+                            </a>
+                        @endunless
                     </div>
                 </div>
             </div>
         </div>
     </x-modal>
 
-    <x-ui.confirm-deletion-modal 
-    :id="$client->id"
-    :title="'¿Eliminar Cliente?'"
-    :itemName="$client->name"
-    :type="'el cliente'"
-    :route="route('clients.destroy', $client)"
-    >
-    <strong>Aviso:</strong> Esta operación se puede deshacer desde la papelera.
-    </x-ui.confirm-deletion-modal>
+    @unless($client->isConsumidorFinal())
+        <x-ui.confirm-deletion-modal
+        :id="$client->id"
+        :title="'¿Eliminar Cliente?'"
+        :itemName="$client->name"
+        :type="'el cliente'"
+        :route="route('clients.destroy', $client)"
+        >
+        <strong>Aviso:</strong> Esta operación se puede deshacer desde la papelera.
+        </x-ui.confirm-deletion-modal>
+    @endunless
     @endforeach
 
     

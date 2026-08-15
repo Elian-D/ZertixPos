@@ -146,8 +146,10 @@ class ClientService
     public function performBulkAction(array $ids, string $action, $value = null): int
     {
         return DB::transaction(function () use ($ids, $action, $value) {
-            $query = Client::whereIn('id', $ids);
-            $count = count($ids);
+            // El Consumidor Final nunca se toca en acciones masivas — no editable,
+            // no eliminable, no desactivable (REQ-2.3), ni siquiera vía bulk.
+            $query = Client::whereIn('id', $ids)->where('name', '!=', 'Consumidor Final');
+            $count = $query->count();
 
             match ($action) {
                 'delete' => $query->delete(),

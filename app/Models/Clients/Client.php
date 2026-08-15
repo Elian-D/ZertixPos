@@ -142,6 +142,16 @@ class Client extends Model
     }
 
     /**
+     * `Consumidor Final` (id 1) es consumido sin filtrar por al menos 8 puntos
+     * del sistema (Sale, StoreSaleRequest, PosSetting, catálogos de POS/Cotizaciones/
+     * Ventas) — editarlo, desactivarlo o eliminarlo rompería esos flujos.
+     */
+    public function isConsumidorFinal(): bool
+    {
+        return $this->name === 'Consumidor Final';
+    }
+
+    /**
      * Estado de ciclo de vida — decisión manual (Fase 11, REQ-11.3). Mismo
      * patrón que Warehouse/Category/Unit/BusinessType.
      */

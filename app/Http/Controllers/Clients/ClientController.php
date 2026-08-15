@@ -204,6 +204,8 @@ class ClientController extends Controller
      */
     public function destroy(Client $client)
     {
+        abort_if($client->isConsumidorFinal(), 403, 'El Consumidor Final no se puede eliminar.');
+
         // El trait manejará la lógica de borrado suave y redirección
         return $this->destroyTrait($client, null);
     }

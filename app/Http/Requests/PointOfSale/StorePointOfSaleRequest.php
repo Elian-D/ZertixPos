@@ -3,6 +3,7 @@
 namespace App\Http\Requests\PointOfSale;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StorePointOfSaleRequest extends FormRequest
 {
@@ -16,7 +17,7 @@ class StorePointOfSaleRequest extends FormRequest
         return [
             'client_id' => 'required|exists:clients,id',
             'business_type_id' => 'required|exists:business_types,id',
-            'name' => 'required|string|max:150',
+            'name' => ['required', 'string', 'max:150', Rule::unique('point_of_sales', 'name')->where('client_id', $this->client_id)],
             'provincia_id' => 'required|exists:provinces,id',
             'city' => 'required|string|max:100',
             'address' => 'nullable|string|max:255',

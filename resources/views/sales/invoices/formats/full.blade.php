@@ -215,7 +215,7 @@
                         </span>
                     </div>
                 @endforeach
-            @else
+            @elseif($sale->payment_type !== 'credit')
                 <span class="bold">{{ $sale->tipoPago->nombre ?? 'EFECTIVO' }}</span>
             @endif
 

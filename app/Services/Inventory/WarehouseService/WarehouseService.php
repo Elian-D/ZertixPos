@@ -11,7 +11,7 @@ class WarehouseService
     {
         return DB::transaction(function () use ($data) {
             return Warehouse::create($data);
-            // Nota: El modelo booted() ya se encarga de crear la cuenta y el código
+            // Nota: El modelo booted() ya se encarga de crear la cuenta contable
         });
     }
 
@@ -21,14 +21,11 @@ class WarehouseService
             $nombreAnterior = $warehouse->name;
             $warehouse->update($data);
 
-            if ($nombreAnterior !== $warehouse->name) {
-                $warehouse->generateCode();
-                // Opcional: Actualizar el nombre de la cuenta contable
-                if ($warehouse->accountingAccount) {
-                    $warehouse->accountingAccount->update([
-                        'name' => 'Inventario: '.$warehouse->name,
-                    ]);
-                }
+            // Opcional: Actualizar el nombre de la cuenta contable
+            if ($nombreAnterior !== $warehouse->name && $warehouse->accountingAccount) {
+                $warehouse->accountingAccount->update([
+                    'name' => 'Inventario: '.$warehouse->name,
+                ]);
             }
 
             return $warehouse;
