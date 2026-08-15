@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Accounting;
 
 use App\Http\Controllers\Controller;
-use App\Models\Accounting\Payment;
+use App\Models\Accounting\ClientCollection;
 use App\Models\Accounting\Receivable;
 use App\Models\Inventory\InventoryMovement;
 use App\Models\Sales\Sale;
@@ -14,11 +14,11 @@ use Illuminate\Http\Request;
  * Ingresos y Gastos — el reporte base de la Fase 3 (REQ-03.7).
  *
  * A propósito NO toca JournalEntry/JournalItem en ningún punto: se arma solo con
- * Sale (ingresos), InventoryMovement + Product.cost (costo de ventas) y Payment/
- * Receivable (cobros y CxC pendiente) — las mismas fuentes que ya funcionan sin
- * `accounting.advanced`. Es el sustituto real de la partida doble para esta
- * versión, no un complemento: si accounting.advanced está apagado, esta es la
- * única vista financiera de la instalación.
+ * Sale (ingresos), InventoryMovement + Product.cost (costo de ventas) y
+ * ClientCollection/Receivable (cobros y CxC pendiente) — las mismas fuentes que
+ * ya funcionan sin `accounting.advanced`. Es el sustituto real de la partida
+ * doble para esta versión, no un complemento: si accounting.advanced está
+ * apagado, esta es la única vista financiera de la instalación.
  */
 class FinancialOverviewController extends Controller
 {
@@ -42,8 +42,8 @@ class FinancialOverviewController extends Controller
         $grossProfit = $revenue - $costOfSales;
         $margin = $revenue > 0 ? ($grossProfit / $revenue) * 100 : 0;
 
-        $collected = (float) Payment::whereBetween('payment_date', [$startDay, $endDay])
-            ->where('status', Payment::STATUS_ACTIVE)
+        $collected = (float) ClientCollection::whereBetween('payment_date', [$startDay, $endDay])
+            ->where('status', ClientCollection::STATUS_ACTIVE)
             ->sum('amount');
 
         $receivablePending = (float) Receivable::whereIn('status', [Receivable::STATUS_UNPAID, Receivable::STATUS_PARTIAL])

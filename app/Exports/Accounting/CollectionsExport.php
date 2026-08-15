@@ -2,12 +2,12 @@
 
 namespace App\Exports\Accounting;
 
-use App\Models\Accounting\Payment;
+use App\Models\Accounting\ClientCollection;
 use Maatwebsite\Excel\Concerns\{FromQuery, WithHeadings, WithMapping, WithStyles, WithDefaultStyles, WithColumnWidths};
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\{Style, Fill, Alignment};
 
-class PaymentsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithDefaultStyles, WithColumnWidths
+class CollectionsExport implements FromQuery, WithHeadings, WithMapping, WithStyles, WithDefaultStyles, WithColumnWidths
 {
     protected $query;
     protected $statuses;
@@ -15,7 +15,7 @@ class PaymentsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
     public function __construct($query)
     {
         $this->query = $query;
-        $this->statuses = Payment::getStatuses();
+        $this->statuses = ClientCollection::getStatuses();
     }
 
     public function query()
@@ -28,13 +28,13 @@ class PaymentsExport implements FromQuery, WithHeadings, WithMapping, WithStyles
     {
         return [
             'ID',
-            'Fecha Pago',
+            'Fecha Cobro',
             'No. Recibo',
             'Cliente',
             'Factura Aplicada',
             'Método de Pago',
             'Referencia',
-            'Monto Pagado',
+            'Monto Cobrado',
             'Estado',
             'Registrado por',
             'Nota'

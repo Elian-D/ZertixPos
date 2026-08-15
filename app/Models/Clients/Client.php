@@ -4,7 +4,7 @@ namespace App\Models\Clients;
 
 use App\Enums\TaxIdentifierType;
 use App\Models\Accounting\AccountingAccount;
-use App\Models\Accounting\Payment;
+use App\Models\Accounting\ClientCollection;
 use App\Models\Accounting\Receivable;
 use App\Models\Geo\Municipality;
 use App\Models\Geo\Province;
@@ -74,9 +74,9 @@ class Client extends Model
         return $this->belongsTo(AccountingAccount::class, 'accounting_account_id');
     }
 
-    public function payments(): HasMany
+    public function collections(): HasMany
     {
-        return $this->hasMany(Payment::class);
+        return $this->hasMany(ClientCollection::class);
     }
 
     /**

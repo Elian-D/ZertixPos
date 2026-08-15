@@ -2,19 +2,20 @@
 
 namespace App\Services\Accounting\Receivable;
 
-use App\Models\Accounting\{AccountingAccountRole, Receivable, JournalEntry};
+use App\Models\Accounting\AccountingAccountRole;
+use App\Models\Accounting\Receivable;
 use App\Models\Clients\Client;
 use App\Models\Sales\Sale;
 use App\Services\Accounting\JournalEntries\JournalEntryService;
-use Illuminate\Support\Facades\DB;
 use Exception;
+use Illuminate\Support\Facades\DB;
 
 class ReceivableService
 {
     public function __construct(
         protected JournalEntryService $journalService
     ) {}
-    
+
     /**
      * Crea el registro de CxC vinculado opcionalmente a un asiento existente.
      */
@@ -22,23 +23,23 @@ class ReceivableService
     {
         return DB::transaction(function () use ($data) {
             $client = Client::findOrFail($data['client_id']);
-            
+
             $receivableAccountId = $client->accounting_account_id
                 ?? AccountingAccountRole::resolve('receivable_default');
 
             return Receivable::create([
-                'client_id'             => $data['client_id'],
-                'journal_entry_id'      => null, // El asiento ya lo creó SaleService
+                'client_id' => $data['client_id'],
+                'journal_entry_id' => null, // El asiento ya lo creó SaleService
                 'accounting_account_id' => $receivableAccountId,
-                'document_number'       => $data['document_number'],
-                'description'           => $data['description'] ?? "CxC Venta: {$data['document_number']}",
-                'total_amount'          => $data['total_amount'],
-                'current_balance'       => $data['total_amount'],
-                'emission_date'         => $data['emission_date'],
-                'due_date'              => $data['due_date'],
-                'reference_type'        => Sale::class,
-                'reference_id'          => $data['reference_id'],
-                'status'                => Receivable::STATUS_UNPAID,
+                'document_number' => $data['document_number'],
+                'description' => $data['description'] ?? "CxC Venta: {$data['document_number']}",
+                'total_amount' => $data['total_amount'],
+                'current_balance' => $data['total_amount'],
+                'emission_date' => $data['emission_date'],
+                'due_date' => $data['due_date'],
+                'reference_type' => Sale::class,
+                'reference_id' => $data['reference_id'],
+                'status' => Receivable::STATUS_UNPAID,
             ]);
         });
     }
@@ -49,22 +50,24 @@ class ReceivableService
     public function cancelReceivable(Receivable $receivable): bool
     {
         return DB::transaction(function () use ($receivable) {
-            if ($receivable->status === Receivable::STATUS_CANCELLED) return true;
+            if ($receivable->status === Receivable::STATUS_CANCELLED) {
+                return true;
+            }
 
             if ($receivable->current_balance < $receivable->total_amount) {
-                throw new Exception("No se puede anular una factura con abonos.");
+                throw new Exception('No se puede anular una factura con abonos.');
             }
-            
+
             return $receivable->update([
                 'status' => Receivable::STATUS_CANCELLED,
-                'current_balance' => 0
+                'current_balance' => 0,
             ]);
         });
     }
 
     /**
      * ACTUALIZA EL ESTADO BASADO EN EL SALDO
-     * Este método es REQUERIDO por PaymentService al registrar abonos.
+     * Este método es REQUERIDO por CollectionService al registrar abonos.
      */
     public function updateStatusBasedOnBalance(Receivable $receivable): void
     {
@@ -75,7 +78,7 @@ class ReceivableService
         } else {
             $receivable->status = Receivable::STATUS_UNPAID;
         }
-        
+
         $receivable->save();
     }
 }

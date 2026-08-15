@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Requests\Accounting\Payment;
+namespace App\Http\Requests\Accounting\Collection;
 
 use App\Models\Accounting\Receivable;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StorePaymentRequest extends FormRequest
+class StoreCollectionRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -27,7 +27,7 @@ class StorePaymentRequest extends FormRequest
                 function ($attribute, $value, $fail) {
                     $receivable = Receivable::find($this->receivable_id);
                     if ($receivable && $value > $receivable->current_balance) {
-                        $fail("El monto del pago ($value) no puede ser mayor al saldo pendiente ({$receivable->current_balance}).");
+                        $fail("El monto del cobro ($value) no puede ser mayor al saldo pendiente ({$receivable->current_balance}).");
                     }
                 },
             ],
