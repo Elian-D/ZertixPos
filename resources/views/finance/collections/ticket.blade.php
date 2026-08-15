@@ -48,13 +48,13 @@
         </div>
 
         <div class="spacer center" style="border: 1.5px solid #000; padding: 4px;">
-            RECIBO DE PAGO: {{ $payment->receipt_number }}
+            RECIBO DE COBRO: {{ $payment->receipt_number }}
         </div>
 
-        {{-- 2. DATOS DEL CLIENTE Y PAGO --}}
+        {{-- 2. DATOS DEL CLIENTE Y COBRO --}}
         <div class="spacer">
             CLIENTE: {{ substr($client->name, 0, 30) }}<br>
-            FECHA PAGO: {{ $payment->payment_date->format('d/m/Y') }}<br>
+            FECHA COBRO: {{ $payment->payment_date->format('d/m/Y') }}<br>
             CAJERO: {{ $payment->creator->name ?? 'SISTEMA' }}<br>
             METODO: {{ $payment_type->nombre ?? 'N/A' }}
             @if($payment->reference) <br>REF: {{ $payment->reference }} @endif

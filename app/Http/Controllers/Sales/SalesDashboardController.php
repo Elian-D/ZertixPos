@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Sales;
 
 use App\Http\Controllers\Controller;
+use App\Models\Accounting\ClientCollection;
 use App\Models\Sales\Sale;
 use App\Models\Sales\SaleItem;
-use App\Models\Accounting\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -14,7 +14,7 @@ class SalesDashboardController extends Controller
     public function __invoke(Request $request)
     {
         $range = $request->get('range', '30days');
-        
+
         // Seteamos horas exactas para no perder ventas del último día
         $startDay = now()->subDays(30)->startOfDay();
         $endDay = now()->endOfDay();
@@ -46,13 +46,13 @@ class SalesDashboardController extends Controller
             ')->first();
 
         // 2. Efectividad de Cobro
-        $totalCollected = Payment::whereBetween('payment_date', [$startDay, $endDay])->sum('amount');
+        $totalCollected = ClientCollection::whereBetween('payment_date', [$startDay, $endDay])->sum('amount');
 
         // 3. Top 5 Clientes (Excluyendo Consumidor Final del Ranking)
         $topClients = Sale::whereBetween('sale_date', [$startDay, $endDay])
             ->where('sales.status', 'completed')
             ->join('clients', 'sales.client_id', '=', 'clients.id')
-            ->where('clients.name', 'NOT LIKE', '%Consumidor Final%') 
+            ->where('clients.name', 'NOT LIKE', '%Consumidor Final%')
             ->select('clients.name', DB::raw('SUM(total_amount) as total'))
             ->groupBy('clients.id', 'clients.name')
             ->orderByDesc('total')
@@ -64,7 +64,7 @@ class SalesDashboardController extends Controller
             ->where('sales.status', 'completed')
             ->leftJoin('tipo_pagos', 'sales.tipo_pago_id', '=', 'tipo_pagos.id')
             ->select(
-                DB::raw('COALESCE(tipo_pagos.nombre, "Otro/POS") as nombre'), 
+                DB::raw('COALESCE(tipo_pagos.nombre, "Otro/POS") as nombre'),
                 DB::raw('SUM(total_amount) as total')
             )
             ->groupBy('tipo_pagos.nombre')
@@ -87,14 +87,14 @@ class SalesDashboardController extends Controller
         return view('sales.dashboard', [
             'stats' => [
                 'total_revenue' => $salesStats->total_revenue ?? 0,
-                'total_count'   => $salesStats->total_count ?? 0,
-                'credit_total'  => $salesStats->credit_total ?? 0,
-                'cash_total'    => $salesStats->cash_total ?? 0,
-                'collected'     => $totalCollected,
-                'avg_ticket'    => ($salesStats->total_count ?? 0) > 0 ? ($salesStats->total_revenue / $salesStats->total_count) : 0,
+                'total_count' => $salesStats->total_count ?? 0,
+                'credit_total' => $salesStats->credit_total ?? 0,
+                'cash_total' => $salesStats->cash_total ?? 0,
+                'collected' => $totalCollected,
+                'avg_ticket' => ($salesStats->total_count ?? 0) > 0 ? ($salesStats->total_revenue / $salesStats->total_count) : 0,
             ],
             'topProducts' => $topProducts,
-            'topClients'  => $topClients,
+            'topClients' => $topClients,
             'charts' => [
                 'timeline' => [
                     'labels' => $timeline->pluck('date'),
@@ -107,10 +107,10 @@ class SalesDashboardController extends Controller
             ],
             'recentSales' => Sale::with(['client', 'tipoPago'])->latest()->take(8)->get(),
             'filters' => [
-                'start' => $startDay->format('Y-m-d'), 
+                'start' => $startDay->format('Y-m-d'),
                 'end' => $endDay->format('Y-m-d'),
-                'current_range' => $range
-            ]
+                'current_range' => $range,
+            ],
         ]);
     }
 

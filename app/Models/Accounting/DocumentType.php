@@ -13,7 +13,7 @@ class DocumentType extends Model
     protected $fillable = ['name', 'code', 'prefix', 'current_number'];
 
     /**
-     * Códigos que el propio sistema consulta por texto (SaleService, PaymentService...).
+     * Códigos que el propio sistema consulta por texto (SaleService, CollectionService...).
      * Cambiar el 'code' de uno de estos rompería esas búsquedas hardcodeadas.
      */
     const SYSTEM_PROTECTED_CODES = ['FAC', 'PAG'];
@@ -58,8 +58,8 @@ class DocumentType extends Model
     {
         return match ($this->code) {
             'FAC' => Sale::where('document_type_id', $this->id)->exists(),
-            // Payment no guarda document_type_id; se identifica por el prefijo de su receipt_number.
-            'PAG' => Payment::where('receipt_number', 'like', $this->prefix.'-%')->exists(),
+            // ClientCollection no guarda document_type_id; se identifica por el prefijo de su receipt_number.
+            'PAG' => ClientCollection::where('receipt_number', 'like', $this->prefix.'-%')->exists(),
             default => false,
         };
     }

@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>PAGO - {{ $payment->receipt_number }}</title>
+    <title>COBRO - {{ $payment->receipt_number }}</title>
     <style>
         /* RESET TOTAL PARA IMPRESIÓN */
         @media print {
@@ -86,7 +86,7 @@
 
     <div class="print-container">
         {{-- Incluimos el formato de ticket detallado que creamos anteriormente --}}
-        @include('accounting.payments.ticket')
+        @include('finance.collections.ticket')
     </div>
 
     <script>

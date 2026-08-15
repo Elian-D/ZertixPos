@@ -41,7 +41,7 @@ class ClientFactory extends Factory
      * Solo asegura la cuenta contable (CxC) del cliente. La generación de
      * CxC/pagos de ejemplo con fechas dispersas ya no vive aquí — la genera
      * explícitamente app/Console/Commands/SeedDemoData.php (REQ-07.10), usando
-     * los servicios reales (ReceivableService/PaymentService) en vez de un
+     * los servicios reales (ReceivableService/CollectionService) en vez de un
      * efecto secundario escondido con `payment_date => now()` fijo.
      */
     public function configure()

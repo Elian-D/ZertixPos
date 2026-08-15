@@ -2,9 +2,9 @@
 
 use App\Http\Controllers\Accounting\AccountingAccountController;
 use App\Http\Controllers\Accounting\AccountingDashboardController;
+use App\Http\Controllers\Accounting\CollectionController;
 use App\Http\Controllers\Accounting\FinancialOverviewController;
 use App\Http\Controllers\Accounting\JournalEntryController;
-use App\Http\Controllers\Accounting\PaymentController;
 use App\Http\Controllers\Accounting\ReceivableController;
 use App\Http\Controllers\Sales\InvoiceController;
 use App\Http\Controllers\Sales\Ncf\NcfDashboardController;
@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('finance')->as('finance.')->group(function () {
 
     // Plan de Cuentas y Asientos — contabilidad formal, satélite (REQ-03.5). Nunca envuelve
-    // receivables/payments: CxC y su abono operativo son base, ver config/modules.php.
+    // receivables/collections: CxC y su abono operativo son base, ver config/modules.php.
     Route::middleware('module:accounting.advanced')->group(function () {
 
         Route::middleware('permission:configure accounting account')->group(function () {
@@ -98,39 +98,42 @@ Route::prefix('finance')->as('finance.')->group(function () {
         });
     });
 
-    // Pagos (cobros contra CxC) — mismo flag que receivables/*: sin CxC no hay nada que
+    // Cobros contra CxC — mismo flag que receivables/*: sin CxC no hay nada que
     // cobrar, así que todo el grupo (incluido el historial) sigue la misma regla de
     // "apagado = 404 completo" que ya aplica al grupo receivables/* de arriba
-    // (REQ-10.9 bis). Rename "Pagos"→"Cobros" (payments.*→collections.*) es la Fase 4.
+    // (REQ-10.9 bis). Rename "Pagos"→"Cobros" (REQ-4.1) — nombres de permiso
+    // ('view payments', 'create payments', etc.) se mantienen tal cual: son slugs
+    // ya sembrados en roles existentes, renombrarlos es un problema de datos
+    // aparte de la reestructuración de rutas/clases de esta fase.
     Route::middleware(['auth', 'module:sales.receivables'])->group(function () {
 
-        Route::get('payments/export', [PaymentController::class, 'export'])
+        Route::get('collections/export', [CollectionController::class, 'export'])
             ->middleware('permission:export payments')
-            ->name('payments.export');
+            ->name('collections.export');
 
-        Route::get('payments/eliminados', [PaymentController::class, 'eliminadas'])
+        Route::get('collections/eliminados', [CollectionController::class, 'eliminadas'])
             ->middleware('permission:view payments')
-            ->name('payments.eliminados');
+            ->name('collections.eliminados');
 
-        Route::get('payments', [PaymentController::class, 'index'])
+        Route::get('collections', [CollectionController::class, 'index'])
             ->middleware('permission:view payments')
-            ->name('payments.index');
+            ->name('collections.index');
 
-        Route::get('payments/create', [PaymentController::class, 'create'])
+        Route::get('collections/create', [CollectionController::class, 'create'])
             ->middleware('permission:create payments')
-            ->name('payments.create');
+            ->name('collections.create');
 
-        Route::post('payments', [PaymentController::class, 'store'])
+        Route::post('collections', [CollectionController::class, 'store'])
             ->middleware('permission:create payments')
-            ->name('payments.store');
+            ->name('collections.store');
 
-        Route::get('payments/{payment}/print', [PaymentController::class, 'print'])
+        Route::get('collections/{payment}/print', [CollectionController::class, 'print'])
             ->middleware('permission:print payment receipts')
-            ->name('payments.print');
+            ->name('collections.print');
 
-        Route::post('payments/{payment}/cancel', [PaymentController::class, 'cancel'])
+        Route::post('collections/{payment}/cancel', [CollectionController::class, 'cancel'])
             ->middleware('permission:cancel payments')
-            ->name('payments.cancel');
+            ->name('collections.cancel');
     });
 
     // Dashboard financiero — hoy solo reporta balances de partida doble (JournalItem por
@@ -143,7 +146,7 @@ Route::prefix('finance')->as('finance.')->group(function () {
     });
 
     // Ingresos y Gastos (REQ-03.7) — base, sin gate de módulo: arma sus cifras
-    // solo con Sale/InventoryMovement/Payment/Receivable, nunca con JournalEntry.
+    // solo con Sale/InventoryMovement/ClientCollection/Receivable, nunca con JournalEntry.
     // Es la vista financiera universal; el Dashboard de arriba es un extra para
     // quien además tiene contabilidad formal activa.
     Route::get('/overview', FinancialOverviewController::class)

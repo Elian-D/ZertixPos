@@ -143,7 +143,7 @@
                             <x-sidebar.subitem href="{{ route('finance.overview.index') }}">Ingresos y Gastos</x-sidebar.subitem>
                             @if(module_enabled('sales.receivables'))
                                 <x-sidebar.subitem href="{{ route('finance.receivables.index') }}">Cuentas por Cobrar</x-sidebar.subitem>
-                                <x-sidebar.subitem href="{{ route('finance.payments.index') }}">Pagos</x-sidebar.subitem>
+                                <x-sidebar.subitem href="{{ route('finance.collections.index') }}">Cobros</x-sidebar.subitem>
                             @endif
                             @if(module_enabled('accounting.advanced'))
                                 <x-sidebar.subitem href="{{ route('finance.journal_entries.index') }}">Asientos Contables</x-sidebar.subitem>

@@ -15,7 +15,7 @@ return [
         'icon' => 'heroicon-s-truck',
         'category' => 'satellite',
         'depends_on' => ['clients.core'],
-        'route_prefixes' => ['admin/clients/pos', 'admin/clients/businessTypes'],
+        'route_prefixes' => ['app/clients/delivery-points', 'app/clients/businessTypes'],
     ],
 
     'clients.field_assets' => [
@@ -24,7 +24,7 @@ return [
         'icon' => 'heroicon-s-wrench-screwdriver',
         'category' => 'satellite',
         'depends_on' => ['clients.core'],
-        'route_prefixes' => ['admin/clients/equipments', 'admin/clients/equipmentTypes'],
+        'route_prefixes' => ['app/clients/equipments', 'app/clients/equipmentTypes'],
     ],
 
     // 'accounting.advanced' => [
@@ -34,9 +34,9 @@ return [
     //     'category' => 'satellite',
     //     'depends_on' => ['sales.core'],
     //     // OJO: no incluye receivables/payments — CxC y su abono operativo son núcleo
-    //     // flexible (REQ-02.8: PaymentService separa abono operativo de asiento
+    //     // flexible (REQ-02.8: CollectionService separa abono operativo de asiento
     //     // contable; solo el asiento formal, no la ruta, depende de este flag).
-    //     'route_prefixes' => ['admin/accounting/journal_entries', 'admin/accounting/accounts', 'admin/accounting/dashboard'],
+    //     'route_prefixes' => ['app/finance/journal_entries', 'app/finance/accounts', 'app/finance/dashboard'],
     // ],
 
     // 'purchases.vendors' => [
@@ -47,7 +47,7 @@ return [
     //     // Dependencia dura satélite→flexible: BLOQUEO explícito al guardar, nunca
     //     // cascada (ver SystemFeatures::HARD_DEPENDENCIES, REQ-10.7).
     //     'depends_on' => ['inventory.tracking'],
-    //     'route_prefixes' => ['admin/purchases'],
+    //     'route_prefixes' => ['app/purchases'],
     // ],
 
     'sales.ncf' => [
@@ -56,7 +56,7 @@ return [
         'icon' => 'heroicon-s-document-text',
         'category' => 'satellite',
         'depends_on' => ['sales.core'],
-        'route_prefixes' => ['admin/sales/ncf'],
+        'route_prefixes' => ['app/finance/ncf'],
     ],
 
     // 'sales.credit_notes_b04' NO es un módulo propio (revisión REQ-10.9) — el B04 es
@@ -77,7 +77,7 @@ return [
         'description' => 'Descuenta y controla existencias por almacén en cada venta o movimiento.',
         'icon' => 'heroicon-s-archive-box',
         'category' => 'base_flexible',
-        'route_prefixes' => ['admin/inventory'],
+        'route_prefixes' => ['app/inventory'],
     ],
 
     'sales.receivables' => [
@@ -85,7 +85,7 @@ return [
         'description' => 'Vende a crédito y da seguimiento a los saldos pendientes de tus clientes.',
         'icon' => 'heroicon-s-banknotes',
         'category' => 'base_flexible',
-        'route_prefixes' => ['admin/accounting/receivables'],
+        'route_prefixes' => ['app/finance/receivables'],
     ],
 
     // 'sales.payables' => [
@@ -97,7 +97,7 @@ return [
     //     // ítem 3.5) — se registra ya con este flag para no repetir el error de
     //     // Contabilidad (construirlo fijo y desacoplarlo después). Sin ruta real
     //     // todavía: no hay middleware `module:` aplicado a nada por este flag.
-    //     'route_prefixes' => ['admin/accounting/payables'],
+    //     'route_prefixes' => ['app/finance/payables'],
     // ],
 
     'sales.quotes' => [
@@ -105,6 +105,6 @@ return [
         'description' => 'Crea propuestas de venta antes de facturar y conviértelas en ventas reales.',
         'icon' => 'heroicon-s-document-duplicate',
         'category' => 'base_flexible',
-        'route_prefixes' => ['admin/sales/quotes'],
+        'route_prefixes' => ['app/sales/quotes'],
     ],
 ];

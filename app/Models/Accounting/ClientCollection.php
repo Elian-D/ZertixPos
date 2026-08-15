@@ -9,9 +9,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Payment extends Model
+class ClientCollection extends Model
 {
     use SoftDeletes;
+
+    // La tabla física sigue llamándose 'payments' — renombrarla exigiría migrar
+    // datos históricos (recibos ya impresos con prefijo PAG-) sin ganar nada real;
+    // solo la clase Eloquent y todo lo que la consume cambian de nombre (REQ-4.2).
+    protected $table = 'payments';
 
     protected $fillable = [
         'client_id',

@@ -85,7 +85,7 @@
             {{-- Acciones --}}
             <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-2">
-                    {{-- Ver Detalle del Pago --}}
+                    {{-- Ver Detalle del Cobro --}}
                     <button @click="$dispatch('open-modal', 'view-payment-{{ $payment->id }}')" 
                             class="bg-white border border-gray-200 text-gray-500 hover:bg-indigo-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
                             title="Ver Recibo">
@@ -93,19 +93,19 @@
                     </button>
 
                     {{-- Imprimir Comprobante --}}
-                    <a href="{{ route('finance.payments.print', $payment->id) }}" 
+                    <a href="{{ route('finance.collections.print', $payment->id) }}"
                     target="_blank" 
                     class="bg-white border border-gray-200 text-gray-500 hover:bg-gray-800 hover:text-white p-2 rounded-lg transition-all shadow-sm" 
                     title="Imprimir Recibo">
                         <x-heroicon-s-printer class="w-4 h-4" />
                     </a>
 
-                    {{-- Anular Pago (Solo si está activo) --}}
+                    {{-- Anular Cobro (Solo si está activo) --}}
                     @can('cancel payments')
-                        @if($payment->status === \App\Models\Accounting\Payment::STATUS_ACTIVE)
-                            <button @click="$dispatch('open-modal', 'confirm-cancel-payment-{{ $payment->id }}')" 
+                        @if($payment->status === \App\Models\Accounting\ClientCollection::STATUS_ACTIVE)
+                            <button @click="$dispatch('open-modal', 'confirm-cancel-payment-{{ $payment->id }}')"
                                     class="bg-white border border-gray-200 text-red-600 hover:bg-red-50 p-2 rounded-lg transition-all shadow-sm"
-                                    title="Anular Pago">
+                                    title="Anular Cobro">
                                 <x-heroicon-s-x-circle class="w-4 h-4" />
                             </button>
                         @endif
@@ -117,11 +117,11 @@
         <tr>
             <td colspan="100%" class="text-center py-16 text-gray-400 bg-gray-50/30">
                 <x-heroicon-o-document-text class="w-12 h-12 mx-auto text-gray-200 mb-2"/>
-                <p>No se encontraron registros de pagos.</p>
+                <p>No se encontraron registros de cobros.</p>
             </td>
         </tr>
     @endforelse
 </x-data-table>
 
 {{-- Incluiremos los modales en el siguiente paso --}}
-@include('accounting.payments.partials.modals')
+@include('finance.collections.partials.modals')

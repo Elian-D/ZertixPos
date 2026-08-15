@@ -1,22 +1,22 @@
 <?php
 
-namespace App\Services\Accounting\Payment;
+namespace App\Services\Accounting\Collection;
 
-use App\Models\Accounting\Payment;
+use App\Models\Accounting\ClientCollection;
 use App\Models\Accounting\Receivable;
 use App\Models\Clients\Client;
 use App\Models\Configuration\TipoPago;
 
-class PaymentCatalogService
+class CollectionCatalogService
 {
     /**
-     * Datos para los filtros de la tabla de Pagos
+     * Datos para los filtros de la tabla de Cobros
      */
     public function getForFilters(): array
     {
         return [
-            // Solo clientes que han realizado pagos
-            'clients' => Client::whereHas('payments')
+            // Solo clientes que han realizado cobros
+            'clients' => Client::whereHas('collections')
                 ->select('id', 'name')
                 ->orderBy('name')
                 ->get(),
@@ -26,12 +26,12 @@ class PaymentCatalogService
                 ->orderBy('nombre')
                 ->get(),
 
-            'statuses' => Payment::getStatuses(),
+            'statuses' => ClientCollection::getStatuses(),
         ];
     }
 
     /**
-     * Datos para el formulario de nuevo pago (Recibo de Ingreso)
+     * Datos para el formulario de nuevo cobro (Recibo de Cobro)
      */
     public function getForForm(): array
     {

@@ -1,18 +1,18 @@
 <?php
 
-namespace App\Services\Accounting\Payment;
+namespace App\Services\Accounting\Collection;
 
 use App\Models\Accounting\AccountingAccountRole;
+use App\Models\Accounting\ClientCollection;
 use App\Models\Accounting\DocumentType;
 use App\Models\Accounting\JournalEntry;
-use App\Models\Accounting\Payment;
 use App\Models\Accounting\Receivable;
 use App\Services\Accounting\JournalEntries\JournalEntryService;
 use App\Services\Accounting\Receivable\ReceivableService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class PaymentService
+class CollectionService
 {
     public function __construct(
         protected JournalEntryService $journalService,
@@ -20,20 +20,22 @@ class PaymentService
     ) {}
 
     /**
-     * Registra un nuevo Recibo de Pago
+     * Registra un nuevo Recibo de Cobro
      */
-    public function createPayment(array $data): Payment
+    public function createCollection(array $data): ClientCollection
     {
         return DB::transaction(function () use ($data) {
             $receivable = Receivable::findOrFail($data['receivable_id']);
 
             // 1. Correlativo 'PAG' — igual que el 'FAC' de SaleService, es numeración
-            // operativa (talonario), no contabilidad formal. Corre siempre.
+            // operativa (talonario), no contabilidad formal. Corre siempre. El código
+            // 'PAG' se mantiene tal cual (Opción A, REQ-4.2) — solo el name mostrado
+            // del DocumentType cambia a "Recibo de Cobro", el prefijo impreso no se toca.
             $docType = DocumentType::where('code', 'PAG')->firstOrFail();
             $receiptNumber = $docType->getNextNumberFormatted();
 
             // 2. Abono operativo — corre SIEMPRE, sin depender de accounting.advanced.
-            $payment = Payment::create([
+            $payment = ClientCollection::create([
                 'client_id' => $receivable->client_id,
                 'receivable_id' => $receivable->id,
                 'tipo_pago_id' => $data['tipo_pago_id'],
@@ -43,7 +45,7 @@ class PaymentService
                 'reference' => $data['reference'] ?? null, // Opcional (ej: No. Transferencia)
                 'note' => $data['note'] ?? null,
                 'created_by' => Auth::id(),
-                'status' => Payment::STATUS_ACTIVE,
+                'status' => ClientCollection::STATUS_ACTIVE,
             ]);
 
             $docType->increment('current_number');
@@ -57,7 +59,7 @@ class PaymentService
                 $entry = $this->journalService->create([
                     'entry_date' => $data['payment_date'],
                     'reference' => $receiptNumber,
-                    'description' => "Pago Recibido: {$receiptNumber} - Cliente: {$receivable->client->name}",
+                    'description' => "Cobro Recibido: {$receiptNumber} - Cliente: {$receivable->client->name}",
                     'status' => JournalEntry::STATUS_POSTED,
                     'items' => [
                         [
@@ -83,13 +85,13 @@ class PaymentService
     }
 
     /**
-     * Anula un pago realizado
+     * Anula un cobro realizado
      */
-    public function cancelPayment(Payment $payment): bool
+    public function cancelCollection(ClientCollection $payment): bool
     {
         return DB::transaction(function () use ($payment) {
-            if ($payment->status === Payment::STATUS_CANCELLED) {
-                throw new \Exception('El pago ya se encuentra anulado.');
+            if ($payment->status === ClientCollection::STATUS_CANCELLED) {
+                throw new \Exception('El cobro ya se encuentra anulado.');
             }
 
             // 1. Reversar el saldo en la factura
@@ -102,8 +104,8 @@ class PaymentService
                 $payment->journalEntry->update(['status' => JournalEntry::STATUS_CANCELLED]);
             }
 
-            // 3. Marcar pago como anulado
-            $payment->update(['status' => Payment::STATUS_CANCELLED]);
+            // 3. Marcar cobro como anulado
+            $payment->update(['status' => ClientCollection::STATUS_CANCELLED]);
 
             // 4. Refrescar balance del cliente
             $payment->client->refreshBalance();

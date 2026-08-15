@@ -2,7 +2,7 @@
 
 namespace App\Tables\AccountingTables;
 
-class PaymentTable
+class CollectionTable
 {
     public static function allColumns(): array
     {
@@ -13,7 +13,7 @@ class PaymentTable
             'receivable'     => 'Factura/Doc',
             'tipo_pago'      => 'Método',
             'reference'      => 'Referencia',
-            'amount'         => 'Monto Pagado',
+            'amount'         => 'Monto Cobrado',
             'status'         => 'Estado',
             'created_by'     => 'Registrado por',
             'created_at'     => 'Fecha Registro',

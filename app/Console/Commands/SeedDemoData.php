@@ -4,8 +4,8 @@ namespace App\Console\Commands;
 
 use App\DTOs\Sales\PosContext;
 use App\Models\Accounting\AccountingAccountRole;
+use App\Models\Accounting\ClientCollection;
 use App\Models\Accounting\JournalEntry;
-use App\Models\Accounting\Payment;
 use App\Models\Accounting\Receivable;
 use App\Models\Clients\Client;
 use App\Models\Clients\Equipment;
@@ -19,7 +19,7 @@ use App\Models\Sales\Pos\PosSession;
 use App\Models\Sales\Pos\PosTerminal;
 use App\Models\Sales\Sale;
 use App\Models\User;
-use App\Services\Accounting\Payment\PaymentService;
+use App\Services\Accounting\Collection\CollectionService;
 use App\Services\Sales\SalesServices\SaleService;
 use Carbon\Carbon;
 use Database\Seeders\Demo\CategorySeeder;
@@ -53,7 +53,7 @@ class SeedDemoData extends Command
 
     protected $description = 'Genera una instancia de demostración: catálogo de ejemplo + historial realista de ventas/caja/inventario';
 
-    public function handle(SaleService $saleService, PaymentService $paymentService): int
+    public function handle(SaleService $saleService, CollectionService $collectionService): int
     {
         $this->authenticateAsSeedUser();
 
@@ -92,7 +92,7 @@ class SeedDemoData extends Command
         $this->seedTransactionalHistory($saleService, $terminals, $salesTarget, $days);
 
         $this->info('[5/5] Cobros dispersos sobre ventas a crédito...');
-        $this->seedScatteredPayments($paymentService);
+        $this->seedScatteredCollections($collectionService);
 
         $this->info('Demo generada correctamente.');
 
@@ -100,7 +100,7 @@ class SeedDemoData extends Command
     }
 
     /**
-     * SaleService/PaymentService/InventoryMovementService dependen de Auth::id()
+     * SaleService/CollectionService/InventoryMovementService dependen de Auth::id()
      * (igual que en producción, donde corre bajo una sesión HTTP autenticada) —
      * un comando de consola no tiene usuario logueado por defecto, así que se
      * autentica aquí para el resto del proceso.
@@ -368,11 +368,11 @@ class SeedDemoData extends Command
      * Cobros dispersos en el tiempo sobre las CxC generadas por las ventas a
      * crédito de este lote — reemplaza el efecto secundario que antes vivía
      * escondido en ClientFactory::configure() (siempre `payment_date => now()`,
-     * sin importar cuándo se emitió la factura). Usa PaymentService::createPayment()
+     * sin importar cuándo se emitió la factura). Usa CollectionService::createCollection()
      * real, así que respeta el mismo camino que un abono manual desde la UI
      * (actualiza balance, genera asiento si accounting.advanced está activo).
      */
-    private function seedScatteredPayments(PaymentService $paymentService): void
+    private function seedScatteredCollections(CollectionService $collectionService): void
     {
         $demoSaleIds = Sale::where('notes', self::DEMO_MARKER)->pluck('id');
 
@@ -404,7 +404,7 @@ class SeedDemoData extends Command
             try {
                 Auth::login(User::query()->inRandomOrder()->firstOrFail());
 
-                $paymentService->createPayment([
+                $collectionService->createCollection([
                     'receivable_id' => $receivable->id,
                     'tipo_pago_id' => $tipoPagos->random()->id,
                     'amount' => $amount,
@@ -440,7 +440,7 @@ class SeedDemoData extends Command
             ->whereIn('reference_id', $saleIds)
             ->pluck('id');
 
-        $journalEntryIds = Payment::whereIn('receivable_id', $receivableIds)
+        $journalEntryIds = ClientCollection::whereIn('receivable_id', $receivableIds)
             ->whereNotNull('journal_entry_id')
             ->pluck('journal_entry_id')
             ->merge(
