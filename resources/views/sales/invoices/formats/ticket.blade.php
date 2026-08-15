@@ -196,7 +196,9 @@
                 @if($sale->pos_terminal_id)
                     TPV: {{ $sale->posTerminal->name }}<br>
                 @endif
-                {{ $isMultiPay ? 'METODOS DE PAGO:' : 'METODO PAGO:' }} {{ $isMultiPay ? 'MIXTO' : ($sale->tipoPago->nombre ?? 'EFECTIVO') }}<br>
+                @if($isMultiPay || $sale->payment_type !== 'credit')
+                    {{ $isMultiPay ? 'METODOS DE PAGO:' : 'METODO PAGO:' }} {{ $isMultiPay ? 'MIXTO' : ($sale->tipoPago->nombre ?? 'EFECTIVO') }}<br>
+                @endif
                 FECHA: {{ $sale->created_at->format('d/m/Y G:i A') }}
                 @if($vencimientoPago)
                     <br>VENCE PAGO: {{ $vencimientoPago }}
