@@ -29,14 +29,16 @@
 
         <div class="flex items-center gap-3">
             <x-dynamic-component :component="$icon" class="w-5 h-5 text-gray-400"/>
-            <span 
+            <span
                 x-show="isSidebarOpen || hasHover"
+                x-cloak
                 x-transition.opacity>
                 {{ $slot }}
             </span>
         </div>
 
         <svg x-show="isSidebarOpen || hasHover"
+             x-cloak
              :class="{ 'rotate-90': activeDropdown === '{{ $id }}' || {{ $isDropdownActive ? 'true' : 'false' }} }"
              class="w-4 h-4 text-gray-400 transition-transform duration-200"
              fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -46,8 +48,9 @@
     </button>
 
     {{-- SUBMENÚ: si $isDropdownActive es true lo mostramos abierto inicialmente --}}
-    <div 
+    <div
         x-show="(activeDropdown === '{{ $id }}' || {{ $isDropdownActive ? 'true' : 'false' }}) && (isSidebarOpen || hasHover)"
+        x-cloak
         x-transition
         class="pl-10 pr-2 py-1 space-y-1">
         

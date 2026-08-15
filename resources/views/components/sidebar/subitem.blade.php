@@ -6,6 +6,7 @@
           {{ request()->is(ltrim($href, '/').'*') ? 'bg-gray-100 text-indigo-600' : '' }}">
     
     <span x-show="isSidebarOpen || hasHover"
+          x-cloak
           x-transition.opacity>
         {{ $slot }}
     </span>

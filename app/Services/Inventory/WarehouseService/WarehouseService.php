@@ -4,7 +4,6 @@ namespace App\Services\Inventory\WarehouseService;
 
 use App\Models\Inventory\Warehouse;
 use Illuminate\Support\Facades\DB;
-use Exception;
 
 class WarehouseService
 {
@@ -19,15 +18,6 @@ class WarehouseService
     public function update(Warehouse $warehouse, array $data): Warehouse
     {
         return DB::transaction(function () use ($warehouse, $data) {
-            $nuevoEstado = $data['is_active'] ?? $warehouse->is_active;
-
-            // Protección de último almacén activo
-            if ($warehouse->is_active && !$nuevoEstado) {
-                if (Warehouse::where('is_active', true)->count() <= 1) {
-                    throw new Exception('No se puede desactivar el único almacén activo del sistema.');
-                }
-            }
-
             $nombreAnterior = $warehouse->name;
             $warehouse->update($data);
 
@@ -36,7 +26,7 @@ class WarehouseService
                 // Opcional: Actualizar el nombre de la cuenta contable
                 if ($warehouse->accountingAccount) {
                     $warehouse->accountingAccount->update([
-                        'name' => 'Inventario: ' . $warehouse->name
+                        'name' => 'Inventario: '.$warehouse->name,
                     ]);
                 }
             }
@@ -47,10 +37,6 @@ class WarehouseService
 
     public function toggle(Warehouse $warehouse): bool
     {
-        if ($warehouse->is_active && Warehouse::where('is_active', true)->count() <= 1) {
-            throw new Exception('Debe haber al menos un almacén activo.');
-        }
-
         return (bool) $warehouse->toggleActivo();
     }
 }

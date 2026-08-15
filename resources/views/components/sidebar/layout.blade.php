@@ -4,9 +4,9 @@
             }"
     @mouseover="if (window.innerWidth >= 640 && !isSidebarOpen) hasHover = true"
     @mouseleave="if (window.innerWidth >= 640 && !isSidebarOpen) hasHover = false"
-    
+    x-cloak
 
-    class="bg-white shadow-md border-r border-gray-100 transition-all duration-300 ease-in-out z-40" 
+    class="bg-white shadow-md border-r border-gray-100 transition-all duration-300 ease-in-out z-40"
     
     :class="{
         // ANCHOS

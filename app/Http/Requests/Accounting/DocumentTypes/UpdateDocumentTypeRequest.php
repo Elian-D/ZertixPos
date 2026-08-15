@@ -26,7 +26,6 @@ class UpdateDocumentTypeRequest extends FormRequest
             'code' => ['nullable', 'string', 'max:10', Rule::unique('document_types', 'code')->ignore($type->id)],
             'prefix' => 'nullable|string|max:5',
             'current_number' => 'nullable|integer|min:0',
-            'is_active' => 'boolean',
         ];
     }
 

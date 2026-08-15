@@ -42,7 +42,9 @@
     >
             
         {{-- ELIMINADA la clase ml-XX para que el sidebar FLOTE cuando esté colapsado. --}}
-        <div class="flex min-h-screen bg-gray-100"> 
+        {{-- x-cloak acá evita que se pinte el estado intermedio (sidebar ya visible, --}}
+        {{-- contenido todavía sin el margen aplicado) mientras Alpine calcula isSidebarOpen. --}}
+        <div class="flex min-h-screen bg-gray-100" x-cloak>
             
             {{-- SIDEBAR --}}
             <x-sidebar.layout>
@@ -202,9 +204,7 @@
                             @can('configure system modules')
                                 <x-sidebar.subitem href="{{ route('configuration.features') }}">Funcionalidades del Sistema</x-sidebar.subitem>
                             @endcan
-                            <x-sidebar.subitem href="{{ route('configuration.dias.index') }}">Días de la Semana</x-sidebar.subitem>
-                            <x-sidebar.subitem href="{{ route('configuration.pagos.index') }}">Métodos de Pago</x-sidebar.subitem>
-                            <x-sidebar.subitem href="{{ route('configuration.document_types.index') }}">Tipos de Documento</x-sidebar.subitem>
+                            <x-sidebar.subitem href="{{ route('configuration.catalogs.index') }}">Catálogos del Sistema</x-sidebar.subitem>
 
                             {{-- Solo mostrar si el módulo sales.ncf está activo --}}
                             @if(module_enabled('sales.ncf'))

@@ -10,17 +10,13 @@ class DocumentType extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['name', 'code', 'prefix', 'current_number', 'is_active'];
+    protected $fillable = ['name', 'code', 'prefix', 'current_number'];
 
     /**
      * Códigos que el propio sistema consulta por texto (SaleService, PaymentService...).
      * Cambiar el 'code' de uno de estos rompería esas búsquedas hardcodeadas.
      */
     const SYSTEM_PROTECTED_CODES = ['FAC', 'PAG'];
-
-    protected $casts = [
-        'is_active' => 'boolean',
-    ];
 
     protected static function booted()
     {

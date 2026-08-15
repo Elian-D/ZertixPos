@@ -20,7 +20,8 @@
     </button>
 
     {{-- Backdrop oscuro solo en móvil --}}
-    <div x-show="open" 
+    <div x-show="open"
+         x-cloak
          class="fixed inset-0 bg-black/20 backdrop-blur-sm z-[90] md:hidden"
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0"
@@ -29,7 +30,8 @@
     </div>
 
     {{-- Panel de Columnas: Centrado en móvil, dropdown en desktop --}}
-    <div x-show="open" 
+    <div x-show="open"
+        x-cloak
         @click.away="open = false"
         x-transition:enter="transition ease-out duration-200"
         x-transition:enter-start="opacity-0 translate-y-4 md:translate-y-0 md:scale-95"

@@ -26,21 +26,21 @@ class BusinessTypeController extends Controller
 
         if ($request->ajax()) {
             return view('clients.businessTypes.partials.table', [
-                'businessTypes'   => $businessTypes,
-                'visibleColumns'  => $visibleColumns,
-                'allColumns'      => BusinessTypesTable::allColumns(),
-                'defaultDesktop'  => BusinessTypesTable::defaultDesktop(),
-                'defaultMobile'   => BusinessTypesTable::defaultMobile(),
+                'businessTypes' => $businessTypes,
+                'visibleColumns' => $visibleColumns,
+                'allColumns' => BusinessTypesTable::allColumns(),
+                'defaultDesktop' => BusinessTypesTable::defaultDesktop(),
+                'defaultMobile' => BusinessTypesTable::defaultMobile(),
             ])->render();
         }
 
         return view('clients.businessTypes.index', array_merge(
             [
-                'businessTypes'  => $businessTypes,
+                'businessTypes' => $businessTypes,
                 'visibleColumns' => $visibleColumns,
-                'allColumns'     => BusinessTypesTable::allColumns(),
+                'allColumns' => BusinessTypesTable::allColumns(),
                 'defaultDesktop' => BusinessTypesTable::defaultDesktop(),
-                'defaultMobile'  => BusinessTypesTable::defaultMobile(),
+                'defaultMobile' => BusinessTypesTable::defaultMobile(),
             ],
         ));
     }
@@ -55,80 +55,77 @@ class BusinessTypeController extends Controller
             'activo' => 'sometimes|boolean',
         ]);
 
-
         $negocio = BusinessType::create([
             'nombre' => $request->nombre,
-            'activo' => $request->activo
+            'activo' => $request->activo,
         ]);
-
 
         // ... (redirección)
         return redirect()
             ->route('clients.businessTypes.index')
-            ->with('success', 'Tipo de negocio "' . $negocio->nombre . '" creado exitosamente.');
+            ->with('success', 'Tipo de negocio "'.$negocio->nombre.'" creado exitosamente.');
     }
-
 
     /**
      * Actualizar datos
      */
-    public function update(Request $request, BusinessType $negocio) {
+    public function update(Request $request, BusinessType $negocio)
+    {
         $request->validate([
-            'nombre' => 'required|string|' . Rule::unique('business_types')->ignore($negocio->id),
+            'nombre' => 'required|string|'.Rule::unique('business_types')->ignore($negocio->id),
             'activo' => 'sometimes|boolean',
         ]);
 
         $data = ['nombre' => $request->nombre, 'activo' => $request->activo];
 
-        if ($negocio->activo) {
-            $activosCount = BusinessType::activos()->count();
-            
-            if ($activosCount <= 1) {
-                return redirect()
-                    ->route('clients.businessTypes.index')
-                    ->with('error', 'No se puede desactivar. Deben existir al menos 1 estados activos en el catálogo.');
-            }
-        }
-
         $negocio->update($data);
-
 
         // ... (redirección)
         return redirect()
             ->route('clients.businessTypes.index')
-            ->with('success', 'Tipo de negocio "' . $negocio->nombre . '" actualizado exitosamente.');
+            ->with('success', 'Tipo de negocio "'.$negocio->nombre.'" actualizado exitosamente.');
     }
 
     public function toggleEstado(BusinessType $negocio)
     {
-        if ($negocio->activo) {
-            $activosCount = BusinessType::activos()->count();
-            
-            if ($activosCount <= 1) {
-                return redirect()
-                    ->route('clients.businessTypes.index')
-                    ->with('error', 'No se puede desactivar. Deben existir al menos 1 estados activos en el catálogo.');
-            }
-        }
         $negocio->toggleActivo();
 
         return redirect()
             ->route('clients.businessTypes.index')
-            ->with('success', 'Estado actualizado para "' . $negocio->nombre . '".');
+            ->with('success', 'Estado actualizado para "'.$negocio->nombre.'".');
     }
-
 
     // Elimina la BusinessType si no tiene relaciones (o desactiva la eliminación por defecto).
     public function destroy($id)
     {
         $businessType = BusinessType::findOrFail($id);
+
         return $this->destroyTrait($businessType);
     }
 
     // Métodos abstractos que el trait necesita
-    protected function getModelClass(): string { return \App\Models\Clients\BusinessType::class; }
-    protected function getViewFolder(): string { return 'clients.businessTypes'; }
-    protected function getRouteIndex(): string { return 'clients.businessTypes.index'; }
-    protected function getRouteEliminadas(): string { return 'clients.businessTypes.eliminados'; }
-    protected function getEntityName(): string { return 'Tipo de Negocio'; }
+    protected function getModelClass(): string
+    {
+        return \App\Models\Clients\BusinessType::class;
+    }
+
+    protected function getViewFolder(): string
+    {
+        return 'clients.businessTypes';
+    }
+
+    protected function getRouteIndex(): string
+    {
+        return 'clients.businessTypes.index';
+    }
+
+    protected function getRouteEliminadas(): string
+    {
+        return 'clients.businessTypes.eliminados';
+    }
+
+    protected function getEntityName(): string
+    {
+        return 'Tipo de Negocio';
+    }
 }

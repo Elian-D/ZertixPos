@@ -10,26 +10,20 @@ use Illuminate\Http\Request;
 
 class TipoPagoController extends Controller
 {
-     use SoftDeletesTrait;
-    /**
-     * Muestra el listado de tipos de pagos con filtros y paginación
-     */
-    public function index(Request $request) {
-        $search = $request->query('search'); 
-        $estado = $request->query('estado'); 
+    use SoftDeletesTrait;
 
-        $tipoPago = TipoPago::with('account') // Agregamos eager loading
-            ->when($search, fn($q) => $q->where('nombre', 'like', "%{$search}%"))
-            ->when($estado === 'activo', fn($q) => $q->activo())
-            ->when($estado === 'inactivo', fn($q) => $q->inactivo())
-            ->orderBy('nombre')
-            ->paginate(10)
-            ->withQueryString();
+    /**
+     * Muestra el listado de tipos de pago — sin buscador/filtro/paginación,
+     * no aportan nada al volumen típico de este catálogo (5-10 filas).
+     */
+    public function index()
+    {
+        $tipoPago = TipoPago::with('account')->orderBy('nombre')->get();
 
         // Obtenemos solo las cuentas seleccionables para los selects
         $cuentasContables = AccountingAccount::where('is_selectable', true)->orderBy('code')->get();
 
-        return view('configuration.pagos.index', compact('tipoPago', 'search', 'estado', 'cuentasContables'));
+        return view('configuration.pagos.index', compact('tipoPago', 'cuentasContables'));
     }
 
     /**
@@ -40,13 +34,13 @@ class TipoPagoController extends Controller
     {
         $request->validate([
             'nombre' => 'required|string|unique:tipo_pagos,nombre',
-            'accounting_account_id' => 'nullable|exists:accounting_accounts,id' // Nueva validación
+            'accounting_account_id' => 'nullable|exists:accounting_accounts,id',
         ]);
 
-        $pago = TipoPago::create([
+        TipoPago::create([
             'nombre' => $request->nombre,
-            'accounting_account_id' => $request->accounting_account_id, // Nuevo campo
-            'estado' => true 
+            'accounting_account_id' => $request->accounting_account_id,
+            'estado' => true,
         ]);
 
         return redirect()->route('configuration.pagos.index')
@@ -60,30 +54,30 @@ class TipoPagoController extends Controller
     public function update(Request $request, TipoPago $tipoPago)
     {
         $request->validate([
-            'nombre' => ['required','string','unique:tipo_pagos,nombre,' . $tipoPago->id],
-            'accounting_account_id' => 'nullable|exists:accounting_accounts,id' // Nueva validación
+            'nombre' => ['required', 'string', 'unique:tipo_pagos,nombre,'.$tipoPago->id],
+            'accounting_account_id' => 'nullable|exists:accounting_accounts,id',
         ]);
-        
+
         $tipoPago->update([
             'nombre' => $request->nombre,
-            'accounting_account_id' => $request->accounting_account_id // Nuevo campo
+            'accounting_account_id' => $request->accounting_account_id,
         ]);
 
         return redirect()->route('configuration.pagos.index')
             ->with('success', 'Tipo de pago actualizado exitosamente.');
     }
 
-    public function toggleEstado(TipoPago $tipoPago) {
-    $tipoPago->toggleEstado();
+    public function toggleEstado(TipoPago $tipoPago)
+    {
+        $tipoPago->toggleEstado();
 
-    return redirect()
-        ->route('configuration.pagos.index')
-        ->with(
-            'success',
-            'Estado actualizado para "' . $tipoPago->nombre . '".'
-        );
+        return redirect()
+            ->route('configuration.pagos.index')
+            ->with(
+                'success',
+                'Estado actualizado para "'.$tipoPago->nombre.'".'
+            );
     }
-
 
     // Elimina el Tipo Pago si no tiene relaciones (o desactiva la eliminación por defecto).
     public function destroy(TipoPago $tipoPago)
@@ -91,13 +85,33 @@ class TipoPagoController extends Controller
         if ($tipoPago->isSystemProtected()) {
             return back()->with('error', 'No puedes eliminar un método de pago protegido del sistema.');
         }
+
         return $this->destroyTrait($tipoPago, null);
     }
 
     // Métodos abstractos que el trait necesita
-    protected function getModelClass(): string { return \App\Models\Configuration\TipoPago::class; }
-    protected function getViewFolder(): string { return 'configuration.pagos'; }
-    protected function getRouteIndex(): string { return 'configuration.pagos.index'; }
-    protected function getRouteEliminadas(): string { return 'configuration.pagos.eliminados'; }
-    protected function getEntityName(): string { return 'Tipo Pago'; }
+    protected function getModelClass(): string
+    {
+        return \App\Models\Configuration\TipoPago::class;
+    }
+
+    protected function getViewFolder(): string
+    {
+        return 'configuration.pagos';
+    }
+
+    protected function getRouteIndex(): string
+    {
+        return 'configuration.pagos.index';
+    }
+
+    protected function getRouteEliminadas(): string
+    {
+        return 'configuration.pagos.eliminados';
+    }
+
+    protected function getEntityName(): string
+    {
+        return 'Tipo Pago';
+    }
 }
