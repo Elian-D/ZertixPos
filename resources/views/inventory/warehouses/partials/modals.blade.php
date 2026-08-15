@@ -75,10 +75,6 @@
             <div>
                 <h3 class="text-xl font-black text-gray-900 tracking-tight">Expediente de Almacén</h3>
                 <div class="flex items-center gap-2 mt-1">
-                    <span class="text-xs font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
-                        {{ $item->code ?? 'SIN CÓDIGO' }}
-                    </span>
-                    <span class="text-gray-300 text-xs">•</span>
                     <span class="text-xs text-gray-500 italic uppercase tracking-tighter">ID Sistema: {{ $item->id }}</span>
                 </div>
             </div>

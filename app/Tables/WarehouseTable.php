@@ -13,7 +13,6 @@ class WarehouseTable
     public static function allColumns(): array
     {
         return array_filter([
-            'code' => 'Código',
             'name' => 'Nombre',
             'types' => 'Tipo',
             'accounting_account_id' => module_enabled('accounting.advanced') ? 'Cuenta Contable' : null,
@@ -28,7 +27,6 @@ class WarehouseTable
     public static function defaultDesktop(): array
     {
         return array_values(array_filter([
-            'code',
             'name',
             'types',
             module_enabled('accounting.advanced') ? 'accounting_account_id' : null,
@@ -38,6 +36,6 @@ class WarehouseTable
 
     public static function defaultMobile(): array
     {
-        return ['code', 'name'];
+        return ['name'];
     }
 }

@@ -14,11 +14,10 @@ class WarehousesSearchFilter implements FilterInterface
     {
         $search = $this->request->input('search');
 
-        if (!$search) return $query;
+        if (! $search) {
+            return $query;
+        }
 
-        return $query->where(function ($q) use ($search) {
-            $q->where('name', 'like', "%{$search}%")
-              ->orWhere('code', 'like', "%{$search}%");
-        });
+        return $query->where('name', 'like', "%{$search}%");
     }
 }
