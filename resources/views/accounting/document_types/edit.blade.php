@@ -62,14 +62,6 @@
                         @endif
                     </div>
                 </section>
-
-                <section class="flex items-center gap-3 p-4 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                    <input type="hidden" name="is_active" value="0">
-                    <input type="checkbox" name="is_active" value="1" id="is_active" 
-                        {{ old('is_active', $item->is_active) ? 'checked' : '' }}
-                        class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                    <label for="is_active" class="text-sm font-medium text-gray-700">Estado Activo</label>
-                </section>
             </div>
 
             <div class="p-6 bg-gray-50 flex justify-end gap-3 border-t">
