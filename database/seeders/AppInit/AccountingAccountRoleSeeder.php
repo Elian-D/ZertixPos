@@ -10,7 +10,7 @@ class AccountingAccountRoleSeeder extends Seeder
     public function run(): void
     {
         // Mapea cada rol al mismo código de cuenta que hoy está hardcodeado
-        // en SaleService/InventoryMovementService/ReceivableService/PaymentService/
+        // en SaleService/InventoryMovementService/ReceivableService/CollectionService/
         // AccountingDashboardController — el resultado de AccountingAccountRole::resolve()
         // debe ser idéntico al de AccountingAccount::where('code', '...') que reemplaza.
         $roles = [
