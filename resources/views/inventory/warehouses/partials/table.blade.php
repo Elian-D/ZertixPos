@@ -98,36 +98,31 @@
             {{-- Acciones --}}
             <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-3">
-                    @php 
-                        $isLastActives = $item->is_active && $warehouses->where('is_active', true)->count() <= 1; 
-                    @endphp
-
                     <form action="{{ route('inventory.warehouses.toggle', $item) }}" method="POST">
                         @csrf @method('PATCH')
-                        <button type="submit" 
-                            {{ $isLastActives ? 'disabled' : '' }}
-                            title="{{ $isLastActives ? 'Debe haber al menos un almacén activo' : 'Cambiar estado' }}"
-                            class="whitespace-nowrap text-xs px-2 py-1 rounded border {{ $isLastActives ? 'bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed' : ($item->is_active ? 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100' : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100') }}">
-                            {{ $isLastActives ? 'Mínimo Activos' : ($item->is_active ? 'Desactivar' : 'Activar') }}
+                        <button type="submit"
+                            title="Cambiar estado"
+                            class="whitespace-nowrap text-xs px-2 py-1 rounded border {{ $item->is_active ? 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100' : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' }}">
+                            {{ $item->is_active ? 'Desactivar' : 'Activar' }}
                         </button>
                     </form>
 
                     {{-- Ver Detalles --}}
-                    <button @click="$dispatch('open-modal', 'view-warehouse-{{ $item->id }}')" 
+                    <button @click="$dispatch('open-modal', 'view-warehouse-{{ $item->id }}')"
                             class="text-gray-400 hover:text-indigo-600 p-1 rounded hover:bg-gray-100 transition-colors"
                             title="Ver detalles completos">
                         <x-heroicon-s-eye class="w-5 h-5" />
                     </button>
 
-                    <button @click="$dispatch('open-modal', 'edit-warehouse-{{ $item->id }}')" 
+                    <button @click="$dispatch('open-modal', 'edit-warehouse-{{ $item->id }}')"
                             class="text-indigo-600 hover:text-indigo-900 p-1 rounded hover:bg-indigo-50 transition-colors">
                         <x-heroicon-s-pencil class="w-5 h-5" />
                     </button>
 
-                    <button 
-                        @if(!$isLastActives) @click="$dispatch('open-modal', 'confirm-deletion-{{ $item->id }}')" @endif
-                        class="p-1 rounded {{ $isLastActives ? 'text-gray-200 cursor-not-allowed' : 'text-red-600 hover:text-red-900 hover:bg-red-50' }}"
-                        title="{{ $isLastActives ? 'No puedes eliminar el único almacén activo' : 'Eliminar' }}">
+                    <button
+                        @click="$dispatch('open-modal', 'confirm-deletion-{{ $item->id }}')"
+                        class="p-1 rounded text-red-600 hover:text-red-900 hover:bg-red-50"
+                        title="Eliminar">
                         <x-heroicon-s-trash class="w-5 h-5" />
                     </button>
                 </div>
