@@ -70,7 +70,7 @@
                         <x-heroicon-s-eye class="w-5 h-5" />
                     </button>
 
-                    <a href="{{ route('clients.pos.edit', $item) }}" class="text-indigo-600 hover:text-indigo-900 p-2 rounded-full hover:bg-indigo-50">
+                    <a href="{{ route('clients.delivery_points.edit', $item) }}" class="text-indigo-600 hover:text-indigo-900 p-2 rounded-full hover:bg-indigo-50">
                         <x-heroicon-s-pencil class="w-5 h-5" />
                     </a>
 

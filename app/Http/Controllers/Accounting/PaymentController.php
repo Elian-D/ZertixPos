@@ -2,18 +2,17 @@
 
 namespace App\Http\Controllers\Accounting;
 
+use App\Exports\Accounting\PaymentsExport;
+use App\Filters\Accounting\PaymentsFilters\PaymentFilters;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Accounting\Payment\StorePaymentRequest;
 use App\Models\Accounting\Payment;
-use App\Services\Accounting\Payment\PaymentService;
 use App\Services\Accounting\Payment\PaymentCatalogService;
-use App\Filters\Accounting\PaymentsFilters\PaymentFilters;
+use App\Services\Accounting\Payment\PaymentService;
 use App\Tables\AccountingTables\PaymentTable;
 use App\Traits\SoftDeletesTrait;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
-use Barryvdh\DomPDF\Facade\Pdf;
-use App\Exports\Accounting\PaymentsExport; 
 
 class PaymentController extends Controller
 {
@@ -39,26 +38,25 @@ class PaymentController extends Controller
 
         if ($request->ajax()) {
             return view('accounting.payments.partials.table', [
-                'items'          => $payments,
+                'items' => $payments,
                 'visibleColumns' => $visibleColumns,
-                'allColumns'     => PaymentTable::allColumns(),
+                'allColumns' => PaymentTable::allColumns(),
                 'defaultDesktop' => PaymentTable::defaultDesktop(),
-                'defaultMobile'  => PaymentTable::defaultMobile(),
+                'defaultMobile' => PaymentTable::defaultMobile(),
             ])->render();
         }
 
         return view('accounting.payments.index', array_merge(
             [
-                'items'          => $payments,
+                'items' => $payments,
                 'visibleColumns' => $visibleColumns,
-                'allColumns'     => PaymentTable::allColumns(),
+                'allColumns' => PaymentTable::allColumns(),
                 'defaultDesktop' => PaymentTable::defaultDesktop(),
-                'defaultMobile'  => PaymentTable::defaultMobile(),
+                'defaultMobile' => PaymentTable::defaultMobile(),
             ],
             $catalogs
         ));
     }
-
 
     public function print(Payment $payment)
     {
@@ -66,17 +64,18 @@ class PaymentController extends Controller
             // Importante: Cargamos 'receivable.reference' porque es polimórfica
             // y cargamos los items y productos de esa referencia
             $payment->load([
-                'client', 
+                'client',
                 'creator',
                 'tipoPago',
-                'receivable.reference.items.product' 
+                'receivable.reference.items.product',
             ]);
 
             return view('accounting.payments.print', compact('payment'));
         } catch (\Exception $e) {
-            return back()->with('error', "No se pudo cargar el formato: " . $e->getMessage());
+            return back()->with('error', 'No se pudo cargar el formato: '.$e->getMessage());
         }
     }
+
     /**
      * Exportar los datos filtrados a Excel
      */
@@ -87,11 +86,11 @@ class PaymentController extends Controller
             $query = (new PaymentFilters($request))
                 ->apply(Payment::query());
 
-            $fileName = 'reporte-pagos-' . now()->format('d-m-Y-H-i') . '.xlsx';
+            $fileName = 'reporte-pagos-'.now()->format('d-m-Y-H-i').'.xlsx';
 
             return Excel::download(new PaymentsExport($query), $fileName);
         } catch (\Exception $e) {
-            return back()->with('error', "Error al generar el reporte: " . $e->getMessage());
+            return back()->with('error', 'Error al generar el reporte: '.$e->getMessage());
         }
     }
 
@@ -106,8 +105,8 @@ class PaymentController extends Controller
             $this->service->createPayment($request->validated());
 
             return redirect()
-                ->route('accounting.payments.index')
-                ->with('success', "Pago registrado y contabilizado correctamente.");
+                ->route('finance.payments.index')
+                ->with('success', 'Pago registrado y contabilizado correctamente.');
         } catch (\Exception $e) {
             return back()->withInput()->with('error', $e->getMessage());
         }
@@ -117,7 +116,8 @@ class PaymentController extends Controller
     {
         try {
             $this->service->cancelPayment($payment);
-            return back()->with('success', "El pago ha sido anulado y el saldo de la factura revertido.");
+
+            return back()->with('success', 'El pago ha sido anulado y el saldo de la factura revertido.');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -128,16 +128,35 @@ class PaymentController extends Controller
         $payment = Payment::findOrFail($id);
 
         if ($payment->status === Payment::STATUS_ACTIVE) {
-            return back()->with('error', "No se puede eliminar un pago activo. Debe anularlo primero para revertir la contabilidad.");
+            return back()->with('error', 'No se puede eliminar un pago activo. Debe anularlo primero para revertir la contabilidad.');
         }
 
         return $this->destroyTrait($payment);
     }
 
     // Métodos requeridos por SoftDeletesTrait
-    protected function getModelClass(): string { return Payment::class; }
-    protected function getViewFolder(): string { return 'accounting.payments'; }
-    protected function getRouteIndex(): string { return 'accounting.payments.index'; }
-    protected function getRouteEliminadas(): string { return 'accounting.payments.eliminados'; }
-    protected function getEntityName(): string { return 'Pago / Recibo'; }
+    protected function getModelClass(): string
+    {
+        return Payment::class;
+    }
+
+    protected function getViewFolder(): string
+    {
+        return 'accounting.payments';
+    }
+
+    protected function getRouteIndex(): string
+    {
+        return 'finance.payments.index';
+    }
+
+    protected function getRouteEliminadas(): string
+    {
+        return 'finance.payments.eliminados';
+    }
+
+    protected function getEntityName(): string
+    {
+        return 'Pago / Recibo';
+    }
 }

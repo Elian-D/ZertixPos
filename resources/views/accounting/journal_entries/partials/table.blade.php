@@ -78,7 +78,7 @@
                 <div class="flex items-center justify-end gap-2">
                     @if($entry->status === \App\Models\Accounting\JournalEntry::STATUS_DRAFT)
                         @can('edit journal entries')
-                            <a href="{{ route('accounting.journal_entries.edit', $entry) }}" 
+                            <a href="{{ route('finance.journal_entries.edit', $entry) }}" 
                                class="bg-white border border-amber-200 text-amber-600 hover:bg-amber-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
                                title="Editar Asiento">
                                 <x-heroicon-s-pencil-square class="w-4 h-4" />
@@ -201,7 +201,7 @@
     </x-modal>
 
     <x-modal name="confirm-post-{{ $entry->id }}" maxWidth="sm">
-        <form action="{{ route('accounting.journal_entries.post', $entry) }}" method="POST" class="p-6">
+        <form action="{{ route('finance.journal_entries.post', $entry) }}" method="POST" class="p-6">
             @csrf
             @method('PATCH')
 

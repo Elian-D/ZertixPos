@@ -15,7 +15,7 @@
             },
         }">
         {{-- Método PUT para actualización y enctype para la imagen --}}
-        <form action="{{ route('products.update', $product) }}" method="POST" enctype="multipart/form-data"
+        <form action="{{ route('inventory.products.update', $product) }}" method="POST" enctype="multipart/form-data"
             class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
             @csrf
             @method('PUT')
@@ -25,7 +25,7 @@
             <x-form-header
                 :title="'Editar: ' . $product->name"
                 subtitle="Modifique los parámetros del producto/servicio y actualice el catálogo."
-                :back-route="route('products.index')" />
+                :back-route="route('inventory.products.index')" />
 
             <div class="p-8 space-y-10">
 
@@ -186,7 +186,7 @@
                 <div class="flex-1">
                     <span class="text-[10px] text-gray-400 uppercase font-bold">Última actualización: {{ $product->updated_at->format('d/m/Y H:i') }}</span>
                 </div>
-                <a href="{{ route('products.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition">Cancelar</a>
+                <a href="{{ route('inventory.products.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition">Cancelar</a>
                 <x-primary-button class="bg-indigo-600 hover:bg-indigo-700 shadow-lg px-8">Actualizar Producto/Servicio</x-primary-button>
             </div>
         </form>

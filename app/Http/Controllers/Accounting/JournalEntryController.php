@@ -2,19 +2,18 @@
 
 namespace App\Http\Controllers\Accounting;
 
+use App\Exports\Accounting\JournalEntriesExport;
+use App\Filters\Accounting\JournalEntriesFilters\JournalEntryFilters;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Accounting\JournalEntries\StoreJournalEntryRequest;
 use App\Http\Requests\Accounting\JournalEntries\UpdateJournalEntryRequest;
 use App\Models\Accounting\JournalEntry;
-use App\Services\Accounting\JournalEntries\JournalEntryService;
 use App\Services\Accounting\JournalEntries\JournalEntryCatalogService;
-use App\Filters\Accounting\JournalEntriesFilters\JournalEntryFilters;
+use App\Services\Accounting\JournalEntries\JournalEntryService;
 use App\Tables\AccountingTables\JournalEntryTable;
 use App\Traits\SoftDeletesTrait;
 use Illuminate\Http\Request;
-use App\Exports\Accounting\JournalEntriesExport;
 use Maatwebsite\Excel\Facades\Excel;
-
 
 class JournalEntryController extends Controller
 {
@@ -44,21 +43,21 @@ class JournalEntryController extends Controller
 
         if ($request->ajax()) {
             return view('accounting.journal_entries.partials.table', [
-                'items'          => $entries,
+                'items' => $entries,
                 'visibleColumns' => $visibleColumns,
-                'allColumns'     => JournalEntryTable::allColumns(),
+                'allColumns' => JournalEntryTable::allColumns(),
                 'defaultDesktop' => JournalEntryTable::defaultDesktop(),
-                'defaultMobile'  => JournalEntryTable::defaultMobile(),
+                'defaultMobile' => JournalEntryTable::defaultMobile(),
             ])->render();
         }
 
         return view('accounting.journal_entries.index', array_merge(
             [
-                'items'          => $entries,
+                'items' => $entries,
                 'visibleColumns' => $visibleColumns,
-                'allColumns'     => JournalEntryTable::allColumns(),
+                'allColumns' => JournalEntryTable::allColumns(),
                 'defaultDesktop' => JournalEntryTable::defaultDesktop(),
-                'defaultMobile'  => JournalEntryTable::defaultMobile(),
+                'defaultMobile' => JournalEntryTable::defaultMobile(),
             ],
             $catalogs
         ));
@@ -81,8 +80,8 @@ class JournalEntryController extends Controller
             $entry = $this->service->create($request->validated());
 
             return redirect()
-                ->route('accounting.journal_entries.index')
-                ->with('success', "Asiento contable registrado con éxito.");
+                ->route('finance.journal_entries.index')
+                ->with('success', 'Asiento contable registrado con éxito.');
         } catch (\Exception $e) {
             return back()->withInput()->with('error', $e->getMessage());
         }
@@ -94,13 +93,13 @@ class JournalEntryController extends Controller
     public function edit(JournalEntry $journal_entry)
     {
         if ($journal_entry->status !== JournalEntry::STATUS_DRAFT) {
-            return redirect()->route('accounting.journal_entries.index')
-                ->with('error', "No se puede editar un asiento que ya ha sido asentado o anulado.");
+            return redirect()->route('finance.journal_entries.index')
+                ->with('error', 'No se puede editar un asiento que ya ha sido asentado o anulado.');
         }
 
         return view('accounting.journal_entries.edit', [
-            'item'     => $journal_entry->load('items.account'),
-            'catalogs' => $this->catalogService->getForForm()
+            'item' => $journal_entry->load('items.account'),
+            'catalogs' => $this->catalogService->getForForm(),
         ]);
     }
 
@@ -113,8 +112,8 @@ class JournalEntryController extends Controller
             $this->service->update($journal_entry, $request->validated());
 
             return redirect()
-                ->route('accounting.journal_entries.index')
-                ->with('success', "Asiento actualizado correctamente.");
+                ->route('finance.journal_entries.index')
+                ->with('success', 'Asiento actualizado correctamente.');
         } catch (\Exception $e) {
             return back()->withInput()->with('error', $e->getMessage());
         }
@@ -126,7 +125,7 @@ class JournalEntryController extends Controller
         $query = (new JournalEntryFilters($request))
             ->apply(JournalEntry::query());
 
-        $fileName = 'libro-diario-' . now()->format('d-m-Y-H-i') . '.xlsx';
+        $fileName = 'libro-diario-'.now()->format('d-m-Y-H-i').'.xlsx';
 
         return Excel::download(new JournalEntriesExport($query), $fileName);
     }
@@ -138,7 +137,8 @@ class JournalEntryController extends Controller
     {
         try {
             $this->service->post($journal_entry);
-            return back()->with('success', "El asiento ha sido asentado definitivamente.");
+
+            return back()->with('success', 'El asiento ha sido asentado definitivamente.');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -151,7 +151,8 @@ class JournalEntryController extends Controller
     {
         try {
             $this->service->cancel($journal_entry);
-            return back()->with('success', "El asiento ha sido anulado.");
+
+            return back()->with('success', 'El asiento ha sido anulado.');
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -165,7 +166,7 @@ class JournalEntryController extends Controller
         $entry = JournalEntry::findOrFail($id);
 
         if ($entry->status === JournalEntry::STATUS_POSTED) {
-            return back()->with('error', "No se puede eliminar un asiento ya asentado. Debe anularlo.");
+            return back()->with('error', 'No se puede eliminar un asiento ya asentado. Debe anularlo.');
         }
 
         return $this->destroyTrait($entry);
@@ -174,9 +175,28 @@ class JournalEntryController extends Controller
     /**
      * Requerimientos para SoftDeletesTrait
      */
-    protected function getModelClass(): string { return JournalEntry::class; }
-    protected function getViewFolder(): string { return 'accounting.journal_entries'; }
-    protected function getRouteIndex(): string { return 'accounting.journal_entries.index'; }
-    protected function getRouteEliminadas(): string { return 'accounting.journal_entries.eliminados'; }
-    protected function getEntityName(): string { return 'Asiento Contable'; }
+    protected function getModelClass(): string
+    {
+        return JournalEntry::class;
+    }
+
+    protected function getViewFolder(): string
+    {
+        return 'accounting.journal_entries';
+    }
+
+    protected function getRouteIndex(): string
+    {
+        return 'finance.journal_entries.index';
+    }
+
+    protected function getRouteEliminadas(): string
+    {
+        return 'finance.journal_entries.eliminados';
+    }
+
+    protected function getEntityName(): string
+    {
+        return 'Asiento Contable';
+    }
 }

@@ -48,179 +48,177 @@
             
             {{-- SIDEBAR --}}
             <x-sidebar.layout>
-                
-                <x-sidebar.item href="/dashboard" icon="heroicon-s-home">
+
+                <x-sidebar.item href="{{ route('dashboard') }}" icon="heroicon-s-home">
                     Dashboard
                 </x-sidebar.item>
 
-                {{-- GRUPO 1: Operaciones --}}
-                <x-sidebar.group>
-                    <x-sidebar.title>Operaciones</x-sidebar.title>
-
-                    {{-- Ventas (solo operaciones diarias) --}}
-                    @canany(['view sales', 'view invoices'])
-                        <x-sidebar.dropdown 
-                            id="ventas" 
-                            icon="heroicon-s-banknotes" 
-                            :activeRoutes="['admin/sales*']"
-                        >
-                            Ventas
-                            <x-slot name="submenu">
-                                @can('view sales')
-                                <x-sidebar.subitem href="/admin/sales/dashboard">Dashboard Ventas</x-sidebar.subitem>
-                                    <x-sidebar.subitem href="/admin/sales">Punto de Venta (POS)</x-sidebar.subitem>
-                                @endcan
-                                @can('view invoices')
-                                    <x-sidebar.subitem href="/admin/sales/invoice">Facturas</x-sidebar.subitem>
-                                @endcan
-                            </x-slot>
-                        </x-sidebar.dropdown>
-                    @endcanany
-
-                    @if (module_enabled('sales.quotes'))
+                {{-- GRUPO 1: CRM (REQ-3.2) --}}
+                <x-sidebar.dropdown id="clientes" icon="heroicon-s-user-group" :activeRoutes="['app/clients*']">
+                    CRM
+                    <x-slot name="submenu">
+                        <x-sidebar.subitem href="{{ route('clients.index') }}">Lista de Clientes</x-sidebar.subitem>
                         @can('view quotes')
-                            <x-sidebar.item href="/admin/sales/quotes" icon="heroicon-s-document-currency-dollar">
-                                Cotizaciones
-                            </x-sidebar.item>
+                            @if(module_enabled('sales.quotes'))
+                                <x-sidebar.subitem href="{{ route('sales.quotes.index') }}">Cotizaciones</x-sidebar.subitem>
+                            @endif
                         @endcan
-                    @endif
+                        @if(module_enabled('sales.delivery_points'))
+                            <x-sidebar.subitem href="{{ route('clients.delivery_points.index') }}">Puntos de Reparto</x-sidebar.subitem>
+                        @endif
+                        @if(module_enabled('clients.field_assets'))
+                            <x-sidebar.subitem href="{{ route('clients.equipment.index') }}">Equipos</x-sidebar.subitem>
+                        @endif
+                        @if(module_enabled('sales.delivery_points'))
+                            <x-sidebar.subitem href="{{ route('clients.businessTypes.index') }}">Tipos de Negocio</x-sidebar.subitem>
+                        @endif
+                        @if(module_enabled('clients.field_assets'))
+                            <x-sidebar.subitem href="{{ route('clients.equipmentTypes.index') }}">Tipos de Equipo</x-sidebar.subitem>
+                        @endif
+                    </x-slot>
+                </x-sidebar.dropdown>
 
-                    <x-sidebar.item href="/rutas" icon="heroicon-s-map">
-                        Rutas y Entregas
-                    </x-sidebar.item>
-
-                    @if (module_enabled('inventory.tracking'))
-                        @can('view inventory dashboard')
-                            <x-sidebar.dropdown
-                                id="inventario"
-                                icon="heroicon-s-cube"
-                                :activeRoutes="['admin/inventory*']"
-                            >
-                                Inventario
-                                <x-slot name="submenu">
-                                    <x-sidebar.subitem href="/admin/inventory/dashboard">Dashboard</x-sidebar.subitem>
-                                    <x-sidebar.subitem href="/admin/inventory/stocks">Stock Actual</x-sidebar.subitem>
-                                    <x-sidebar.subitem href="/admin/inventory/movements">Movimientos</x-sidebar.subitem>
-                                    <x-sidebar.subitem href="/admin/inventory/warehouses">Almacenes</x-sidebar.subitem>
-                                </x-slot>
-                            </x-sidebar.dropdown>
-                        @endcan
-                    @endif
-                </x-sidebar.group>
-
-                {{-- GRUPO 2: Finanzas --}}
-                @can('view accounting dashboard')
-                    <x-sidebar.group>
-                        <x-sidebar.title>Finanzas</x-sidebar.title>
-
-                        <x-sidebar.dropdown 
-                            id="contabilidad" 
-                            icon="heroicon-s-calculator" 
-                            :activeRoutes="['admin/accounting*']"
-                        >
-                            Contabilidad
-                            <x-slot name="submenu">
-                                <x-sidebar.subitem href="/admin/accounting/overview">Ingresos y Gastos</x-sidebar.subitem>
-                                @if(module_enabled('accounting.advanced'))
-                                    <x-sidebar.subitem href="/admin/accounting/dashboard">Dashboard Contable</x-sidebar.subitem>
-                                @endif
-                                @if(module_enabled('sales.receivables'))
-                                    <x-sidebar.subitem href="/admin/accounting/receivables">Cuentas por Cobrar</x-sidebar.subitem>
-                                    <x-sidebar.subitem href="/admin/accounting/payments">Pagos</x-sidebar.subitem>
-                                @endif
-                                @if(module_enabled('accounting.advanced'))
-                                    <div class="h-px bg-gray-700/30 my-1.5"></div>
-                                    <x-sidebar.subitem href="/admin/accounting/journal_entries">Asientos Contables</x-sidebar.subitem>
-                                    <x-sidebar.subitem href="/admin/accounting/accounts">Plan de Cuentas</x-sidebar.subitem>
-                                @endif
-                            </x-slot>
-                        </x-sidebar.dropdown>
-                    </x-sidebar.group>
-                @endcan
-
-                {{-- GRUPO 3: Catálogos --}}
-                <x-sidebar.group>
-                    <x-sidebar.title>Catálogos</x-sidebar.title>
-
-                    <x-sidebar.dropdown id="productos" icon="heroicon-s-shopping-cart" :activeRoutes="['admin/products*']">
-                        Productos/Servicios
-                        <x-slot name="submenu">
-                            <x-sidebar.subitem href="/admin/products">Productos/Servicios</x-sidebar.subitem>
-                            <x-sidebar.subitem href="/admin/products/categories">Categorías</x-sidebar.subitem>
-                            <x-sidebar.subitem href="/admin/products/units">Unidades de Medida</x-sidebar.subitem>
-                        </x-slot>
-                    </x-sidebar.dropdown>
-
-                    <x-sidebar.dropdown id="clientes" icon="heroicon-s-user-group" :activeRoutes="['admin/clients*']">
-                        Clientes
-                        <x-slot name="submenu">
-                            <x-sidebar.subitem href="/admin/clients">Lista de Clientes</x-sidebar.subitem>
-                            @if(module_enabled('sales.delivery_points'))
-                                <x-sidebar.subitem href="/admin/clients/pos">Puntos de Venta</x-sidebar.subitem>
-                            @endif
-                            @if(module_enabled('clients.field_assets'))
-                                <x-sidebar.subitem href="/admin/clients/equipments">Equipos</x-sidebar.subitem>
-                            @endif
-                            @if(module_enabled('sales.delivery_points') || module_enabled('clients.field_assets'))
-                                <div class="h-px bg-gray-700/30 my-1.5"></div>
-                            @endif
-                            @if(module_enabled('sales.delivery_points'))
-                                <x-sidebar.subitem href="/admin/clients/businessTypes">Tipos de Negocio</x-sidebar.subitem>
-                            @endif
-                            @if(module_enabled('clients.field_assets'))
-                                <x-sidebar.subitem href="/admin/clients/equipmentTypes">Tipos de Equipo</x-sidebar.subitem>
-                            @endif
-                        </x-slot>
-                    </x-sidebar.dropdown>
-
-                    <x-sidebar.dropdown id="pos" icon="heroicon-s-building-storefront" :activeRoutes="['admin/pos*']">
-                        Puntos de Venta
-                        <x-slot name="submenu">
-                            <x-sidebar.subitem href="{{ route('sales.pos.index') }}">Ir al POS</x-sidebar.subitem>
-                            <div class="h-px bg-gray-700/30 my-1.5"></div>
-                            <x-sidebar.subitem href="/admin/sales/pos/settings">Configuración</x-sidebar.subitem>
-                            <x-sidebar.subitem href="/admin/sales/pos/terminals">Terminales</x-sidebar.subitem>
-                            <x-sidebar.subitem href="/admin/sales/pos/sessions">Turnos</x-sidebar.subitem>
-                            {{-- Movimientos de Caja: oculto, ver Fase 9.1 en docs/features/POS-Interfaz.md --}}
-                            {{-- <x-sidebar.subitem href="/admin/sales/pos/cash-movements">Movimientos de Caja</x-sidebar.subitem> --}}
-                        </x-slot>
-                    </x-sidebar.dropdown>
-                </x-sidebar.group>
-
-                {{-- GRUPO 4: Sistema --}}
-                <x-sidebar.group>
-                    <x-sidebar.title>Sistema</x-sidebar.title>
+                {{-- GRUPO 2: Ventas (REQ-3.2) — un solo dropdown, colapsa "Ventas" + "Puntos de Venta" --}}
+                @canany(['view sales', 'pos sessions manage'])
 
                     <x-sidebar.dropdown
-                        id="configuracion"
-                        icon="heroicon-s-cog-6-tooth"
-                        :activeRoutes="['admin/config*', 'admin/sales/ncf*']"
+                        id="ventas"
+                        icon="heroicon-s-banknotes"
+                        :activeRoutes="['app/sales*']"
                     >
-                        Configuración
+                        Ventas
                         <x-slot name="submenu">
-                            <x-sidebar.subitem href="{{ route('configuration.general.edit') }}">Configuración General</x-sidebar.subitem>
-                            <x-sidebar.subitem href="{{ route('users.index') }}">Usuarios</x-sidebar.subitem>
-                            <x-sidebar.subitem href="{{ route('roles.index') }}">Roles/Permisos</x-sidebar.subitem>
-                            @can('configure system modules')
-                                <x-sidebar.subitem href="{{ route('configuration.features') }}">Funcionalidades del Sistema</x-sidebar.subitem>
+                            @can('view sales')
+                                <x-sidebar.subitem href="{{ route('sales.index') }}">Ventas</x-sidebar.subitem>
                             @endcan
-                            <x-sidebar.subitem href="{{ route('configuration.catalogs.index') }}">Catálogos del Sistema</x-sidebar.subitem>
+                            @can('pos sessions manage')
+                                <x-sidebar.subitem href="{{ route('sales.pos.index') }}">Punto de Venta</x-sidebar.subitem>
+                                <x-sidebar.subitem href="{{ route('sales.pos.settings.edit') }}">Configuración</x-sidebar.subitem>
+                                <x-sidebar.subitem href="{{ route('sales.pos.terminals.index') }}">Terminales</x-sidebar.subitem>
+                                <x-sidebar.subitem href="{{ route('sales.pos.sessions.index') }}">Turnos</x-sidebar.subitem>
+                                {{-- Movimientos de Caja: oculto, ver Fase 9.1 en docs/features/POS-Interfaz.md --}}
+                            @endcan
+                        </x-slot>
+                    </x-sidebar.dropdown>
 
-                            {{-- Solo mostrar si el módulo sales.ncf está activo --}}
+                @endcanany
+
+                {{-- GRUPO 3: Inventario (REQ-3.2) — Productos/Categorías/Unidades anidado --}}
+                @if (module_enabled('inventory.tracking'))
+                    <x-sidebar.dropdown
+                        id="inventario"
+                        icon="heroicon-s-cube"
+                        :activeRoutes="['app/inventory*']"
+                    >
+                        Inventario
+                        <x-slot name="submenu">
+                            @can('view products')
+                                <div class="px-3 py-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Productos</div>
+                                <x-sidebar.subitem href="{{ route('inventory.products.index') }}">Productos/Servicios</x-sidebar.subitem>
+                                <x-sidebar.subitem href="{{ route('inventory.products.categories.index') }}">Categorías</x-sidebar.subitem>
+                                <x-sidebar.subitem href="{{ route('inventory.products.units.index') }}">Unidades de Medida</x-sidebar.subitem>
+                            @endcan
+                            @can('inventory stocks index')
+                                <x-sidebar.subitem href="{{ route('inventory.stocks.index') }}">Stock Actual</x-sidebar.subitem>
+                            @endcan
+                            @can('view inventory movements')
+                                <x-sidebar.subitem href="{{ route('inventory.movements.index') }}">Movimientos</x-sidebar.subitem>
+                            @endcan
+                            @can('configure warehouses')
+                                <x-sidebar.subitem href="{{ route('inventory.warehouses.index') }}">Almacenes</x-sidebar.subitem>
+                            @endcan
+                        </x-slot>
+                    </x-sidebar.dropdown>
+                @endif
+
+                {{-- GRUPO 4: Finanzas (REQ-3.2, rename de "Contabilidad") — absorbe Facturas y NCF --}}
+                @can('view accounting dashboard')
+                    <x-sidebar.dropdown
+                        id="finanzas"
+                        icon="heroicon-s-calculator"
+                        :activeRoutes="['app/finance*']"
+                    >
+                        Finanzas
+                        <x-slot name="submenu">
+                            <x-sidebar.subitem href="{{ route('finance.overview.index') }}">Ingresos y Gastos</x-sidebar.subitem>
+                            @if(module_enabled('sales.receivables'))
+                                <x-sidebar.subitem href="{{ route('finance.receivables.index') }}">Cuentas por Cobrar</x-sidebar.subitem>
+                                <x-sidebar.subitem href="{{ route('finance.payments.index') }}">Pagos</x-sidebar.subitem>
+                            @endif
+                            @if(module_enabled('accounting.advanced'))
+                                <x-sidebar.subitem href="{{ route('finance.journal_entries.index') }}">Asientos Contables</x-sidebar.subitem>
+                                <x-sidebar.subitem href="{{ route('finance.accounts.index') }}">Plan de Cuentas</x-sidebar.subitem>
+                            @endif
+                            @can('view invoices')
+                                <x-sidebar.subitem href="{{ route('finance.invoices.index') }}">Facturas</x-sidebar.subitem>
+                            @endcan
+
+                            {{-- NCF (Fiscal) — movido de Configuración (REQ-3.2/3.4) --}}
                             @if(module_enabled('sales.ncf'))
                                 @can('view ncf sequences')
-                                    <div class="h-px bg-gray-700/30 my-1.5"></div>
-                                    <div class="px-3 py-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">NCF (Fiscal)</div>
-                                    <x-sidebar.subitem href="/admin/sales/ncf/dashboard">Dashboard NCF</x-sidebar.subitem>
-                                    <x-sidebar.subitem href="/admin/sales/ncf/sequences">Secuencias NCF</x-sidebar.subitem>
-                                    <x-sidebar.subitem href="/admin/sales/ncf/logs">Historial NCF</x-sidebar.subitem>
-                                    <x-sidebar.subitem href="/admin/sales/ncf/types">Tipos NCF</x-sidebar.subitem>
+                                    <x-sidebar.subitem href="{{ route('finance.ncf.sequences.index') }}">Secuencias NCF</x-sidebar.subitem>
+                                    <x-sidebar.subitem href="{{ route('finance.ncf.logs.index') }}">Historial NCF</x-sidebar.subitem>
+                                    <x-sidebar.subitem href="{{ route('finance.ncf.types.index') }}">Tipos NCF</x-sidebar.subitem>
                                 @endcan
                             @endif
                         </x-slot>
                     </x-sidebar.dropdown>
-                </x-sidebar.group>
+                @endcan
 
+                {{-- GRUPO 5: Reportes (REQ-3.2, nuevo) — junta los 4 dashboards sueltos --}}
+                @php
+                    $showReportes = auth()->user()->can('view sales')
+                        || (module_enabled('inventory.tracking') && auth()->user()->can('view inventory dashboard'))
+                        || (module_enabled('sales.ncf') && auth()->user()->can('view ncf sequences'))
+                        || (module_enabled('accounting.advanced') && auth()->user()->can('view accounting dashboard'));
+                @endphp
+                @if($showReportes)
+                    <x-sidebar.dropdown
+                        id="reportes"
+                        icon="heroicon-s-chart-bar"
+                        :activeRoutes="['app/sales/dashboard', 'app/inventory/dashboard', 'app/finance/ncf/dashboard', 'app/finance/dashboard']"
+                    >
+                        Reportes
+                        <x-slot name="submenu">
+                            @can('view sales')
+                                <x-sidebar.subitem href="{{ route('sales.dashboard') }}">Dashboard Ventas</x-sidebar.subitem>
+                            @endcan
+                            @if(module_enabled('inventory.tracking'))
+                                @can('view inventory dashboard')
+                                    <x-sidebar.subitem href="{{ route('inventory.dashboard.index') }}">Dashboard Inventario</x-sidebar.subitem>
+                                @endcan
+                            @endif
+                            @if(module_enabled('sales.ncf'))
+                                @can('view ncf sequences')
+                                    <x-sidebar.subitem href="{{ route('finance.ncf.dashboard') }}">Dashboard NCF</x-sidebar.subitem>
+                                @endcan
+                            @endif
+                            @if(module_enabled('accounting.advanced'))
+                                @can('view accounting dashboard')
+                                    <x-sidebar.subitem href="{{ route('finance.dashboard.index') }}">Dashboard Finanzas</x-sidebar.subitem>
+                                @endcan
+                            @endif
+                        </x-slot>
+                    </x-sidebar.dropdown>
+                @endif
+
+                {{-- GRUPO 6: Sistema (REQ-3.2) — se achica, ya sin NCF --}}
+                <x-sidebar.dropdown
+                    id="configuracion"
+                    icon="heroicon-s-cog-6-tooth"
+                    :activeRoutes="['app/config*']"
+                >
+                    Configuración
+                    <x-slot name="submenu">
+                        <x-sidebar.subitem href="{{ route('configuration.general.edit') }}">Configuración General</x-sidebar.subitem>
+                        <x-sidebar.subitem href="{{ route('users.index') }}">Usuarios</x-sidebar.subitem>
+                        <x-sidebar.subitem href="{{ route('roles.index') }}">Roles/Permisos</x-sidebar.subitem>
+                        @can('configure system modules')
+                            <x-sidebar.subitem href="{{ route('configuration.features') }}">Funcionalidades del Sistema</x-sidebar.subitem>
+                        @endcan
+                        <x-sidebar.subitem href="{{ route('configuration.catalogs.index') }}">Catálogos del Sistema</x-sidebar.subitem>
+                    </x-slot>
+                </x-sidebar.dropdown>
             </x-sidebar.layout>
                         
             {{-- OVERLAY (Fondo oscuro para móviles) --}}

@@ -17,7 +17,7 @@
         heartbeatUrl: @js(route('sales.pos.heartbeat')),
         lockUrl: @js(route('sales.pos.lock', $terminal)),
         requiresPin: @js($terminal->requiresPinVerification()),
-        printUrl: @js($lastInvoiceId ? route('sales.invoices.print', ['invoice' => $lastInvoiceId, 'format' => 'ticket']) : null),
+        printUrl: @js($lastInvoiceId ? route('finance.invoices.print', ['invoice' => $lastInvoiceId, 'format' => 'ticket']) : null),
         autoPrint: @js((bool) ($posConfig?->auto_print_receipt ?? false)),
         lastSale: @js($lastSale),
         terminalId: @js($terminal->id),

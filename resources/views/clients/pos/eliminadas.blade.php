@@ -6,7 +6,7 @@
         {{-- TOOLBAR --}}
         <x-page-toolbar title="Papelera de Puntos de Venta" subtitle="Ubicaciones eliminadas recientemente">
             <x-slot name="actions">
-                <a href="{{ route('clients.pos.index') }}" 
+                <a href="{{ route('clients.delivery_points.index') }}" 
                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50">
                     <x-heroicon-s-arrow-left class="w-4 h-4 mr-2" />
                     Volver a Puntos de Venta

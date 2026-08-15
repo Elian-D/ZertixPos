@@ -3,17 +3,16 @@
 namespace App\Http\Controllers\Clients;
 
 use App\Exports\PointOfSale\PointsOfSaleExport;
-use App\Http\Controllers\Controller;
-use App\Models\Clients\PointOfSale;
-use App\Traits\SoftDeletesTrait;
 use App\Filters\PointOfSale\PointOfSaleFilters;
-use App\Services\PointOfSale\POSCatalogService;
-use App\Services\PointOfSale\POSService;
-use App\Tables\PointOfSaleTable;
+use App\Http\Controllers\Controller;
 use App\Http\Requests\PointOfSale\BulkPointOfSaleRequest;
 use App\Http\Requests\PointOfSale\StorePointOfSaleRequest;
 use App\Http\Requests\PointOfSale\UpdatePointOfSaleRequest;
-use App\Models\Clients\Client;
+use App\Models\Clients\PointOfSale;
+use App\Services\PointOfSale\POSCatalogService;
+use App\Services\PointOfSale\POSService;
+use App\Tables\PointOfSaleTable;
+use App\Traits\SoftDeletesTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
@@ -40,24 +39,24 @@ class PointOfSaleController extends Controller
         // 3. Respuesta para peticiones AJAX (DataTable)
         if ($request->ajax()) {
             return view('clients.pos.partials.table', [
-                'pos'            => $pos,
+                'pos' => $pos,
                 'visibleColumns' => $visibleColumns,
-                'allColumns'     => PointOfSaleTable::allColumns(),
+                'allColumns' => PointOfSaleTable::allColumns(),
                 'defaultDesktop' => PointOfSaleTable::defaultDesktop(),
-                'defaultMobile'  => PointOfSaleTable::defaultMobile(),
-                'bulkActions'    => true,
+                'defaultMobile' => PointOfSaleTable::defaultMobile(),
+                'bulkActions' => true,
             ])->render();
         }
 
         // 4. Carga de la vista completa
         return view('clients.pos.index', array_merge(
             [
-                'pos'            => $pos,
+                'pos' => $pos,
                 'visibleColumns' => $visibleColumns,
-                'allColumns'     => PointOfSaleTable::allColumns(),
+                'allColumns' => PointOfSaleTable::allColumns(),
                 'defaultDesktop' => PointOfSaleTable::defaultDesktop(),
-                'defaultMobile'  => PointOfSaleTable::defaultMobile(),
-                'bulkActions'    => true,
+                'defaultMobile' => PointOfSaleTable::defaultMobile(),
+                'bulkActions' => true,
             ],
             $catalogService->getForFilters() // Inyecta clients, businessTypes y states
         ));
@@ -70,8 +69,8 @@ class PointOfSaleController extends Controller
     {
         try {
             $count = $posService->performBulkAction(
-                $request->ids, 
-                $request->action, 
+                $request->ids,
+                $request->action,
                 $request->value
             );
 
@@ -82,30 +81,30 @@ class PointOfSaleController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => $message
+                'message' => $message,
             ]);
 
         } catch (\Exception $e) {
-            Log::error("Error en acción masiva de pos: " . $e->getMessage());
+            Log::error('Error en acción masiva de pos: '.$e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'message' => 'No se pudo completar la operación masiva.'
+                'message' => 'No se pudo completar la operación masiva.',
             ], 422);
         }
     }
 
-    public function export(Request $request) 
+    public function export(Request $request)
     {
         // 1. Aplicamos filtros (ajusta PointOfSaleFilters y withIndexRelations a tus nombres reales)
         $query = (new PointOfSaleFilters($request))
-                    ->apply(PointOfSale::query());
+            ->apply(PointOfSale::query());
 
         // 2. Ejecutar descarga
-        $fileName = 'puntos-de-venta-' . now()->format('d-m-Y-H-i') . '.xlsx';
-        
+        $fileName = 'puntos-de-venta-'.now()->format('d-m-Y-H-i').'.xlsx';
+
         return Excel::download(
-            new PointsOfSaleExport($query), 
+            new PointsOfSaleExport($query),
             $fileName
         );
     }
@@ -118,7 +117,8 @@ class PointOfSaleController extends Controller
     public function store(StorePointOfSaleRequest $request, POSService $posService)
     {
         $pos = $posService->createPOS($request->validated());
-        return redirect()->route('clients.pos.index')
+
+        return redirect()->route('clients.delivery_points.index')
             ->with('success', "Punto de venta {$pos->name} ({$pos->code}) creado.");
     }
 
@@ -133,7 +133,8 @@ class PointOfSaleController extends Controller
     public function update(UpdatePointOfSaleRequest $request, PointOfSale $pos, POSService $posService)
     {
         $posService->updatePOS($pos, $request->validated());
-        return redirect()->route('clients.pos.index')
+
+        return redirect()->route('clients.delivery_points.index')
             ->with('success', "Punto de venta {$pos->name} actualizado correctamente.");
     }
 
@@ -143,9 +144,28 @@ class PointOfSaleController extends Controller
     }
 
     /* Configuración del Trait para la papelera */
-    protected function getModelClass(): string { return PointOfSale::class; }
-    protected function getViewFolder(): string { return 'clients.pos'; }
-    protected function getRouteIndex(): string { return 'clients.pos.index'; }
-    protected function getRouteEliminadas(): string { return 'clients.pos.eliminados'; }
-    protected function getEntityName(): string { return 'Punto de Venta'; }
+    protected function getModelClass(): string
+    {
+        return PointOfSale::class;
+    }
+
+    protected function getViewFolder(): string
+    {
+        return 'clients.pos';
+    }
+
+    protected function getRouteIndex(): string
+    {
+        return 'clients.delivery_points.index';
+    }
+
+    protected function getRouteEliminadas(): string
+    {
+        return 'clients.delivery_points.eliminados';
+    }
+
+    protected function getEntityName(): string
+    {
+        return 'Punto de Reparto';
+    }
 }

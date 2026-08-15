@@ -100,14 +100,14 @@
             <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-2">
                     {{-- Ver PDF/Vista Previa --}}
-                    <a href="{{ route('sales.invoices.show', $invoice) }}" 
+                    <a href="{{ route('finance.invoices.show', $invoice) }}" 
                        class="bg-white border border-gray-200 text-gray-500 hover:bg-indigo-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
                        title="Ver Factura">
                         <x-heroicon-s-eye class="w-4 h-4" />
                     </a>
 
                     {{-- Re-Imprimir --}}
-                    <a href="{{ route('sales.invoices.print', $invoice) }}" target="_blank" 
+                    <a href="{{ route('finance.invoices.print', $invoice) }}" target="_blank" 
                        class="bg-white border border-gray-200 text-gray-500 hover:bg-gray-800 hover:text-white p-2 rounded-lg transition-all shadow-sm" 
                        title="Imprimir Comprobante">
                         <x-heroicon-s-printer class="w-4 h-4" />

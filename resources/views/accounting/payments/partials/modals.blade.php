@@ -126,7 +126,7 @@
 
             <div class="px-8 py-5 bg-gray-50 border-t flex justify-end gap-3">
                 <x-secondary-button x-on:click="$dispatch('close')">Cerrar</x-secondary-button>
-                <a href="{{ route('accounting.payments.print', $payment->id) }}" 
+                <a href="{{ route('finance.payments.print', $payment->id) }}" 
                 target="_blank" 
                 class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 transition shadow-sm">
                     <x-heroicon-s-printer class="w-3 h-3 mr-2"/> Imprimir Recibo PDF
@@ -137,7 +137,7 @@
 
     {{-- 2. MODAL: ANULACIÓN DE PAGO --}}
     <x-modal name="confirm-cancel-payment-{{ $payment->id }}" maxWidth="sm">
-        <form action="{{ route('accounting.payments.cancel', $payment) }}" method="POST" class="p-6 text-center">
+        <form action="{{ route('finance.payments.cancel', $payment) }}" method="POST" class="p-6 text-center">
             @csrf
             
             <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">

@@ -11,19 +11,19 @@
             <div class="p-6">
                 <x-page-toolbar title="Gestión de Puntos de Venta">
                     <x-slot name="actions">
-                        <a href="{{ route('clients.pos.eliminados') }}"
+                        <a href="{{ route('clients.delivery_points.eliminados') }}"
                            class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100">
                             <x-heroicon-s-trash class="w-4 h-4 mr-2" />
                             Papelera
                         </a>
 
-                        <a href="{{ route('clients.pos.create') }}"
+                        <a href="{{ route('clients.delivery_points.create') }}"
                            class="inline-flex items-center px-4 py-2 bg-green-600 rounded-md text-xs font-semibold text-white uppercase hover:bg-green-700">
                             <x-heroicon-s-plus class="w-4 h-4 mr-2" />
                             Nuevo Punto de Venta
                         </a>
 
-                        <x-data-table.export-button :route="route('clients.pos.export')" formId="pos-filters" />
+                        <x-data-table.export-button :route="route('clients.delivery_points.export')" formId="pos-filters" />
                     </x-slot>
                 </x-page-toolbar>
 
@@ -40,6 +40,6 @@
 
     <x-data-table.bulk-confirmation-modal 
         formId="pos-filters" 
-        route="{{ route('clients.pos.bulk') }}" 
+        route="{{ route('clients.delivery_points.bulk') }}" 
     />
 </x-app-layout>

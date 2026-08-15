@@ -21,7 +21,7 @@
 
             <td class="px-6 py-4 text-right">
                 <div class="flex justify-end gap-2">
-                    <form action="{{ route('products.units.restaurar', $units->id) }}" method="POST">
+                    <form action="{{ route('inventory.products.units.restaurar', $units->id) }}" method="POST">
                         @csrf @method('PATCH')
                         <button type="submit" class="p-2 text-green-600 hover:bg-green-50 rounded-lg">
                             <x-heroicon-s-arrow-path class="w-5 h-5" />
@@ -49,7 +49,7 @@
         :id="$units->id"
         :title="'¿Eliminar Permanentemente?'"
         :itemName="$units->name"
-        :route="route('products.units.borrarDefinitivo', $units->id)"
+        :route="route('inventory.products.units.borrarDefinitivo', $units->id)"
         :description="'Estás a punto de borrar definitivamente la unidad de medida <strong>' . $units->name . '</strong>.'"
     >
         <strong>Aviso Crítico:</strong> Esta operación borrará todos los datos asociados y no se puede deshacer.

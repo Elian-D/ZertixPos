@@ -64,7 +64,7 @@ class CategoryController extends Controller
 
         // ... (redirección)
         return redirect()
-            ->route('products.categories.index')
+            ->route('inventory.products.categories.index')
             ->with('success', 'Categoria "'.$category->name.'" creada exitosamente.');
     }
 
@@ -86,7 +86,7 @@ class CategoryController extends Controller
         ]);
 
         return redirect()
-            ->route('products.categories.index')
+            ->route('inventory.products.categories.index')
             ->with('success', "Categoría \"{$category->name}\" actualizada correctamente.");
     }
 
@@ -95,7 +95,7 @@ class CategoryController extends Controller
         $category->toggleActivo();
 
         return redirect()
-            ->route('products.categories.index')
+            ->route('inventory.products.categories.index')
             ->with('success', 'Estado actualizado para "'.$category->name.'".');
     }
 
@@ -120,12 +120,12 @@ class CategoryController extends Controller
 
     protected function getRouteIndex(): string
     {
-        return 'products.categories.index';
+        return 'inventory.products.categories.index';
     }
 
     protected function getRouteEliminadas(): string
     {
-        return 'products.categories.eliminados';
+        return 'inventory.products.categories.eliminados';
     }
 
     protected function getEntityName(): string

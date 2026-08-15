@@ -1,8 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RoleController;
-
+use Illuminate\Support\Facades\Route;
 
 Route::get('/roles', [RoleController::class, 'index'])
     ->middleware('permission:roles index')

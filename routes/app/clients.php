@@ -145,49 +145,51 @@ Route::prefix('clients')->as('clients.')->group(function () {
         });
     });
 
+    // Rename clients.pos.*→clients.delivery_points.* (REQ-3.6) — PointOfSale (ubicación
+    // física del cliente en su ruta) colisionaba de nombre con sales.pos.* (POS Terminal/caja).
     Route::middleware('module:sales.delivery_points')->group(function () {
-        Route::group(['as' => 'pos.'], function () {
+        Route::group(['as' => 'delivery_points.'], function () {
 
-            Route::get('pos/eliminados', [PointOfSaleController::class, 'eliminadas'])
+            Route::get('delivery-points/eliminados', [PointOfSaleController::class, 'eliminadas'])
                 ->middleware('permission:pos restore')
                 ->name('eliminados');
 
-            Route::get('pos/export', [PointOfSaleController::class, 'export'])
+            Route::get('delivery-points/export', [PointOfSaleController::class, 'export'])
                 ->name('export');
 
-            Route::post('pos/bulk-action', [PointOfSaleController::class, 'bulk'])
+            Route::post('delivery-points/bulk-action', [PointOfSaleController::class, 'bulk'])
                 ->middleware('permission:pos edit')
                 ->name('bulk');
 
-            Route::get('pos/', [PointOfSaleController::class, 'index'])
+            Route::get('delivery-points/', [PointOfSaleController::class, 'index'])
                 ->middleware('permission:pos index')
                 ->name('index');
 
-            Route::get('pos/create', [PointOfSaleController::class, 'create'])
+            Route::get('delivery-points/create', [PointOfSaleController::class, 'create'])
                 ->middleware('permission:pos create')
                 ->name('create');
 
-            Route::post('pos/store', [PointOfSaleController::class, 'store'])
+            Route::post('delivery-points/store', [PointOfSaleController::class, 'store'])
                 ->middleware('permission:pos create')
                 ->name('store');
 
-            Route::get('pos/{pos}/editar', [PointOfSaleController::class, 'edit'])
+            Route::get('delivery-points/{pos}/editar', [PointOfSaleController::class, 'edit'])
                 ->middleware('permission:pos edit')
                 ->name('edit');
 
-            Route::put('pos/{pos}', [PointOfSaleController::class, 'update'])
+            Route::put('delivery-points/{pos}', [PointOfSaleController::class, 'update'])
                 ->middleware('permission:pos edit')
                 ->name('update');
 
-            Route::delete('pos/{pos}', [PointOfSaleController::class, 'destroy'])
+            Route::delete('delivery-points/{pos}', [PointOfSaleController::class, 'destroy'])
                 ->middleware('permission:pos delete')
                 ->name('destroy');
 
-            Route::patch('pos/{id}/restaurar', [PointOfSaleController::class, 'restaurar'])
+            Route::patch('delivery-points/{id}/restaurar', [PointOfSaleController::class, 'restaurar'])
                 ->middleware('permission:pos restore')
                 ->name('restore');
 
-            Route::delete('pos/{id}/forzar-eliminacion', [PointOfSaleController::class, 'borrarDefinitivo'])
+            Route::delete('delivery-points/{id}/forzar-eliminacion', [PointOfSaleController::class, 'borrarDefinitivo'])
                 ->middleware('permission:pos delete')
                 ->name('borrarDefinitivo');
         });

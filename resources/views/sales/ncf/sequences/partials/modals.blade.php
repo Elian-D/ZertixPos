@@ -4,7 +4,7 @@
         title="Nuevo Lote de Comprobantes" 
         subtitle="Configure los rangos autorizados por la DGII." />
 
-    <form action="{{ route('sales.ncf.sequences.store') }}" 
+    <form action="{{ route('finance.ncf.sequences.store') }}" 
           method="POST" 
           class="p-6"
           x-data="{ 
@@ -117,7 +117,7 @@
             title="Ampliar Rango" 
             subtitle="{{ $item->type->name }} ({{ $item->series }})" />
 
-        <form action="{{ route('sales.ncf.sequences.extend', $item->id) }}" method="POST" class="p-6">
+        <form action="{{ route('finance.ncf.sequences.extend', $item->id) }}" method="POST" class="p-6">
             @csrf
             @method('PATCH')
             
@@ -215,7 +215,7 @@
                 </div>
 
                 {{-- Formulario de Umbral --}}
-                <form action="{{ route('sales.ncf.sequences.update-threshold', $item->id) }}" method="POST" class="mt-4 pt-4 border-t">
+                <form action="{{ route('finance.ncf.sequences.update-threshold', $item->id) }}" method="POST" class="mt-4 pt-4 border-t">
                     @csrf
                     @method('PATCH')
                     <div class="flex items-end gap-2">

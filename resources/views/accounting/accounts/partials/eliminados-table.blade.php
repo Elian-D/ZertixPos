@@ -31,7 +31,7 @@
             <td class="px-6 py-4 text-right">
                 <div class="flex justify-end gap-2">
                     {{-- Botón Restaurar --}}
-                    <form action="{{ route('accounting.accounts.restaurar', $item->id) }}" method="POST">
+                    <form action="{{ route('finance.accounts.restaurar', $item->id) }}" method="POST">
                         @csrf @method('PATCH')
                         <button type="submit" title="Restaurar Cuenta" class="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors">
                             <x-heroicon-s-arrow-path class="w-5 h-5" />
@@ -66,7 +66,7 @@
         :id="$item->id"
         :title="'¿Borrar Cuenta Permanentemente?'"
         :itemName="$item->code . ' - ' . $item->name"
-        :route="route('accounting.accounts.borrarDefinitivo', $item->id)"
+        :route="route('finance.accounts.borrarDefinitivo', $item->id)"
     >
         <div class="space-y-3">
             <p class="text-sm text-red-600 font-bold">

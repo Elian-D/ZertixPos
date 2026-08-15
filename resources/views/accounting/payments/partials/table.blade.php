@@ -93,7 +93,7 @@
                     </button>
 
                     {{-- Imprimir Comprobante --}}
-                    <a href="{{ route('accounting.payments.print', $payment->id) }}" 
+                    <a href="{{ route('finance.payments.print', $payment->id) }}" 
                     target="_blank" 
                     class="bg-white border border-gray-200 text-gray-500 hover:bg-gray-800 hover:text-white p-2 rounded-lg transition-all shadow-sm" 
                     title="Imprimir Recibo">

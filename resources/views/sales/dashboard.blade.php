@@ -156,7 +156,7 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                 <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Últimas Facturas Emitidas</h3>
-                <a href="{{ route('sales.invoices.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition">Ver todas →</a>
+                <a href="{{ route('finance.invoices.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition">Ver todas →</a>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
