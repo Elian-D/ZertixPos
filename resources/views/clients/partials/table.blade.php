@@ -5,7 +5,9 @@
 <tr class="hover:bg-gray-50 transition border-b border-gray-100">
             @if($bulkActions)
                 <td class="px-4 py-4 text-center">
-                    <input type="checkbox" value="{{ $client->id }}" class="row-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                    @unless($client->isConsumidorFinal())
+                        <input type="checkbox" value="{{ $client->id }}" class="row-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                    @endunless
                 </td>
             @endif
 
@@ -124,19 +126,21 @@
             <td class="px-6 py-4">
                 <div class="flex items-center gap-3 mt-2 md:mt-0">
                     {{-- BOTÓN RADICAL: VER TODO (MODAL) --}}
-                    <button @click="$dispatch('open-modal', 'view-client-{{ $client->id }}')" 
+                    <button @click="$dispatch('open-modal', 'view-client-{{ $client->id }}')"
                             class="bg-gray-100 text-gray-600 hover:bg-indigo-600 hover:text-white p-2 rounded-full transition-all shadow-sm"
                             title="Ver detalles completos">
                         <x-heroicon-s-eye class="w-5 h-5" />
                     </button>
 
-                    <a href="{{ route('clients.edit', $client) }}" class="text-indigo-600 hover:text-indigo-900 p-2 rounded-full hover:bg-indigo-50">
-                        <x-heroicon-s-pencil class="w-5 h-5" />
-                    </a>
+                    @unless($client->isConsumidorFinal())
+                        <a href="{{ route('clients.edit', $client) }}" class="text-indigo-600 hover:text-indigo-900 p-2 rounded-full hover:bg-indigo-50">
+                            <x-heroicon-s-pencil class="w-5 h-5" />
+                        </a>
 
-                    <button @click="$dispatch('open-modal', 'confirm-deletion-{{ $client->id }}')" class="text-red-600 hover:text-red-900 p-2 rounded-full hover:bg-red-50">
-                        <x-heroicon-s-trash class="w-5 h-5" />
-                    </button>
+                        <button @click="$dispatch('open-modal', 'confirm-deletion-{{ $client->id }}')" class="text-red-600 hover:text-red-900 p-2 rounded-full hover:bg-red-50">
+                            <x-heroicon-s-trash class="w-5 h-5" />
+                        </button>
+                    @endunless
                 </div>
             </td>
         </tr>
