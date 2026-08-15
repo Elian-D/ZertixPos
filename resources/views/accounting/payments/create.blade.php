@@ -27,7 +27,7 @@
             }
          }">
         
-        <form action="{{ route('accounting.payments.store') }}" method="POST"
+        <form action="{{ route('finance.payments.store') }}" method="POST"
             class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
             @csrf
 
@@ -36,7 +36,7 @@
             <x-form-header
                 title="Nuevo Recibo de Ingreso"
                 subtitle="Registro de abonos o cancelaciones."
-                :back-route="route('accounting.payments.index')" />
+                :back-route="route('finance.payments.index')" />
 
             <div class="p-4 md:p-8 space-y-6 md:space-y-8">
                 
@@ -170,7 +170,7 @@
             </div>
 
             <div class="p-4 md:p-6 bg-gray-50 flex flex-col-reverse md:flex-row justify-end items-center gap-3 border-t">
-                <a href="{{ route('accounting.payments.index') }}" class="w-full md:w-auto text-center px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">Cancelar</a>
+                <a href="{{ route('finance.payments.index') }}" class="w-full md:w-auto text-center px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">Cancelar</a>
                 <x-primary-button 
                     class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 justify-center shadow-lg px-8 py-3"
                     x-bind:disabled="!isValidAmount || !selectedReceivableId">

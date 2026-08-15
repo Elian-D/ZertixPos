@@ -68,7 +68,7 @@ class UnitController extends Controller
 
         // ... (redirección)
         return redirect()
-            ->route('products.units.index')
+            ->route('inventory.products.units.index')
             ->with('success', 'Unidad de medida "'.$unit->name.'" creada exitosamente.');
     }
 
@@ -94,7 +94,7 @@ class UnitController extends Controller
         ]);
 
         return redirect()
-            ->route('products.units.index')
+            ->route('inventory.products.units.index')
             ->with('success', "Unidad de medida \"{$unit->name}\" actualizada correctamente.");
     }
 
@@ -103,7 +103,7 @@ class UnitController extends Controller
         $unit->toggleActivo();
 
         return redirect()
-            ->route('products.units.index')
+            ->route('inventory.products.units.index')
             ->with('success', 'Estado actualizado para "'.$unit->name.'".');
     }
 
@@ -128,12 +128,12 @@ class UnitController extends Controller
 
     protected function getRouteIndex(): string
     {
-        return 'products.units.index';
+        return 'inventory.products.units.index';
     }
 
     protected function getRouteEliminadas(): string
     {
-        return 'products.units.eliminados';
+        return 'inventory.products.units.eliminados';
     }
 
     protected function getEntityName(): string

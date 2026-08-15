@@ -16,7 +16,7 @@
                 <x-page-toolbar title="Historial de Facturación">
                     <x-slot name="actions">
                         {{-- Botón de Exportación (Excel) --}}
-                        <x-data-table.export-button :route="route('sales.invoices.export')" formId="invoices-filters" />
+                        <x-data-table.export-button :route="route('finance.invoices.export')" formId="invoices-filters" />
                     </x-slot>
                 </x-page-toolbar>
 

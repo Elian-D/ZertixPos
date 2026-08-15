@@ -17,7 +17,7 @@
                     <x-slot name="actions">
                         <div class="flex flex-wrap gap-2">
                             {{-- Exportar Excel (Revisión interna) --}}
-                            <a href="{{ route('sales.ncf.logs.export.excel', request()->all()) }}" 
+                            <a href="{{ route('finance.ncf.logs.export.excel', request()->all()) }}" 
                                class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 transition">
                                 <x-heroicon-s-document-arrow-down class="w-4 h-4 mr-2" />
                                 Excel
@@ -46,7 +46,7 @@
 
     {{-- MODAL PARA PERIODO DGII --}}
     <x-modal name="export-607-modal" maxWidth="sm">
-        <form action="{{ route('sales.ncf.logs.export.txt') }}" method="GET" class="p-6">
+        <form action="{{ route('finance.ncf.logs.export.txt') }}" method="GET" class="p-6">
             <h3 class="text-lg font-bold text-gray-900">Exportar Reporte 607</h3>
             <p class="text-sm text-gray-600 mb-4">Seleccione el periodo fiscal para generar el archivo de texto.</p>
             

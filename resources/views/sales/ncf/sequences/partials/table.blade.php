@@ -138,7 +138,7 @@
                         
                         {{-- Modal de Confirmación de Deletción (Integrado aquí o en partial de modales) --}}
                         <x-modal name="confirm-sequence-deletion-{{ $sequence->id }}" focusable>
-                            <form method="post" action="{{ route('sales.ncf.sequences.destroy', $sequence) }}" class="p-6 text-left">
+                            <form method="post" action="{{ route('finance.ncf.sequences.destroy', $sequence) }}" class="p-6 text-left">
                                 @csrf
                                 @method('DELETE')
                                 <h2 class="text-lg font-medium text-gray-900">

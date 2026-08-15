@@ -35,7 +35,7 @@
             <td class="px-6 py-4 text-right">
                 <div class="flex justify-end gap-2">
                     {{-- Restaurar --}}
-                    <form action="{{ route('clients.pos.restore', $pos->id) }}" method="POST">
+                    <form action="{{ route('clients.delivery_points.restore', $pos->id) }}" method="POST">
                         @csrf
                         @method('PATCH')
                         <button type="submit" title="Restaurar Punto de Venta"
@@ -73,7 +73,7 @@
         :id="$pos->id"
         :title="'¿Eliminar Permanentemente?'"
         :itemName="$pos->name"
-        :route="route('clients.pos.borrarDefinitivo', $pos->id)"
+        :route="route('clients.delivery_points.borrarDefinitivo', $pos->id)"
         :description="'Estás a punto de borrar definitivamente el punto de venta <strong>' . $pos->name . '</strong>.'"
     >
         <strong>Aviso Crítico:</strong> Esta operación borrará todos los datos asociados y no se puede deshacer.

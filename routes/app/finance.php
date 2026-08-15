@@ -6,9 +6,17 @@ use App\Http\Controllers\Accounting\FinancialOverviewController;
 use App\Http\Controllers\Accounting\JournalEntryController;
 use App\Http\Controllers\Accounting\PaymentController;
 use App\Http\Controllers\Accounting\ReceivableController;
+use App\Http\Controllers\Sales\InvoiceController;
+use App\Http\Controllers\Sales\Ncf\NcfDashboardController;
+use App\Http\Controllers\Sales\Ncf\NcfLogController;
+use App\Http\Controllers\Sales\Ncf\NcfSequenceController;
+use App\Http\Controllers\Sales\Ncf\NcfTypeController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('accounting')->as('accounting.')->group(function () {
+// Reemplaza accounting.php (REQ-3.4) — nombres de ruta accounting.*→finance.*,
+// absorbe Facturas (antes sales.invoices.*→finance.invoices.*) y NCF (antes
+// sales.ncf.*→finance.ncf.*), que dejan de vivir dentro de "sales".
+Route::prefix('finance')->as('finance.')->group(function () {
 
     // Plan de Cuentas y Asientos — contabilidad formal, satélite (REQ-03.5). Nunca envuelve
     // receivables/payments: CxC y su abono operativo son base, ver config/modules.php.
@@ -66,8 +74,8 @@ Route::prefix('accounting')->as('accounting.')->group(function () {
         });
     });
 
-    // document_types se movió a routes/admin/configuration.php (REQ-10.3) — es un
-    // catálogo del sistema completo, no algo específico de Contabilidad.
+    // document_types vive en routes/app/configuration.php (REQ-10.3) — es un
+    // catálogo del sistema completo, no algo específico de Finanzas.
 
     // CxC es núcleo flexible (REQ-10.4/10.8) — encendido por defecto, pero un negocio
     // 100% contado puede apagarlo. Con el flag apagado, todo el grupo devuelve 404.
@@ -93,7 +101,7 @@ Route::prefix('accounting')->as('accounting.')->group(function () {
     // Pagos (cobros contra CxC) — mismo flag que receivables/*: sin CxC no hay nada que
     // cobrar, así que todo el grupo (incluido el historial) sigue la misma regla de
     // "apagado = 404 completo" que ya aplica al grupo receivables/* de arriba
-    // (REQ-10.9 bis).
+    // (REQ-10.9 bis). Rename "Pagos"→"Cobros" (payments.*→collections.*) es la Fase 4.
     Route::middleware(['auth', 'module:sales.receivables'])->group(function () {
 
         Route::get('payments/export', [PaymentController::class, 'export'])
@@ -141,4 +149,76 @@ Route::prefix('accounting')->as('accounting.')->group(function () {
     Route::get('/overview', FinancialOverviewController::class)
         ->middleware('can:view accounting dashboard')
         ->name('overview.index');
+
+    // routes/app/sales.php (antes) — Facturas, movidas junto con el resto de Finanzas.
+    Route::middleware('auth')->group(function () {
+
+        // Exportación de historial
+        Route::get('invoices/export', [InvoiceController::class, 'export'])
+            ->middleware('permission:export invoices')
+            ->name('invoices.export');
+
+        Route::get('invoices/{invoice}/preview', [InvoiceController::class, 'preview'])
+            ->name('invoices.preview')
+            ->middleware(['auth', 'permission:view invoices']);
+
+        // Listado principal con AJAX
+        Route::get('invoices', [InvoiceController::class, 'index'])
+            ->middleware('permission:view invoices')
+            ->name('invoices.index');
+
+        // Visualización de detalle (El documento legal)
+        Route::get('invoices/{invoice}', [InvoiceController::class, 'show'])
+            ->middleware('permission:view invoices')
+            ->name('invoices.show');
+
+        // Impresión (Generación de PDF/Ticket)
+        Route::get('invoices/{invoice}/print', [InvoiceController::class, 'print'])
+            ->middleware('permission:print invoices')
+            ->name('invoices.print');
+    });
+
+    // routes/app/sales.php (antes) — NCF, movido junto con el resto de Finanzas.
+    Route::middleware(['auth', 'permission:manage ncf sequences'])->group(function () {
+
+        // En lugar de un middleware Closure, validamos antes de definir el grupo.
+        // Si la configuración fiscal está apagada, estas rutas ni siquiera se registran.
+        if (module_enabled('sales.ncf')) {
+
+            Route::prefix('ncf')->name('ncf.')->group(function () {
+
+                // Dashboard y otras rutas
+                Route::get('/dashboard', function () { /* tu controller */
+                })->name('dashboard');
+
+                Route::prefix('sequences')->name('sequences.')->group(function () {
+                    Route::get('/', [NcfSequenceController::class, 'index'])->name('index');
+                    Route::post('/', [NcfSequenceController::class, 'store'])->name('store');
+                    Route::delete('/{sequence}', [NcfSequenceController::class, 'destroy'])->name('destroy');
+                    Route::patch('/{sequence}/threshold', [NcfSequenceController::class, 'updateThreshold'])->name('update-threshold');
+                    Route::patch('/{sequence}/extend', [NcfSequenceController::class, 'extend'])->name('extend');
+                });
+
+                Route::group(['prefix' => 'logs', 'as' => 'logs.'], function () {
+                    Route::get('/', [NcfLogController::class, 'index'])->name('index');
+                    Route::get('/export/excel', [NcfLogController::class, 'exportExcel'])->name('export.excel');
+                    Route::get('/export/txt', [NcfLogController::class, 'exportTxt'])->name('export.txt');
+                });
+
+                Route::group(['prefix' => 'types', 'as' => 'types.'], function () {
+                    Route::get('/', [NcfTypeController::class, 'index'])->name('index');
+                    Route::post('/', [NcfTypeController::class, 'store'])->name('store');
+                    Route::put('/{ncfType}', [NcfTypeController::class, 'update'])->name('update');
+                });
+            });
+        } else {
+            // Opcional: Ruta fallback si intentan entrar y está desactivado
+            Route::any('ncf/{any?}', function () {
+                return redirect()->route('configuration.general.edit')
+                    ->with('error', 'La gestión fiscal está desactivada en la configuración general.');
+            })->where('any', '.*');
+        }
+    });
+
+    Route::get('/ncf/dashboard', NcfDashboardController::class)->name('ncf.dashboard');
 });

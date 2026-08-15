@@ -162,7 +162,7 @@
                         <x-secondary-button x-on:click="$dispatch('close')" class="flex-1 sm:flex-none justify-center">
                             Cerrar
                         </x-secondary-button>
-                        <a href="{{ route('products.edit', $item) }}" class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2 bg-indigo-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 transition duration-150 shadow-md shadow-indigo-100">
+                        <a href="{{ route('inventory.products.edit', $item) }}" class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2 bg-indigo-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 transition duration-150 shadow-md shadow-indigo-100">
                             <x-heroicon-s-pencil class="w-4 h-4 mr-2" /> Editar Ficha
                         </a>
                     </div>
@@ -177,7 +177,7 @@
         :title="'¿Eliminar Producto?'"
         :itemName="$item->name"
         :type="'el producto'"
-        :route="route('products.destroy', $item)"
+        :route="route('inventory.products.destroy', $item)"
         >
         <strong>Atención:</strong> Esta acción marcará el producto como inactivo. El historial de sus movimientos de inventario pasados se mantendrá por integridad contable.
     </x-ui.confirm-deletion-modal>

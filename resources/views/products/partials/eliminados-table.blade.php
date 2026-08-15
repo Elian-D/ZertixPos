@@ -45,7 +45,7 @@
             <td class="px-6 py-4 text-right">
                 <div class="flex justify-end gap-2">
                     {{-- Restaurar --}}
-                    <form action="{{ route('products.restore', $product->id) }}" method="POST">
+                    <form action="{{ route('inventory.products.restore', $product->id) }}" method="POST">
                         @csrf
                         @method('PATCH')
                         <button type="submit" title="Restaurar Producto"
@@ -81,7 +81,7 @@
         :id="$product->id"
         :title="'¿Eliminar Producto Permanentemente?'"
         :itemName="$product->name"
-        :route="route('products.borrarDefinitivo', $product->id)"
+        :route="route('inventory.products.borrarDefinitivo', $product->id)"
         :description="'Estás a punto de borrar definitivamente el producto <strong>' . $product->name . '</strong>. Esta acción eliminará su historial de stock y precios.'"
     >
         <div>

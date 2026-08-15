@@ -13,13 +13,13 @@
                 
                 {{-- Botones de Acción --}}
                 <div class="flex gap-3 flex-wrap">
-                    <a href="{{ route('sales.ncf.sequences.index') }}" 
+                    <a href="{{ route('finance.ncf.sequences.index') }}" 
                        class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 active:translate-y-0 transition-all whitespace-nowrap">
                         <x-heroicon-s-plus-circle class="w-4 h-4"/>
                         <span>Nueva Secuencia</span>
                     </a>
                     
-                    <a href="{{ route('sales.ncf.logs.index') }}" 
+                    <a href="{{ route('finance.ncf.logs.index') }}" 
                        class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-green-200 hover:bg-green-700 hover:-translate-y-0.5 active:translate-y-0 transition-all whitespace-nowrap">
                         <x-heroicon-s-document-chart-bar class="w-4 h-4"/>
                         <span>Reporte 607</span>
@@ -35,7 +35,7 @@
                     @php $ranges = ['today' => 'Hoy', '7days' => '7D', 'this_month' => 'Este Mes', '30days' => '30D', 'this_year' => 'Este Año']; @endphp
                     <div class="flex gap-1 min-w-max">
                         @foreach($ranges as $key => $label)
-                            <a href="{{ route('sales.ncf.dashboard', ['range' => $key, 'ncf_type' => $filters['ncf_type'], 'status' => $filters['status']]) }}" 
+                            <a href="{{ route('finance.ncf.dashboard', ['range' => $key, 'ncf_type' => $filters['ncf_type'], 'status' => $filters['status']]) }}" 
                             class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap {{ $filters['current_range'] == $key ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50' }}">
                                 {{ $label }}
                             </a>
@@ -44,7 +44,7 @@
                 </div>
 
                 {{-- Filtro por Tipo de NCF --}}
-                <form action="{{ route('sales.ncf.dashboard') }}" method="GET" class="flex gap-2">
+                <form action="{{ route('finance.ncf.dashboard') }}" method="GET" class="flex gap-2">
                     <input type="hidden" name="range" value="{{ $filters['current_range'] }}">
                     <input type="hidden" name="start_date" value="{{ $filters['start'] }}">
                     <input type="hidden" name="end_date" value="{{ $filters['end'] }}">
@@ -73,7 +73,7 @@
                 </form>
 
                 {{-- Selector de Rango Manual --}}
-                <form action="{{ route('sales.ncf.dashboard') }}" method="GET" 
+                <form action="{{ route('finance.ncf.dashboard') }}" method="GET" 
                     class="flex items-center bg-white border border-gray-200 rounded-xl p-1 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all min-w-max">
                     <input type="hidden" name="range" value="custom">
                     <input type="hidden" name="ncf_type" value="{{ $filters['ncf_type'] }}">
@@ -319,7 +319,7 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                 <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Últimas Emisiones de NCF</h3>
-                <a href="{{ route('sales.ncf.logs.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition">
+                <a href="{{ route('finance.ncf.logs.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition">
                     Ver todos →
                 </a>
             </div>

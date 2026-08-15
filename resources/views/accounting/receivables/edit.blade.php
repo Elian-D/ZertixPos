@@ -42,7 +42,7 @@
             }
          }">
         
-        <form action="{{ route('accounting.receivables.update', $item) }}" method="POST"
+        <form action="{{ route('finance.receivables.update', $item) }}" method="POST"
             class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
             @csrf
             @method('PUT')
@@ -52,7 +52,7 @@
             <x-form-header
                 title="Editar CxC: {{ $item->document_number }}"
                 subtitle="Gestione los detalles de la deuda. El monto y fechas están protegidos por integridad contable."
-                :back-route="route('accounting.receivables.index')" />
+                :back-route="route('finance.receivables.index')" />
 
             <div class="p-8 space-y-8">
                 {{-- ALERTA DE BLOQUEO POR PAGOS --}}
@@ -169,7 +169,7 @@
             
             {{-- Botones de acción --}}
             <div class="p-6 bg-gray-50 flex justify-end gap-3 border-t">
-                <a href="{{ route('accounting.receivables.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500">Volver</a>
+                <a href="{{ route('finance.receivables.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500">Volver</a>
                 <x-primary-button class="bg-indigo-600 px-8">
                     Actualizar Cambios
                 </x-primary-button>

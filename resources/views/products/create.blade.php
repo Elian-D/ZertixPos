@@ -15,7 +15,7 @@
             },
         }">
         {{-- Importante: enctype para permitir subida de imágenes --}}
-        <form action="{{ route('products.store') }}" method="POST" enctype="multipart/form-data"
+        <form action="{{ route('inventory.products.store') }}" method="POST" enctype="multipart/form-data"
             class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
             @csrf
 
@@ -24,7 +24,7 @@
             <x-form-header
                 title="Nuevo Producto/Servicio"
                 subtitle="Registre un nuevo artículo en su catálogo."
-                :back-route="route('products.index')" />
+                :back-route="route('inventory.products.index')" />
 
             <div class="p-8 space-y-10">
 
@@ -177,7 +177,7 @@
             </div>
 
             <div class="p-6 bg-gray-50 flex justify-end gap-3 border-t">
-                <a href="{{ route('products.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition">Cancelar</a>
+                <a href="{{ route('inventory.products.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition">Cancelar</a>
                 <x-primary-button class="bg-indigo-600 hover:bg-indigo-700 shadow-lg px-8">Guardar Producto/Servicio</x-primary-button>
             </div>
         </form>

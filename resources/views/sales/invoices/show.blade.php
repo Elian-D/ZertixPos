@@ -5,7 +5,7 @@
             {{-- Header Principal --}}
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div class="flex-1">
-                    <a href="{{ route('sales.invoices.index') }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 text-sm font-semibold transition mb-3">
+                    <a href="{{ route('finance.invoices.index') }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 text-sm font-semibold transition mb-3">
                         <x-heroicon-s-arrow-left class="w-4 h-4 mr-1.5" />
                         Regresar al Historial
                     </a>
@@ -27,7 +27,7 @@
                     </select>
 
                     <a id="printBtn" 
-                       href="{{ route('sales.invoices.print', $invoice) }}?format=ticket" 
+                       href="{{ route('finance.invoices.print', $invoice) }}?format=ticket" 
                        target="_blank" 
                        class="inline-flex items-center px-5 py-2.5 bg-gray-900 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-gray-800 shadow-lg active:scale-95 transition-all">
                         <x-heroicon-s-printer class="w-4 h-4 mr-2" />
@@ -35,7 +35,7 @@
                     </a>
                     
                     <a id="downloadBtn"
-                       href="{{ route('sales.invoices.print', $invoice) }}?format=letter&download=1" 
+                       href="{{ route('finance.invoices.print', $invoice) }}?format=letter&download=1" 
                        class="inline-flex items-center px-5 py-2.5 bg-white border border-gray-300 rounded-lg font-bold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 active:scale-95 transition-all"
                        target="blank">
                         <x-heroicon-s-arrow-down-tray class="w-4 h-4 mr-2" />
@@ -144,7 +144,7 @@
                                 y forzamos un fondo blanco mientras carga 
                                 --}}
                                 <iframe 
-                                    src="{{ route('sales.invoices.preview', $invoice) }}" 
+                                    src="{{ route('finance.invoices.preview', $invoice) }}" 
                                     class="w-full h-full border-0 bg-white"
                                     loading="lazy"
                                     id="invoice-iframe"
@@ -229,8 +229,8 @@
 
     <script>
         const config = {
-            letter: "{{ route('sales.invoices.print', $invoice) }}?format=letter",
-            ticket: "{{ route('sales.invoices.print', $invoice) }}?format=ticket"
+            letter: "{{ route('finance.invoices.print', $invoice) }}?format=letter",
+            ticket: "{{ route('finance.invoices.print', $invoice) }}?format=ticket"
         };
 
         const formatSelector = document.getElementById('formatSelector');
@@ -250,7 +250,7 @@
             previewContainer.classList.remove('is-letter', 'is-ticket');
             previewContainer.classList.add(`is-${format}`);
             
-            invoiceIframe.src = "{{ route('sales.invoices.preview', $invoice) }}?format=" + format;
+            invoiceIframe.src = "{{ route('finance.invoices.preview', $invoice) }}?format=" + format;
         });
     </script>
 </x-app-layout>

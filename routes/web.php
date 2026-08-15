@@ -27,9 +27,9 @@ require __DIR__.'/auth.php';
 
 // Rutas administrativas (panel) — antes vivía en RouteServiceProvider::boot()
 Route::middleware(['web', 'auth'])
-    ->prefix('admin')
+    ->prefix('app')
     ->group(function () {
-        foreach (glob(base_path('routes/admin/*.php')) as $routeFile) {
+        foreach (glob(base_path('routes/app/*.php')) as $routeFile) {
             require $routeFile;
         }
     });

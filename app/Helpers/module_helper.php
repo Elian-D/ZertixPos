@@ -17,7 +17,7 @@ if (! function_exists('module_enabled')) {
                 $cache = InstallationModule::pluck('is_enabled', 'module_key');
             } catch (\Throwable $e) {
                 // Base de datos sin migrar aún (instalación nueva, migraciones en curso,
-                // migrate:fresh en progreso) — routes/admin/sales.php consulta este helper
+                // migrate:fresh en progreso) — routes/app/sales.php consulta este helper
                 // al registrarse, antes de que installation_modules exista. Mismo criterio
                 // que general_config() (ver app/Helpers/general.php).
                 return false;

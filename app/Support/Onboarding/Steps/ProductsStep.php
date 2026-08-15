@@ -29,7 +29,7 @@ class ProductsStep implements OnboardingStepInterface
 
     public function ctaRoute(): string
     {
-        return 'products.create';
+        return 'inventory.products.create';
     }
 
     public function requiredModule(): ?string

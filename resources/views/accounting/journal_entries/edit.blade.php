@@ -3,7 +3,7 @@
          x-data="journalEntryForm({{ $item->items->toJson() }})" 
          x-init="init()">
         
-        <form action="{{ route('accounting.journal_entries.update', $item) }}" method="POST"
+        <form action="{{ route('finance.journal_entries.update', $item) }}" method="POST"
             class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
             @csrf
             @method('PUT')
@@ -13,7 +13,7 @@
             <x-form-header
                 title="Editar Asiento Contable"
                 subtitle="Modifique los valores del asiento antes de su asentamiento definitivo."
-                :back-route="route('accounting.journal_entries.index')" />
+                :back-route="route('finance.journal_entries.index')" />
 
             <div class="p-8 space-y-8">
                 {{-- SECCIÓN 1: CABECERA --}}
@@ -106,7 +106,7 @@
             </div>
 
             <div class="p-6 bg-gray-50 flex justify-end gap-3 border-t">
-                <a href="{{ route('accounting.journal_entries.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500">Cancelar</a>
+                <a href="{{ route('finance.journal_entries.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500">Cancelar</a>
                 <x-primary-button class="bg-indigo-600" ::disabled="!isBalanced || totalDebit <= 0 || hasDuplicates">
                     Actualizar Asiento
                 </x-primary-button>

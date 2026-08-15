@@ -51,7 +51,7 @@
             {{-- Acciones --}}
             <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
-                    <form action="{{ route('products.categories.toggle', $item) }}" method="POST">
+                    <form action="{{ route('inventory.products.categories.toggle', $item) }}" method="POST">
                         @csrf @method('PATCH')
                         <button type="submit"
                             class="text-xs px-2 py-1 rounded border {{ $item->is_active ? 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100' : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' }}">

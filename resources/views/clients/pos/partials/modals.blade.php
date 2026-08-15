@@ -117,7 +117,7 @@
                         <x-secondary-button x-on:click="$dispatch('close')" class="flex-1 sm:flex-none justify-center">
                             Cerrar
                         </x-secondary-button>
-                        <a href="{{ route('clients.pos.edit', $item) }}" class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2 bg-indigo-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 transition duration-150 shadow-md shadow-indigo-100">
+                        <a href="{{ route('clients.delivery_points.edit', $item) }}" class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2 bg-indigo-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 transition duration-150 shadow-md shadow-indigo-100">
                             <x-heroicon-s-pencil class="w-4 h-4 mr-2" /> Editar Punto
                         </a>
                     </div>
@@ -131,7 +131,7 @@
         :title="'¿Eliminar Punto de Venta?'"
         :itemName="$item->name"
         :type="'el punto de venta'"
-        :route="route('clients.pos.destroy', $item)"
+        :route="route('clients.delivery_points.destroy', $item)"
         >
         <strong>Aviso:</strong> Esta operación se puede deshacer desde la papelera.
     </x-ui.confirm-deletion-modal>

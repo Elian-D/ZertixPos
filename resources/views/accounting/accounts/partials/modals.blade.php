@@ -3,9 +3,9 @@
     <x-form-header
         title="Nueva Cuenta Contable"
         subtitle="Defina la ubicación y el tipo de cuenta en el catálogo."
-        :back-route="route('accounting.accounts.index')" />
+        :back-route="route('finance.accounts.index')" />
 
-    <form action="{{ route('accounting.accounts.store') }}" method="POST" class="p-6">
+    <form action="{{ route('finance.accounts.store') }}" method="POST" class="p-6">
         @csrf
 
         <div class="space-y-4">
@@ -224,9 +224,9 @@
     <x-form-header
         title="Editar Cuenta: {{ $item->code }}"
         subtitle="Actualice la información de la cuenta contable."
-        :back-route="route('accounting.accounts.index')" />
+        :back-route="route('finance.accounts.index')" />
 
-    <form method="POST" action="{{ route('accounting.accounts.update', $item) }}" class="p-6">
+    <form method="POST" action="{{ route('finance.accounts.update', $item) }}" class="p-6">
         @csrf @method('PUT')
 
         <div class="space-y-4">
@@ -299,6 +299,6 @@
     :title="'¿Eliminar Cuenta Contable?'"
     :itemName="$item->code . ' - ' . $item->name"
     :type="'la cuenta'"
-    :route="route('accounting.accounts.destroy', $item)"
+    :route="route('finance.accounts.destroy', $item)"
 />
 @endforeach

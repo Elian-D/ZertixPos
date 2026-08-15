@@ -4,7 +4,7 @@
         <h2 class="text-lg font-medium text-gray-900">Nuevo Tipo de Comprobante</h2>
         <p class="mt-1 text-sm text-gray-600">Defina las reglas para un nuevo tipo de NCF o e-NCF.</p>
 
-        <form action="{{ route('sales.ncf.types.store') }}" 
+        <form action="{{ route('finance.ncf.types.store') }}" 
               method="POST" 
               class="mt-6 space-y-4"
               x-data="{ 
@@ -72,7 +72,7 @@
                 </span>
             </div>
             
-            <form action="{{ route('sales.ncf.types.update', $type->id) }}" method="POST" class="space-y-5">
+            <form action="{{ route('finance.ncf.types.update', $type->id) }}" method="POST" class="space-y-5">
                 @csrf
                 @method('PUT')
                 

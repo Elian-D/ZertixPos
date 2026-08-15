@@ -84,7 +84,7 @@
             @if(in_array('sale_id', $visibleColumns))
                 <td class="px-6 py-4 text-center">
                     @if($quote->sale && $quote->sale->invoice)
-                        <a href="{{ route('sales.invoices.show', $quote->sale->invoice->id) }}" class="whitespace-nowrap inline-flex items-center px-2 py-1 bg-emerald-50 text-emerald-700 rounded border border-emerald-100 text-[10px] font-bold hover:bg-emerald-100 transition">
+                        <a href="{{ route('finance.invoices.show', $quote->sale->invoice->id) }}" class="whitespace-nowrap inline-flex items-center px-2 py-1 bg-emerald-50 text-emerald-700 rounded border border-emerald-100 text-[10px] font-bold hover:bg-emerald-100 transition">
                             {{ $quote->sale->number }}
                         </a>
                     @else

@@ -28,7 +28,7 @@
                 <div class="hidden sm:inline-flex bg-gray-100 p-1 rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
                     <div class="flex gap-1 min-w-max">
                         @foreach($ranges as $key => $label)
-                            <a href="{{ route('accounting.overview.index', ['range' => $key]) }}"
+                            <a href="{{ route('finance.overview.index', ['range' => $key]) }}"
                                class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap {{ $filters['current_range'] == $key ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50' }}">
                                 {{ $label }}
                             </a>
@@ -36,7 +36,7 @@
                     </div>
                 </div>
 
-                <form action="{{ route('accounting.overview.index') }}" method="GET"
+                <form action="{{ route('finance.overview.index') }}" method="GET"
                       class="hidden sm:flex items-center bg-white border border-gray-200 rounded-xl p-1 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all min-w-max">
                     <input type="hidden" name="range" value="custom">
                     <div class="flex items-center px-2 gap-1">
@@ -75,7 +75,7 @@
 
                         <div class="grid grid-cols-2 gap-2 mb-6">
                             @foreach($ranges as $key => $label)
-                                <a href="{{ route('accounting.overview.index', ['range' => $key]) }}"
+                                <a href="{{ route('finance.overview.index', ['range' => $key]) }}"
                                    class="px-4 py-3 text-sm font-semibold rounded-lg text-center transition-colors {{ $filters['current_range'] == $key ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700' }}">
                                     {{ $label }}
                                 </a>
@@ -88,7 +88,7 @@
                             <div class="h-px bg-gray-100 flex-1"></div>
                         </div>
 
-                        <form action="{{ route('accounting.overview.index') }}" method="GET" class="space-y-3">
+                        <form action="{{ route('finance.overview.index') }}" method="GET" class="space-y-3">
                             <input type="hidden" name="range" value="custom">
                             <div>
                                 <label class="text-xs font-semibold text-gray-500 mb-1 block">Desde</label>
@@ -189,7 +189,7 @@
         <div class="bg-white rounded-lg border border-gray-200">
             <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                 <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wide">Cuentas por Cobrar Pendientes</h3>
-                <a href="{{ route('accounting.receivables.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition">Ver todas →</a>
+                <a href="{{ route('finance.receivables.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition">Ver todas →</a>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">

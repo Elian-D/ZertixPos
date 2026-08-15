@@ -20,7 +20,7 @@
          }" 
          x-init="updateClientData()">
         
-        <form action="{{ route('accounting.receivables.store') }}" method="POST"
+        <form action="{{ route('finance.receivables.store') }}" method="POST"
             class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
             @csrf
 
@@ -29,7 +29,7 @@
             <x-form-header
                 title="Nueva Cuenta por Cobrar"
                 subtitle="Registro administrativo de deudas. Las fechas se calculan según los términos del cliente."
-                :back-route="route('accounting.receivables.index')" />
+                :back-route="route('finance.receivables.index')" />
 
             <div class="p-8 space-y-8">
                 
@@ -172,7 +172,7 @@
             </div>
 
             <div class="p-6 bg-gray-100 flex justify-end items-center gap-3 border-t">
-                <a href="{{ route('accounting.receivables.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">Cancelar</a>
+                <a href="{{ route('finance.receivables.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">Cancelar</a>
                 <x-primary-button class="bg-indigo-600 shadow-lg px-8">
                     Registrar Cuenta por Cobrar
                 </x-primary-button>

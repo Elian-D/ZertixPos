@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\Sales\Ncf;
 
 use App\Http\Controllers\Controller;
-use App\Models\Sales\Ncf\NcfType;
-use App\Tables\SalesTables\Ncf\NcfTypeTable;
-use App\Services\Sales\Ncf\NcfCatalogService;
 use App\Http\Requests\Sales\Ncf\StoreNcfTypeRequest;
 use App\Http\Requests\Sales\Ncf\UpdateNcfTypeRequest;
+use App\Models\Sales\Ncf\NcfType;
+use App\Services\Sales\Ncf\NcfCatalogService;
+use App\Tables\SalesTables\Ncf\NcfTypeTable;
 use Illuminate\Http\Request;
 
 class NcfTypeController extends Controller
@@ -33,12 +33,12 @@ class NcfTypeController extends Controller
 
         // 3. Preparar datos para la vista
         $data = [
-            'items'          => $types,
+            'items' => $types,
             'visibleColumns' => $visibleColumns,
-            'allColumns'     => NcfTypeTable::allColumns(),
+            'allColumns' => NcfTypeTable::allColumns(),
             'defaultDesktop' => NcfTypeTable::defaultDesktop(),
-            'defaultMobile'  => NcfTypeTable::defaultMobile(),
-            'boolean_options'=> [1 => 'Sí', 0 => 'No']
+            'defaultMobile' => NcfTypeTable::defaultMobile(),
+            'boolean_options' => [1 => 'Sí', 0 => 'No'],
         ];
 
         // Retorno para AJAX (Carga de tabla) o Vista completa
@@ -56,7 +56,7 @@ class NcfTypeController extends Controller
     {
         NcfType::create($request->validated());
 
-        return redirect()->route('sales.ncf.types.index')
+        return redirect()->route('finance.ncf.types.index')
             ->with('success', 'Tipo de comprobante registrado exitosamente.');
     }
 
@@ -67,7 +67,7 @@ class NcfTypeController extends Controller
     {
         $ncfType->update($request->validated());
 
-        return redirect()->route('sales.ncf.types.index')
+        return redirect()->route('finance.ncf.types.index')
             ->with('success', "Configuración de {$ncfType->name} actualizada.");
     }
 }

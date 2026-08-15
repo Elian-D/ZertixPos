@@ -3,7 +3,7 @@
          x-data="journalEntryForm()" 
          x-init="init()">
         
-        <form action="{{ route('accounting.journal_entries.store') }}" method="POST"
+        <form action="{{ route('finance.journal_entries.store') }}" method="POST"
             class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
             @csrf
 
@@ -12,7 +12,7 @@
             <x-form-header
                 title="Nuevo Asiento Contable"
                 subtitle="Registre transacciones financieras asegurando la partida doble."
-                :back-route="route('accounting.journal_entries.index')" />
+                :back-route="route('finance.journal_entries.index')" />
 
             <div class="p-8 space-y-8">
                 
@@ -125,7 +125,7 @@
             <div class="p-6 bg-gray-50 flex justify-between items-center border-t">
                 <p class="text-xs text-gray-400 italic">Recuerde que los asientos en 'Borrador' pueden editarse antes de ser asentados definitivamente.</p>
                 <div class="flex gap-3">
-                    <a href="{{ route('accounting.journal_entries.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition">Cancelar</a>
+                    <a href="{{ route('finance.journal_entries.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition">Cancelar</a>
                     <x-primary-button class="bg-indigo-600 shadow-lg px-8" ::disabled="!isBalanced || totalDebit <= 0 || hasDuplicates">
                         Guardar Asiento
                     </x-primary-button>

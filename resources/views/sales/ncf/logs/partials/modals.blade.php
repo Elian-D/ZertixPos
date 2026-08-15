@@ -109,7 +109,7 @@
         <div class="px-8 py-4 bg-gray-50 border-t flex justify-end gap-3">
             <x-secondary-button x-on:click="$dispatch('close')">Cerrar</x-secondary-button>
             @if($log->sale_id)
-                <a href="{{ route('sales.invoices.print', $log->sale_id) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md text-[10px] font-black uppercase hover:bg-indigo-700 transition shadow-sm"  target="_blank>
+                <a href="{{ route('finance.invoices.print', $log->sale_id) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md text-[10px] font-black uppercase hover:bg-indigo-700 transition shadow-sm"  target="_blank>
                     <x-heroicon-s-eye class="w-3 h-3 mr-2"/> Ver Factura
                 </a>
             @endif

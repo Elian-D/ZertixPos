@@ -16,7 +16,7 @@ if (! function_exists('general_config')) {
                 $config = ConfiguracionGeneral::actual();
             } catch (\Throwable $e) {
                 // Base de datos sin migrar aún (instalación nueva, migraciones en curso, tests).
-                // Varias rutas (ej. routes/admin/sales/ncf.php) consultan general_config() al
+                // Varias rutas (ej. routes/app/finance.php) consultan general_config() al
                 // registrarse, antes de que exista cualquier fila/tabla — no debe tumbar el boot.
                 return null;
             }
