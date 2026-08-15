@@ -12,26 +12,26 @@
             <x-ui.toasts />
 
             <div class="p-6">
-                <x-page-toolbar title="Recibos de Pago">
+                <x-page-toolbar title="Recibos de Cobro">
                     <x-slot name="actions">
                         @can('create payments')
-                            <a href="{{ route('finance.payments.create') }}"
+                            <a href="{{ route('finance.collections.create') }}"
                                class="inline-flex items-center px-4 py-2 bg-indigo-600 rounded-md text-xs font-semibold text-white uppercase hover:bg-indigo-700 transition">
                                 <x-heroicon-s-plus class="w-4 h-4 mr-2" />
-                                Nuevo Pago
+                                Nuevo Cobro
                             </a>
                         @endcan
 
-                        <x-data-table.export-button :route="route('finance.payments.export')" formId="payments-filters" />
+                        <x-data-table.export-button :route="route('finance.collections.export')" formId="payments-filters" />
                     </x-slot>
                 </x-page-toolbar>
 
                 {{-- Contenedor de Filtros --}}
-                @include('accounting.payments.partials.filters')
+                @include('finance.collections.partials.filters')
 
                 {{-- Tabla AJAX --}}
                 <div id="payments-table" class="w-full overflow-hidden mt-4">
-                    @include('accounting.payments.partials.table')
+                    @include('finance.collections.partials.table')
                 </div>
             </div>
         </div>

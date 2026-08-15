@@ -1,11 +1,11 @@
 @foreach($items as $payment)
-    {{-- 1. MODAL: VISTA DE DETALLE DEL PAGO --}}
+    {{-- 1. MODAL: VISTA DE DETALLE DEL COBRO --}}
     <x-modal name="view-payment-{{ $payment->id }}" maxWidth="2xl">
         <div class="overflow-hidden rounded-xl bg-white shadow-2xl">
             {{-- Header --}}
             <div class="bg-gray-50 px-8 py-6 border-b flex justify-between items-start">
                 <div>
-                    <h3 class="text-xl font-black text-gray-900 tracking-tight">Comprobante de Pago</h3>
+                    <h3 class="text-xl font-black text-gray-900 tracking-tight">Comprobante de Cobro</h3>
                     <div class="flex items-center gap-2 mt-1">
                         <span class="text-xs font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
                             Recibo No. {{ $payment->receipt_number }}
@@ -83,7 +83,7 @@
 
                         {{-- Info de Contabilización — solo con accounting.advanced activo
                              (REQ-02.14): con el módulo apagado journal_entry_id siempre es
-                             null (ver PaymentService::createPayment/REQ-02.8), así que este
+                             null (ver CollectionService::createCollection/REQ-02.8), así que este
                              bloque mostraba permanentemente "Pendiente de Contabilizar",
                              dando a entender que algo quedó a medias cuando el módulo nunca
                              debió mostrarse acá. --}}
@@ -126,8 +126,8 @@
 
             <div class="px-8 py-5 bg-gray-50 border-t flex justify-end gap-3">
                 <x-secondary-button x-on:click="$dispatch('close')">Cerrar</x-secondary-button>
-                <a href="{{ route('finance.payments.print', $payment->id) }}" 
-                target="_blank" 
+                <a href="{{ route('finance.collections.print', $payment->id) }}"
+                target="_blank"
                 class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 transition shadow-sm">
                     <x-heroicon-s-printer class="w-3 h-3 mr-2"/> Imprimir Recibo PDF
                 </a>
@@ -135,16 +135,16 @@
         </div>
     </x-modal>
 
-    {{-- 2. MODAL: ANULACIÓN DE PAGO --}}
+    {{-- 2. MODAL: ANULACIÓN DE COBRO --}}
     <x-modal name="confirm-cancel-payment-{{ $payment->id }}" maxWidth="sm">
-        <form action="{{ route('finance.payments.cancel', $payment) }}" method="POST" class="p-6 text-center">
+        <form action="{{ route('finance.collections.cancel', $payment) }}" method="POST" class="p-6 text-center">
             @csrf
-            
+
             <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <x-heroicon-s-no-symbol class="w-10 h-10"/>
             </div>
-            
-            <h3 class="text-lg font-bold text-gray-900">¿Anular este Pago?</h3>
+
+            <h3 class="text-lg font-bold text-gray-900">¿Anular este Cobro?</h3>
             <p class="text-sm text-gray-500 mt-2">
                 Se anulará el recibo <strong>{{ $payment->receipt_number }}</strong>.
                 <span class="block mt-2 font-bold text-red-600 bg-red-50 p-2 rounded border border-red-100">
@@ -155,7 +155,7 @@
             <div class="mt-8 flex justify-center gap-3">
                 <x-secondary-button x-on:click="$dispatch('close')">No, mantener</x-secondary-button>
                 <button type="submit" class="px-6 py-2 bg-red-600 text-white text-xs font-bold uppercase rounded-lg hover:bg-red-700 shadow-lg shadow-red-200">
-                    Sí, Anular Pago
+                    Sí, Anular Cobro
                 </button>
             </div>
         </form>

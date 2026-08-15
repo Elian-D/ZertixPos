@@ -5,7 +5,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Recibo de Ingreso - {{ $payment->receipt_number }}</title>
+    <title>Recibo de Cobro - {{ $payment->receipt_number }}</title>
     <style>
         body { font-family: 'Helvetica', sans-serif; color: #1f2937; font-size: 13px; line-height: 1.5; margin: 0; }
         .header { width: 100%; border-bottom: 2px solid #e5e7eb; padding-bottom: 15px; }
@@ -42,7 +42,7 @@
                 <p>Tel: {{ $config->telefono ?? 'N/A' }} | Email: {{ $config->email ?? 'N/A' }}</p>
             </td>
             <td class="text-right" style="width: 40%; vertical-align: top;">
-                <h3 class="document-title">Recibo de Ingreso</h3>
+                <h3 class="document-title">Recibo de Cobro</h3>
                 <p style="font-size: 14px; margin: 5px 0;"><strong>No: {{ $payment->receipt_number }}</strong></p>
                 <p>Fecha: {{ $payment->payment_date->format('d/m/Y') }}</p>
             </td>
@@ -59,7 +59,7 @@
                 <tr>
                     <td style="padding-top: 8px;"><strong>Concepto:</strong></td>
                     <td style="padding-top: 8px; border-bottom: 1px dashed #d1d5db;">
-                        Pago aplicado a {{ $payment->receivable->document_number }} - {{ $payment->note ?? 'Sin observaciones adicionales' }}
+                        Cobro aplicado a {{ $payment->receivable->document_number }} - {{ $payment->note ?? 'Sin observaciones adicionales' }}
                     </td>
                 </tr>
             </table>

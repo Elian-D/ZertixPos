@@ -40,15 +40,15 @@
             {{-- GRUPO 2: Rangos --}}
             <x-data-table.filter-group title="Rangos de Búsqueda" collapsed>
 
-                <x-data-table.filter-datetime-range 
-                    label="Fecha de Pago" 
+                <x-data-table.filter-datetime-range
+                    label="Fecha de Cobro"
                     formId="payments-filters" 
                     nameFrom="from_date"
                     nameTo="to_date"
                 />
 
-                <x-data-table.filter-range 
-                    label="Monto Pagado" 
+                <x-data-table.filter-range
+                    label="Monto Cobrado"
                     nameMin="min_amount" 
                     nameMax="max_amount" 
                     formId="payments-filters" 
