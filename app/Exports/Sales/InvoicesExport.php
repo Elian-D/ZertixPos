@@ -77,7 +77,9 @@ class InvoicesExport implements FromQuery, WithColumnWidths, WithDefaultStyles, 
             $this->clientsCache[$sale->client_id ?? null] ?? 'N/A',
             $this->paymentLabels[$sale->payment_type ?? ''] ?? ($sale->payment_type ?? 'N/A'),
             $this->formatLabels[$invoice->format_type] ?? $invoice->format_type,
-            $sale->total_amount ?? 0,
+            // grand_total (neto + impuesto), no total_amount (bruto, ver auditoría
+            // post-REQ-5.12 en docs/features/v1.2.0.md).
+            $sale?->grand_total ?? 0,
             $this->statusLabels[$invoice->status] ?? $invoice->status,
             $invoice->due_date ? \Carbon\Carbon::parse($invoice->due_date)->format('d/m/Y') : 'N/A',
             $invoice->generated_by,

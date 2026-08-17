@@ -53,6 +53,14 @@ class TipoPagoController extends Controller
      */
     public function update(Request $request, TipoPago $tipoPago)
     {
+        // REQ-2.5: la protección de "no se puede editar el nombre" de un método
+        // protegido (Efectivo) era hasta ahora puramente visual — el botón de
+        // editar se ocultaba en la vista, pero un POST directo a esta ruta podía
+        // renombrarlo sin ninguna restricción real. Se cierra acá, la escritura real.
+        if ($tipoPago->isSystemProtected() && $request->nombre !== $tipoPago->nombre) {
+            return back()->with('error', 'No puedes renombrar un método de pago protegido del sistema.');
+        }
+
         $request->validate([
             'nombre' => ['required', 'string', 'unique:tipo_pagos,nombre,'.$tipoPago->id],
             'accounting_account_id' => 'nullable|exists:accounting_accounts,id',

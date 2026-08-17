@@ -27,6 +27,8 @@ class Quote extends Model
         'subtotal',
         'discount_total',
         'total',
+        'net_amount',
+        'tax_amount',
         'notes',
         'expires_at',
     ];
@@ -36,6 +38,8 @@ class Quote extends Model
         'subtotal' => 'decimal:2',
         'discount_total' => 'decimal:2',
         'total' => 'decimal:2',
+        'net_amount' => 'decimal:2',
+        'tax_amount' => 'decimal:2',
     ];
 
     // Constantes de Origen
@@ -77,6 +81,16 @@ class Quote extends Model
             self::STATUS_EXPIRED   => 'bg-amber-100 text-amber-700 border-amber-200',
             self::STATUS_CANCELLED => 'bg-red-100 text-red-700 border-red-200',
         ];
+    }
+
+    /**
+     * Total final con impuesto incluido (net_amount + tax_amount) — lo que el
+     * cliente realmente paga si aprueba y convierte esta cotización. Mismo
+     * patrón que Sale::getGrandTotalAttribute() (Fase 5, REQ-5.12).
+     */
+    public function getGrandTotalAttribute(): float
+    {
+        return (float) $this->net_amount + (float) $this->tax_amount;
     }
 
     // Relaciones

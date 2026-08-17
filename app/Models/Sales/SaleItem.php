@@ -19,6 +19,12 @@ class SaleItem extends Model
         'discount_amount',
         'discount_percentage',
         'subtotal',
+        'tax_amount',
+        'tax_breakdown',
+    ];
+
+    protected $casts = [
+        'tax_breakdown' => 'array',
     ];
 
     public function sale(): BelongsTo

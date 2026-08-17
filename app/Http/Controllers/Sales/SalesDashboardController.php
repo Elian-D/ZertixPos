@@ -36,13 +36,18 @@ class SalesDashboardController extends Controller
         }
 
         // 1. KPIs Globales (Sin Joins para asegurar que cuente TODO, incluido POS)
+        // SUM(net_amount + tax_amount) — equivalente SQL de grand_total (no es una
+        // columna real, es un accessor de Sale) — no SUM(total_amount), que además de
+        // ser bruto sin impuesto, no tiene ni el mismo significado entre ventas
+        // normales y ventas convertidas desde cotización antes de esta corrección
+        // (Fase 5, auditoría post-REQ-5.12, ver docs/features/v1.2.0.md).
         $salesStats = Sale::whereBetween('sale_date', [$startDay, $endDay])
             ->where('status', 'completed')
             ->selectRaw('
-                SUM(total_amount) as total_revenue, 
+                SUM(net_amount + tax_amount) as total_revenue,
                 COUNT(*) as total_count,
-                SUM(CASE WHEN payment_type = "credit" THEN total_amount ELSE 0 END) as credit_total,
-                SUM(CASE WHEN payment_type = "cash" THEN total_amount ELSE 0 END) as cash_total
+                SUM(CASE WHEN payment_type = "credit" THEN net_amount + tax_amount ELSE 0 END) as credit_total,
+                SUM(CASE WHEN payment_type = "cash" THEN net_amount + tax_amount ELSE 0 END) as cash_total
             ')->first();
 
         // 2. Efectividad de Cobro
@@ -53,7 +58,7 @@ class SalesDashboardController extends Controller
             ->where('sales.status', 'completed')
             ->join('clients', 'sales.client_id', '=', 'clients.id')
             ->where('clients.name', 'NOT LIKE', '%Consumidor Final%')
-            ->select('clients.name', DB::raw('SUM(total_amount) as total'))
+            ->select('clients.name', DB::raw('SUM(net_amount + tax_amount) as total'))
             ->groupBy('clients.id', 'clients.name')
             ->orderByDesc('total')
             ->take(5)
@@ -65,7 +70,7 @@ class SalesDashboardController extends Controller
             ->leftJoin('tipo_pagos', 'sales.tipo_pago_id', '=', 'tipo_pagos.id')
             ->select(
                 DB::raw('COALESCE(tipo_pagos.nombre, "Otro/POS") as nombre'),
-                DB::raw('SUM(total_amount) as total')
+                DB::raw('SUM(net_amount + tax_amount) as total')
             )
             ->groupBy('tipo_pagos.nombre')
             ->get();
@@ -120,7 +125,7 @@ class SalesDashboardController extends Controller
             ->where('status', 'completed')
             ->select(
                 DB::raw("DATE_FORMAT(sale_date, '%d %b') as date"),
-                DB::raw('SUM(total_amount) as total'),
+                DB::raw('SUM(net_amount + tax_amount) as total'),
                 DB::raw('MIN(sale_date) as sort_date')
             )
             ->groupBy('date') // Agrupamos solo por el string formateado

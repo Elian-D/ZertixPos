@@ -25,7 +25,6 @@ class ConfiguracionGeneral extends Model
         'direccion',
         'provincia_id',
         'municipio_id',
-        'impuesto_id',
         'dias_gracia_mora',
     ];
 
@@ -42,11 +41,6 @@ class ConfiguracionGeneral extends Model
     public function municipio()
     {
         return $this->belongsTo(Municipality::class, 'municipio_id');
-    }
-
-    public function impuesto()
-    {
-        return $this->belongsTo(Impuesto::class);
     }
 
     // Obtener la configuración general actual (única fila)

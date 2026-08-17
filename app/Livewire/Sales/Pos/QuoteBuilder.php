@@ -24,6 +24,13 @@ class QuoteBuilder extends Component
 
     public $total = 0;
 
+    // Impuestos multi-tasa (Fase 5, REQ-5.12) — $total sigue siendo el neto
+    // (subtotal - descuento); $tax es la suma de impuestos por línea y
+    // $grandTotal ($total + $tax) es lo que el cliente realmente paga.
+    public $tax = 0;
+
+    public $grandTotal = 0;
+
     public ?Quote $quoteModel = null;
 
     #[On('product-selected')]
@@ -40,6 +47,9 @@ class QuoteBuilder extends Component
                     'product_id' => $product->id,
                     'name' => $product->name,
                     'price' => $product->price,
+                    // Snapshot al agregar, igual que price — mismo patrón que
+                    // pos-workspace.blade.php::addItem() (REQ-5.9).
+                    'tax_rate' => $product->taxRate(),
                     'quantity' => 1,
                     'discount_amount' => 0,
                     'discount_percentage' => 0, // Nuevo campo fase 5
@@ -66,6 +76,7 @@ class QuoteBuilder extends Component
     {
         $this->subtotal = 0;
         $this->discountTotal = 0;
+        $this->tax = 0;
 
         // 11.2: la política de descuentos ahora vive por terminal (PosTerminal), y las
         // cotizaciones de backoffice no están atadas a ninguna. Decisión explícita: sin
@@ -100,12 +111,19 @@ class QuoteBuilder extends Component
             $itemSubtotal = ($item['price'] * $item['quantity']) - $item['discount_amount'];
             $item['subtotal'] = max(0, $itemSubtotal);
 
+            // Impuesto de línea (Fase 5, REQ-5.12) — misma tasa apilada del producto
+            // (config('impuestos') + product_taxes), sobre el neto ya con descuento.
+            $item['tax_amount'] = round($item['subtotal'] * (($item['tax_rate'] ?? 0) / 100), 2);
+            $item['price_with_tax'] = round($item['price'] * (1 + (($item['tax_rate'] ?? 0) / 100)), 2);
+
             // Acumular los totales generales de la cotización
             $this->subtotal += ($item['price'] * $item['quantity']);
             $this->discountTotal += $item['discount_amount'];
+            $this->tax += $item['tax_amount'];
         }
 
         $this->total = $this->subtotal - $this->discountTotal;
+        $this->grandTotal = $this->total + $this->tax;
     }
 
     public function mount(?Quote $quote = null)
@@ -120,6 +138,10 @@ class QuoteBuilder extends Component
                     'product_id' => $item->product_id,
                     'name' => $item->product->name,
                     'price' => $item->price,
+                    // Al editar un borrador se relee la tasa VIGENTE del producto (no el
+                    // tax_breakdown congelado) — un borrador todavía no es una venta
+                    // final, así que debe reflejar la configuración actual (REQ-5.12).
+                    'tax_rate' => $item->product->taxRate(),
                     'quantity' => $item->quantity,
                     'discount_amount' => $item->discount_amount,
                     'discount_percentage' => $item->discount_percentage ?? 0,

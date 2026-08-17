@@ -37,11 +37,7 @@ class WarehouseSeeder extends Seeder
         ];
 
         foreach ($warehouses as $data) {
-            $warehouse = Warehouse::create($data);
-            // La creación de subcuenta contable ya no corre aquí (REQ-02.4/02.10) — un
-            // almacén sembrado no debe depender de Contabilidad. Se genera solo cuando
-            // corresponda (accounting.advanced activo, Fase 3), nunca desde el seeder base.
-            $warehouse->generateCode();
+            Warehouse::create($data);
         }
     }
 }

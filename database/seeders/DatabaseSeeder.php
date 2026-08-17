@@ -9,7 +9,6 @@ use Database\Seeders\AppInit\ClientSeeder;
 use Database\Seeders\AppInit\ConfiguracionGeneralSeeder;
 use Database\Seeders\AppInit\DocumentTypeSeeder;
 use Database\Seeders\AppInit\GeoDataSeeder;
-use Database\Seeders\AppInit\ImpuestoSeeder;
 use Database\Seeders\AppInit\InstallationModuleSeeder;
 use Database\Seeders\AppInit\NcfTypeSeeder;
 use Database\Seeders\AppInit\PermissionSeeder;
@@ -45,7 +44,6 @@ class DatabaseSeeder extends Seeder
             PlanSeeder::class,
             InstallationModuleSeeder::class,
             TipoPagoSeeder::class,
-            ImpuestoSeeder::class,
             ConfiguracionGeneralSeeder::class, // sin 'Empresa Demo' (REQ-07.4)
 
             AccountingAccountSeeder::class,

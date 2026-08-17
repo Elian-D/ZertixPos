@@ -9,6 +9,7 @@ use App\Models\Products\Product;
 use App\Models\Sales\Ncf\NcfType;
 use App\Models\Sales\Sale;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class StoreSaleRequest extends FormRequest
@@ -76,7 +77,6 @@ class StoreSaleRequest extends FormRequest
             // FASE 5: Reglas de totales y descuentos
             'total_amount' => ['required', 'numeric', 'min:0'],
             'discount_total' => ['nullable', 'numeric', 'min:0'],
-            'apply_tax' => ['nullable', 'boolean'],
             'notes' => ['nullable', 'string', 'max:255'],
 
             'items' => ['required', 'array', 'min:1'],
@@ -145,9 +145,10 @@ class StoreSaleRequest extends FormRequest
                 }
             }
 
-            // --- CÁLCULO DE TOTALES Y VALIDACIÓN DE STOCK ---
+            // --- CÁLCULO DE TOTALES, IMPUESTOS Y VALIDACIÓN DE STOCK ---
             $subtotalBruto = 0;
             $descuentoTotalCalculado = 0;
+            $taxAccum = 0;
 
             // Precargado en una sola query (evita N+1): un "servicio" (is_stockable=false)
             // no tiene por qué tener nunca una fila de InventoryStock, así que se salta el
@@ -156,6 +157,14 @@ class StoreSaleRequest extends FormRequest
                 ->get(['id', 'is_stockable'])
                 ->keyBy('id');
 
+            // Impuestos por producto (Fase 5, REQ-5.3) — mismo cálculo multi-tasa que
+            // SaleService::create(), para que la validación de acá nunca diverja de lo
+            // que realmente se persiste.
+            $productTaxes = DB::table('product_taxes')
+                ->whereIn('product_id', collect($this->items)->pluck('product_id'))
+                ->get()
+                ->groupBy('product_id');
+
             foreach ($this->items as $index => $item) {
                 // Matemáticas del ítem
                 $itemBruto = ($item['quantity'] * $item['price']);
@@ -163,6 +172,10 @@ class StoreSaleRequest extends FormRequest
 
                 $subtotalBruto += $itemBruto;
                 $descuentoTotalCalculado += $itemDescuento;
+
+                $itemNeto = $itemBruto - $itemDescuento;
+                $taxKeys = $productTaxes->get($item['product_id'], collect())->pluck('tax_key');
+                $taxAccum += $taxKeys->sum(fn ($key) => round($itemNeto * config("impuestos.{$key}.rate", 0) / 100, 2));
 
                 // Stock: solo aplica a productos físicos, y solo con inventory.tracking
                 // activo (núcleo flexible, REQ-10.5/10.9) — apagado, InventoryStock nunca
@@ -195,15 +208,9 @@ class StoreSaleRequest extends FormRequest
                 $validator->errors()->add('discount_total', 'El descuento reportado no coincide con la suma de descuentos aplicados.');
             }
 
-            // 3. Calculamos el Neto real a cobrar (Bruto - Descuento + ITBIS)
+            // 3. Calculamos el Neto real a cobrar (Bruto - Descuento + impuestos por línea)
             $subtotalNeto = $subtotalBruto - $descuentoTotalCalculado;
-            $totalFinalNeto = $subtotalNeto;
-
-            if ($this->boolean('apply_tax')) {
-                $taxRate = general_config()->impuesto->valor ?? 0;
-                $taxAmount = $subtotalNeto * ($taxRate / 100);
-                $totalFinalNeto = $subtotalNeto + $taxAmount;
-            }
+            $totalFinalNeto = $subtotalNeto + $taxAccum;
 
             // --- VALIDACIÓN DE EFECTIVO / PAGO DIVIDIDO ---
             if ($this->payment_type === Sale::PAYMENT_CASH && ! empty($payments)) {

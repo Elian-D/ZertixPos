@@ -114,11 +114,20 @@ class TipoPago extends Model
         return 'heroicon-s-question-mark-circle';
     }
 
+    /**
+     * Corrección (REQ-2.5): la lista original de slugs protegidos
+     * ('transferencia-bancaria', 'tarjeta-de-creditodebito') nunca coincidía con
+     * los slugs reales que siembra TipoPagoSeeder (Str::slug('Transferencia') =
+     * 'transferencia', Str::slug('Tarjeta') = 'tarjeta') — la protección para
+     * esos dos métodos nunca se disparaba. El único método que el sistema
+     * realmente necesita que no se pueda borrar es 'efectivo' — SaleService
+     * lo asume implícitamente en varios puntos (ver SaleService::processPayments()/
+     * generateSaleAccountingEntry(), $tipo->slug === 'efectivo'), el resto son
+     * catálogo editable normal.
+     */
     public function isSystemProtected(): bool
     {
-        // Lista de slugs que no se pueden borrar ni editar nombre
-        $protected = ['efectivo', 'transferencia-bancaria', 'cheque', 'tarjeta-de-creditodebito'];
-        return in_array($this->slug, $protected);
+        return $this->slug === self::EFECTIVO;
     }
 
     // Scopes para filtrar por estado

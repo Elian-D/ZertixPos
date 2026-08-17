@@ -45,7 +45,11 @@ class PosSessionReportService
                 'cajero'   => $sale->user->name ?? 'N/A',
                 'cantidad' => (float) $sale->items->sum('quantity'),
                 'metodo'   => $paymentLabel,
-                'total'    => (float) $sale->total_amount - (float) $sale->discount_total,
+                // grand_total (net_amount + tax_amount) — el efectivo que entra a la
+                // gaveta incluye el impuesto cobrado, sin excepción (Fase 5, REQ-5.10).
+                // Antes usaba total_amount - discount_total (bruto sin impuesto), lo
+                // que desalineaba esta fila contra "Ventas en Efectivo" del resumen.
+                'total'    => (float) $sale->grand_total,
             ];
         });
 
@@ -69,8 +73,10 @@ class PosSessionReportService
         $columns = $methodTotals->keys()->values()->all();
 
         // Total de ventas a crédito: no viene de sale_payments (no aplica), viene del
-        // total facturado de las ventas marcadas payment_type = credit.
-        $creditTotal = (float) $creditSales->sum(fn (Sale $sale) => $sale->total_amount - $sale->discount_total);
+        // total facturado de las ventas marcadas payment_type = credit. Mismo fix que
+        // la línea de arriba (REQ-5.10): grand_total, no el bruto sin impuesto — es lo
+        // que el cliente realmente adeuda.
+        $creditTotal = (float) $creditSales->sum(fn (Sale $sale) => $sale->grand_total);
 
         $breakdownRows = [
             [

@@ -116,7 +116,7 @@ class SaleService
                 'is_walkin_customer' => $context?->is_walkin_customer ?? false,
             ]);
 
-            // 4. PROCESAMIENTO DE ÍTEMS Y MOVIMIENTOS DE INVENTARIO
+            // 4. PROCESAMIENTO DE ÍTEMS, IMPUESTOS Y MOVIMIENTOS DE INVENTARIO
             // Precargado en una sola query: un "servicio" (is_stockable=false) no debe
             // generar movimiento de inventario ni asiento de Costo de Ventas — no tiene
             // cantidad física real que descontar de ningún almacén.
@@ -124,10 +124,26 @@ class SaleService
                 ->get(['id', 'is_stockable'])
                 ->keyBy('id');
 
+            // Impuestos multi-tasa por línea (Fase 5, REQ-5.3) — ya no una tasa global
+            // sobre el carrito completo, sino la suma de los impuestos asignados a
+            // cada producto (config('impuestos') + pivote product_taxes).
+            $netAccum = 0;
+            $taxAccum = 0;
+
             foreach ($data['items'] as $item) {
                 $discountAmount = $item['discount_amount'] ?? 0;
                 $discountPercentage = $item['discount_percentage'] ?? 0;
                 $lineSubtotal = ($item['quantity'] * $item['price']) - $discountAmount;
+
+                $product = $products->get($item['product_id']);
+
+                $breakdown = collect($product?->taxes() ?? [])->map(fn ($key) => [
+                    'key' => $key,
+                    'label' => config("impuestos.{$key}.label"),
+                    'rate' => config("impuestos.{$key}.rate"),
+                    'amount' => round($lineSubtotal * config("impuestos.{$key}.rate") / 100, 2),
+                ]);
+                $lineTax = $breakdown->sum('amount');
 
                 $sale->items()->create([
                     'product_id' => $item['product_id'],
@@ -136,9 +152,14 @@ class SaleService
                     'discount_amount' => $discountAmount,
                     'discount_percentage' => $discountPercentage,
                     'subtotal' => $lineSubtotal,
+                    'tax_amount' => $lineTax,
+                    'tax_breakdown' => $breakdown,
                 ]);
 
-                $isStockable = $products->get($item['product_id'])?->is_stockable ?? true;
+                $netAccum += $lineSubtotal;
+                $taxAccum += $lineTax;
+
+                $isStockable = $product?->is_stockable ?? true;
 
                 // inventory.tracking es núcleo flexible (REQ-10.5) — apagado, la venta
                 // sigue funcionando pero no se escribe ningún InventoryMovement ni se
@@ -156,6 +177,8 @@ class SaleService
                     ]);
                 }
             }
+
+            $sale->update(['net_amount' => $netAccum, 'tax_amount' => $taxAccum]);
 
             // 5. INTEGRACIÓN CON MÓDULOS FINANCIEROS Y FISCALES
             // Registra cobros inmediatos o genera pasivos corrientes en cuentas por cobrar (CxC).
@@ -190,7 +213,18 @@ class SaleService
             // si de algún modo llega hasta acá, no se crea ningún Receivable.
             abort_unless(module_enabled('sales.receivables'), 403);
 
-            $this->createReceivableEntry($sale, $sale->total_amount);
+            // Defensa en profundidad (REQ-2.3/5.13) — estas mismas reglas ya vivían en
+            // StoreSaleRequest::withValidator(), pero solo se ejecutan si la venta pasa
+            // por ese FormRequest. QuoteService::convertToSale() llama a create() directo
+            // (bypass total), así que una cotización a nombre de Consumidor Final o de un
+            // cliente sin crédito disponible se podía convertir a crédito sin ningún
+            // chequeo — confirmado en producción. Se valida acá también, la escritura
+            // real, para que aplique sin importar el punto de entrada.
+            $this->validateCreditEligibility($sale);
+
+            // Lo que realmente se debe es el total neto + impuesto (grand_total), no el
+            // bruto sin descuento ni impuesto (Fase 5, REQ-5.3/5.5).
+            $this->createReceivableEntry($sale, $sale->grand_total);
 
             return;
         }
@@ -200,7 +234,7 @@ class SaleService
             // Fallback de compatibilidad retroactiva para cajas tradicionales de método de pago único.
             $sale->payments()->create([
                 'tipo_pago_id' => $sale->tipo_pago_id,
-                'amount' => $sale->total_amount,
+                'amount' => $sale->grand_total,
                 'reference' => $data['payment_reference'] ?? null,
             ]);
         } else {
@@ -231,18 +265,32 @@ class SaleService
         $items = [];
 
         // Entrada de Ingreso (Origen Crédito: Aumenta los ingresos por ventas en la cuenta de rol 'sales_revenue')
+        // Se credita por el NETO real, no por el bruto — el impuesto no es ingreso del
+        // negocio, es dinero recaudado a nombre de la DGII (Fase 5, REQ-5.5).
         $items[] = [
             'accounting_account_id' => AccountingAccountRole::resolve('sales_revenue'),
             'debit' => 0,
-            'credit' => $sale->total_amount,
+            'credit' => $sale->net_amount,
             'note' => "Venta {$sale->number}",
         ];
+
+        if ($sale->tax_amount > 0) {
+            $items[] = [
+                'accounting_account_id' => AccountingAccountRole::resolve('tax_payable'), // ITBIS/ISC recaudado, por pagar a la DGII
+                'debit' => 0,
+                'credit' => $sale->tax_amount,
+                'note' => "ITBIS/ISC recaudado: {$sale->number}",
+            ];
+        }
+        // Propina Legal (REQ-5.7, diferida) sumaría un tercer item acá contra un pasivo
+        // 'service_charge_payable' — no aplica todavía porque service_charge_amount no
+        // existe como columna (ver 5.2). Cuando se retome, es el mismo patrón de arriba.
 
         if ($sale->payment_type === 'credit') {
             // Origen Débito para Ventas a Crédito: Aumenta la cuenta por cobrar del Cliente o la genérica (rol 'receivable_default')
             $items[] = [
                 'accounting_account_id' => $sale->client->accounting_account_id ?? AccountingAccountRole::resolve('receivable_default'),
-                'debit' => $sale->total_amount,
+                'debit' => $sale->grand_total,
                 'credit' => 0,
                 'note' => "Cuenta por Cobrar: {$sale->client->name}",
             ];
@@ -275,6 +323,39 @@ class SaleService
             'status' => JournalEntry::STATUS_POSTED,
             'items' => $items,
         ]);
+    }
+
+    /**
+     * Reglas de negocio que deben cumplirse SIEMPRE antes de generar una CxC — mismas
+     * reglas que StoreSaleRequest::withValidator() valida para ventas de POS/backoffice,
+     * pero escritas acá como la última línea de defensa real (REQ-2.3/5.13): cualquier
+     * punto de entrada que llame a create() con payment_type='credit' pasa por acá,
+     * sin importar si vino de un FormRequest o de una llamada directa al servicio
+     * (ej. QuoteService::convertToSale()).
+     */
+    protected function validateCreditEligibility(Sale $sale): void
+    {
+        $client = $sale->client;
+
+        if (! $client) {
+            return;
+        }
+
+        // Consumidor Final nunca es creditable — no tiene identidad real a quien
+        // cobrarle después (REQ-2.3).
+        if ($client->id == 1 || $client->name === 'Consumidor Final') {
+            throw new Exception('El Consumidor Final no puede procesar ventas a crédito.');
+        }
+
+        if ($client->esMoroso()) {
+            throw new Exception('Crédito denegado: el cliente tiene facturas vencidas pendientes de pago.');
+        }
+
+        $nuevoSaldoProyectado = $client->balance + $sale->grand_total;
+        if ($nuevoSaldoProyectado > $client->credit_limit) {
+            $disponible = number_format($client->credit_limit - $client->balance, 2);
+            throw new Exception("Límite de crédito superado. Disponible: \${$disponible}.");
+        }
     }
 
     /**

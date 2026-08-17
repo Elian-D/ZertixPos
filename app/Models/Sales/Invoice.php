@@ -86,7 +86,9 @@ class Invoice extends Model
     public function scopeWithIndexRelations($query)
     {
         return $query->with([
-            'sale:id,number,payment_type,client_id,total_amount',
+            // net_amount/tax_amount necesarios para que Sale::grand_total (accessor)
+            // resuelva bien acá — sin ellos siempre da 0 (Fase 5, auditoría post-REQ-5.12).
+            'sale:id,number,payment_type,client_id,total_amount,net_amount,tax_amount',
             'sale.client:id,name',
         ]);
     }
