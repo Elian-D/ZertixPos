@@ -61,7 +61,7 @@
                             <div class="text-[9px] font-mono text-gray-400 mb-0.5 truncate" x-text="product.sku || '—'"></div>
                             <div class="text-xs font-bold text-gray-800 leading-snug line-clamp-2 mb-1.5 min-h-[2rem] group-hover:text-[#58c03f]" x-text="product.name"></div>
                             <div class="flex items-center justify-between gap-1">
-                                <span class="text-sm font-black text-gray-900" x-text="formatMoney(product.price)"></span>
+                                <span class="text-sm font-black text-gray-900" x-text="formatMoney(grossPrice(product))"></span>
                                 <template x-if="product.is_stockable && inventoryTrackingEnabled">
                                     <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
                                           :class="product.stock <= 0
@@ -164,7 +164,6 @@
             <input type="hidden" name="tipo_pago_id" :value="splitPayment ? (payments[0]?.tipo_pago_id ?? '') : formData.tipo_pago_id">
             <input type="hidden" name="total_amount" :value="totals.gross">
             <input type="hidden" name="discount_total" :value="totals.discount">
-            <input type="hidden" name="apply_tax" :value="usaNcf ? 1 : 0">
             <input type="hidden" name="cash_received" :value="splitPayment ? totals.total : formData.cash_received">
             <input type="hidden" name="cash_change" :value="splitPayment ? 0 : formData.cash_change">
             <input type="hidden" name="notes" value="">
@@ -199,12 +198,37 @@
 
             @include('livewire.sales.pos.pages.pos-workspace.partials.ncf-selector', ['showLabel' => false, 'rncInputBg' => 'bg-gray-50'])
 
-            @include('livewire.sales.pos.pages.pos-workspace.partials.totals-summary', ['detailed' => false])
+            {{-- Desglose completo en el lateral de escritorio (a diferencia del modal/móvil,
+                 acá SÍ queda fijo a la vista todo el tiempo mientras se arma el carrito, no
+                 solo al tocar "Cobrar") — texto de Subtotal/Total más grande a propósito, y
+                 el botón repite el monto: redundante con el Total de arriba a propósito,
+                 para que el cajero confirme el cobro sin tener que buscar la cifra. --}}
+            <div class="bg-white border border-gray-200 rounded-xl p-3 space-y-1.5">
+                <div class="flex justify-between text-sm text-gray-500">
+                    <span>Subtotal</span><span class="font-semibold text-gray-700" x-text="formatMoney(totals.gross)"></span>
+                </div>
+                <template x-if="totals.discount > 0">
+                    <div class="flex justify-between text-sm text-red-500">
+                        <span>Descuento</span><span x-text="'- ' + formatMoney(totals.discount)"></span>
+                    </div>
+                </template>
+                {{-- El impuesto ya no depende de si la venta lleva NCF (Fase 5, REQ-5.1/5.3) —
+                     es una propiedad del producto vendido, se cobra siempre que aplique. --}}
+                <template x-if="totals.tax > 0">
+                    <div class="flex justify-between text-sm text-gray-500">
+                        <span>Impuestos</span><span x-text="formatMoney(totals.tax)"></span>
+                    </div>
+                </template>
+                <div class="pt-2 border-t border-dashed border-gray-200 flex justify-between items-center">
+                    <span class="text-base font-bold text-gray-700">Total</span>
+                    <span class="text-2xl font-black font-mono text-[#58c03f]" x-text="formatMoney(totals.total)"></span>
+                </div>
+            </div>
 
             <button type="button" @click="$dispatch('open-modal', 'pos-checkout-modal')"
                     :disabled="items.length === 0 || totals.total <= 0"
                     class="w-full py-2.5 bg-[#58c03f] hover:bg-[#4bad35] disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold rounded-lg shadow-lg transition-all">
-                Cobrar
+                Cobrar <span x-text="formatMoney(totals.total)"></span>
             </button>
 
         </form>

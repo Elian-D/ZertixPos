@@ -1,21 +1,18 @@
 @php
     $config = general_config();
-    $impuestoConfig = $config->impuesto;
     $sale = $invoice->sale;
     $client = $sale->client;
     $currency = config('regional.currency_symbol');
-    
+
     // Identificador fiscal de la EMPRESA
     $taxLabel = $config->tax_identifier_type?->value ?? 'RNC';
 
     // Identificador fiscal del CLIENTE (RNC/Cédula)
     $clientTaxLabel = $client->tax_identifier_type?->value ?? 'RNC/CED';
 
-    // Lógica de impuestos dinámica
-    $taxName = $impuestoConfig->nombre ?? 'ITBIS';
-
-    // Usar directamente el valor de la base de datos, si es nulo o cero, mostrará 0.00
-    $taxCalculado = $sale->tax_amount ?? 0.00; 
+    // Desglose real por tipo de impuesto (Fase 5, REQ-5.6) — agrupa el snapshot
+    // congelado de cada línea, ya no una sola tasa global aplicada a todo el carrito.
+    $taxBreakdown = $sale->items->pluck('tax_breakdown')->filter()->flatten(1)->groupBy('key');
 
     // Vencimiento de factura (Crédito comercial) — se lee de la Receivable, nunca
     // se recalcula acá (REQ-11.10): es la única fuente de verdad, la misma que
@@ -211,7 +208,7 @@
                 @foreach($payments as $payment)
                     <div style="margin-bottom: 3px;">
                         <span class="payment-method-badge">
-                            {{ $payment->tipoPago->nombre }}: {{ $currency }}{{ number_format($payment->amount, 2) }}
+                            {{ $payment->tipoPago?->nombre ?? 'N/A' }}: {{ $currency }}{{ number_format($payment->amount, 2) }}
                         </span>
                     </div>
                 @endforeach
@@ -246,17 +243,22 @@
                 @endif
                 <tr>
                     <td class="info-label" style="padding: 5px 0;">Subtotal Neto:</td>
-                    <td class="text-right bold" style="font-size: 14px;">{{ $currency }}{{ number_format($sale->total_amount - $sale->discount_total, 2) }}</td>
+                    <td class="text-right bold" style="font-size: 14px;">{{ $currency }}{{ number_format($sale->net_amount, 2) }}</td>
                 </tr>
-                @if($taxCalculado > 0)
+            </table>
+            {{-- Separación real entre grupos (margen), no una segunda línea divisoria. --}}
+            <table style="width: 100%; margin-top: 6px; padding-top: 4px;">
+                @foreach($taxBreakdown as $key => $lines)
                     <tr>
-                        <td class="info-label" style="padding: 5px 0;">{{ $taxName }}:</td>
-                        <td class="text-right bold" style="font-size: 14px;">{{ $currency }}{{ number_format($taxCalculado, 2) }}</td>
+                        <td class="info-label" style="padding: 5px 0;">{{ $lines->first()['label'] }}:</td>
+                        <td class="text-right bold" style="font-size: 14px;">{{ $currency }}{{ number_format($lines->sum('amount'), 2) }}</td>
                     </tr>
-                @endif
+                @endforeach
+                {{-- Línea de Propina Legal (REQ-5.7) se agrega cuando esa fase se retome —
+                     service_charge_amount no existe como columna todavía, ver 5.2. --}}
                 <tr class="grand-total">
                     <td class="bold">TOTAL:</td>
-                    <td class="text-right bold">{{ $currency }}{{ number_format($sale->total_amount - $sale->discount_total, 2) }}</td>
+                    <td class="text-right bold">{{ $currency }}{{ number_format($sale->grand_total, 2) }}</td>
                 </tr>
                 @if($sale->payment_type === 'cash' && $sale->cash_received > 0)
                 <tr>

@@ -122,7 +122,7 @@
                                     </td>
                                     <td class="px-4 py-3 text-right font-bold text-gray-900">
                                         {{-- El subtotal del item ya almacena el valor neto post-descuento --}}
-                                        {{ config('regional.currency_symbol') }}{{ number_format($sale->total_amount - $sale->discount_total, 2) }}
+                                        {{ config('regional.currency_symbol') }}{{ number_format($item->subtotal, 2) }}
                                     </td>
                                 </tr>
                             @endforeach
@@ -146,11 +146,9 @@
                 {{-- Columna Derecha: Totales y Pagos --}}
                 <div class="space-y-3">
                     @php
-                        $config = general_config();
-                        $impuestoConfig = $config->impuesto;
-                        $taxName = $impuestoConfig->nombre ?? 'ITBIS';
-                        
-
+                        // Desglose real por tipo de impuesto (Fase 5, REQ-5.6) — agrupa el
+                        // snapshot congelado de cada línea, ya no una tasa global fija.
+                        $taxBreakdown = $sale->items->pluck('tax_breakdown')->filter()->flatten(1)->groupBy('key');
                     @endphp
 
                     {{-- Subtotal Bruto Real --}}
@@ -172,20 +170,27 @@
                         {{-- Subtotal Neto --}}
                         <div class="flex justify-between text-xs font-semibold text-gray-700 px-1 pb-1 border-b border-gray-100">
                             <span>Subtotal Neto</span>
-                            <span class="font-mono">{{ config('regional.currency_symbol') }}{{ number_format($sale->total_amount - $sale->discount_total, 2) }}</span>
+                            <span class="font-mono">{{ config('regional.currency_symbol') }}{{ number_format($sale->net_amount, 2) }}</span>
                         </div>
                     @endif
 
-                    {{-- Impuesto (ITBIS) --}}
-                    <div class="flex justify-between text-xs text-gray-500 px-1">
-                        <span>{{ $taxName }} {{ $sale->tax_amount > 0 ? '' : '(Incluido/Exento)' }}</span>
-                        <span class="font-mono">{{ config('regional.currency_symbol') }}{{ number_format($sale->tax_amount, 2) }}</span>
-                    </div>
+                    {{-- Impuestos (desglose real por tipo, Fase 5 REQ-5.6) --}}
+                    @forelse($taxBreakdown as $key => $lines)
+                        <div class="flex justify-between text-xs text-gray-500 px-1">
+                            <span>{{ $lines->first()['label'] }}</span>
+                            <span class="font-mono">{{ config('regional.currency_symbol') }}{{ number_format($lines->sum('amount'), 2) }}</span>
+                        </div>
+                    @empty
+                        <div class="flex justify-between text-xs text-gray-500 px-1">
+                            <span>Impuestos (Exento)</span>
+                            <span class="font-mono">{{ config('regional.currency_symbol') }}0.00</span>
+                        </div>
+                    @endforelse
 
                     {{-- Total Final --}}
                     <div class="flex justify-between items-center bg-indigo-50 p-3 rounded-lg border border-indigo-100">
                         <span class="text-xs font-black text-indigo-700 uppercase">Total Facturado</span>
-                        <span class="text-xl font-black text-indigo-700 font-mono">{{ config('regional.currency_symbol') }}{{ number_format($sale->total_amount - $sale->discount_total, 2) }}</span>
+                        <span class="text-xl font-black text-indigo-700 font-mono">{{ config('regional.currency_symbol') }}{{ number_format($sale->grand_total, 2) }}</span>
                     </div>
 
                     {{-- Distribución de Métodos Usados --}}
@@ -200,7 +205,7 @@
                                         <span class="text-[9px] text-gray-400">({{ $payment->reference }})</span> 
                                     @endif
                                 </span>
-                                <span class="text-sm font-bold text-gray-700 font-mono">{{ config('regional.currency_symbol') }}{{ number_format($payment->amount - $sale->discount_total, 2) }}</span>
+                                <span class="text-sm font-bold text-gray-700 font-mono">{{ config('regional.currency_symbol') }}{{ number_format($payment->amount, 2) }}</span>
                             </div>
                         @empty
                             <div class="text-right text-[11px] text-gray-400 italic">

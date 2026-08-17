@@ -48,7 +48,7 @@
                         <div class="text-[9px] font-mono text-gray-400 mb-0.5 truncate" x-text="product.sku || '—'"></div>
                         <div class="text-xs font-bold text-gray-800 leading-snug line-clamp-2 mb-1.5 min-h-[2rem]" x-text="product.name"></div>
                         <div class="flex items-center justify-between gap-1">
-                            <span class="text-sm font-black text-gray-900" x-text="formatMoney(product.price)"></span>
+                            <span class="text-sm font-black text-gray-900" x-text="formatMoney(grossPrice(product))"></span>
                             <template x-if="product.is_stockable && inventoryTrackingEnabled">
                                 <span class="text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
                                       :class="product.stock <= 0

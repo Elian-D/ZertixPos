@@ -54,10 +54,12 @@
                 </td>
             @endif
 
-            {{-- Monto Total --}}
+            {{-- Monto Total — grand_total (neto + impuesto), no total_amount (bruto sin
+                 impuesto; ni siquiera consistente entre sí según el origen de la venta,
+                 ver QuoteService::convertToSale()) — Fase 5, auditoría post-REQ-5.12. --}}
             @if(in_array('total_amount', $visibleColumns))
                 <td class="px-6 py-4 text-sm text-right font-bold text-gray-900">
-                    <span class="text-[10px] font-normal text-gray-400 mr-1">{{ config('regional.currency_symbol') }}</span>{{ number_format($invoice->sale->total_amount ?? 0, 2) }}
+                    <span class="text-[10px] font-normal text-gray-400 mr-1">{{ config('regional.currency_symbol') }}</span>{{ number_format($invoice->sale->grand_total ?? 0, 2) }}
                 </td>
             @endif
 

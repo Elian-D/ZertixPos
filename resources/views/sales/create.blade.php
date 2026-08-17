@@ -310,6 +310,15 @@
                             </div>
                         </template>
 
+                        {{-- Impuestos (desglose por producto, Fase 5 REQ-5.1/5.3 — ya no una
+                             tasa global) --}}
+                        <template x-if="totals.tax > 0">
+                            <div class="flex justify-between text-[10px] opacity-50 uppercase tracking-[0.2em]" x-transition>
+                                <span>Impuestos</span>
+                                <span x-text="formatMoney(totals.tax)"></span>
+                            </div>
+                        </template>
+
                         {{-- NUEVO: Bloque de Pago (Solo si es Contado) --}}
                         <template x-if="formData.payment_type === 'cash'">
                             <div class="space-y-3 pt-4 mt-2 border-t border-white/10" x-transition>
@@ -395,8 +404,6 @@
                 tipo_pagos: @json($tipo_pagos),
                 items: [],
                 config: {
-                    tax_rate: {{ general_config()->impuesto->valor ?? 0 }},
-                    apply_tax: false,
                     ncfEnabled: {{ module_enabled('sales.ncf') ? 'true' : 'false' }},
                     receivablesEnabled: {{ module_enabled('sales.receivables') ? 'true' : 'false' }}
                 },
@@ -490,6 +497,7 @@
                         product_id: '',
                         quantity: 1,
                         price: 0,
+                        tax_rate: 0,
                         stock: 0,
                         discount_percentage: 0,
                         discount_amount: 0,
@@ -512,6 +520,8 @@
                     const product = this.products.find(p => p.id == item.product_id && p.warehouse_id == this.formData.warehouse_id);
                     if (product) {
                         item.price = product.price;
+                        // Snapshot al agregar, igual que price (Fase 5, REQ-5.3).
+                        item.tax_rate = product.tax_rate ?? 0;
                         item.stock = product.stock;
                     }
                     this.calculateTotals();
@@ -577,29 +587,28 @@
                     // El descuento global en dinero (ej. $30)
                     this.formData.discount_total = totalDescuentos;
 
-                    // El neto real que el cliente va a pagar (ej. $270)
+                    // El neto real que el cliente va a pagar antes de impuesto (ej. $270)
                     const netoPagar = bruto - totalDescuentos;
 
-                    if (this.config.apply_tax && this.config.tax_rate > 0) {
-                        const divisor = 1 + (this.config.tax_rate / 100);
+                    // Impuesto por línea (Fase 5, REQ-5.3) — cada producto trae su propia
+                    // tasa (posiblemente 0 si es Exento), sumado sobre el neto post-descuento
+                    // de cada línea, igual que en el Workspace POS.
+                    let impuesto = 0;
+                    this.items.forEach(item => {
+                        const qty = parseFloat(item.quantity) || 1;
+                        const price = parseFloat(item.price) || 0;
+                        const lineNet = (price * qty) - (item.discount_amount || 0);
+                        impuesto += lineNet * ((item.tax_rate || 0) / 100);
+                    });
 
-                        // CAMBIO: gross = bruto antes de descuentos → va a total_amount en BD
-                        this.totals.gross    = bruto;
-                        // net = neto después de descuentos → lo que realmente paga
-                        this.totals.net      = netoPagar;
-                        this.totals.subtotal = netoPagar / divisor;
-                        this.totals.tax      = netoPagar - this.totals.subtotal;
-                        // total = neto → se muestra en pantalla y se usa para cobro/cambio/crédito
-                        this.totals.total    = netoPagar;
-                    } else {
-                        // CAMBIO: gross = bruto → se envía como total_amount al servidor
-                        this.totals.gross    = bruto;
-                        this.totals.net      = netoPagar;
-                        this.totals.subtotal = netoPagar;
-                        this.totals.tax      = 0;
-                        // total = neto → lo que se muestra y se cobra
-                        this.totals.total    = netoPagar;
-                    }
+                    // gross = bruto antes de descuentos → se envía como total_amount al servidor
+                    this.totals.gross    = bruto;
+                    // net = neto después de descuentos, sin impuesto
+                    this.totals.net      = netoPagar;
+                    this.totals.subtotal = netoPagar;
+                    this.totals.tax      = impuesto;
+                    // total = lo que realmente se cobra (neto + impuesto)
+                    this.totals.total    = netoPagar + impuesto;
 
                     this.calculateChange();
                     this.handleTipoPagoChange();

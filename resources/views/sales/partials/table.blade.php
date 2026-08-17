@@ -114,10 +114,11 @@
                 </td>
             @endif
 
-            {{-- Total Venta --}}
+            {{-- Total Venta — grand_total (neto + impuesto), no total_amount (bruto,
+                 ver auditoría post-REQ-5.12 en docs/features/v1.2.0.md). --}}
             @if(in_array('total_amount', $visibleColumns))
                 <td class="px-6 py-4 text-sm text-right font-bold text-gray-900">
-                    <span class="text-[10px] font-normal text-gray-400 mr-1">{{ config('regional.currency_symbol') }}</span>{{ number_format($sale->total_amount, 2) }}
+                    <span class="text-[10px] font-normal text-gray-400 mr-1">{{ config('regional.currency_symbol') }}</span>{{ number_format($sale->grand_total, 2) }}
                 </td>
             @endif
 

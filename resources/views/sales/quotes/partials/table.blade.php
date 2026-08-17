@@ -60,10 +60,11 @@
                 </td>
             @endif
 
-            {{-- 7. Monto Total --}}
+            {{-- 7. Monto Total — grand_total (neto + impuesto), no total, mismo criterio
+                 del índice de productos (REQ-5.11) aplicado acá (Fase 5, REQ-5.12). --}}
             @if(in_array('total', $visibleColumns))
                 <td class="px-6 py-4 text-sm text-right font-bold text-gray-900">
-                    <span class="text-[10px] font-normal text-gray-400 mr-1">{{ config('regional.currency_symbol') }}</span>{{ number_format($quote->total, 2) }}
+                    <span class="text-[10px] font-normal text-gray-400 mr-1">{{ config('regional.currency_symbol') }}</span>{{ number_format($quote->grand_total, 2) }}
                 </td>
             @endif
 

@@ -40,6 +40,15 @@
                 </td>
             @endif
 
+            @if(in_array('price_with_tax', $visibleColumns))
+                <td class="whitespace-nowrap px-6 py-4 text-sm font-bold text-gray-900">
+                    {{ config('regional.currency_symbol') }} {{ number_format($item->price_with_tax, 2) }}
+                    @if($item->taxRate() > 0)
+                        <span class="block text-[10px] font-normal text-gray-400 mt-0.5">Neto: {{ config('regional.currency_symbol') }} {{ number_format($item->price, 2) }}</span>
+                    @endif
+                </td>
+            @endif
+
             @if(in_array('price', $visibleColumns))
                 <td class="whitespace-nowrap px-6 py-4 text-sm font-bold text-gray-900">
                     {{ config('regional.currency_symbol') }} {{ number_format($item->price, 2) }}

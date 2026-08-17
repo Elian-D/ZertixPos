@@ -76,7 +76,7 @@
         </thead>
         <tbody>
             <tr>
-                <td>{{ $payment->tipoPago->nombre }}</td>
+                <td>{{ $payment->tipoPago?->nombre ?? 'N/A' }}</td>
                 <td>{{ $payment->reference ?? 'N/A' }}</td>
                 <td class="text-right total-amount">
                     {{ config('regional.currency_symbol') }} {{ number_format($payment->amount, 2) }}

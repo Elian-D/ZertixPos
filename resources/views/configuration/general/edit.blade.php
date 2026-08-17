@@ -9,7 +9,6 @@
             selectedProvincia: '{{ old('provincia_id', $config->provincia_id ?? '') }}',
             selectedMunicipio: '{{ old('municipio_id', $config->municipio_id ?? '') }}',
             selectedTaxType: '{{ old('tax_identifier_type', $config->tax_identifier_type?->value ?? '') }}',
-            selectedImpuesto: '{{ old('impuesto_id', $config->impuesto_id ?? '') }}',
 
             logoPreview: '{{ $config?->logo ? asset('storage/'.$config->logo) : '' }}',
             currency: '{{ config('regional.currency') }}',
@@ -228,39 +227,9 @@
                                         </div>
                                     </div>
 
-                                    <div class="bg-zertix-primary/5 rounded-3xl p-6 border border-zertix-primary/20">
-                                        <h4 class="text-[11px] font-black text-zertix-primary-dark uppercase mb-5 flex items-center gap-2 tracking-widest">
-                                            <x-heroicon-s-receipt-percent class="w-4 h-4" />
-                                            Impuesto Principal
-                                        </h4>
-
-                                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                            <div class="sm:col-span-2 lg:col-span-1">
-                                                <label class="text-[10px] font-bold text-slate-500 uppercase mb-1">Nombre (IVA, ITBIS...)</label>
-                                                <x-text-input name="impuesto_nombre" value="{{ $config->impuesto->nombre ?? '' }}" class="w-full bg-white" />
-                                            </div>
-                                            <div>
-                                                <label class="text-[10px] font-bold text-slate-500 uppercase mb-1">Tipo</label>
-                                                <select name="impuesto_tipo" class="w-full border-slate-200 rounded-2xl bg-white text-xs font-bold text-slate-700">
-                                                    <option value="porcentaje" {{ ($config->impuesto?->tipo ?? '') == 'porcentaje' ? 'selected' : '' }}>Porcentaje %</option>
-                                                    <option value="fijo" {{ ($config->impuesto?->tipo ?? '') == 'fijo' ? 'selected' : '' }}>Monto Fijo $</option>
-                                                </select>
-                                            </div>
-                                            <div>
-                                                <label class="text-[10px] font-bold text-slate-500 uppercase mb-1">Valor</label>
-                                                <x-text-input name="impuesto_valor" type="number" step="0.01" value="{{ $config->impuesto->valor ?? '' }}" class="w-full bg-white" />
-                                            </div>
-                                        </div>
-
-                                        <div class="mt-5 flex items-start gap-3 bg-white/60 p-4 rounded-2xl border border-zertix-primary/20">
-                                            <input type="checkbox" name="impuesto_incluido" value="1"
-                                                {{ ($config->impuesto?->es_incluido ?? false) ? 'checked' : '' }}
-                                                class="mt-1 rounded text-zertix-primary focus:ring-zertix-primary border-slate-300">
-                                            <label class="text-xs font-semibold text-slate-600 leading-snug">
-                                                El precio de los productos ya incluye este impuesto. <span class="block text-[10px] font-normal text-slate-400 italic">Activa esto si tus precios de venta son finales.</span>
-                                            </label>
-                                        </div>
-                                    </div>
+                                    {{-- "Impuesto Principal" (tasa única global) se eliminó (Fase 5, REQ-5.1) —
+                                         los impuestos ahora se asignan por producto (ITBIS 18%/16%, Exento,
+                                         ISC) desde config/impuestos.php + product_taxes, no acá. --}}
                                 </div>
                             </div>
                         </div>

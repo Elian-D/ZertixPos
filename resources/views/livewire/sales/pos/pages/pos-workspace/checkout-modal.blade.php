@@ -18,9 +18,11 @@
                     <span>Descuento</span><span x-text="'- ' + formatMoney(totals.discount)"></span>
                 </div>
             </template>
-            <template x-if="usaNcf">
+            {{-- El impuesto ya no depende de si la venta lleva NCF (Fase 5, REQ-5.1/5.3) —
+                 es una propiedad del producto vendido, se cobra siempre que aplique. --}}
+            <template x-if="totals.tax > 0">
                 <div class="flex justify-between text-gray-500">
-                    <span>ITBIS</span><span x-text="formatMoney(totals.tax)"></span>
+                    <span>Impuestos</span><span x-text="formatMoney(totals.tax)"></span>
                 </div>
             </template>
         </div>

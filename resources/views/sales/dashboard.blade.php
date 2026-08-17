@@ -193,7 +193,7 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-right font-bold text-gray-900">
-                                {{ config('regional.currency_symbol') }}{{ number_format($sale->total_amount, 2) }}
+                                {{ config('regional.currency_symbol') }}{{ number_format($sale->grand_total, 2) }}
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold {{ $sale->status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">

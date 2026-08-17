@@ -1,13 +1,11 @@
 @php
     $config = general_config();
-    $impuestoConfig = $config->impuesto;
     $sale = $invoice->sale;
     $client = $sale->client;
     $currency = config('regional.currency_symbol');
 
     $taxLabel = $config->tax_identifier_type?->value ?? 'RNC';
-    $taxName = $impuestoConfig->nombre ?? 'ITBIS';
-    
+
     // Se lee de la Receivable, nunca se recalcula acá (REQ-11.10) — es la única
     // fuente de verdad del vencimiento, la misma que controla esMoroso().
     $vencimientoPago = $sale->payment_type === 'credit'
@@ -28,8 +26,9 @@
     // NUEVO: Determinar si mostramos info fiscal
     $mostrarFiscal = module_enabled('sales.ncf') && $sale->ncf;
 
-    // Usar directamente el valor de la base de datos, si es nulo o cero, mostrará 0.00
-    $taxCalculado = $sale->tax_amount ?? 0.00;
+    // Desglose real por tipo de impuesto (Fase 5, REQ-5.6) — agrupa el snapshot
+    // congelado de cada línea, ya no una sola tasa global aplicada a todo el carrito.
+    $taxBreakdown = $sale->items->pluck('tax_breakdown')->filter()->flatten(1)->groupBy('key');
 
     $paperWidth = $paperWidth ?? '80mm';
     $isNarrow = $paperWidth === '58mm';
@@ -257,17 +256,23 @@
                 @endif
                 <tr>
                     <td>SUBTOTAL NETO:</td>
-                    <td class="right">{{ $currency }}{{ number_format($sale->total_amount - $sale->discount_total, 2) }}</td>
+                    <td class="right">{{ $currency }}{{ number_format($sale->net_amount, 2) }}</td>
                 </tr>
-                @if($taxCalculado > 0)
+            </table>
+            {{-- Separación real entre grupos (margen), no una segunda línea divisoria —
+                 el borde de arriba de la tabla de TOTALES ya cumple ese rol una vez. --}}
+            <table style="margin-top: 6px; padding-top: 4px;">
+                @foreach($taxBreakdown as $key => $lines)
                     <tr>
-                        <td>{{ $taxName ?? 'ITBIS' }}:</td>
-                        <td class="text-right right">{{ $currency }}{{ number_format($taxCalculado, 2) }}</td>
+                        <td>{{ $lines->first()['label'] }}:</td>
+                        <td class="right">{{ $currency }}{{ number_format($lines->sum('amount'), 2) }}</td>
                     </tr>
-                @endif
+                @endforeach
+                {{-- Línea de Propina Legal (REQ-5.7) se agrega cuando esa fase se retome —
+                     service_charge_amount no existe como columna todavía, ver 5.2. --}}
                 <tr class="total-row">
                     <td style="padding-top: 4px;">TOTAL</td>
-                    <td class="right" style="padding-top: 4px;">{{ $currency }}{{ number_format($sale->total_amount - $sale->discount_total, 2) }}</td>
+                    <td class="right" style="padding-top: 4px;">{{ $currency }}{{ number_format($sale->grand_total, 2) }}</td>
                 </tr>
             </table>
         </div>
@@ -278,7 +283,7 @@
                 @foreach($payments as $payment)
                     <table>
                         <tr>
-                            <td style="font-size: 13px;">{{ $payment->tipoPago->nombre }}:</td>
+                            <td style="font-size: 13px;">{{ $payment->tipoPago?->nombre ?? 'N/A' }}:</td>
                             <td class="right" style="font-size: 13px;">{{ $currency }}{{ number_format($payment->amount, 2) }}</td>
                         </tr>
                     </table>

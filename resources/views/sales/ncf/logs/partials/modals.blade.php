@@ -35,7 +35,7 @@
                             <p class="text-[10px] text-gray-400 font-bold uppercase">Factura y Monto</p>
                             <div class="flex flex-col">
                                 <span class="text-sm font-bold text-indigo-600">#{{ $log->sale->number ?? 'N/A' }}</span>
-                                <span class="text-xs font-medium text-gray-500">Total: {{ config('regional.currency_symbol') }} {{ number_format($log->sale->total_amount ?? 0, 2) }}</span>
+                                <span class="text-xs font-medium text-gray-500">Total: {{ config('regional.currency_symbol') }} {{ number_format($log->sale->grand_total ?? 0, 2) }}</span>
                             </div>
                         </div>
                     </div>
