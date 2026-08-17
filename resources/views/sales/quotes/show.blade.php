@@ -132,10 +132,18 @@
                                 <span class="text-sm font-bold">-{{ config('regional.currency_symbol') }}{{ number_format($quote->discount_total, 2) }}</span>
                             </div>
                             @endif
+                            {{-- Desglose real por tipo de impuesto (Fase 5, REQ-5.12) — mismo
+                                 patrón que la factura (REQ-5.6). --}}
+                            @foreach($quote->items->pluck('tax_breakdown')->filter()->flatten(1)->groupBy('key') as $key => $lines)
+                                <div class="flex justify-between items-center">
+                                    <span class="text-[11px] opacity-70">{{ $lines->first()['label'] }}:</span>
+                                    <span class="text-sm font-bold">{{ config('regional.currency_symbol') }}{{ number_format($lines->sum('amount'), 2) }}</span>
+                                </div>
+                            @endforeach
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-sm font-black">TOTAL:</span>
-                            <span class="text-2xl font-black">{{ config('regional.currency_symbol') }}{{ number_format($quote->total, 2) }}</span>
+                            <span class="text-2xl font-black">{{ config('regional.currency_symbol') }}{{ number_format($quote->grand_total, 2) }}</span>
                         </div>
                     </div>
 

@@ -72,9 +72,11 @@ class ClientCollection extends Model
         return $this->belongsTo(Receivable::class);
     }
 
+    // withTrashed() (REQ-2.5): un cobro histórico debe seguir mostrando su método
+    // de pago aunque ese TipoPago se haya desactivado/borrado después.
     public function tipoPago(): BelongsTo
     {
-        return $this->belongsTo(TipoPago::class, 'tipo_pago_id');
+        return $this->belongsTo(TipoPago::class, 'tipo_pago_id')->withTrashed();
     }
 
     public function journalEntry(): BelongsTo

@@ -36,7 +36,12 @@
                 @forelse($items as $index => $item)
                     <tr wire:key="item-row-{{ $item['product_id'] }}-{{ $index }}" class="border-b">
                         <td class="px-4 py-3 font-medium text-gray-900">{{ $item['name'] }}</td>
-                        <td class="px-4 py-3">{{ config('regional.currency_symbol') }}{{ number_format($item['price'], 2) }}</td>
+                        <td class="px-4 py-3">
+                            {{-- Precio con impuesto incluido (mismo criterio que el POS
+                                 Workspace, REQ-5.9) — evita que se cotice un precio y se
+                                 facture otro más alto al convertir. --}}
+                            {{ config('regional.currency_symbol') }}{{ number_format($item['price_with_tax'] ?? $item['price'], 2) }}
+                        </td>
                         <td class="px-4 py-3">
                             <input type="number" 
                                 wire:model.live.debounce.500ms="items.{{ $index }}.quantity" 
@@ -101,9 +106,15 @@
                 <span>Descuento</span>
                 <span>-{{ config('regional.currency_symbol') }}{{ number_format($discountTotal, 2) }}</span>
             </div>
+            @if($tax > 0)
+                <div class="flex justify-between mb-2 text-gray-500">
+                    <span>Impuestos</span>
+                    <span>{{ config('regional.currency_symbol') }}{{ number_format($tax, 2) }}</span>
+                </div>
+            @endif
             <div class="flex justify-between mt-4 pt-4 border-t border-gray-200">
                 <span class="text-lg font-bold">Total</span>
-                <span class="text-xl font-black">{{ config('regional.currency_symbol') }}{{ number_format($total, 2) }}</span>
+                <span class="text-xl font-black">{{ config('regional.currency_symbol') }}{{ number_format($grandTotal, 2) }}</span>
             </div>
 
             {{-- NUEVO: Bloque de Errores Críticos / Generales del Servidor --}}

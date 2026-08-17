@@ -226,9 +226,17 @@
                     <td class="text-right bold" style="font-size: 14px; color: #dc2626;">-{{ $currency }}{{ number_format($quote->discount_total, 2) }}</td>
                 </tr>
                 @endif
+                {{-- Desglose real por tipo de impuesto (Fase 5, REQ-5.12) — mismo patrón
+                     que las facturas (REQ-5.6), snapshot de quote_items.tax_breakdown. --}}
+                @foreach($quote->items->pluck('tax_breakdown')->filter()->flatten(1)->groupBy('key') as $key => $lines)
+                    <tr>
+                        <td class="info-label" style="padding: 5px 0;">{{ $lines->first()['label'] }}:</td>
+                        <td class="text-right bold" style="font-size: 14px;">{{ $currency }}{{ number_format($lines->sum('amount'), 2) }}</td>
+                    </tr>
+                @endforeach
                 <tr class="grand-total">
                     <td class="bold">TOTAL:</td>
-                    <td class="text-right bold">{{ $currency }}{{ number_format($quote->total, 2) }}</td>
+                    <td class="text-right bold">{{ $currency }}{{ number_format($quote->grand_total, 2) }}</td>
                 </tr>
             </table>
         </div>

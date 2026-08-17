@@ -58,7 +58,10 @@
 
             <div class="bg-gray-50 rounded-lg p-3 mb-6 flex justify-between items-center border border-gray-100">
                 <span class="text-xs font-medium text-gray-600">Total a Facturar:</span>
-                <span class="text-lg font-black text-indigo-700">{{ number_format($quote->total, 2) }}</span>
+                {{-- grand_total (neto + impuesto) — no total (sin impuesto), para que lo
+                     que se confirma acá coincida con lo que termina facturado (Fase 5,
+                     REQ-5.12). --}}
+                <span class="text-lg font-black text-indigo-700">{{ number_format($quote->grand_total, 2) }}</span>
             </div>
 
             <div class="space-y-4">
@@ -67,7 +70,11 @@
                     <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Condición de Venta</label>
                     <select name="payment_type" x-model="paymentType" class="w-full text-sm border-gray-300 rounded-md shadow-sm focus:ring-indigo-500">
                         <option value="cash">Contado</option>
-                        <option value="credit">Crédito (CxC)</option>
+                        {{-- Consumidor Final nunca es creditable (REQ-2.3) — no tiene
+                             identidad real a quien cobrarle después. --}}
+                        @if($quote->customer_id != 1)
+                            <option value="credit">Crédito (CxC)</option>
+                        @endif
                     </select>
                 </div>
 

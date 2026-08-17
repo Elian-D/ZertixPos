@@ -57,7 +57,7 @@
                 <x-sidebar.dropdown id="clientes" icon="heroicon-s-user-group" :activeRoutes="['app/clients*']">
                     CRM
                     <x-slot name="submenu">
-                        <x-sidebar.subitem href="{{ route('clients.index') }}">Lista de Clientes</x-sidebar.subitem>
+                        <x-sidebar.subitem href="{{ route('clients.index') }}">Clientes</x-sidebar.subitem>
                         @can('view quotes')
                             @if(module_enabled('sales.quotes'))
                                 <x-sidebar.subitem href="{{ route('sales.quotes.index') }}">Cotizaciones</x-sidebar.subitem>
@@ -113,7 +113,6 @@
                         Inventario
                         <x-slot name="submenu">
                             @can('view products')
-                                <div class="px-3 py-1 text-[10px] font-bold text-gray-500 uppercase tracking-wider">Productos</div>
                                 <x-sidebar.subitem href="{{ route('inventory.products.index') }}">Productos/Servicios</x-sidebar.subitem>
                                 <x-sidebar.subitem href="{{ route('inventory.products.categories.index') }}">Categorías</x-sidebar.subitem>
                                 <x-sidebar.subitem href="{{ route('inventory.products.units.index') }}">Unidades de Medida</x-sidebar.subitem>

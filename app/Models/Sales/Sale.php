@@ -32,6 +32,8 @@ class Sale extends Model
         'sale_date',
         'total_amount',
         'discount_total',
+        'net_amount',
+        'tax_amount',
         'payment_type',
         'tipo_pago_id',
         'cash_received',
@@ -147,6 +149,16 @@ class Sale extends Model
     }
 
     /**
+     * Total final cobrado (net_amount + tax_amount). No se persiste como columna
+     * aparte para no tener una cifra que se pueda desincronizar de las otras
+     * (Fase 5, REQ-5.2) — el día que exista Propina Legal, se suma acá también.
+     */
+    public function getGrandTotalAttribute(): float
+    {
+        return (float) $this->net_amount + (float) $this->tax_amount;
+    }
+
+    /**
      * Accesor para saber si la venta se originó en el POS
      */
     public function getIsPosSaleAttribute(): bool
@@ -187,9 +199,11 @@ class Sale extends Model
     }
 
     // Relaciones
+    // withTrashed() (REQ-2.5): una venta histórica debe seguir mostrando su método
+    // de pago aunque ese TipoPago se haya desactivado/borrado después.
     public function tipoPago(): BelongsTo
     {
-        return $this->belongsTo(TipoPago::class, 'tipo_pago_id');
+        return $this->belongsTo(TipoPago::class, 'tipo_pago_id')->withTrashed();
     } // NUEVA
 
     public function items(): HasMany

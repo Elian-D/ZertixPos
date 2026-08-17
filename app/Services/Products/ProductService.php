@@ -14,6 +14,11 @@ class ProductService
     public function createProduct(array $data, $image = null): Product
     {
         return DB::transaction(function () use ($data, $image) {
+            // No es columna de products — se extrae antes de Product::create() y se
+            // sincroniza aparte contra el pivote product_taxes (Fase 5, REQ-5.4).
+            $taxKeys = $data['tax_keys'] ?? [];
+            unset($data['tax_keys']);
+
             // Generar SKU si no viene
             if (empty($data['sku'])) {
                 $data['sku'] = $this->generateSku();
@@ -27,20 +32,54 @@ class ProductService
                 $data['image_path'] = $this->handleUpload($image, 'products');
             }
 
-            return Product::create($data);
+            $product = Product::create($data);
+
+            $this->syncTaxes($product, $taxKeys);
+
+            return $product;
         });
     }
 
     public function updateProduct(Product $product, array $data, $image = null): bool
     {
         return DB::transaction(function () use ($product, $data, $image) {
+            $taxKeys = $data['tax_keys'] ?? [];
+            unset($data['tax_keys']);
+
             // Si hay imagen nueva, el Trait borra la vieja automáticamente
             if ($image) {
                 $data['image_path'] = $this->handleUpload($image, 'products', $product->image_path);
             }
 
-            return $product->update($data);
+            $updated = $product->update($data);
+
+            $this->syncTaxes($product, $taxKeys);
+
+            return $updated;
         });
+    }
+
+    /**
+     * Reemplaza los impuestos asignados al producto por los recibidos — un arreglo
+     * vacío es válido (producto sin ningún impuesto asignado, ej. un servicio exento
+     * o un caso donde el negocio decide no cobrar nada) y deja el pivote sin filas
+     * para ese producto, no un impuesto "por defecto" forzado. `config('impuestos.default')`
+     * solo preselecciona el checkbox en la UI al crear, no se aplica aquí.
+     */
+    private function syncTaxes(Product $product, array $taxKeys): void
+    {
+        DB::table('product_taxes')->where('product_id', $product->id)->delete();
+
+        if (empty($taxKeys)) {
+            return;
+        }
+
+        DB::table('product_taxes')->insert(
+            collect($taxKeys)->unique()->map(fn ($key) => [
+                'product_id' => $product->id,
+                'tax_key' => $key,
+            ])->all()
+        );
     }
 
     /**

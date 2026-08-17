@@ -24,16 +24,21 @@ class QuoteService
         return DB::transaction(function () use ($data) {
             $subtotal = 0;
             $discountTotal = 0;
+            // Impuestos multi-tasa por línea (Fase 5, REQ-5.12) — mismo patrón que
+            // SaleService::create(): cada producto trae su(s) propia(s) tasa(s)
+            // (config('impuestos') + pivote product_taxes), no una tasa global.
+            $netAccum = 0;
+            $taxAccum = 0;
 
             // 1. Recálculo real del lado del servidor
             $itemsToSave = [];
             foreach ($data['items'] as $item) {
                 $product = Product::findOrFail($item['product_id']);
-                
+
                 // Usamos el precio del item (o el del producto si no viene)
                 $price = $item['price'] ?? $product->sale_price;
                 $qty = $item['quantity'];
-                
+
                 // Cálculo de descuentos
                 $itemDiscount = $item['discount_amount'] ?? 0;
                 $itemSubtotal = ($price * $qty) - $itemDiscount;
@@ -41,13 +46,26 @@ class QuoteService
                 $subtotal += ($price * $qty);
                 $discountTotal += $itemDiscount;
 
+                $breakdown = collect($product->taxes())->map(fn ($key) => [
+                    'key' => $key,
+                    'label' => config("impuestos.{$key}.label"),
+                    'rate' => config("impuestos.{$key}.rate"),
+                    'amount' => round($itemSubtotal * config("impuestos.{$key}.rate") / 100, 2),
+                ]);
+                $itemTax = $breakdown->sum('amount');
+
+                $netAccum += $itemSubtotal;
+                $taxAccum += $itemTax;
+
                 $itemsToSave[] = [
                     'product_id' => $product->id,
                     'quantity' => $qty,
                     'price' => $price,
                     'discount_amount' => $itemDiscount,
                     'discount_percentage' => ($itemDiscount > 0) ? ($itemDiscount / ($price * $qty)) * 100 : 0,
-                    'subtotal' => $itemSubtotal
+                    'subtotal' => $itemSubtotal,
+                    'tax_amount' => $itemTax,
+                    'tax_breakdown' => $breakdown,
                 ];
             }
 
@@ -62,6 +80,8 @@ class QuoteService
                 'subtotal'        => $subtotal,
                 'discount_total'  => $discountTotal,
                 'total'           => $subtotal - $discountTotal,
+                'net_amount'      => $netAccum,
+                'tax_amount'      => $taxAccum,
                 'expires_at'      => $data['expires_at'] ?? now()->addDays(15),
                 'notes'           => $data['notes'] ?? null,
             ]);
@@ -80,9 +100,11 @@ class QuoteService
         return DB::transaction(function () use ($quote, $data) {
             // 1. Limpieza de items previos (Snapshot)
             $quote->items()->delete();
-            
+
             $subtotal = 0;
             $discountTotal = 0;
+            $netAccum = 0;
+            $taxAccum = 0;
             $itemsToSave = [];
 
             // 2. Recálculo igual que en el store() por seguridad
@@ -91,9 +113,21 @@ class QuoteService
                 $price = $item['price'] ?? $product->sale_price;
                 $qty = (float)$item['quantity'];
                 $discount = (float)($item['discount_amount'] ?? 0);
+                $itemSubtotal = ($price * $qty) - $discount;
 
                 $subtotal += ($price * $qty);
                 $discountTotal += $discount;
+
+                $breakdown = collect($product->taxes())->map(fn ($key) => [
+                    'key' => $key,
+                    'label' => config("impuestos.{$key}.label"),
+                    'rate' => config("impuestos.{$key}.rate"),
+                    'amount' => round($itemSubtotal * config("impuestos.{$key}.rate") / 100, 2),
+                ]);
+                $itemTax = $breakdown->sum('amount');
+
+                $netAccum += $itemSubtotal;
+                $taxAccum += $itemTax;
 
                 $itemsToSave[] = [
                     'product_id' => $product->id,
@@ -101,7 +135,9 @@ class QuoteService
                     'price' => $price,
                     'discount_amount' => $discount,
                     'discount_percentage' => ($discount > 0) ? ($discount / ($price * $qty)) * 100 : 0,
-                    'subtotal' => ($price * $qty) - $discount
+                    'subtotal' => $itemSubtotal,
+                    'tax_amount' => $itemTax,
+                    'tax_breakdown' => $breakdown,
                 ];
             }
 
@@ -112,6 +148,8 @@ class QuoteService
                 'subtotal'       => $subtotal,
                 'discount_total' => $discountTotal,
                 'total'          => $subtotal - $discountTotal,
+                'net_amount'     => $netAccum,
+                'tax_amount'     => $taxAccum,
                 // Podrías actualizar expires_at si lo permites en el form
             ]);
 
@@ -167,7 +205,18 @@ class QuoteService
             $saleData = [
                 'client_id'      => $quote->customer_id,
                 'warehouse_id'   => $quote->terminal?->warehouse_id ?? $additionalData['warehouse_id'],
-                'total_amount'   => $quote->total,
+                // total_amount es el BRUTO (Σ price*qty, sin descuento ni impuesto) —
+                // mismo significado que valida StoreSaleRequest::withValidator() para
+                // ventas creadas por POS/backoffice ($subtotalBruto). Pasar grand_total
+                // acá corrompía ese campo SOLO para ventas nacidas de una cotización
+                // (SaleService::create() se llama directo, sin pasar por esa validación),
+                // dejando dos significados distintos de total_amount según el origen de
+                // la venta — rompía cualquier SUM(total_amount) en reportes/exports/
+                // dashboard (Fase 5, REQ-5.12, corrección post-revisión). `quote->subtotal`
+                // ya es exactamente ese bruto (ver store()/update() arriba). El impuesto
+                // real (`grand_total`) lo recalcula `SaleService::create()` por su cuenta
+                // desde los productos, no depende de este campo.
+                'total_amount'   => $quote->subtotal,
                 'discount_total' => $quote->discount_total, // <-- Traspaso de la verdad
                 'items'          => $saleItems,
                 'payment_type'   => $additionalData['payment_type'] ?? 'cash',

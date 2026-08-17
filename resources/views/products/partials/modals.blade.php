@@ -57,8 +57,11 @@
                                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
                                     <span class="text-[10px] text-gray-400 uppercase font-bold block">Precio Venta</span>
                                     <p class="text-lg font-bold text-gray-800">
-                                        {{ config('regional.currency_symbol') }} {{ number_format($item->price, 2) }}
+                                        {{ config('regional.currency_symbol') }} {{ number_format($item->price_with_tax, 2) }}
                                     </p>
+                                    @if($item->taxRate() > 0)
+                                        <span class="text-[10px] text-gray-400">Neto: {{ config('regional.currency_symbol') }} {{ number_format($item->price, 2) }}</span>
+                                    @endif
                                 </div>
                                 <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
                                     <span class="text-[10px] text-gray-400 uppercase font-bold block">Costo Base</span>

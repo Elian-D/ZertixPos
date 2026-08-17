@@ -107,4 +107,46 @@ return [
         'category' => 'base_flexible',
         'route_prefixes' => ['app/sales/quotes'],
     ],
+
+    // 'sales.propina_legal' => [
+    //     'label' => 'Propina Legal',
+    //     'description' => 'Cargo de servicio del 10% sobre la venta completa, para restaurantes y bares.',
+    //     'icon' => 'heroicon-s-receipt-percent',
+    //     // Ninguna de las dos categorías existentes calza del todo: no es 'satellite'
+    //     // (no debería depender de a qué Plan/tier está suscrito el negocio — un
+    //     // restaurante lo necesita sin importar el plan que pague) ni 'base_flexible'
+    //     // tal cual está definida hoy (esos nacen ENCENDIDOS por defecto en todo Plan;
+    //     // Propina Legal tiene que nacer APAGADA — la mayoría de instalaciones de
+    //     // ZertixPOS hoy no son restaurantes). Falta una tercera categoría real
+    //     // ('flexible_opt_in'?: apagado por defecto, togglable por el dueño, nunca
+    //     // gateado por Plan) — no crearla solo para este módulo hasta que haga falta
+    //     // un segundo caso igual; documentado acá para no reabrir esta discusión desde
+    //     // cero. Mientras tanto, activar a mano vía InstallationModule::updateOrCreate()
+    //     // (o el seeder que corresponda) es aceptable como solución temporal.
+    //     'category' => 'base_flexible', // ver nota de arriba — placeholder, no literal
+    //     'depends_on' => ['sales.core'],
+    //     'route_prefixes' => [], // no tiene pantalla propia — ver lógica abajo
+    // ],
+    //
+    // Diseño completo ya discutido (docs/features/v1.2.0.md Fase 5, REQ-5.7) — queda
+    // documentado acá, no implementado, hasta que un cliente de restaurante/bar
+    // realmente lo necesite (debería desarrollarse rápido con esto ya resuelto):
+    //
+    // 1. Deliberadamente FUERA del pivote product_taxes (config/impuestos.php) — no es
+    //    un impuesto DGII (no se remite al fisco, es para los empleados) y se aplica a
+    //    la venta completa, no producto por producto. Mezclarlo con ITBIS/ISC en el
+    //    mismo pivote contaminaría los reportes fiscales 606/607.
+    // 2. Con el módulo activo: el checkout POS ofrece un toggle "Aplicar Propina
+    //    Legal" por venta (no es automático ni obligatorio en cada venta).
+    // 3. La tasa (10%) vive en config('impuestos.propina_legal.rate') — el módulo
+    //    solo decide SI el toggle existe en el checkout, no la tasa en sí. Evita
+    //    tener la tasa flotando sin conectarse a ningún lado (gap detectado en la
+    //    revisión de la Fase 5: el texto original de REQ-5.7 no dejaba explícito que
+    //    el cálculo debe leer esa misma clave de config, no un 10% hardcodeado aparte).
+    // 4. Si el toggle se marca: `sales.service_charge_amount` = net_amount * tasa,
+    //    columna ya contemplada en la migración de REQ-5.2 (ver v1.2.0.md).
+    // 5. Va a su propio pasivo contable (`service_charge_payable`, ver nota sobre
+    //    roles contables en v1.2.0.md REQ-5.5) — no es ingreso del negocio.
+    // 6. Con el módulo apagado (default): el toggle no aparece, `service_charge_amount`
+    //    siempre es 0, sin excepción.
 ];

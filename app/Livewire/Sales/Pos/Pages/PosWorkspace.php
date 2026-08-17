@@ -11,6 +11,7 @@ use App\Models\Sales\Pos\PosSession;
 use App\Models\Sales\Pos\PosTerminal;
 use App\Models\Sales\Sale;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
 class PosWorkspace extends Component
@@ -49,15 +50,25 @@ class PosWorkspace extends Component
      */
     private function getProducts(): array
     {
-        return Product::query()
+        $products = Product::query()
             ->where('is_active', true)
             ->select('id', 'category_id', 'name', 'sku', 'price', 'image_path', 'is_stockable')
             ->with(['stocks' => function ($query) {
                 $query->where('warehouse_id', $this->terminal->warehouse_id)
                     ->select('id', 'product_id', 'warehouse_id', 'quantity', 'min_stock');
             }])
+            ->get();
+
+        // Precargado en una sola query (evita N+1 de Product::taxRate() por producto):
+        // suma de tasas apiladas por producto (Fase 5, REQ-5.1).
+        $taxRates = DB::table('product_taxes')
+            ->whereIn('product_id', $products->pluck('id'))
             ->get()
-            ->map(function ($product) {
+            ->groupBy('product_id')
+            ->map(fn ($rows) => $rows->sum(fn ($row) => config("impuestos.{$row->tax_key}.rate", 0)));
+
+        return $products
+            ->map(function ($product) use ($taxRates) {
                 $stock = $product->stocks->first();
 
                 return [
@@ -65,6 +76,9 @@ class PosWorkspace extends Component
                     'name' => $product->name,
                     'sku' => $product->sku,
                     'price' => (float) $product->price,
+                    // Suma de tasas apiladas — el carrito la snapshotea al agregar el
+                    // producto, igual que el precio.
+                    'tax_rate' => (float) ($taxRates->get($product->id) ?? 0),
                     'stock' => (float) ($stock?->quantity ?? 0),
                     'min_stock' => (float) ($stock?->min_stock ?? 0),
                     'is_stockable' => (bool) $product->is_stockable,
@@ -98,7 +112,6 @@ class PosWorkspace extends Component
 
     public function render()
     {
-        $config = general_config();
         $usaNcf = module_enabled('sales.ncf');
 
         // pull() en vez de get(): se consume una sola vez, así que si el Workspace
@@ -121,7 +134,6 @@ class PosWorkspace extends Component
             'tipoPagos' => TipoPago::sortByPriority(TipoPago::activo()->select('id', 'nombre', 'slug')->get()),
             'ncfTypes' => $usaNcf ? NcfType::where('is_active', true)->select('id', 'name', 'code', 'requires_rnc')->get() : collect(),
             'usaNcf' => $usaNcf,
-            'taxRate' => (float) ($config?->impuesto?->valor ?? 0),
             'posConfig' => pos_config(),
             'walkinClientId' => pos_config('default_walkin_customer_id') ?? 1,
 

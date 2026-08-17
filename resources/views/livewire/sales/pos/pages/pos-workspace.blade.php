@@ -6,7 +6,6 @@
         tipoPagos: @js($tipoPagos),
         ncfTypes: @js($ncfTypes),
         usaNcf: @js($usaNcf),
-        taxRate: @js($taxRate),
         maxItemDiscountPct: @js($maxItemDiscountPercentage),
         maxGlobalDiscountPct: @js($maxGlobalDiscountPercentage),
         allowItemDiscount: @js((bool) $allowItemDiscount),
@@ -178,6 +177,16 @@
                     this.clock = new Date().toTimeString().split(' ')[0];
                 },
 
+                // Precio con impuesto incluido — lo que el cajero debe cotizar/cobrar por
+                // unidad. Antes se mostraba `product.price`/`item.price` (siempre neto) en
+                // el catálogo y en el carrito, pero el total del carrito sí sumaba el
+                // impuesto — el cajero cotizaba un precio y el sistema cobraba otro más
+                // alto al confirmar. Solo cambia lo que se MUESTRA; `item.price` sigue
+                // siendo el neto real que se envía al backend (Fase 5, REQ-5.3).
+                grossPrice(entity) {
+                    return entity.price * (1 + ((entity.tax_rate || 0) / 100));
+                },
+
                 // --- 7.2 Product Engine ---
                 get filteredProducts() {
                     const term = this.search.trim().toLowerCase();
@@ -217,6 +226,10 @@
                             product_id: product.id,
                             name: product.name,
                             price: product.price,
+                            // Snapshot al agregar, igual que price — si se reasignan los
+                            // impuestos del producto a mitad de venta no debe afectar lo
+                            // que ya está en el carrito (Fase 5, REQ-5.3).
+                            tax_rate: product.tax_rate ?? 0,
                             stock: product.stock,
                             is_stockable: product.is_stockable,
                             quantity: 1,
@@ -298,7 +311,16 @@
 
                     const discountTotal = itemDiscounts + globalAmount;
                     const netSubtotal = bruto - discountTotal;
-                    const tax = this.usaNcf ? netSubtotal * (this.taxRate / 100) : 0;
+
+                    // Impuesto por línea (Fase 5, REQ-5.3) — cada producto trae su propia
+                    // tasa (posiblemente 0 si es Exento), ya no una tasa global atada a si
+                    // la venta lleva NCF. Se calcula sobre el neto YA con descuento
+                    // (por ítem + su parte del global) aplicado a esa línea.
+                    let tax = 0;
+                    this.items.forEach(item => {
+                        const lineNet = (item.price * item.quantity) - item.discount_amount;
+                        tax += lineNet * ((item.tax_rate || 0) / 100);
+                    });
 
                     this.totals = {
                         gross: bruto,
@@ -585,7 +607,10 @@
                 },
 
                 formatMoney(amount) {
-                    return '{{ config('regional.currency_symbol') }}' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2 }).format(amount || 0);
+                    // Sin maximumFractionDigits, Intl.NumberFormat usa su default (3) y
+                    // deja ver basura de punto flotante (ej. 149.40000000000003 → "149.400")
+                    // en vez de redondear a 2 como el resto del sistema (factura, backend).
+                    return '{{ config('regional.currency_symbol') }}' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount || 0);
                 },
             };
         }
