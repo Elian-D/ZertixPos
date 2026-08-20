@@ -253,4 +253,53 @@
             </div>
         </div>
     </div>
+
+    {{-- Bottom sheet: Menú (kebab del header) — Cobrar Deudas/Ver Caja/Bloquear hoy;
+         punto de entrada preparado para lo que se sume después (cargar/crear
+         cotizaciones, lector QR, etc.) sin volver a apretar botones sueltos en el
+         header. menuSheetOpen vive en el estado raíz (pos-workspace.blade.php),
+         porque el botón que lo abre está en el header compartido. --}}
+    <div class="fixed inset-0 z-[70]" x-show="menuSheetOpen" x-cloak
+         x-transition:enter="transition-opacity ease-out duration-300"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition-opacity ease-in duration-300"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0">
+        <div class="absolute inset-0 bg-black/40" @click="menuSheetOpen = false"></div>
+        <div class="absolute bottom-0 inset-x-0 bg-white rounded-t-2xl shadow-2xl flex flex-col transition-transform duration-300"
+             :class="menuSheetOpen ? 'translate-y-0' : 'translate-y-full'">
+            <div class="w-12 h-1.5 bg-gray-200 rounded-full mx-auto mt-3 mb-2"></div>
+            <div class="px-4 pb-3 flex items-center justify-between border-b border-gray-100">
+                <h3 class="font-bold text-gray-900">Más opciones</h3>
+                <button type="button" @click="menuSheetOpen = false" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100">
+                    <x-heroicon-s-x-mark class="w-4 h-4 text-gray-500" />
+                </button>
+            </div>
+            <div class="p-3 space-y-1 pb-6">
+                @if($canCollect)
+                    <button type="button"
+                            @click="menuSheetOpen = false; resetCollectPanel(); $dispatch('open-modal', 'pos-collect-modal')"
+                            class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-bold text-amber-700 bg-amber-50 hover:bg-amber-100">
+                        <x-heroicon-s-currency-dollar class="w-5 h-5" />
+                        <span>Cobrar Deudas</span>
+                    </button>
+                @endif
+
+                <a href="{{ route('sales.pos.sessions.show', $session) }}"
+                   class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50">
+                    <x-heroicon-s-banknotes class="w-5 h-5 text-gray-400" />
+                    <span>Ver Caja</span>
+                </a>
+
+                @if($terminal->requiresPinVerification())
+                    <a href="{{ route('sales.pos.lock', $terminal) }}"
+                       class="w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-sm font-bold text-gray-700 hover:bg-gray-50">
+                        <x-heroicon-s-lock-closed class="w-5 h-5 text-gray-400" />
+                        <span>Bloquear</span>
+                    </a>
+                @endif
+            </div>
+        </div>
+    </div>
 </div>

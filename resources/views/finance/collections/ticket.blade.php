@@ -3,9 +3,16 @@
     $payment_type = $payment->tipoPago;
     $receivable = $payment->receivable;
     // Accedemos a la venta a través de la relación polimórfica 'reference'
-    $sale = $receivable->reference; 
+    $sale = $receivable->reference;
     $client = $payment->client;
     $currency = config('regional.currency_symbol');
+
+    // Ancho dinámico (58mm/80mm) según la terminal de origen — mismo mecanismo que
+    // sales/invoices/formats/ticket.blade.php, ya no un 72mm hardcodeado (Fase 6, REQ-6.8).
+    $paperWidth = $paperWidth ?? '80mm';
+    $isNarrow = $paperWidth === '58mm';
+    $printSafetyMarginMm = 4;
+    $printableWidthMm = max(1, ((int) str_replace('mm', '', $paperWidth)) - ($printSafetyMarginMm * 2));
 @endphp
 
 <!DOCTYPE html>
@@ -14,17 +21,17 @@
     <meta charset="UTF-8">
     <style>
         @page { margin: 0; size: auto; }
-        * { 
-            font-family: 'Courier New', Courier, monospace; 
-            font-size: 12px; 
-            line-height: 1.2; 
+        * {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: {{ $isNarrow ? '11px' : '12px' }};
+            line-height: 1.2;
             color: #000000 !important;
             margin: 0; padding: 0;
             box-sizing: border-box;
             font-weight: bold;
             text-transform: uppercase;
         }
-        .ticket { width: 72mm; margin: 0 auto; padding: 10px 2px; }
+        .ticket { width: {{ $printableWidthMm }}mm; margin: 0 auto; padding: 10px {{ $isNarrow ? '1px' : '2px' }}; }
         .center { text-align: center; }
         .right { text-align: right; }
         .spacer { margin-top: 12px; }
@@ -80,7 +87,7 @@
                             {{ (int)$item->quantity }} x {{ substr($item->product->name, 0, 18) }}
                         </td>
                         <td class="right" valign="top" style="padding-top: 5px;">
-                            {{ number_format($item->subtotal + $item->tax, 2) }}
+                            {{ number_format($item->subtotal + $item->tax_amount, 2) }}
                         </td>
                     </tr>
                 @endforeach

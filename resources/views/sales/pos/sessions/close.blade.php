@@ -58,6 +58,16 @@
                                 <span class="font-mono font-bold">{{ config('regional.currency_symbol') }}{{ number_format($session->cash_sales, 2) }}</span>
                             </div>
 
+                            {{-- Fase 6, REQ-6.7: sin esta línea, "Esperado en Caja" incluía los
+                                 Cobros CxC en efectivo pero no lo explicaba — el cajero veía
+                                 Fondo + Ventas sin que sumara el total, como si hubiera un error. --}}
+                            @if($session->cash_collections > 0)
+                                <div class="flex justify-between text-sm font-medium text-green-600">
+                                    <span>(+) Cobros CxC en Efectivo:</span>
+                                    <span class="font-mono font-bold">{{ config('regional.currency_symbol') }}{{ number_format($session->cash_collections, 2) }}</span>
+                                </div>
+                            @endif
+
                             <div class="pt-3 border-t-2 border-dashed border-gray-300 flex justify-between items-center">
                                 <span class="text-sm font-black text-indigo-900 uppercase tracking-wide">Esperado en Caja:</span>
                                 <span class="font-mono text-2xl font-black text-indigo-600" x-text="'{{ config('regional.currency_symbol') }}' + expected.toLocaleString('en-US', {minimumFractionDigits: 2})"></span>
