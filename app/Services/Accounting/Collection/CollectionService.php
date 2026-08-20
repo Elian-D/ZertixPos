@@ -46,6 +46,10 @@ class CollectionService
                 'note' => $data['note'] ?? null,
                 'created_by' => Auth::id(),
                 'status' => ClientCollection::STATUS_ACTIVE,
+                // Trazabilidad de sesión/terminal (Fase 6, REQ-6.6) — null si el Cobro
+                // se originó desde backoffice (no viene en $data en ese caso).
+                'pos_session_id' => $data['pos_session_id'] ?? null,
+                'pos_terminal_id' => $data['pos_terminal_id'] ?? null,
             ]);
 
             $docType->increment('current_number');
@@ -92,6 +96,27 @@ class CollectionService
         return DB::transaction(function () use ($payment) {
             if ($payment->status === ClientCollection::STATUS_CANCELLED) {
                 throw new \Exception('El cobro ya se encuentra anulado.');
+            }
+
+            // Guard: un cobro de backoffice nace ya contado — se genera su asiento
+            // contable en la misma transacción de creación (createCollection()), sin
+            // ningún turno/sesión que siga abierto después. A diferencia del POS, nunca
+            // existe una ventana de corrección en caliente para este origen.
+            // El destino real de esta corrección es el flujo de Devolución (todavía no
+            // construido, ver roadmap) — el mensaje lo referencia como lo que se viene,
+            // sin fingir que ya está disponible: mientras tanto, el paso real es
+            // contabilidad. El frontend (REQ-6.12) ya evita que se llegue hasta acá en
+            // el uso normal; esta excepción es el respaldo para un POST directo, así que
+            // debe seguir siendo honesta por sí sola.
+            if (is_null($payment->pos_session_id)) {
+                throw new \Exception('Este cobro se registró desde backoffice y ya quedó contabilizado — no se puede anular. Este caso se resolverá con el flujo de Devolución.');
+            }
+
+            // Guard: un cobro cobrado en una sesión de caja ya cerrada ya quedó contado
+            // en un arqueo impreso — revertirlo lo desactualizaría en silencio. Cancelar
+            // solo es válido como corrección en caliente dentro del mismo turno abierto.
+            if ($payment->posSession && $payment->posSession->isClosed()) {
+                throw new \Exception('Este cobro pertenece a una sesión de caja ya cerrada y quedó contado en su arqueo — no se puede anular. Este caso se resolverá con el flujo de Devolución.');
             }
 
             // 1. Reversar el saldo en la factura

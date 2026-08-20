@@ -68,12 +68,16 @@ class PosSessionService
         // para el porqué de sumar por sale_payments.tipo_pago_id en vez de payment_type.
         $cashSales = $session->cash_sales;
 
+        // 1b. Cobros de CxC en efectivo de esta sesión (Fase 6, REQ-6.6/6.7) — mismo
+        // criterio que $cashSales: dinero físico real entrando a la gaveta.
+        $cashCollections = $session->cash_collections;
+
         // 2. Movimientos manuales (Entradas y Salidas de efectivo)
         $inflows = $session->cashMovements()->in()->sum('amount');
         $outflows = $session->cashMovements()->out()->sum('amount');
 
-        // Formula: Inicial + Ventas Efectivo + Entradas Manuales - Salidas Manuales
-        return (float) ($opening + $cashSales + $inflows) - $outflows;
+        // Formula: Inicial + Ventas Efectivo + Cobros CxC Efectivo + Entradas Manuales - Salidas Manuales
+        return (float) ($opening + $cashSales + $cashCollections + $inflows) - $outflows;
     }
 
     /**

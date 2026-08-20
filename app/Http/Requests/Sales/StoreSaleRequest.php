@@ -3,7 +3,6 @@
 namespace App\Http\Requests\Sales;
 
 use App\Models\Clients\Client;
-use App\Models\Configuration\TipoPago;
 use App\Models\Inventory\InventoryStock;
 use App\Models\Products\Product;
 use App\Models\Sales\Ncf\NcfType;
@@ -121,29 +120,12 @@ class StoreSaleRequest extends FormRequest
                 $validator->errors()->add('tipo_pago_id', 'Debe seleccionar un método de pago para ventas al contado.');
             }
 
-            // --- REFERENCIA OBLIGATORIA PARA MÉTODOS NO-EFECTIVO ---
-            // Tarjeta, transferencia, depósito o cheque dejan rastro bancario/electrónico real;
-            // sin una referencia mínima (últimos dígitos, # de autorización, # de cheque) el
-            // arqueo de caja y la conciliación contable no tienen forma de rastrear el cobro.
-            // Efectivo no la necesita: el dinero físico entra a la gaveta sin más evidencia.
-            // Con pago dividido, la referencia se exige por línea, no una sola vez.
+            // Referencia (últimos dígitos, # de autorización, # de cheque) es SIEMPRE
+            // opcional, nunca bloquea el envío (Fase 6, REQ-6.9) — Efectivo no la
+            // necesita, Tarjeta ya viene verificada por el datáfono antes de llegar
+            // acá, y el resto (transferencia/depósito/cheque) se gestiona por fuera
+            // del sistema; no es algo que deba forzarse bajo presión de caja.
             $payments = $this->input('payments', []);
-
-            if ($this->payment_type === Sale::PAYMENT_CASH && empty($payments) && $this->tipo_pago_id) {
-                $tipoPago = TipoPago::find($this->tipo_pago_id);
-                if ($tipoPago && $tipoPago->slug !== TipoPago::EFECTIVO && empty($this->payment_reference)) {
-                    $validator->errors()->add('payment_reference', "Debes ingresar una referencia para el pago con {$tipoPago->nombre}.");
-                }
-            }
-
-            if ($this->payment_type === Sale::PAYMENT_CASH && ! empty($payments)) {
-                foreach ($payments as $index => $p) {
-                    $tipoPago = TipoPago::find($p['tipo_pago_id'] ?? null);
-                    if ($tipoPago && $tipoPago->slug !== TipoPago::EFECTIVO && empty($p['reference'] ?? null)) {
-                        $validator->errors()->add("payments.{$index}.reference", "Debes ingresar una referencia para el pago con {$tipoPago->nombre}.");
-                    }
-                }
-            }
 
             // --- CÁLCULO DE TOTALES, IMPUESTOS Y VALIDACIÓN DE STOCK ---
             $subtotalBruto = 0;

@@ -485,15 +485,14 @@ class SaleService
             }
 
             // Regla de Negocio Crítica: Si la factura fue a crédito, no se puede anular si el cliente ya
-            // realizó abonos parciales o totales a esa cuenta por cobrar (integridad de caja).
+            // realizó abonos parciales o totales a esa cuenta por cobrar (integridad de caja). El guard
+            // real vive en ReceivableService::cancelReceivable() (Fase 6, REQ-6.11) — evitamos
+            // duplicar la misma regla de negocio con un criterio más débil acá.
             $receivables = Receivable::where('reference_type', Sale::class)
                 ->where('reference_id', $sale->id)
                 ->get();
 
             foreach ($receivables as $receivable) {
-                if ($receivable->current_balance < $receivable->total_amount || $receivable->status === Receivable::STATUS_PAID) {
-                    throw new Exception('No se puede anular: Una de las cuentas por cobrar vinculadas ya tiene abonos.');
-                }
                 $this->receivableService->cancelReceivable($receivable);
             }
 

@@ -3,6 +3,7 @@
 use App\Http\Controllers\Clients\PosQuickCustomerController;
 use App\Http\Controllers\Sales\Ncf\RncLookupController;
 use App\Http\Controllers\Sales\Pos\PosCheckoutController;
+use App\Http\Controllers\Sales\Pos\PosCollectionController;
 use App\Http\Controllers\Sales\Pos\PosConfigController;
 use App\Http\Controllers\Sales\Pos\PosSessionController;
 use App\Http\Controllers\Sales\Pos\PosTerminalController;
@@ -200,6 +201,12 @@ Route::prefix('sales')->as('sales.')->group(function () {
         // 7.4 — Checkout Engine: registra la venta originada en el Workspace
         Route::post('/workspace/{pos_terminal}/checkout', [PosCheckoutController::class, 'store'])
             ->name('checkout.store')
+            ->middleware(['auth', 'verified', 'permission:pos sessions manage', 'check.terminal.access']);
+
+        // Fase 6 (REQ-6.6) — Cobro de CxC registrado desde el Workspace, sin salir
+        // al backoffice. Mismo middleware stack que el checkout de venta.
+        Route::post('/workspace/{pos_terminal}/collect', [PosCollectionController::class, 'store'])
+            ->name('collect.store')
             ->middleware(['auth', 'verified', 'permission:pos sessions manage', 'check.terminal.access']);
     });
 
