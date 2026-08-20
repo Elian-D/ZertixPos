@@ -223,6 +223,10 @@ class QuoteService
                 'tipo_pago_id'   => $additionalData['tipo_pago_id'] ?? null,
                 'ncf_type_id'    => $additionalData['ncf_type_id'] ?? null,
                 'sale_date'      => now(),
+                // SaleService::processPayments() (camino de pago único, sin payments[])
+                // lee 'payment_reference' — mismo nombre de campo, para que la
+                // referencia llegue hasta el SalePayment real (Fase 6, REQ-6.9).
+                'payment_reference' => $additionalData['reference'] ?? null,
             ];
 
             // 5. Ejecutar Venta (SaleService ejecutará sus propias validaciones de Phase 5)

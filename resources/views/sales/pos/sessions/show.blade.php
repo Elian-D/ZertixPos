@@ -147,6 +147,18 @@
                                 <span class="text-xs font-mono font-bold">{{ config('regional.currency_symbol') }}{{ number_format($posSession->cash_sales ?? 0, 2) }}</span>
                             </div>
 
+                            {{-- Fase 6, REQ-6.7: sin esta línea, "Monto Esperado" incluía los
+                                 Cobros CxC en efectivo en el cálculo pero no lo explicaba en el
+                                 desglose — Fondo + Ventas no sumaba el total mostrado, y parecía
+                                 un error. Solo se muestra si hubo cobros, para no ensuciar el
+                                 desglose de una terminal que nunca cobra CxC. --}}
+                            @if(($posSession->cash_collections ?? 0) > 0)
+                                <div class="flex justify-between p-3 bg-green-50/50 rounded-xl border border-green-100 text-green-700">
+                                    <span class="text-xs font-medium">(+) Cobros CxC en Efectivo</span>
+                                    <span class="text-xs font-mono font-bold">{{ config('regional.currency_symbol') }}{{ number_format($posSession->cash_collections, 2) }}</span>
+                                </div>
+                            @endif
+
                             @php
                                 // Si está cerrada, usamos la verdad grabada. Si está abierta, calculamos.
                                 $displayExpected = $posSession->isOpen()

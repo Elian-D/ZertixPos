@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Accounting\Collection\StoreCollectionRequest;
 use App\Models\Accounting\ClientCollection;
 use App\Services\Accounting\Collection\CollectionCatalogService;
+use App\Services\Accounting\Collection\CollectionPrintService;
 use App\Services\Accounting\Collection\CollectionService;
 use App\Tables\AccountingTables\CollectionTable;
 use App\Traits\SoftDeletesTrait;
@@ -20,7 +21,8 @@ class CollectionController extends Controller
 
     public function __construct(
         protected CollectionService $service,
-        protected CollectionCatalogService $catalogService
+        protected CollectionCatalogService $catalogService,
+        protected CollectionPrintService $printService
     ) {}
 
     public function index(Request $request)
@@ -58,19 +60,31 @@ class CollectionController extends Controller
         ));
     }
 
-    public function print(ClientCollection $payment)
+    /**
+     * Formato de impresión del recibo — ticket térmico (default, ancho dinámico
+     * según la terminal de origen) o carta/PDF, mismo patrón que InvoiceController
+     * (Fase 6, REQ-6.8).
+     */
+    public function print(ClientCollection $payment, Request $request)
     {
         try {
-            // Importante: Cargamos 'receivable.reference' porque es polimórfica
-            // y cargamos los items y productos de esa referencia
-            $payment->load([
-                'client',
-                'creator',
-                'tipoPago',
-                'receivable.reference.items.product',
-            ]);
+            $format = $request->query('format', 'ticket');
 
-            return view('finance.collections.print', compact('payment'));
+            if ($format === 'letter') {
+                if ($request->boolean('download')) {
+                    $pdf = $this->printService->generateLetterPDF($payment);
+
+                    return $pdf->download($this->printService->getFileName($payment));
+                }
+
+                $payment->load(['client', 'creator', 'tipoPago', 'receivable']);
+
+                return view('finance.collections.pdf', compact('payment'));
+            }
+
+            $view = $this->printService->getTicketView($payment)->render();
+
+            return view('finance.collections.print', compact('payment', 'view'));
         } catch (\Exception $e) {
             return back()->with('error', 'No se pudo cargar el formato: '.$e->getMessage());
         }

@@ -89,12 +89,15 @@
             </div>
         </template>
 
-        {{-- Referencia obligatoria para métodos no-efectivo (tarjeta, transferencia,
-             depósito, cheque): sin ella no hay forma de rastrear el cobro en el arqueo. --}}
-        <template x-if="formData.payment_type === 'cash' && !splitPayment && !isCashMethod">
+        {{-- Referencia opcional para métodos no-efectivo/no-tarjeta (transferencia,
+             depósito, cheque): Efectivo no deja rastro que pedir, y Tarjeta ya viene
+             verificada por el datáfono — pedir referencia ahí no aporta nada. Nunca
+             bloquea el envío (Fase 6, REQ-6.9 — antes era obligatoria para todo
+             no-efectivo, sin distinguir tarjeta). --}}
+        <template x-if="formData.payment_type === 'cash' && !splitPayment && !isCashMethod && !isCardMethod">
             <div class="mb-3">
                 <label class="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1.5">
-                    Referencia <span class="text-red-500">*</span>
+                    Referencia (opcional)
                 </label>
                 <input type="text" x-model="paymentReference"
                        placeholder="Últimos 4 dígitos, # de autorización, # de cheque…"
@@ -142,9 +145,9 @@
                                 <x-heroicon-s-x-mark class="w-4 h-4" />
                             </button>
                         </div>
-                        <template x-if="!paymentLineIsCash(payment)">
+                        <template x-if="!paymentLineIsCash(payment) && !paymentLineIsCard(payment)">
                             <input type="text" x-model="payment.reference"
-                                   placeholder="Referencia (últimos dígitos, # autorización…)"
+                                   placeholder="Referencia (opcional)"
                                    class="w-full border-gray-200 rounded-lg text-xs text-gray-900 placeholder-gray-400 focus:ring-[#58c03f] focus:border-[#58c03f]">
                         </template>
                     </div>

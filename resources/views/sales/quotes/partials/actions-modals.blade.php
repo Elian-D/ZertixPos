@@ -44,7 +44,17 @@
 
     {{-- MODAL: CONVERTIR A VENTA --}}
     <x-modal name="confirm-convert-quote-{{ $quote->id }}" maxWidth="md">
-        <form action="{{ route('sales.quotes.convert', $quote) }}" method="POST" class="p-6 text-left" x-data="{ paymentType: 'cash' }">
+        <form action="{{ route('sales.quotes.convert', $quote) }}" method="POST" class="p-6 text-left"
+              x-data="{
+                  paymentType: 'cash',
+                  selectedTipoPagoId: {{ optional($tipo_pagos->first())->id ?? 'null' }},
+                  tipoPagos: @js($tipo_pagos),
+                  // Fase 6, REQ-6.9: Efectivo/Tarjeta no necesitan referencia.
+                  get isCashOrCardMethod() {
+                      const tp = this.tipoPagos.find(t => t.id == this.selectedTipoPagoId);
+                      return tp ? ['efectivo', 'tarjeta'].includes(tp.slug) : false;
+                  },
+              }">
             @csrf
             <div class="flex items-center gap-3 mb-4">
                 <div class="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center">
@@ -81,11 +91,20 @@
                 {{-- Método de Pago --}}
                 <div x-show="paymentType === 'cash'">
                     <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Método de Pago</label>
-                    <select name="tipo_pago_id" class="w-full text-sm border-gray-300 rounded-md shadow-sm">
+                    <select name="tipo_pago_id" x-model="selectedTipoPagoId" class="w-full text-sm border-gray-300 rounded-md shadow-sm">
                         @foreach($tipo_pagos as $pago)
                             <option value="{{ $pago['id'] }}">{{ $pago['nombre'] }}</option>
                         @endforeach
                     </select>
+                </div>
+
+                {{-- Referencia: oculta para Efectivo/Tarjeta, opcional en el resto — nunca
+                     bloquea el envío (Fase 6, REQ-6.9). --}}
+                <div x-show="paymentType === 'cash' && !isCashOrCardMethod" x-cloak>
+                    <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Referencia (Opcional)</label>
+                    <input type="text" name="reference"
+                           placeholder="Últimos 4 dígitos, # de autorización, # de cheque…"
+                           class="w-full text-sm border-gray-300 rounded-md shadow-sm placeholder-gray-400">
                 </div>
 
                 {{-- Comprobante Fiscal --}}

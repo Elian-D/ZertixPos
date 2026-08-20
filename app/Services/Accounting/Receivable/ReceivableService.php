@@ -45,7 +45,17 @@ class ReceivableService
     }
 
     /**
-     * Anula una cuenta por cobrar (Solo si no tiene abonos)
+     * Anula una cuenta por cobrar (solo si nunca tuvo abonos).
+     *
+     * Guard endurecido (Fase 6, REQ-6.11): antes comparaba `current_balance <
+     * total_amount` — un saldo mutable, no un hecho histórico. Con dos abonos de
+     * 500 sobre una CxC de 1000, cancelar el abono #1 dejaba `current_balance =
+     * 500` (bloqueaba bien), pero cancelar también el #2 devolvía el saldo a 1000
+     * y este guard dejaba de bloquear, aunque sí hubo dinero real en caja en
+     * algún momento — cancelando los abonos uno por uno (permiso `cancel
+     * payments`) se llegaba al mismo resultado que este guard existe para
+     * impedir (permiso separado `cancel receivables`). `collections()->exists()`
+     * mira el hecho (¿alguna vez hubo un cobro, activo o cancelado?), no el saldo.
      */
     public function cancelReceivable(Receivable $receivable): bool
     {
@@ -54,8 +64,8 @@ class ReceivableService
                 return true;
             }
 
-            if ($receivable->current_balance < $receivable->total_amount) {
-                throw new Exception('No se puede anular una factura con abonos.');
+            if ($receivable->collections()->exists()) {
+                throw new Exception('Esta cuenta ya tuvo abonos aplicados y ya quedó contabilizada — no se puede anular. Este caso se resolverá con el flujo de Devolución.');
             }
 
             return $receivable->update([

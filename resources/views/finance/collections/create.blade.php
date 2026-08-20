@@ -3,10 +3,12 @@
          x-data="{ 
             clients: {{ $clients->toJson() }},
             allReceivables: {{ $pendingReceivables->toJson() }},
+            tipoPagos: {{ $paymentMethods->toJson() }},
             selectedClientId: '{{ old('client_id', '') }}',
             selectedReceivableId: '{{ old('receivable_id', '') }}',
+            selectedTipoPagoId: '{{ old('tipo_pago_id', '') }}',
             paymentAmount: {{ old('amount', 0) }},
-            
+
             get filteredReceivables() {
                 if (!this.selectedClientId) return [];
                 return this.allReceivables.filter(r => r.client_id == this.selectedClientId);
@@ -14,6 +16,14 @@
 
             get selectedReceivable() {
                 return this.allReceivables.find(r => r.id == this.selectedReceivableId);
+            },
+
+            // Fase 6, REQ-6.9: Efectivo no deja rastro que pedir y Tarjeta ya viene
+            // verificada por el datáfono — la Referencia solo aporta algo para
+            // transferencia/depósito/cheque, y ahí es opcional, nunca bloqueante.
+            get isCashOrCardMethod() {
+                const tp = this.tipoPagos.find(t => t.id == this.selectedTipoPagoId);
+                return tp ? ['efectivo', 'tarjeta'].includes(tp.slug) : false;
             },
 
             {{-- Lógica corregida: Solo error si supera el saldo o es cero/negativo --}}
@@ -105,7 +115,7 @@
                             <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div>
                                     <x-input-label value="Método" />
-                                    <select name="tipo_pago_id" class="w-full mt-1 border-gray-200 rounded-xl text-sm shadow-sm" required>
+                                    <select name="tipo_pago_id" x-model="selectedTipoPagoId" class="w-full mt-1 border-gray-200 rounded-xl text-sm shadow-sm" required>
                                         <option value="">Seleccione...</option>
                                         @foreach($paymentMethods as $method)
                                             <option value="{{ $method->id }}">{{ $method->nombre }}</option>
@@ -120,10 +130,12 @@
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                            <div class="md:col-span-1">
+                            {{-- Oculta para Efectivo/Tarjeta — no hay nada que referenciar
+                                 (Fase 6, REQ-6.9). --}}
+                            <div class="md:col-span-1" x-show="!isCashOrCardMethod" x-cloak>
                                 <x-input-label for="reference" value="Referencia Bancaria / Cheque" />
-                                <x-text-input id="reference" name="reference" type="text" 
-                                    class="w-full mt-1 rounded-xl bg-gray-50" 
+                                <x-text-input id="reference" name="reference" type="text"
+                                    class="w-full mt-1 rounded-xl bg-gray-50"
                                     placeholder="Opcional (Ej: Trans-9928)" />
                                 <x-input-error :messages="$errors->get('reference')" class="mt-2" />
                             </div>

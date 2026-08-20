@@ -4,6 +4,8 @@ namespace App\Models\Accounting;
 
 use App\Models\Clients\Client;
 use App\Models\Configuration\TipoPago;
+use App\Models\Sales\Pos\PosSession;
+use App\Models\Sales\Pos\PosTerminal;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -29,7 +31,11 @@ class ClientCollection extends Model
         'reference',
         'note',
         'created_by',
-        'status'
+        'status',
+        // Trazabilidad de sesión/terminal (Fase 6, REQ-6.6) — null si el Cobro se
+        // originó desde backoffice, igual criterio que Sale::pos_session_id/pos_terminal_id.
+        'pos_session_id',
+        'pos_terminal_id',
     ];
 
     protected $casts = [
@@ -87,6 +93,16 @@ class ClientCollection extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function posSession(): BelongsTo
+    {
+        return $this->belongsTo(PosSession::class, 'pos_session_id');
+    }
+
+    public function posTerminal(): BelongsTo
+    {
+        return $this->belongsTo(PosTerminal::class, 'pos_terminal_id');
     }
 
     /* ===========================

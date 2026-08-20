@@ -85,8 +85,14 @@
     </div>
 
     <div class="print-container">
-        {{-- Incluimos el formato de ticket detallado que creamos anteriormente --}}
-        @include('finance.collections.ticket')
+        {{-- $view: ticket ya renderizado con el ancho dinámico real de la terminal de
+             origen (CollectionController::print(), Fase 6 REQ-6.8) — mismo patrón que
+             sales/invoices/print.blade.php. Fallback al include directo por compatibilidad. --}}
+        @if($view ?? null)
+            {!! $view !!}
+        @else
+            @include('finance.collections.ticket')
+        @endif
     </div>
 
     <script>

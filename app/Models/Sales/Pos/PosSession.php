@@ -2,6 +2,7 @@
 
 namespace App\Models\Sales\Pos;
 
+use App\Models\Accounting\ClientCollection;
 use App\Models\Configuration\TipoPago;
 use App\Models\Sales\Sale;
 use App\Models\Sales\SalePayment;
@@ -167,8 +168,10 @@ class PosSession extends Model
 
     public function getExpectedCashAttribute(): float
     {
-        // Fondo Inicial + Ventas en Efectivo + Entradas Manuales - Salidas Manuales
-        return ($this->opening_balance + $this->cash_sales + $this->cash_movements_in_total) - $this->cash_movements_out_total;
+        // Fondo Inicial + Ventas en Efectivo + Cobros CxC en Efectivo + Entradas
+        // Manuales - Salidas Manuales (Fase 6, REQ-6.7 — un Cobro en efectivo es
+        // dinero físico entrando a la gaveta, igual que una venta de contado).
+        return ($this->opening_balance + $this->cash_sales + $this->cash_collections + $this->cash_movements_in_total) - $this->cash_movements_out_total;
     }
 
     /**
@@ -191,6 +194,22 @@ class PosSession extends Model
                 $query->where('pos_session_id', $this->id)
                     ->where('status', Sale::STATUS_COMPLETED);
             })
+            ->whereHas('tipoPago', function ($query) {
+                $query->where('slug', TipoPago::EFECTIVO);
+            })
+            ->sum('amount');
+    }
+
+    /**
+     * Total en efectivo físico cobrado de CxC en esta sesión (Fase 6, REQ-6.6/6.7).
+     * Mismo criterio que getCashSalesAttribute(): sin esto, un Cobro en efectivo
+     * entra a la gaveta pero nunca cuenta en el "esperado" del cierre, dejando un
+     * sobrante fantasma igual al monto cobrado.
+     */
+    public function getCashCollectionsAttribute(): float
+    {
+        return (float) ClientCollection::where('pos_session_id', $this->id)
+            ->where('status', ClientCollection::STATUS_ACTIVE)
             ->whereHas('tipoPago', function ($query) {
                 $query->where('slug', TipoPago::EFECTIVO);
             })

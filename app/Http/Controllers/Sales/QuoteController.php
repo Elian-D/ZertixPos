@@ -204,6 +204,9 @@ class QuoteController extends Controller
             'tipo_pago_id' => 'required_if:payment_type,cash|exists:tipo_pagos,id',
             'ncf_type_id' => 'nullable|exists:ncf_types,id',
             'warehouse_id' => 'required|exists:warehouses,id',
+            // Siempre opcional, nunca bloquea la conversión (Fase 6, REQ-6.9) — mismo
+            // criterio que el resto del sistema: Efectivo/Tarjeta no la necesitan.
+            'reference' => 'nullable|string|max:100',
         ];
 
         $validated = $request->validate($rules);
