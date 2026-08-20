@@ -104,31 +104,36 @@
                 @endcanany
 
                 {{-- GRUPO 3: Inventario (REQ-3.2) — Productos/Categorías/Unidades anidado --}}
-                @if (module_enabled('inventory.tracking'))
                     <x-sidebar.dropdown
                         id="inventario"
                         icon="heroicon-s-cube"
                         :activeRoutes="['app/inventory*']"
                     >
-                        Inventario
+                        @if (module_enabled('inventory.tracking'))
+                            Inventario
+                        @else
+                            Productos/Servicios
+                        @endif
                         <x-slot name="submenu">
                             @can('view products')
                                 <x-sidebar.subitem href="{{ route('inventory.products.index') }}">Productos/Servicios</x-sidebar.subitem>
                                 <x-sidebar.subitem href="{{ route('inventory.products.categories.index') }}">Categorías</x-sidebar.subitem>
                                 <x-sidebar.subitem href="{{ route('inventory.products.units.index') }}">Unidades de Medida</x-sidebar.subitem>
                             @endcan
+                            @if (module_enabled('inventory.tracking'))
                             @can('inventory stocks index')
-                                <x-sidebar.subitem href="{{ route('inventory.stocks.index') }}">Stock Actual</x-sidebar.subitem>
-                            @endcan
-                            @can('view inventory movements')
-                                <x-sidebar.subitem href="{{ route('inventory.movements.index') }}">Movimientos</x-sidebar.subitem>
-                            @endcan
-                            @can('configure warehouses')
-                                <x-sidebar.subitem href="{{ route('inventory.warehouses.index') }}">Almacenes</x-sidebar.subitem>
-                            @endcan
+                                    <x-sidebar.subitem href="{{ route('inventory.stocks.index') }}">Stock Actual</x-sidebar.subitem>
+                                @endcan
+                                @can('view inventory movements')
+                                    <x-sidebar.subitem href="{{ route('inventory.movements.index') }}">Movimientos</x-sidebar.subitem>
+                                @endcan
+                                @can('configure warehouses')
+                                    <x-sidebar.subitem href="{{ route('inventory.warehouses.index') }}">Almacenes</x-sidebar.subitem>
+                                @endcan
+                            @endif
+
                         </x-slot>
                     </x-sidebar.dropdown>
-                @endif
 
                 {{-- GRUPO 4: Finanzas (REQ-3.2, rename de "Contabilidad") — absorbe Facturas y NCF --}}
                 @can('view accounting dashboard')
