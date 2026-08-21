@@ -15,10 +15,15 @@
                 </div>
 
                 {{-- Estado Dinámico desde el Modelo --}}
-                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1 ring-inset shadow-sm {{ \App\Models\Accounting\Receivable::getStatusStyles()[$item->status] }}">
-                    <span class="w-1.5 h-1.5 rounded-full mr-2 bg-current animate-pulse"></span>
+                <x-ui.badge :variant="match($item->status) {
+                    \App\Models\Accounting\Receivable::STATUS_UNPAID => 'error',
+                    \App\Models\Accounting\Receivable::STATUS_PARTIAL => 'warning',
+                    \App\Models\Accounting\Receivable::STATUS_PAID => 'success',
+                    \App\Models\Accounting\Receivable::STATUS_CANCELLED => 'slate',
+                    default => 'info',
+                }">
                     {{ strtoupper($item->status_label) }}
-                </span>
+                </x-ui.badge>
             </div>
 
             <div class="p-8">
@@ -55,7 +60,7 @@
                                 <div class="flex items-center gap-2">
                                     <p class="text-sm font-semibold text-gray-700">{{ $item->due_date->format('d/m/Y') }}</p>
                                     @if($item->is_overdue)
-                                        <span class="px-2 py-0.5 bg-red-600 text-[9px] text-white font-black uppercase rounded tracking-tighter">Vencido</span>
+                                        <x-ui.badge variant="error" size="sm" :dot="false">Vencido</x-ui.badge>
                                     @endif
                                 </div>
                             </div>
@@ -134,7 +139,7 @@
             </div>
 
             <div class="px-8 py-5 bg-gray-50 border-t flex justify-end gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">Cerrar</x-secondary-button>
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cerrar</x-ui.button>
             </div>
         </div>
     </x-modal>

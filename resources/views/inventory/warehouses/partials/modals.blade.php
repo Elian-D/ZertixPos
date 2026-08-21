@@ -59,8 +59,8 @@
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-                <x-primary-button class="bg-green-600">Guardar Almacén</x-primary-button>
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+                <x-ui.button type="submit" variant="primary">Guardar Almacén</x-ui.button>
             </div>
         </form>
     </x-modal>
@@ -80,10 +80,9 @@
             </div>
 
             {{-- Badge de Estado --}}
-            <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1 ring-inset shadow-sm {{ $item->is_active ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20' : 'bg-red-50 text-red-700 ring-red-600/20' }}">
-                <span class="w-1.5 h-1.5 rounded-full mr-2 bg-current {{ $item->is_active ? 'animate-pulse' : '' }}"></span>
+            <x-ui.badge :variant="$item->is_active ? 'success' : 'error'">
                 {{ $item->is_active ? 'OPERATIVO' : 'INACTIVO' }}
-            </span>
+            </x-ui.badge>
         </div>
 
         <div class="p-8">
@@ -191,7 +190,7 @@
 
         {{-- Acciones del Modal --}}
         <div class="px-8 py-5 bg-gray-50 border-t flex justify-end gap-3">
-            <x-secondary-button x-on:click="$dispatch('close')">Cerrar</x-secondary-button>
+            <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cerrar</x-ui.button>
             <button @click="$dispatch('close'); $dispatch('open-modal', 'edit-warehouse-{{ $item->id }}')" 
                     class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition shadow-sm">
                 <x-heroicon-s-pencil class="w-3 h-3 mr-2"/> Modificar Datos
@@ -254,8 +253,8 @@
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-                <x-primary-button class="bg-green-600">Actualizar Almacén</x-primary-button>
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+                <x-ui.button type="submit" variant="primary">Actualizar Almacén</x-ui.button>
             </div>
         </form>
     </x-modal>

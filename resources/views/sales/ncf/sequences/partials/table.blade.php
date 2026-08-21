@@ -97,10 +97,14 @@
             {{-- Estado de la Secuencia (Lote) --}}
             @if(in_array('status', $visibleColumns))
                 <td class="px-6 py-4 text-center">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ring-1 ring-inset shadow-sm {{ $sequence->status_styles }}">
-                        <span class="w-1 h-1 rounded-full mr-1.5 bg-current"></span>
+                    <x-ui.badge :variant="match($sequence->calculated_status) {
+                            \App\Models\Sales\Ncf\NcfSequence::STATUS_ACTIVE => 'success',
+                            \App\Models\Sales\Ncf\NcfSequence::STATUS_EXHAUSTED => 'warning',
+                            \App\Models\Sales\Ncf\NcfSequence::STATUS_EXPIRED => 'error',
+                            default => 'slate',
+                        }" size="sm" class="shadow-sm">
                         {{ $sequence->status_label }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 
@@ -148,8 +152,8 @@
                                     Esta acción no se puede deshacer. Se eliminará la secuencia <strong>{{ $sequence->series }}{{ $sequence->type->code }}</strong> desde el {{ $sequence->from }} hasta el {{ $sequence->to }}.
                                 </p>
                                 <div class="mt-6 flex justify-end">
-                                    <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-                                    <x-danger-button class="ml-3">Eliminar Lote</x-danger-button>
+                                    <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+                                    <x-ui.button type="submit" variant="error" class="ml-3">Eliminar Lote</x-ui.button>
                                 </div>
                             </form>
                         </x-modal>

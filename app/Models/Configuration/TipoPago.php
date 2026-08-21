@@ -68,45 +68,45 @@ class TipoPago extends Model
     }
 
     /**
-     * Diseño de badge por método de pago — mismo patrón que
-     * Sale::getPaymentTypeStyles()/getPaymentTypeIcons() para Contado/Crédito,
-     * pero para el método real (Efectivo/Tarjeta/Transferencia/etc.). Claves por
-     * slug, igual que PRIORITY_ORDER. Incluye MIXTO y CREDITO aunque no sean
-     * filas reales de TipoPago, porque sí aparecen como "método" en las vistas
-     * (venta con pago dividido, venta a crédito) — ver
-     * resources/views/sales/partials/table.blade.php.
+     * Colores hex para <x-ui.badge :hex="...">, un color por método de pago —
+     * los 7 métodos no entran en las 6 variantes semánticas del badge
+     * (success/warning/error/info/slate/primary) sin perder la distinción visual
+     * entre métodos, así que usan `hex` en vez de `variant`. Claves por slug,
+     * igual que PRIORITY_ORDER. Incluye MIXTO y CREDITO aunque no sean filas
+     * reales de TipoPago, porque sí aparecen como "método" en las vistas (venta
+     * con pago dividido, venta a crédito) — ver
+     * resources/views/sales/partials/table.blade.php. Tomado del tono "600" de
+     * cada familia de color de Tailwind.
      */
-    public static function getBadgeStyles(): array
+    public static function getBadgeHexColors(): array
     {
         return [
-            self::EFECTIVO               => 'bg-blue-100 text-blue-700 border-blue-200 ring-blue-500/10',
-            'tarjeta-de-creditodebito'    => 'bg-purple-100 text-purple-700 border-purple-200 ring-purple-500/10',
-            'transferencia-bancaria'      => 'bg-cyan-100 text-cyan-700 border-cyan-200 ring-cyan-500/10',
-            'deposito-bancario'           => 'bg-teal-100 text-teal-700 border-teal-200 ring-teal-500/10',
-            self::CHEQUE                  => 'bg-slate-100 text-slate-700 border-slate-200 ring-slate-500/10',
-            self::CREDITO                 => 'bg-amber-100 text-amber-700 border-amber-200 ring-amber-500/10',
-            self::MIXTO                   => 'bg-fuchsia-100 text-fuchsia-700 border-fuchsia-200 ring-fuchsia-500/10',
+            self::EFECTIVO       => '#2563EB', // blue-600
+            'tarjeta'            => '#9333EA', // purple-600 — slug real de TipoPagoSeeder (Str::slug('Tarjeta')), ver REQ-2.5 más abajo
+            'transferencia'      => '#0891B2', // cyan-600 — slug real (Str::slug('Transferencia'))
+            'deposito'           => '#0D9488', // teal-600 — slug real (Str::slug('Depósito'))
+            self::CHEQUE          => '#475569', // slate-600
+            self::CREDITO         => '#D97706', // amber-600
+            self::MIXTO           => '#C026D3', // fuchsia-600
         ];
+    }
+
+    public static function getDefaultBadgeHex(): string
+    {
+        return '#6B7280'; // gray-500
     }
 
     public static function getBadgeIcons(): array
     {
         return [
-            self::EFECTIVO               => 'heroicon-s-banknotes',
-            'tarjeta-de-creditodebito'    => 'heroicon-s-credit-card',
-            'transferencia-bancaria'      => 'heroicon-s-arrows-right-left',
-            'deposito-bancario'           => 'heroicon-s-building-library',
-            self::CHEQUE                  => 'heroicon-s-document-text',
-            self::CREDITO                 => 'heroicon-s-clock',
-            self::MIXTO                   => 'heroicon-s-squares-2x2',
+            self::EFECTIVO       => 'heroicon-s-banknotes',
+            'tarjeta'            => 'heroicon-s-credit-card',
+            'transferencia'      => 'heroicon-s-arrows-right-left',
+            'deposito'           => 'heroicon-s-building-library',
+            self::CHEQUE          => 'heroicon-s-document-text',
+            self::CREDITO         => 'heroicon-s-clock',
+            self::MIXTO           => 'heroicon-s-squares-2x2',
         ];
-    }
-
-    // Fallback para slugs no listados arriba (métodos nuevos que un admin cree
-    // desde Configuración) — gris neutro en vez de romper la vista.
-    public static function getDefaultBadgeStyle(): string
-    {
-        return 'bg-gray-100 text-gray-500 border-gray-200 ring-gray-500/10';
     }
 
     public static function getDefaultBadgeIcon(): string

@@ -240,12 +240,14 @@
 
             {{-- Botones --}}
             <div class="mt-6 flex justify-end gap-3">
-                <x-secondary-button 
+                <x-ui.button
+                    appearance="ghost"
+                    variant="secondary"
                     type="button"
-                    @click="$dispatch('close')" 
+                    @click="$dispatch('close')"
                     x-bind:disabled="loading">
                     Cancelar
-                </x-secondary-button>
+                </x-ui.button>
                 
                 <button
                     type="submit"

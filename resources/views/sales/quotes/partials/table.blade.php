@@ -51,12 +51,19 @@
             @if(in_array('status', $visibleColumns))
                 <td class="px-6 py-4 text-center">
                     @php
-                        $sStyles = \App\Models\Sales\Quotes\Quote::getStatusStyles();
                         $sLabels = \App\Models\Sales\Quotes\Quote::getStatuses();
+                        $sVariant = match($quote->status) {
+                            \App\Models\Sales\Quotes\Quote::STATUS_DRAFT => 'slate',
+                            \App\Models\Sales\Quotes\Quote::STATUS_APPROVED => 'info',
+                            \App\Models\Sales\Quotes\Quote::STATUS_CONVERTED => 'success',
+                            \App\Models\Sales\Quotes\Quote::STATUS_EXPIRED => 'warning',
+                            \App\Models\Sales\Quotes\Quote::STATUS_CANCELLED => 'error',
+                            default => 'slate',
+                        };
                     @endphp
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm border {{ $sStyles[$quote->status] ?? 'bg-gray-100 text-gray-700' }}">
+                    <x-ui.badge :variant="$sVariant" size="sm" :dot="false">
                         {{ $sLabels[$quote->status] ?? $quote->status }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 

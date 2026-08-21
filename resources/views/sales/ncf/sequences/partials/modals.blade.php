@@ -101,8 +101,8 @@
         </div>
 
         <div class="mt-6 flex justify-end gap-3">
-            <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-            <x-primary-button class="bg-indigo-600">Guardar Secuencia</x-primary-button>
+            <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+            <x-ui.button type="submit" variant="primary">Guardar Secuencia</x-ui.button>
         </div>
     </form>
 </x-modal>
@@ -147,10 +147,10 @@
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-                <x-primary-button class="bg-green-600 hover:bg-green-700">
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+                <x-ui.button type="submit" variant="primary">
                     Confirmar Ampliación
-                </x-primary-button>
+                </x-ui.button>
             </div>
         </form>
     </x-modal>
@@ -167,9 +167,14 @@
                     </p>
                 </div>
                 <div class="text-right">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ring-1 ring-inset {{ $item->status_styles }}">
+                    <x-ui.badge :variant="match($item->calculated_status) {
+                            \App\Models\Sales\Ncf\NcfSequence::STATUS_ACTIVE => 'success',
+                            \App\Models\Sales\Ncf\NcfSequence::STATUS_EXHAUSTED => 'warning',
+                            \App\Models\Sales\Ncf\NcfSequence::STATUS_EXPIRED => 'error',
+                            default => 'slate',
+                        }" size="sm" :dot="false">
                         {{ $item->status_label }}
-                    </span>
+                    </x-ui.badge>
                 </div>
             </div>
         </div>
@@ -225,17 +230,17 @@
                                 value="{{ $item->alert_threshold }}" 
                                 class="block w-full text-xs" />
                         </div>
-                        <x-primary-button class="py-2 px-3 text-[10px]">
+                        <x-ui.button type="submit" variant="primary" class="py-2 px-3 text-[10px]">
                             Actualizar
-                        </x-primary-button>
+                        </x-ui.button>
                     </div>
                 </form>
             </div>
 
             <div class="mt-8 flex justify-end">
-                <x-secondary-button x-on:click="$dispatch('close')" class="w-full sm:w-auto">
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')" class="w-full sm:w-auto">
                     Cerrar Detalle
-                </x-secondary-button>
+                </x-ui.button>
             </div>
         </div>
     </div>

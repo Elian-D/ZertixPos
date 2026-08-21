@@ -108,12 +108,14 @@
         </div>
 
         <div class="mt-8 flex justify-end gap-3">
-            <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-            <x-primary-button 
+            <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+            <x-ui.button
+                type="submit"
+                variant="primary"
                 ::class="isOut ? 'bg-amber-600 hover:bg-amber-700' : 'bg-green-600 hover:bg-green-700'"
                 class="transition-colors duration-200">
                 <span x-text="isOut ? 'Registrar Salida' : 'Registrar Entrada'"></span>
-            </x-primary-button>
+            </x-ui.button>
         </div>
     </form>
 </x-modal>

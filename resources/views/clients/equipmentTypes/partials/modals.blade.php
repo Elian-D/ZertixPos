@@ -26,8 +26,8 @@
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-                <x-primary-button class="bg-green-600">Guardar Tipo de Equipo</x-primary-button>
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+                <x-ui.button type="submit" variant="primary">Guardar Tipo de Equipo</x-ui.button>
             </div>
         </form>
     </x-modal>
@@ -59,8 +59,8 @@
                 </div>
             </div>
             <div class="mt-6 flex justify-end gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-                <x-primary-button class="bg-green-600">Actualizar Tipo de Equipo</x-primary-button>
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+                <x-ui.button type="submit" variant="primary">Actualizar Tipo de Equipo</x-ui.button>
             </div>
         </form>
     </x-modal>

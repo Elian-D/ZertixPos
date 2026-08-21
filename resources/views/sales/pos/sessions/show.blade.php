@@ -179,9 +179,9 @@
                                 <h4 class="text-4xl font-black text-gray-900 mb-4">{{ config('regional.currency_symbol') }}{{ number_format($posSession->closing_balance, 2) }}</h4>
                                 
                                 {{-- ¡USAMOS LA COLUMNA DIRECTA! --}}
-                                <div class="inline-flex items-center px-4 py-2 rounded-full text-xs font-black uppercase tracking-widest {{ $posSession->difference >= 0 ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                <x-ui.badge :variant="$posSession->difference >= 0 ? 'success' : 'error'" :dot="false" class="uppercase tracking-widest">
                                     {{ $posSession->difference == 0 ? 'Caja Cuadrada' : ($posSession->difference > 0 ? 'Sobrante' : 'Faltante') }} de {{ config('regional.currency_symbol') }}{{ number_format(abs($posSession->difference), 2) }}
-                                </div>
+                                </x-ui.badge>
                             @else
                                 <div class="text-center">
                                     <x-heroicon-o-lock-closed class="w-12 h-12 text-gray-300 mx-auto mb-4" />

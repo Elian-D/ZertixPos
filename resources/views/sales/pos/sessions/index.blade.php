@@ -38,11 +38,10 @@
                         <div class="flex flex-wrap gap-2">
                             {{-- Botón para abrir modal de apertura de caja --}}
                             @can('pos sessions manage')
-                                <button x-data="" x-on:click="$dispatch('open-modal', 'open-session-modal')"
-                                    class="inline-flex items-center px-4 py-2 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 transition">
-                                    <x-heroicon-s-lock-open class="w-4 h-4 mr-2" />
+                                <x-ui.button x-data="" x-on:click="$dispatch('open-modal', 'open-session-modal')"
+                                    variant="primary" iconLeft="heroicon-s-lock-open">
                                     Nuevo Turno (Apertura)
-                                </button>
+                                </x-ui.button>
                             @endcan
                         </div>
                     </x-slot>

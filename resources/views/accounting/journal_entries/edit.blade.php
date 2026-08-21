@@ -107,9 +107,9 @@
 
             <div class="p-6 bg-gray-50 flex justify-end gap-3 border-t">
                 <a href="{{ route('finance.journal_entries.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500">Cancelar</a>
-                <x-primary-button class="bg-indigo-600" ::disabled="!isBalanced || totalDebit <= 0 || hasDuplicates">
+                <x-ui.button type="submit" variant="primary" ::disabled="!isBalanced || totalDebit <= 0 || hasDuplicates">
                     Actualizar Asiento
-                </x-primary-button>
+                </x-ui.button>
             </div>
         </form>
     </div>

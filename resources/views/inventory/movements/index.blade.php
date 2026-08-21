@@ -15,11 +15,9 @@
                 <x-page-toolbar title="Kardex de Inventario">
                     <x-slot name="actions">
                         {{-- Botón para abrir el Modal de Ajuste Manual --}}
-                        <button @click="$dispatch('open-modal', 'create-adjustment')"
-                           class="inline-flex items-center px-4 py-2 bg-indigo-600 rounded-md text-xs font-semibold text-white uppercase hover:bg-indigo-700 transition">
-                            <x-heroicon-s-adjustments-vertical class="w-4 h-4 mr-2" />
+                        <x-ui.button variant="primary" iconLeft="heroicon-s-adjustments-vertical" x-data x-on:click="$dispatch('open-modal', 'create-adjustment')">
                             Ajuste de Stock
-                        </button>
+                        </x-ui.button>
 
                         <x-data-table.export-button :route="route('inventory.movements.export')" formId="movements-filters" />
                     </x-slot>

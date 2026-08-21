@@ -31,12 +31,16 @@
             @if(in_array('type', $visibleColumns))
                 <td class="px-6 py-4">
                     @php
-                        $pStyles = \App\Models\Sales\Sale::getPaymentTypeStyles();
                         $pLabels = \App\Models\Sales\Sale::getPaymentTypes();
+                        $pVariant = match($invoice->type) {
+                            \App\Models\Sales\Sale::PAYMENT_CASH => 'info',
+                            \App\Models\Sales\Sale::PAYMENT_CREDIT => 'warning',
+                            default => 'slate',
+                        };
                     @endphp
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight ring-1 ring-inset {{ $pStyles[$invoice->type] ?? 'bg-gray-100 text-gray-700' }}">
+                    <x-ui.badge :variant="$pVariant" size="sm" :dot="false">
                         {{ $pLabels[$invoice->type] ?? $invoice->type }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 
@@ -67,12 +71,16 @@
             @if(in_array('status', $visibleColumns))
                 <td class="px-6 py-4 text-center">
                     @php
-                        $sStyles = \App\Models\Sales\Invoice::getStatusStyles();
                         $sLabels = \App\Models\Sales\Invoice::getStatuses();
+                        $sVariant = match($invoice->status) {
+                            \App\Models\Sales\Invoice::STATUS_ACTIVE => 'success',
+                            \App\Models\Sales\Invoice::STATUS_CANCELLED => 'error',
+                            default => 'slate',
+                        };
                     @endphp
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm ring-1 ring-inset {{ $sStyles[$invoice->status] ?? 'bg-gray-100 text-gray-700' }}">
+                    <x-ui.badge :variant="$sVariant" size="sm" :dot="false">
                         {{ $sLabels[$invoice->status] ?? $invoice->status }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 

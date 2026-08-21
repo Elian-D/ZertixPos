@@ -39,12 +39,17 @@
             {{-- Tipo --}}
             @if(in_array('type', $visibleColumns))
                 <td class="px-6 py-4 text-sm text-gray-600">
-                    @php
-                        $currentStyle = \App\Models\Accounting\AccountingAccount::getTypeStyles()[$item->type] ?? 'bg-gray-100 text-gray-800 border-gray-200';
-                    @endphp
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border {{ $currentStyle }}">
+                    <x-ui.badge :variant="match($item->type) {
+                        \App\Models\Accounting\AccountingAccount::TYPE_ASSET => 'success',
+                        \App\Models\Accounting\AccountingAccount::TYPE_LIABILITY => 'error',
+                        \App\Models\Accounting\AccountingAccount::TYPE_EQUITY => 'info',
+                        \App\Models\Accounting\AccountingAccount::TYPE_REVENUE => 'info',
+                        \App\Models\Accounting\AccountingAccount::TYPE_COST => 'warning',
+                        \App\Models\Accounting\AccountingAccount::TYPE_EXPENSE => 'warning',
+                        default => 'slate',
+                    }" size="sm" :dot="false">
                         {{ \App\Models\Accounting\AccountingAccount::getTypes()[$item->type] ?? $item->type }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 
@@ -72,10 +77,9 @@
             {{-- Estado --}}
             @if(in_array('is_active', $visibleColumns))
                 <td class="px-6 py-4">
-                    <span class="px-2 py-1 text-[10px] uppercase rounded-full font-black
-                        {{ $item->is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700' }}">
+                    <x-ui.badge :variant="$item->is_active ? 'success' : 'error'" size="sm" :dot="false">
                         {{ $item->is_active ? 'Activo' : 'Inactivo' }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 

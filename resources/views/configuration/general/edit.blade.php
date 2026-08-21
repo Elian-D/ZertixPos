@@ -250,12 +250,12 @@
                         Descartar cambios
                     </button>
 
-                    <x-primary-button class="w-full sm:w-auto bg-zertix-primary hover:bg-zertix-primary-dark px-10 py-4 rounded-2xl shadow-lg shadow-zertix-primary/20 transition-all">
+                    <x-ui.button type="submit" variant="primary" :hoverEffect="true" class="w-full sm:w-auto px-10 py-4 rounded-2xl shadow-lg">
                         <span class="flex items-center gap-2">
                             <x-heroicon-s-cloud-arrow-up class="w-5 h-5" />
                             Guardar Configuración
                         </span>
-                    </x-primary-button>
+                    </x-ui.button>
                 </div>
             </form>
         </div>
@@ -272,12 +272,12 @@
                     </p>
                 </div>
                 <div class="mt-8 flex flex-col sm:flex-row justify-center gap-3">
-                    <x-secondary-button x-on:click="$dispatch('close')" class="w-full sm:w-auto justify-center py-3">
+                    <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')" class="w-full sm:w-auto justify-center py-3">
                         Continuar editando
-                    </x-secondary-button>
-                    <x-danger-button @click="window.location.reload()" class="w-full sm:w-auto justify-center py-3">
+                    </x-ui.button>
+                    <x-ui.button type="submit" variant="error" @click="window.location.reload()" class="w-full sm:w-auto justify-center py-3">
                         Sí, descartar todo
-                    </x-danger-button>
+                    </x-ui.button>
                 </div>
             </div>
         </x-modal>

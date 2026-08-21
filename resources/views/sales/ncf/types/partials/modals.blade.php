@@ -54,8 +54,8 @@
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-                <x-primary-button class="bg-indigo-600">Guardar Tipo</x-primary-button>
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+                <x-ui.button type="submit" variant="primary">Guardar Tipo</x-ui.button>
             </div>
         </form>
     </div>
@@ -136,10 +136,10 @@
                 </div>
 
                 <div class="mt-6 flex justify-end gap-3 pt-4 border-t border-gray-100">
-                    <x-secondary-button x-on:click="$dispatch('close')">Descartar</x-secondary-button>
-                    <x-primary-button class="bg-indigo-600 hover:bg-indigo-700 shadow-md">
+                    <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Descartar</x-ui.button>
+                    <x-ui.button type="submit" variant="primary" class="shadow-md">
                         Guardar Cambios
-                    </x-primary-button>
+                    </x-ui.button>
                 </div>
             </form>
         </div>

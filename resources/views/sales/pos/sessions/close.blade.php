@@ -169,11 +169,13 @@
                     </div>
 
                     <div class="mt-6 flex flex-col gap-3">
-                        <x-primary-button
+                        <x-ui.button
+                            type="submit"
+                            variant="primary"
                             class="w-full justify-center py-3 bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all disabled:opacity-50"
                             x-bind:disabled="!isReady">
                             Finalizar Turno y Registrar Arqueo
-                        </x-primary-button>
+                        </x-ui.button>
                         <a href="{{ route('sales.pos.sessions.index') }}"
                            class="w-full text-center py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-bold hover:bg-gray-50 transition">
                             Volver sin cerrar

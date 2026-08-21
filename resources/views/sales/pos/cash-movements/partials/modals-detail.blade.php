@@ -116,9 +116,9 @@
                     </div>
 
                     <div class="mt-6 flex justify-end">
-                        <x-secondary-button x-on:click="$dispatch('close')" class="w-full sm:w-auto justify-center">
+                        <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')" class="w-full sm:w-auto justify-center">
                             Cerrar Detalle
-                        </x-secondary-button>
+                        </x-ui.button>
                     </div>
                 </div>
             </div>

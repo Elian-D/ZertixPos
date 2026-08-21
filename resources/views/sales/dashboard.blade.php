@@ -12,11 +12,9 @@
                     </div>
                     
                     {{-- Botón Nueva Venta (siempre visible) --}}
-                    <a href="{{ route('sales.create') }}" 
-                    class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 active:translate-y-0 transition-all whitespace-nowrap">
-                        <x-heroicon-s-shopping-cart class="w-4 h-4"/>
-                        <span>Nueva Venta</span>
-                    </a>
+                    <x-ui.button href="{{ route('sales.create') }}" variant="primary" :hoverEffect="true" iconLeft="heroicon-s-shopping-cart" class="whitespace-nowrap">
+                        Nueva Venta
+                    </x-ui.button>
                 </div>
 
                 {{-- Fila 2: Filtros --}}
@@ -181,24 +179,22 @@
                             </td>
                             <td class="px-6 py-4">
                                 @if($sale->payment_type === 'credit')
-                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold bg-orange-50 text-orange-700 border border-orange-100">
-                                        <x-heroicon-s-clock class="w-3 h-3 mr-1"/>
+                                    <x-ui.badge variant="warning" icon="heroicon-s-clock" size="sm">
                                         CRÉDITO
-                                    </span>
+                                    </x-ui.badge>
                                 @else
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100">
-                                        <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                                    <x-ui.badge variant="success" size="sm">
                                         {{ $sale->tipoPago->nombre ?? 'Contado' }}
-                                    </span>
+                                    </x-ui.badge>
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-right font-bold text-gray-900">
                                 {{ config('regional.currency_symbol') }}{{ number_format($sale->grand_total, 2) }}
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold {{ $sale->status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                                <x-ui.badge :variant="$sale->status === 'completed' ? 'success' : 'error'" :dot="false" size="sm">
                                     {{ strtoupper($sale->status) }}
-                                </span>
+                                </x-ui.badge>
                             </td>
                         </tr>
                         @endforeach

@@ -161,7 +161,7 @@
 
             <div class="p-6 bg-gray-50 flex justify-end gap-3 border-t">
                 <a href="{{ route('clients.delivery_points.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition">Cancelar</a>
-                <x-primary-button class="bg-indigo-600 hover:bg-indigo-700 shadow-lg px-8">Actualizar Punto de Venta</x-primary-button>
+                <x-ui.button type="submit" variant="primary" class="shadow-lg px-8">Actualizar Punto de Venta</x-ui.button>
             </div>
         </form>
     </div>

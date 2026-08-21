@@ -73,14 +73,17 @@
             @if(in_array('type', $visibleColumns))
                 <td class="px-6 py-4 whitespace-nowrap">
                     @php
-                        $style = \App\Models\Sales\Pos\PosCashMovement::getTypeStyles()[$movement->type] ?? 'bg-gray-100 text-gray-800';
                         $icon = \App\Models\Sales\Pos\PosCashMovement::getTypeIcons()[$movement->type] ?? 'heroicon-s-minus';
                         $label = \App\Models\Sales\Pos\PosCashMovement::getTypes()[$movement->type] ?? $movement->type;
+                        $variant = match($movement->type) {
+                            \App\Models\Sales\Pos\PosCashMovement::TYPE_IN => 'success',
+                            \App\Models\Sales\Pos\PosCashMovement::TYPE_OUT => 'warning',
+                            default => 'slate',
+                        };
                     @endphp
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border {{ $style }}">
-                        <x-dynamic-component :component="$icon" class="w-3 h-3 mr-1" />
+                    <x-ui.badge :variant="$variant" :icon="$icon" size="sm">
                         {{ $label }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 

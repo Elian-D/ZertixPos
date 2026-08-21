@@ -84,10 +84,10 @@
         </div>
 
         <div class="mt-8 flex gap-3">
-            <x-secondary-button class="flex-1 justify-center" x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-            <x-primary-button type="submit" class="flex-1 justify-center bg-emerald-600 hover:bg-emerald-700">
+            <x-ui.button appearance="ghost" variant="secondary" class="flex-1 justify-center" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+            <x-ui.button type="submit" variant="primary" class="flex-1 justify-center">
                 Confirmar Venta
-            </x-primary-button>
+            </x-ui.button>
         </div>
     </form>
 </x-modal>

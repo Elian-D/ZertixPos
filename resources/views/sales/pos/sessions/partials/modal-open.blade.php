@@ -192,12 +192,14 @@
         </div>
 
         <div class="mt-6 flex justify-end gap-3 border-t pt-4">
-            <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-            <x-primary-button 
+            <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+            <x-ui.button
+                type="submit"
+                variant="primary"
                 class="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-30 transition-all"
                 x-bind:disabled="!isReady">
                 Confirmar Apertura
-            </x-primary-button>
+            </x-ui.button>
         </div>
     </form>
 </x-modal>

@@ -42,14 +42,13 @@
         </div>
 
         <div class="mt-8 flex justify-end items-center gap-3">
-            <x-secondary-button x-on:click="$dispatch('close')" class="border-none shadow-none hover:bg-gray-100 text-gray-500">
+            <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">
                 {{ __('Cancelar') }}
-            </x-secondary-button>
+            </x-ui.button>
 
-            <x-danger-button type="submit" class="px-5 shadow-lg shadow-red-100">
-                <x-heroicon-s-trash class="w-4 h-4 mr-2" />
+            <x-ui.button type="submit" variant="error" iconLeft="heroicon-s-trash" class="px-5 shadow-lg shadow-red-100">
                 {{ __('Confirmar') }}
-            </x-danger-button>
+            </x-ui.button>
         </div>
     </form>
 </x-modal>

@@ -7,6 +7,7 @@ export default {
         './vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php',
         './storage/framework/views/*.php',
         './resources/views/**/*.blade.php',
+        './app/View/Components/**/*.php',
     ],
 
     // ====================================================================
@@ -36,7 +37,14 @@ export default {
                     DEFAULT: '#7AC943', // verde de marca — CTAs, estados activos
                     dark: '#538331',    // hover/pressed — lo que en la guía de Stitch aparece como "Tertiary"
                 },
-                'zertix-secondary': '#1E4F8C', // navy del logo — usar como acento, no como color dominante
+                'zertix-secondary': {
+                    DEFAULT: '#1E4F8C', // navy del logo — usar como acento, no como color dominante
+                    dark: '#0B2E5B', // superficies grandes y oscuras (fondo de sidebar) — no botones
+                },
+                'state-success': '#10b981',
+                'state-warning': '#F59E0B',
+                'state-error': '#EF4444',
+                'state-info': '#3B82F6',
             },
             fontFamily: {
                 sans: ['Poppins', ...defaultTheme.fontFamily.sans],

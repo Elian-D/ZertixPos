@@ -9,27 +9,24 @@
                 <x-page-toolbar title="Configuración de Terminales POS">
                     <x-slot name="actions">
                         @can('view pos terminals')
-                            <a href="{{ route('sales.pos.terminals.eliminadas') }}"
-                               class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100">
-                                <x-heroicon-s-trash class="w-4 h-4 mr-2" />
+                            <x-ui.button href="{{ route('sales.pos.terminals.eliminadas') }}"
+                                appearance="ghost" variant="secondary" iconLeft="heroicon-s-trash">
                                 Papelera
-                            </a>
+                            </x-ui.button>
                         @endcan
 
-                        @can('pos config view')  
-                            <a href="{{ route('sales.pos.settings.edit') }}" 
-                            class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 ml-3">
-                                <x-heroicon-o-cog class="w-4 h-4 mr-2" />  <!-- o s-cog / o-cog-6-tooth -->
+                        @can('pos config view')
+                            <x-ui.button href="{{ route('sales.pos.settings.edit') }}"
+                                appearance="ghost" variant="secondary" iconLeft="heroicon-o-cog">
                                 Configuración Global
-                            </a>
+                            </x-ui.button>
                         @endcan
 
                         @can('create pos terminals')
-                            <a href="{{ route('sales.pos.terminals.create') }}"
-                               class="inline-flex items-center px-4 py-2 bg-green-600 rounded-md text-xs font-semibold text-white uppercase hover:bg-green-700 transition">
-                                <x-heroicon-s-plus class="w-4 h-4 mr-2" />
+                            <x-ui.button href="{{ route('sales.pos.terminals.create') }}"
+                                variant="primary" iconLeft="heroicon-s-plus">
                                 Nueva Terminal
-                            </a>
+                            </x-ui.button>
                         @endcan
                     </x-slot>
                 </x-page-toolbar>

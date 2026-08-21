@@ -6,11 +6,9 @@
         {{-- TOOLBAR --}}
         <x-page-toolbar title="Papelera de Cuentas" subtitle="Cuentas contables eliminadas recientemente">
             <x-slot name="actions">
-                <a href="{{ route('finance.accounts.index') }}" 
-                   class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
-                    <x-heroicon-s-arrow-left class="w-4 h-4 mr-2" />
+                <x-ui.button href="{{ route('finance.accounts.index') }}" appearance="ghost" variant="secondary" iconLeft="heroicon-s-arrow-left">
                     Volver al Catálogo
-                </a>
+                </x-ui.button>
             </x-slot>
         </x-page-toolbar>
 

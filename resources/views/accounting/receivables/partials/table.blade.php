@@ -79,12 +79,15 @@
             {{-- Estado (Sincronizado con Modelo) --}}
             @if(in_array('status', $visibleColumns))
                 <td class="px-6 py-4 text-center">
-                    @php
-                        $currentStyle = \App\Models\Accounting\Receivable::getStatusStyles()[$item->status] ?? 'bg-gray-100 text-gray-800';
-                    @endphp
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm ring-1 ring-inset {{ $currentStyle }}">
+                    <x-ui.badge :variant="match($item->status) {
+                        \App\Models\Accounting\Receivable::STATUS_UNPAID => 'error',
+                        \App\Models\Accounting\Receivable::STATUS_PARTIAL => 'warning',
+                        \App\Models\Accounting\Receivable::STATUS_PAID => 'success',
+                        \App\Models\Accounting\Receivable::STATUS_CANCELLED => 'slate',
+                        default => 'info',
+                    }" size="sm" :dot="false">
                         {{ $item->status_label }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 

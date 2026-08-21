@@ -122,17 +122,14 @@
                     <div class="flex justify-end space-x-4 pt-4 border-t border-gray-100">
                         
                         {{-- Botón Cancelar (Regresar a la lista) --}}
-                        <a href="{{ route('users.index') }}" 
-                           class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
+                        <x-ui.button href="{{ route('users.index') }}" appearance="ghost" variant="secondary">
                             Cancelar
-                        </a>
-                        
+                        </x-ui.button>
+
                         {{-- Botón de Guardar --}}
-                        <button type="submit"
-                                 class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
-                            <x-heroicon-s-user-plus class="w-5 h-5 mr-2 -ml-1" />
+                        <x-ui.button type="submit" variant="primary" iconLeft="heroicon-s-user-plus">
                             Guardar Usuario
-                        </button>
+                        </x-ui.button>
                     </div>
                 </form>
             </div>

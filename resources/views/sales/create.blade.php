@@ -378,15 +378,12 @@
 
             {{-- FOOTER --}}
             <div class="p-6 bg-gray-50/50 flex justify-end items-center border-t border-gray-100 gap-6">
-                <a href="{{ route('sales.index') }}" class="text-sm font-medium text-gray-400 hover:text-gray-600 transition-colors">Cancelar</a>
-                <div class="flex flex-col items-end gap-1">    
-                    <button type="submit"
-                        class="bg-indigo-600 text-white px-10 py-3 rounded-xl font-bold shadow-lg shadow-indigo-100 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:grayscale"
-                        :class="isSubmitDisabled ? '' : 'hover:bg-indigo-700 hover:-translate-y-0.5 active:scale-95'"
-                        :disabled="isSubmitDisabled">
-                        <x-heroicon-s-check-circle class="w-5 h-5"/>
+                <x-ui.button href="{{ route('sales.index') }}" appearance="ghost" variant="secondary">Cancelar</x-ui.button>
+                <div class="flex flex-col items-end gap-1">
+                    <x-ui.button type="submit" variant="primary" iconLeft="heroicon-s-check-circle"
+                        class="px-10 py-3" :hoverEffect="true" disabled-when="isSubmitDisabled">
                         Confirmar y Facturar
-                    </button>
+                    </x-ui.button>
                     <template x-if="isSubmitDisabled && selectedClient">
                         <span class="text-[10px] text-red-500 font-bold uppercase">Verifique el estado o límite del cliente</span>
                     </template>

@@ -66,9 +66,9 @@
 
             <div class="p-6 bg-gray-50 flex justify-end gap-3 border-t">
                 <a href="{{ route('configuration.document_types.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500">Volver</a>
-                <x-primary-button class="bg-indigo-600 px-8">
+                <x-ui.button type="submit" variant="primary" class="px-8">
                     Actualizar Cambios
-                </x-primary-button>
+                </x-ui.button>
             </div>
         </form>
     </div>

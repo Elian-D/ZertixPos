@@ -251,10 +251,10 @@
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
-                <a href="{{ route('inventory.products.index') }}" class="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition">Cancelar</a>
-                <button type="submit" class="bg-zertix-primary hover:bg-zertix-primary-dark text-white font-bold text-sm px-8 py-3 rounded-2xl shadow-lg shadow-zertix-primary/20 transition-colors">
+                <x-ui.button href="{{ route('inventory.products.index') }}" appearance="ghost" variant="secondary">Cancelar</x-ui.button>
+                <x-ui.button type="submit" variant="primary" class="rounded-2xl px-8 py-3">
                     Guardar Producto/Servicio
-                </button>
+                </x-ui.button>
             </div>
         </form>
     </div>

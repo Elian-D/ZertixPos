@@ -12,11 +12,9 @@
                 </div>
                 
                 {{-- Botón Registrar Entrada --}}
-                <button @click="$dispatch('open-modal', 'register-input')" 
-                        class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 active:translate-y-0 transition-all whitespace-nowrap">
-                    <x-heroicon-s-plus-circle class="w-4 h-4"/>
-                    <span>Registrar Entrada</span>
-                </button>
+                <x-ui.button x-on:click="$dispatch('open-modal', 'register-input')" variant="primary" :hoverEffect="true" iconLeft="heroicon-s-plus-circle" class="whitespace-nowrap">
+                    Registrar Entrada
+                </x-ui.button>
             </div>
 
             {{-- Fila 2: Filtros --}}
@@ -124,9 +122,9 @@
                             <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Flujo de Inventario</h3>
                             <p class="text-xs text-gray-500 mt-0.5">Entradas vs Salidas</p>
                         </div>
-                        <span class="px-2.5 py-1 bg-indigo-50 text-indigo-600 text-xs font-semibold rounded-full">
+                        <x-ui.badge variant="info" size="sm" :dot="false">
                             {{ ucfirst($filters['current_range']) }}
-                        </span>
+                        </x-ui.badge>
                     </div>
                     <div id="chart-movements" class="min-h-[350px] w-full"></div>
                 </div>
@@ -216,9 +214,9 @@
                                                 {{ $stock->product->name }}
                                             </p>
                                             @if($stock->quantity <= 0)
-                                                <span class="flex-shrink-0 inline-block px-1.5 py-0.5 text-[9px] font-black bg-red-600 text-white rounded animate-pulse">
+                                                <x-ui.badge variant="error" size="sm" :dot="false" class="flex-shrink-0">
                                                     AGOTADO
-                                                </span>
+                                                </x-ui.badge>
                                             @endif
                                         </div>
                                         <p class="text-[10px] text-gray-500">
@@ -235,11 +233,9 @@
                             @endforeach
                         </div>
 
-                        <button @click="$dispatch('open-modal', 'register-input')" 
-                                class="w-full flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 transition">
-                            <x-heroicon-s-plus-circle class="w-4 h-4"/>
+                        <x-ui.button x-on:click="$dispatch('open-modal', 'register-input')" variant="error" iconLeft="heroicon-s-plus-circle" size="sm" :fullWidth="true">
                             Reponer inventario ahora
-                        </button>
+                        </x-ui.button>
                     </div>
                 @endif
             </div>
@@ -253,9 +249,9 @@
                         <x-heroicon-s-exclamation-triangle class="w-5 h-5 text-red-600"/>
                         <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Productos Críticos en Stock</h3>
                     </div>
-                    <span class="px-2.5 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full">
+                    <x-ui.badge variant="error" size="sm" :dot="false">
                         {{ $stats['low_stock'] }} productos
-                    </span>
+                    </x-ui.badge>
                 </div>
                 <div class="p-6">
                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -267,9 +263,9 @@
                                             {{ $stock->product->name }}
                                         </p>
                                         @if($stock->quantity <= 0)
-                                            <span class="flex-shrink-0 px-1.5 py-0.5 text-[9px] font-black bg-red-600 text-white rounded animate-pulse">
+                                            <x-ui.badge variant="error" size="sm" :dot="false" class="flex-shrink-0">
                                                 AGOTADO
-                                            </span>
+                                            </x-ui.badge>
                                         @endif
                                     </div>
                                     <p class="text-xs text-gray-500 mt-0.5">
@@ -443,8 +439,8 @@
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-                <x-primary-button class="bg-indigo-600">Registrar Entrada</x-primary-button>
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+                <x-ui.button type="submit" variant="primary">Registrar Entrada</x-ui.button>
             </div>
         </form>
     </x-modal>
