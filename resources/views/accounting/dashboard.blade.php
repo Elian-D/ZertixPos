@@ -11,11 +11,9 @@
                     <p class="text-sm text-gray-500 mt-1">Monitoreo de salud financiera y rentabilidad</p>
                 </div>
                 
-                <a href="{{ route('finance.journal_entries.create') }}" 
-                   class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 active:translate-y-0 transition-all whitespace-nowrap">
-                    <x-heroicon-s-document-plus class="w-4 h-4"/>
-                    <span>Nuevo Asiento Manual</span>
-                </a>
+                <x-ui.button href="{{ route('finance.journal_entries.create') }}" variant="primary" :hoverEffect="true" iconLeft="heroicon-s-document-plus" class="whitespace-nowrap">
+                    Nuevo Asiento Manual
+                </x-ui.button>
             </div>
 
             {{-- Fila 2: Filtros --}}
@@ -140,10 +138,9 @@
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Flujo de Caja</h3>
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold {{ $stats['cash_flow'] >= 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700' }}">
-                        <span class="w-1.5 h-1.5 rounded-full {{ $stats['cash_flow'] >= 0 ? 'bg-green-500' : 'bg-red-500' }}"></span>
+                    <x-ui.badge :variant="$stats['cash_flow'] >= 0 ? 'success' : 'error'" size="sm">
                         {{ $stats['cash_flow'] >= 0 ? 'Positivo' : 'Negativo' }}
-                    </span>
+                    </x-ui.badge>
                 </div>
                 <div id="chart-cashflow" class="min-h-[300px] w-full"></div>
             </div>
@@ -159,7 +156,7 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                 <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Últimos Movimientos Contables</h3>
-                <span class="px-2.5 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-800 rounded-full">{{ $filters['current_range'] === 'custom' ? 'Personalizado' : 'Global' }}</span>
+                <x-ui.badge variant="info" size="sm" :dot="false">{{ $filters['current_range'] === 'custom' ? 'Personalizado' : 'Global' }}</x-ui.badge>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
@@ -192,9 +189,9 @@
                                 <span class="font-bold text-gray-900">{{ config('regional.currency_symbol') }}{{ number_format($entry->total_debit ?? 0, 2) }}</span>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold {{ $entry->status === 'posted' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
+                                <x-ui.badge :variant="$entry->status === 'posted' ? 'success' : 'warning'" size="sm" :dot="false">
                                     {{ strtoupper($entry->status) }}
-                                </span>
+                                </x-ui.badge>
                             </td>
                         </tr>
                         @endforeach

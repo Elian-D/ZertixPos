@@ -186,9 +186,9 @@
 
             <div class="p-6 bg-gray-50 flex justify-end gap-3 border-t">
                 <a href="{{ route('clients.index') }}" class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800">Cancelar</a>
-                <x-primary-button class="bg-indigo-600 hover:bg-indigo-700 shadow-lg px-8">
+                <x-ui.button type="submit" variant="primary" class="shadow-lg px-8">
                     Registrar Cliente
-                </x-primary-button>
+                </x-ui.button>
             </div>
         </form>
     </div>

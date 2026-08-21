@@ -4,7 +4,11 @@
     <div class="overflow-hidden rounded-xl bg-white shadow-2xl">
         {{-- Header dinámico --}}
         @php
-            $logStyle = \App\Models\Sales\Ncf\NcfLog::getStatusStyles()[$log->status] ?? 'bg-gray-100 text-gray-700';
+            $logVariant = match($log->status) {
+                \App\Models\Sales\Ncf\NcfLog::STATUS_USED => 'info',
+                \App\Models\Sales\Ncf\NcfLog::STATUS_VOIDED => 'slate',
+                default => 'slate',
+            };
             $logLabel = \App\Models\Sales\Ncf\NcfLog::getStatuses()[$log->status] ?? $log->status;
         @endphp
 
@@ -16,9 +20,9 @@
                 <h3 class="text-2xl font-mono font-black tracking-widest">{{ $log->full_ncf }}</h3>
             </div>
             <div class="text-right">
-                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1 ring-inset shadow-md {{ $logStyle }}">
+                <x-ui.badge :variant="$logVariant" :dot="false" class="shadow-md">
                     {{ strtoupper($logLabel) }}
-                </span>
+                </x-ui.badge>
             </div>
         </div>
 
@@ -107,7 +111,7 @@
         </div>
 
         <div class="px-8 py-4 bg-gray-50 border-t flex justify-end gap-3">
-            <x-secondary-button x-on:click="$dispatch('close')">Cerrar</x-secondary-button>
+            <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cerrar</x-ui.button>
             @if($log->sale_id)
                 <a href="{{ route('finance.invoices.print', $log->sale_id) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md text-[10px] font-black uppercase hover:bg-indigo-700 transition shadow-sm"  target="_blank>
                     <x-heroicon-s-eye class="w-3 h-3 mr-2"/> Ver Factura

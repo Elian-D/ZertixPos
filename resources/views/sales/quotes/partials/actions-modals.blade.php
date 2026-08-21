@@ -17,8 +17,8 @@
             </div>
             
             <div class="flex justify-center gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">Volver</x-secondary-button>
-                <x-danger-button type="submit">Confirmar Cancelación</x-danger-button>
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Volver</x-ui.button>
+                <x-ui.button type="submit" variant="error">Confirmar Cancelación</x-ui.button>
             </div>
         </form>
     </x-modal>
@@ -34,7 +34,7 @@
             <p class="text-xs text-gray-500 mb-6">El cliente podrá proceder con el pago tras la aprobación.</p>
             
             <div class="flex justify-center gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">Cerrar</x-secondary-button>
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cerrar</x-ui.button>
                 <button type="submit" class="px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700 transition shadow-lg shadow-emerald-100">
                     Aprobar Ahora
                 </button>
@@ -125,10 +125,10 @@
             </div>
 
             <div class="mt-8 flex gap-3">
-                <x-secondary-button class="flex-1 justify-center" x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-                <x-primary-button class="flex-1 justify-center bg-indigo-600 hover:bg-indigo-700">
+                <x-ui.button appearance="ghost" variant="secondary" class="flex-1 justify-center" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+                <x-ui.button type="submit" variant="primary" class="flex-1 justify-center">
                     Confirmar Venta
-                </x-primary-button>
+                </x-ui.button>
             </div>
         </form>
     </x-modal>

@@ -29,24 +29,19 @@
 
                 <div class="flex gap-2 self-start md:self-center">
                     {{-- PAPELERA --}}
-                    <a href="{{ route('configuration.pagos.eliminados') }}"
-                       class="inline-flex items-center px-4 py-2
-                              border border-gray-300 rounded-md
-                              text-sm font-medium text-gray-700
-                              bg-white hover:bg-gray-100
-                              focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
-                        <x-heroicon-s-trash class="w-5 h-5 mr-2" />
+                    <x-ui.button href="{{ route('configuration.pagos.eliminados') }}" appearance="ghost" variant="secondary" iconLeft="heroicon-s-trash">
                         Papelera
-                    </a>
+                    </x-ui.button>
 
                     {{-- BOTÓN NUEVO --}}
-                    <x-primary-button
-                        class="bg-green-600 hover:bg-green-700 self-start md:self-center"
+                    <x-ui.button
+                        variant="primary"
+                        iconLeft="heroicon-s-plus"
+                        class="self-start md:self-center"
                         x-data
                         x-on:click="$dispatch('open-modal', 'crear-pago')">
-                        <x-heroicon-s-plus class="w-5 h-5 mr-2" />
                         Nuevo Tipo Pago
-                    </x-primary-button>
+                    </x-ui.button>
                 </div>
             </div>
 
@@ -64,10 +59,9 @@
                                 @endif
                             </div>
 
-                            <span class="px-2 py-1 text-xs rounded-full font-bold whitespace-nowrap
-                                {{ $pago->estado ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                            <x-ui.badge :variant="$pago->estado ? 'success' : 'error'" size="sm" class="whitespace-nowrap">
                                 {{ $pago->estado ? 'Activo' : 'Inactivo' }}
-                            </span>
+                            </x-ui.badge>
                         </div>
 
                         <div class="flex items-center gap-2 pt-2 border-t border-gray-100">
@@ -163,14 +157,14 @@
             {{-- Botones --}}
             <div class="mt-6 flex justify-end">
                 {{-- Cancelar --}}
-                <x-secondary-button x-on:click="$dispatch('close')">
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">
                     {{ __('Cancelar') }}
-                </x-secondary-button>
+                </x-ui.button>
 
                 {{-- Guardar --}}
-                <x-primary-button class="ms-3 bg-green-600 hover:bg-green-700">
+                <x-ui.button type="submit" variant="primary" class="ms-3">
                     {{ __('Agregar') }}
-                </x-primary-button>
+                </x-ui.button>
             </div>
         </form>
     </x-modal>
@@ -237,13 +231,13 @@
 
             {{-- BOTONES --}}
             <div class="mt-6 flex justify-end gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">
                     Cancelar
-                </x-secondary-button>
+                </x-ui.button>
 
-                <x-primary-button class="bg-green-600 hover:bg-green-700 self-start md:self-center">
+                <x-ui.button type="submit" variant="primary" class="self-start md:self-center">
                     Guardar cambios
-                </x-primary-button>
+                </x-ui.button>
             </div>
         </form>
     </x-modal>
@@ -276,15 +270,14 @@
                 <div class="mt-6 flex justify-end">
 
                     {{-- Botón Cancelar --}}
-                    <x-secondary-button x-on:click="$dispatch('close')">
+                    <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">
                         {{ __('Cancelar') }}
-                    </x-secondary-button>
+                    </x-ui.button>
 
                     {{-- Botón Eliminar (Rojo) --}}
-                    <x-danger-button class="ms-3">
-                        <x-heroicon-s-trash class="w-4 h-4 mr-2" />
+                    <x-ui.button type="submit" variant="error" iconLeft="heroicon-s-trash" class="ms-3">
                         {{ __('Eliminar Tipo de pago') }}
-                    </x-danger-button>
+                    </x-ui.button>
                 </div>
             </form>
         </x-modal>

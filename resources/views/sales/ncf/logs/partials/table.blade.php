@@ -44,12 +44,15 @@
             @if(in_array('status', $visibleColumns))
                 <td class="px-6 py-4 text-center">
                     @php
-                        $statusStyles = \App\Models\Sales\Ncf\NcfLog::getStatusStyles();
+                        $statusVariants = [
+                            \App\Models\Sales\Ncf\NcfLog::STATUS_USED   => 'info',
+                            \App\Models\Sales\Ncf\NcfLog::STATUS_VOIDED => 'slate',
+                        ];
                         $statusLabels = \App\Models\Sales\Ncf\NcfLog::getStatuses();
                     @endphp
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border shadow-sm {{ $statusStyles[$log->status] ?? 'bg-gray-100' }}">
+                    <x-ui.badge :variant="$statusVariants[$log->status] ?? 'slate'" size="sm" :dot="false">
                         {{ strtoupper($statusLabels[$log->status] ?? $log->status) }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 

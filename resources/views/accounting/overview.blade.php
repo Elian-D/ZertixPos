@@ -130,9 +130,9 @@
                     </div>
                 </div>
                 <p class="mt-2 text-4xl font-bold text-gray-900 tabular-nums">{{ config('regional.currency_symbol') }}{{ number_format($stats['gross_profit'], 2) }}</p>
-                <span class="inline-flex items-center mt-1.5 px-1.5 py-0.5 rounded text-xs font-semibold {{ $stats['gross_profit'] >= 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700' }}">
+                <x-ui.badge :variant="$stats['gross_profit'] >= 0 ? 'success' : 'error'" size="sm" :dot="false" class="mt-1.5">
                     {{ number_format($stats['margin'], 1) }}% margen
-                </span>
+                </x-ui.badge>
             </div>
         </div>
 

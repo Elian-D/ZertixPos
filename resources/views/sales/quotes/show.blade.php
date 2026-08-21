@@ -12,21 +12,21 @@
                         <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">
                             Cotizacion <span class="text-amber-600">#{{ str_pad($quote->id, 8, '0', STR_PAD_LEFT) }}</span>
                         </h2>
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider
-                            @if($quote->status === 'draft') bg-gray-100 text-gray-700 ring-1 ring-gray-600/20
-                            @elseif($quote->status === 'approved') bg-emerald-100 text-emerald-700 ring-1 ring-emerald-600/20
-                            @elseif($quote->status === 'converted') bg-blue-100 text-blue-700 ring-1 ring-blue-600/20
-                            @elseif($quote->status === 'expired') bg-red-100 text-red-700 ring-1 ring-red-600/20
-                            @else bg-gray-100 text-gray-700 ring-1 ring-gray-600/20
-                            @endif">
-                            {{ 
+                        <x-ui.badge :variant="match($quote->status) {
+                                'draft' => 'slate',
+                                'approved' => 'success',
+                                'converted' => 'info',
+                                'expired' => 'error',
+                                default => 'slate',
+                            }" :dot="false">
+                            {{
                                 $quote->status === 'draft' ? 'Borrador'
                                 : ($quote->status === 'approved' ? 'Aprobada'
                                 : ($quote->status === 'converted' ? 'Convertida'
                                 : ($quote->status === 'expired' ? 'Expirada'
                                 : ($quote->status === 'cancelled' ? 'Cancelada' : ucfirst($quote->status)))))
                             }}
-                        </span>
+                        </x-ui.badge>
                     </div>
                 </div>
 
@@ -107,14 +107,13 @@
                                     $isExpired = $daysRemaining < 0;
                                 @endphp
                                 
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold
-                                    {{ $isExpired ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700' }}">
+                                <x-ui.badge :variant="$isExpired ? 'error' : 'success'" :dot="false" size="sm">
                                     @if($isExpired)
                                         Expirada hace {{ abs($daysRemaining) }} dia{{ abs($daysRemaining) !== 1 ? 's' : '' }}
                                     @else
                                         {{ $daysRemaining }} dia{{ $daysRemaining !== 1 ? 's' : '' }} disponible{{ $daysRemaining !== 1 ? 's' : '' }}
                                     @endif
-                                </span>
+                                </x-ui.badge>
                             </div>
                         </div>
                     </div>

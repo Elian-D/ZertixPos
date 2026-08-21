@@ -249,10 +249,10 @@
             <div class="mt-6 flex items-center justify-between gap-3">
                 <span class="text-[10px] text-slate-400 uppercase font-bold">Última actualización: {{ $product->updated_at->format('d/m/Y H:i') }}</span>
                 <div class="flex gap-3">
-                    <a href="{{ route('inventory.products.index') }}" class="px-4 py-2 text-sm font-medium text-slate-500 hover:text-slate-700 transition">Cancelar</a>
-                    <button type="submit" class="bg-zertix-primary hover:bg-zertix-primary-dark text-white font-bold text-sm px-8 py-3 rounded-2xl shadow-lg shadow-zertix-primary/20 transition-colors">
+                    <x-ui.button href="{{ route('inventory.products.index') }}" appearance="ghost" variant="secondary">Cancelar</x-ui.button>
+                    <x-ui.button type="submit" variant="primary" class="rounded-2xl px-8 py-3">
                         Actualizar Producto/Servicio
-                    </button>
+                    </x-ui.button>
                 </div>
             </div>
         </form>

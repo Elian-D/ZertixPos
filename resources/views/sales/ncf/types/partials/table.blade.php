@@ -30,13 +30,9 @@
             @if(in_array('is_electronic', $visibleColumns))
                 <td class="px-6 py-4 text-center">
                     @if($type->is_electronic)
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-100 text-blue-700 border border-blue-200 uppercase">
-                            <x-heroicon-s-cpu-chip class="w-3 h-3 mr-1" /> e-NCF
-                        </span>
+                        <x-ui.badge variant="info" size="sm" icon="heroicon-s-cpu-chip">e-NCF</x-ui.badge>
                     @else
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-200 uppercase">
-                            Físico
-                        </span>
+                        <x-ui.badge variant="slate" size="sm" :dot="false">Físico</x-ui.badge>
                     @endif
                 </td>
             @endif
@@ -57,9 +53,9 @@
             {{-- Estado Activo/Inactivo --}}
             @if(in_array('is_active', $visibleColumns))
                 <td class="px-6 py-4 text-center">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border shadow-sm {{ $type->is_active ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200' }}">
+                    <x-ui.badge :variant="$type->is_active ? 'success' : 'error'" size="sm">
                         {{ $type->is_active ? 'ACTIVO' : 'INACTIVO' }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 

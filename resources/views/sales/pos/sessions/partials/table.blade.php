@@ -43,12 +43,16 @@
             @if(in_array('status', $visibleColumns))
                 <td class="px-6 py-4 text-center">
                     @php
-                        $sStyles = \App\Models\Sales\Pos\PosSession::getStatusStyles();
                         $sLabels = \App\Models\Sales\Pos\PosSession::getStatuses();
+                        $sVariant = match($session->status) {
+                            \App\Models\Sales\Pos\PosSession::STATUS_OPEN => 'success',
+                            \App\Models\Sales\Pos\PosSession::STATUS_CLOSED => 'slate',
+                            default => 'slate',
+                        };
                     @endphp
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm ring-1 ring-inset {{ $sStyles[$session->status] ?? 'bg-gray-100 text-gray-700' }}">
+                    <x-ui.badge :variant="$sVariant" size="sm" :dot="false">
                         {{ $sLabels[$session->status] ?? $session->status }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 

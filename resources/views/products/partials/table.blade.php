@@ -67,19 +67,17 @@
 
             @if(in_array('is_active', $visibleColumns))
                 <td class="px-6 py-4">
-                    <span class="px-2 py-1 text-xs rounded-full font-bold {{ $item->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                    <x-ui.badge :variant="$item->is_active ? 'success' : 'error'" size="sm">
                         {{ $item->is_active ? 'Activo' : 'Inactivo' }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 
             @if(in_array('is_stockable', $visibleColumns))
                 <td class="px-6 py-4">
-                    <span
-                        class="inline-flex whitespace-nowrap px-2 py-1 text-xs rounded-full font-bold
-                        {{ $item->is_stockable ? 'bg-indigo-100 text-indigo-700' : 'bg-amber-100 text-amber-700' }}">
+                    <x-ui.badge :variant="$item->is_stockable ? 'info' : 'warning'" size="sm" :dot="false">
                         {{ $item->is_stockable ? 'Producto' : 'Servicio' }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 

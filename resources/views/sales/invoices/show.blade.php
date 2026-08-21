@@ -13,9 +13,9 @@
                         <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">
                             Factura <span class="text-indigo-600">{{ $invoice->invoice_number }}</span>
                         </h2>
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider {{ $invoice->status === 'active' ? 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-600/20' : 'bg-red-100 text-red-700 ring-1 ring-red-600/20' }}">
+                        <x-ui.badge :variant="$invoice->status === 'active' ? 'success' : 'error'" :dot="false">
                             {{ $invoice->status === 'active' ? 'Vigente' : 'Anulada' }}
-                        </span>
+                        </x-ui.badge>
                     </div>
                 </div>
 

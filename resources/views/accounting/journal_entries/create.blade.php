@@ -126,9 +126,9 @@
                 <p class="text-xs text-gray-400 italic">Recuerde que los asientos en 'Borrador' pueden editarse antes de ser asentados definitivamente.</p>
                 <div class="flex gap-3">
                     <a href="{{ route('finance.journal_entries.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition">Cancelar</a>
-                    <x-primary-button class="bg-indigo-600 shadow-lg px-8" ::disabled="!isBalanced || totalDebit <= 0 || hasDuplicates">
+                    <x-ui.button type="submit" variant="primary" class="shadow-lg px-8" ::disabled="!isBalanced || totalDebit <= 0 || hasDuplicates">
                         Guardar Asiento
-                    </x-primary-button>
+                    </x-ui.button>
                 </div>
             </div>
         </form>

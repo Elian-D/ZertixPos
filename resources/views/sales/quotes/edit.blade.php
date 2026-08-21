@@ -31,9 +31,9 @@
                 </span>
                 
                 <div class="flex gap-3">
-                    <a href="{{ route('sales.quotes.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">
+                    <x-ui.button href="{{ route('sales.quotes.index') }}" appearance="ghost" variant="secondary">
                         Volver al listado
-                    </a>
+                    </x-ui.button>
                 </div>
             </div>
         </div>

@@ -29,17 +29,9 @@
 
                     {{-- Badge de Estado Activo --}}
                     <div class="flex flex-col gap-2 items-end">
-                        @if($item->is_active)
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ring-1 ring-inset shadow-sm bg-emerald-100 text-emerald-700 ring-emerald-600/20">
-                                <span class="w-1.5 h-1.5 rounded-full mr-2 bg-emerald-500 animate-pulse"></span>
-                                Activo
-                            </span>
-                        @else
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ring-1 ring-inset shadow-sm bg-red-100 text-red-700 ring-red-600/20">
-                                <span class="w-1.5 h-1.5 rounded-full mr-2 bg-red-500"></span>
-                                Inactivo
-                            </span>
-                        @endif
+                        <x-ui.badge :variant="$item->is_active ? 'success' : 'error'" class="shadow-sm">
+                            {{ $item->is_active ? 'Activo' : 'Inactivo' }}
+                        </x-ui.badge>
                     </div>
                 </div>
             </div>
@@ -118,15 +110,9 @@
                             <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
                                 <div class="flex items-center justify-between">
                                     <span class="text-xs text-gray-500 font-medium">Control de Inventario:</span>
-                                    @if($item->is_stockable)
-                                        <span class="text-[10px] font-bold uppercase py-1 px-2 bg-amber-100 text-amber-700 rounded-md">
-                                            Sujeto a Stock
-                                        </span>
-                                    @else
-                                        <span class="text-[10px] font-bold uppercase py-1 px-2 bg-gray-200 text-gray-600 rounded-md">
-                                            No Inventariable
-                                        </span>
-                                    @endif
+                                    <x-ui.badge :variant="$item->is_stockable ? 'warning' : 'slate'" size="sm" :dot="false">
+                                        {{ $item->is_stockable ? 'Sujeto a Stock' : 'No Inventariable' }}
+                                    </x-ui.badge>
                                 </div>
                                 <p class="text-[10px] text-gray-400 mt-2 italic leading-tight">
                                     {{ $item->is_stockable 
@@ -162,9 +148,9 @@
                          </span>
                     </div>
                     <div class="flex gap-3 w-full sm:w-auto">
-                        <x-secondary-button x-on:click="$dispatch('close')" class="flex-1 sm:flex-none justify-center">
+                        <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')" class="flex-1 sm:flex-none justify-center">
                             Cerrar
-                        </x-secondary-button>
+                        </x-ui.button>
                         <a href="{{ route('inventory.products.edit', $item) }}" class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2 bg-indigo-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 transition duration-150 shadow-md shadow-indigo-100">
                             <x-heroicon-s-pencil class="w-4 h-4 mr-2" /> Editar Ficha
                         </a>

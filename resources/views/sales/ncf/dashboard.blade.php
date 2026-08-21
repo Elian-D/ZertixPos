@@ -13,17 +13,13 @@
                 
                 {{-- Botones de Acción --}}
                 <div class="flex gap-3 flex-wrap">
-                    <a href="{{ route('finance.ncf.sequences.index') }}" 
-                       class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 active:translate-y-0 transition-all whitespace-nowrap">
-                        <x-heroicon-s-plus-circle class="w-4 h-4"/>
-                        <span>Nueva Secuencia</span>
-                    </a>
-                    
-                    <a href="{{ route('finance.ncf.logs.index') }}" 
-                       class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-green-200 hover:bg-green-700 hover:-translate-y-0.5 active:translate-y-0 transition-all whitespace-nowrap">
-                        <x-heroicon-s-document-chart-bar class="w-4 h-4"/>
-                        <span>Reporte 607</span>
-                    </a>
+                    <x-ui.button href="{{ route('finance.ncf.sequences.index') }}" variant="primary" :hoverEffect="true" iconLeft="heroicon-s-plus-circle" class="whitespace-nowrap">
+                        Nueva Secuencia
+                    </x-ui.button>
+
+                    <x-ui.button href="{{ route('finance.ncf.logs.index') }}" appearance="ghost" variant="secondary" iconLeft="heroicon-s-document-chart-bar" class="whitespace-nowrap">
+                        Reporte 607
+                    </x-ui.button>
                 </div>
             </div>
 
@@ -277,9 +273,9 @@
                                 <span class="font-mono text-xs font-bold text-gray-900">{{ number_format($seq->current) }}</span>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold {{ $seq->remaining < 50 ? 'bg-red-50 text-red-700' : 'bg-green-50 text-green-700' }}">
+                                <x-ui.badge :variant="$seq->remaining < 50 ? 'error' : 'success'" size="sm" :dot="false">
                                     {{ number_format($seq->remaining) }}
-                                </span>
+                                </x-ui.badge>
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <div class="flex items-center justify-end gap-2">
@@ -297,9 +293,14 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold border {{ $seq->status_styles }}">
+                                <x-ui.badge :variant="match($seq->calculated_status) {
+                                        \App\Models\Sales\Ncf\NcfSequence::STATUS_ACTIVE => 'success',
+                                        \App\Models\Sales\Ncf\NcfSequence::STATUS_EXHAUSTED => 'warning',
+                                        \App\Models\Sales\Ncf\NcfSequence::STATUS_EXPIRED => 'error',
+                                        default => 'slate',
+                                    }" size="sm" :dot="false">
                                     {{ $seq->status_label }}
-                                </span>
+                                </x-ui.badge>
                             </td>
                         </tr>
                         @empty
@@ -363,9 +364,13 @@
                                 <div class="text-[10px] text-gray-500">{{ $log->created_at->format('h:i A') }}</div>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold border {{ \App\Models\Sales\Ncf\NcfLog::getStatusStyles()[$log->status] ?? '' }}">
+                                <x-ui.badge :variant="match($log->status) {
+                                        \App\Models\Sales\Ncf\NcfLog::STATUS_USED => 'info',
+                                        \App\Models\Sales\Ncf\NcfLog::STATUS_VOIDED => 'slate',
+                                        default => 'slate',
+                                    }" size="sm" :dot="false">
                                     {{ \App\Models\Sales\Ncf\NcfLog::getStatuses()[$log->status] ?? $log->status }}
-                                </span>
+                                </x-ui.badge>
                             </td>
                         </tr>
                         @empty

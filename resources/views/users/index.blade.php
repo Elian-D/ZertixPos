@@ -34,23 +34,19 @@
                          botón simplemente desaparezca. --}}
                     <div class="flex flex-col items-end gap-1">
                         @if ($canCreateMoreUsers)
-                            <a href="{{ route('users.create') }}"
-                               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
-                                <x-heroicon-s-plus class="w-5 h-5 mr-2 -ml-1" />
+                            <x-ui.button href="{{ route('users.create') }}" variant="primary" iconLeft="heroicon-s-plus">
                                 {{ __('Crear Nuevo Usuario') }}
-                            </a>
+                            </x-ui.button>
                             @if (! is_null($usersLimit))
                                 <p class="text-xs text-gray-400">
                                     {{ $totalUsersCount }}/{{ $usersLimit }} usuarios utilizados
                                 </p>
                             @endif
                         @else
-                            <button type="button" disabled
-                                    title="Tu plan actual permite un máximo de {{ $usersLimit }} usuario(s). Actualizá tu plan para agregar más."
-                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-300 cursor-not-allowed">
-                                <x-heroicon-s-plus class="w-5 h-5 mr-2 -ml-1" />
+                            <x-ui.button type="button" disabled variant="primary" iconLeft="heroicon-s-plus"
+                                title="Tu plan actual permite un máximo de {{ $usersLimit }} usuario(s). Actualizá tu plan para agregar más.">
                                 {{ __('Crear Nuevo Usuario') }}
-                            </button>
+                            </x-ui.button>
                             <p class="text-xs text-amber-600 font-medium">
                                 Límite del plan alcanzado ({{ $totalUsersCount }}/{{ $usersLimit }} usuarios) — actualizá tu plan para agregar más.
                             </p>
@@ -155,15 +151,14 @@
             <div class="mt-6 flex justify-end">
                 
                 {{-- Botón Cancelar --}}
-                <x-secondary-button x-on:click="$dispatch('close')">
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">
                     {{ __('Cancelar') }}
-                </x-secondary-button>
+                </x-ui.button>
 
                 {{-- Botón Eliminar (Rojo) --}}
-                <x-danger-button class="ms-3">
-                    <x-heroicon-s-trash class="w-4 h-4 mr-2" />
+                <x-ui.button type="submit" variant="error" iconLeft="heroicon-s-trash" class="ms-3">
                     {{ __('Eliminar Usuario') }}
-                </x-danger-button>
+                </x-ui.button>
             </div>
         </form>
     </x-modal>

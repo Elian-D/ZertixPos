@@ -12,11 +12,9 @@
             <div class="p-6">
                 <x-page-toolbar title="Estado Actual de Inventario">
                     <x-slot name="actions">
-                        <a href="{{ route('inventory.stocks.export', request()->query()) }}"
-                           class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 border border-blue-200 rounded-lg hover:bg-blue-100 transition shadow-sm">
-                            <x-heroicon-s-arrow-down-tray class="w-4 h-4 mr-2" />
+                        <x-ui.button href="{{ route('inventory.stocks.export', request()->query()) }}" appearance="ghost" variant="secondary" iconLeft="heroicon-s-arrow-down-tray">
                             Exportar Inventario
-                        </a>
+                        </x-ui.button>
                     </x-slot>
                 </x-page-toolbar>
 

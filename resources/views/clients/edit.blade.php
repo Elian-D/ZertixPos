@@ -71,9 +71,9 @@
                             <input type="checkbox" name="is_active" value="1" {{ old('is_active', $client->is_active ?? true) ? 'checked' : '' }}
                                 class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 w-5 h-5 cursor-pointer">
                             @if(isset($client) && $client->esMoroso())
-                                <span class="ml-auto inline-flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-bold bg-red-50 text-red-600 ring-1 ring-red-200">
-                                    <x-heroicon-s-exclamation-triangle class="w-3 h-3" /> Moroso
-                                </span>
+                                <x-ui.badge variant="error" icon="heroicon-s-exclamation-triangle" size="sm" class="ml-auto">
+                                    Moroso
+                                </x-ui.badge>
                             @endif
                         </div>
                     </div>
@@ -209,9 +209,9 @@
                 <a href="{{ route('clients.index') }}" class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800 flex items-center">
                     Cancelar
                 </a>
-                <x-primary-button class="bg-indigo-600 hover:bg-indigo-700 shadow-lg px-8">
+                <x-ui.button type="submit" variant="primary" class="shadow-lg px-8">
                     {{ isset($client) ? 'Actualizar Cliente' : 'Registrar Cliente' }}
-                </x-primary-button>
+                </x-ui.button>
             </div>
         </form>
     </div>

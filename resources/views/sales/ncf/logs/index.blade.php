@@ -17,18 +17,16 @@
                     <x-slot name="actions">
                         <div class="flex flex-wrap gap-2">
                             {{-- Exportar Excel (Revisión interna) --}}
-                            <a href="{{ route('finance.ncf.logs.export.excel', request()->all()) }}" 
-                               class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 transition">
-                                <x-heroicon-s-document-arrow-down class="w-4 h-4 mr-2" />
+                            <x-ui.button href="{{ route('finance.ncf.logs.export.excel', request()->all()) }}"
+                                appearance="ghost" variant="secondary" iconLeft="heroicon-s-document-arrow-down">
                                 Excel
-                            </a>
+                            </x-ui.button>
 
                             {{-- Botón para abrir modal de periodo TXT --}}
-                            <button x-data="" x-on:click="$dispatch('open-modal', 'export-607-modal')"
-                               class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-black transition">
-                                <x-heroicon-s-arrow-down-tray class="w-4 h-4 mr-2" />
+                            <x-ui.button x-data="" x-on:click="$dispatch('open-modal', 'export-607-modal')"
+                                appearance="ghost" variant="secondary" iconLeft="heroicon-s-arrow-down-tray">
                                 Generar 607 (TXT)
-                            </button>
+                            </x-ui.button>
                         </div>
                     </x-slot>
                 </x-page-toolbar>
@@ -59,8 +57,8 @@
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-                <x-primary-button>Descargar TXT</x-primary-button>
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+                <x-ui.button type="submit" variant="primary">Descargar TXT</x-ui.button>
             </div>
         </form>
     </x-modal>

@@ -20,11 +20,9 @@
                 <x-page-toolbar title="Gestión de Ventas">
                     <x-slot name="actions">
                         @can('create sales')
-                            <a href="{{ route('sales.create') }}"
-                               class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition ease-in-out duration-150">
-                                <x-heroicon-s-plus-circle class="w-4 h-4 mr-2" />
+                            <x-ui.button href="{{ route('sales.create') }}" variant="primary" iconLeft="heroicon-s-plus-circle">
                                 Nueva Venta
-                            </a>
+                            </x-ui.button>
                         @endcan
 
                         <x-data-table.export-button :route="route('sales.export')" formId="sales-filters" />

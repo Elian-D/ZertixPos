@@ -27,11 +27,9 @@
                     </form>
 
                     {{-- Botón Estilizado para Crear Rol --}}
-                    <a href="{{ route('roles.create') }}"
-                       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
-                        <x-heroicon-s-plus class="w-5 h-5 mr-2 -ml-1" />
+                    <x-ui.button href="{{ route('roles.create') }}" variant="primary" iconLeft="heroicon-s-plus">
                         {{ __('Crear Nuevo Rol') }}
-                    </a>
+                    </x-ui.button>
                 </div>
 
                 {{-- 3. TABLA ESTILIZADA --}}
@@ -101,14 +99,13 @@
             </p>
 
             <div class="mt-6 flex justify-end">
-                <x-secondary-button x-on:click="$dispatch('close')">
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">
                     {{ __('Cancelar') }}
-                </x-secondary-button>
+                </x-ui.button>
 
-                <x-danger-button class="ms-3">
-                    <x-heroicon-s-trash class="w-4 h-4 mr-2" />
+                <x-ui.button type="submit" variant="error" iconLeft="heroicon-s-trash" class="ms-3">
                     {{ __('Eliminar Rol') }}
-                </x-danger-button>
+                </x-ui.button>
             </div>
         </form>
     </x-modal>

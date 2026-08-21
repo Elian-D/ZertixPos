@@ -1,19 +1,10 @@
 <x-app-layout>
-    <div class=""
-        x-cloak
-        x-data="{
-            isLoading: false,
-
-            submitForm() {
-                this.isLoading = true;
-                this.$refs.configForm.submit();
-            }
-        }">
+    <div class="" x-cloak>
 
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <x-ui.toasts />
 
-            <form x-ref="configForm" method="POST" action="{{ route('sales.pos.settings.update') }}" class="space-y-6">
+            <form method="POST" action="{{ route('sales.pos.settings.update') }}" class="space-y-6">
                 @csrf
                 @method('PUT')
 
@@ -106,31 +97,16 @@
 
                 {{-- BOTÓN FLOTANTE --}}
                 <div class="sticky bottom-4 sm:bottom-6 bg-white/95 backdrop-blur-md border border-slate-200 p-3 sm:p-4 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col sm:flex-row items-stretch sm:items-center gap-3 z-[40]">
-                    <a href="{{ route('sales.pos.terminals.index') }}" 
-                       class="px-4 py-2 sm:px-6 sm:py-3 text-[10px] sm:text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-widest text-center sm:text-left">
+                    <x-ui.button href="{{ route('sales.pos.terminals.index') }}" appearance="ghost" variant="secondary"
+                        class="flex-1 sm:flex-none">
                         ← Volver a Terminales
-                    </a>
+                    </x-ui.button>
 
-                    <button 
-                        type="button"
-                        @click="submitForm()"
-                        x-bind:disabled="isLoading"
-                        class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 sm:px-10 py-3 sm:py-4 bg-indigo-600 border border-transparent rounded-xl sm:rounded-2xl text-sm font-bold sm:font-semibold text-white uppercase tracking-widest shadow-lg shadow-indigo-200 hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition ease-in-out duration-150">
-                        
-                        <span x-show="!isLoading" class="flex items-center gap-2">
-                            <x-heroicon-s-check-circle class="w-5 h-5" />
-                            <span class="hidden sm:inline">Aplicar Configuración</span>
-                            <span class="sm:hidden">Guardar</span>
-                        </span>
-                        
-                        <span x-show="isLoading" class="flex items-center gap-2">
-                            <svg class="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                            Guardando...
-                        </span>
-                    </button>
+                    <x-ui.button type="submit" variant="primary" iconLeft="heroicon-s-check-circle"
+                        class="flex-1 sm:flex-none">
+                        <span class="hidden sm:inline">Aplicar Configuración</span>
+                        <span class="sm:hidden">Guardar</span>
+                    </x-ui.button>
                 </div>
             </form>
         </div>

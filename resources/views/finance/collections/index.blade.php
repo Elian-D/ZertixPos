@@ -15,11 +15,9 @@
                 <x-page-toolbar title="Recibos de Cobro">
                     <x-slot name="actions">
                         @can('create payments')
-                            <a href="{{ route('finance.collections.create') }}"
-                               class="inline-flex items-center px-4 py-2 bg-indigo-600 rounded-md text-xs font-semibold text-white uppercase hover:bg-indigo-700 transition">
-                                <x-heroicon-s-plus class="w-4 h-4 mr-2" />
+                            <x-ui.button href="{{ route('finance.collections.create') }}" variant="primary" iconLeft="heroicon-s-plus">
                                 Nuevo Cobro
-                            </a>
+                            </x-ui.button>
                         @endcan
 
                         <x-data-table.export-button :route="route('finance.collections.export')" formId="payments-filters" />

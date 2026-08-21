@@ -71,8 +71,8 @@
         </div>
 
         <div class="mt-6 flex justify-end gap-3">
-            <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-            <x-primary-button class="bg-blue-600">Guardar Cuenta</x-primary-button>
+            <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+            <x-ui.button type="submit" variant="primary">Guardar Cuenta</x-ui.button>
         </div>
     </form>
 </x-modal>
@@ -205,9 +205,9 @@
             <div class="mt-10 pt-6 border-t flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div class="text-[10px] text-gray-300 uppercase tracking-tighter font-mono">UUID: {{ $item->id }}</div>
                 <div class="flex gap-3 w-full sm:w-auto">
-                    <x-secondary-button x-on:click="$dispatch('close')" class="flex-1 sm:flex-none justify-center">
+                    <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')" class="flex-1 sm:flex-none justify-center">
                         Cerrar Detalle
-                    </x-secondary-button>
+                    </x-ui.button>
                     
                     <button @click="$dispatch('close'); $dispatch('open-modal', 'edit-account-{{ $item->id }}')" 
                             class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2 bg-indigo-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition shadow-md shadow-indigo-100">
@@ -288,8 +288,8 @@
         </div>
 
         <div class="mt-6 flex justify-end gap-3">
-            <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-            <x-primary-button class="bg-indigo-600">Actualizar Cuenta</x-primary-button>
+            <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+            <x-ui.button type="submit" variant="primary">Actualizar Cuenta</x-ui.button>
         </div>
     </form>
 </x-modal>

@@ -183,11 +183,11 @@
 
             <div class="p-4 md:p-6 bg-gray-50 flex flex-col-reverse md:flex-row justify-end items-center gap-3 border-t">
                 <a href="{{ route('finance.collections.index') }}" class="w-full md:w-auto text-center px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">Cancelar</a>
-                <x-primary-button 
-                    class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 justify-center shadow-lg px-8 py-3"
+                <x-ui.button type="submit" variant="primary"
+                    class="w-full md:w-auto justify-center shadow-lg px-8 py-3"
                     x-bind:disabled="!isValidAmount || !selectedReceivableId">
                     <span x-text="paymentAmount >= (selectedReceivable?.current_balance || 0) ? 'Liquidar Factura' : 'Registrar Abono'"></span>
-                </x-primary-button>
+                </x-ui.button>
             </div>
         </form>
     </div>

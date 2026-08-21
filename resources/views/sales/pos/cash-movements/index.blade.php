@@ -15,11 +15,10 @@
                 <x-page-toolbar title="Historial de Movimientos de Caja">
                     <x-slot name="actions">
                         @can('pos cash movements create')
-                            <button @click="$dispatch('open-modal', 'register-cash-movement')"
-                               class="inline-flex items-center px-4 py-2 bg-indigo-600 rounded-md text-xs font-semibold text-white uppercase hover:bg-indigo-700 transition">
-                                <x-heroicon-s-currency-dollar class="w-4 h-4 mr-2" />
+                            <x-ui.button @click="$dispatch('open-modal', 'register-cash-movement')"
+                                variant="primary" iconLeft="heroicon-s-currency-dollar">
                                 Registrar Movimiento
-                            </button>
+                            </x-ui.button>
                         @endcan
 
                         {{-- Si decides agregar exportación luego --}}

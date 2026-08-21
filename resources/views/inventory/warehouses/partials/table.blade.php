@@ -68,10 +68,9 @@
             {{-- Estado --}}
             @if(in_array('is_active', $visibleColumns))
                 <td class="px-6 py-4">
-                    <span class="px-2 py-1 text-[10px] uppercase rounded-full font-black
-                        {{ $item->is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700' }}">
+                    <x-ui.badge :variant="$item->is_active ? 'success' : 'error'" size="sm">
                         {{ $item->is_active ? 'Activo' : 'Inactivo' }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 

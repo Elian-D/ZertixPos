@@ -11,17 +11,13 @@
             <div class="p-6">
                 <x-page-toolbar title="Gestión de Productos/Servicios">
                     <x-slot name="actions">
-                        <a href="{{ route('inventory.products.eliminados') }}"
-                           class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100">
-                            <x-heroicon-s-trash class="w-4 h-4 mr-2" />
+                        <x-ui.button href="{{ route('inventory.products.eliminados') }}" appearance="ghost" variant="secondary" iconLeft="heroicon-s-trash">
                             Papelera
-                        </a>
+                        </x-ui.button>
 
-                        <a href="{{ route('inventory.products.create') }}"
-                           class="inline-flex items-center px-4 py-2 bg-green-600 rounded-md text-xs font-semibold text-white uppercase hover:bg-green-700">
-                            <x-heroicon-s-plus class="w-4 h-4 mr-2" />
+                        <x-ui.button href="{{ route('inventory.products.create') }}" variant="primary" iconLeft="heroicon-s-plus">
                             Nuevo Producto/Servicio
-                        </a>
+                        </x-ui.button>
                     </x-slot>
                 </x-page-toolbar>
 

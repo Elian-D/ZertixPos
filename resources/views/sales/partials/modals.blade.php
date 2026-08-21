@@ -4,9 +4,13 @@
     <div class="overflow-hidden rounded-xl bg-white shadow-2xl">
         {{-- Header Dinámico --}}
         @php
-            $statusStyles = \App\Models\Sales\Sale::getStatusStyles();
             $statusLabels = \App\Models\Sales\Sale::getStatuses();
             $paymentLabels = \App\Models\Sales\Sale::getPaymentTypes();
+            $statusVariant = match($sale->status) {
+                \App\Models\Sales\Sale::STATUS_COMPLETED => 'success',
+                \App\Models\Sales\Sale::STATUS_CANCELED => 'error',
+                default => 'slate',
+            };
         @endphp
 
         <div class="bg-gray-50 px-6 md:px-8 py-6 border-b flex justify-between items-start">
@@ -24,9 +28,9 @@
                 </div>
             </div>
 
-            <span class="inline-flex items-center rounded-full px-3 py-1 text-[10px] font-bold ring-1 ring-inset shadow-sm {{ $statusStyles[$sale->status] ?? '' }}">
+            <x-ui.badge :variant="$statusVariant" :dot="false">
                 {{ strtoupper($statusLabels[$sale->status] ?? $sale->status) }}
-            </span>
+            </x-ui.badge>
         </div>
 
         {{-- Alerta de Anulación --}}
@@ -221,7 +225,7 @@
         <div class="px-8 py-5 bg-gray-50 border-t flex flex-col md:flex-row justify-between items-center gap-4">
             <span class="text-[10px] text-gray-400 italic">Creado el {{ $sale->created_at->format('d/m/Y H:i') }}</span>
             <div class="flex gap-3 w-full md:w-auto">
-                <x-secondary-button class="flex-1 md:flex-none justify-center" x-on:click="$dispatch('close')">Cerrar</x-secondary-button>
+                <x-ui.button appearance="ghost" variant="secondary" class="flex-1 md:flex-none justify-center" x-on:click="$dispatch('close')">Cerrar</x-ui.button>
                 <a href="{{ route('sales.print-invoice', $sale) }}" target="_blank" 
                    class="flex-1 md:flex-none inline-flex items-center justify-center px-4 py-2 bg-gray-800 hover:bg-black border border-transparent rounded-md font-bold text-[10px] text-white uppercase tracking-widest transition shadow-md">
                     <x-heroicon-s-printer class="w-3.5 h-3.5 mr-2"/> Reimprimir Ticket
@@ -261,7 +265,7 @@
         </div>
 
         <div class="mt-8 flex justify-center gap-3">
-            <x-secondary-button x-on:click="$dispatch('close')">Volver</x-secondary-button>
+            <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Volver</x-ui.button>
             <button type="submit" class="px-6 py-2 bg-red-600 text-white text-xs font-bold uppercase rounded-lg hover:bg-red-700 transition-colors shadow-lg shadow-red-200">
                 Confirmar Anulación
             </button>

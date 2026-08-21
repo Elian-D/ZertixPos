@@ -21,17 +21,9 @@
                         </div>
                     </div>
                     {{-- Badge de Estado Dinámico --}}
-                    @if($item->active)
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ring-1 ring-inset shadow-sm bg-emerald-100 text-emerald-700 ring-emerald-600/20">
-                            <span class="w-1.5 h-1.5 rounded-full mr-2 bg-emerald-500 animate-pulse"></span>
-                            Activo
-                        </span>
-                    @else
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ring-1 ring-inset shadow-sm bg-red-100 text-red-700 ring-red-600/20">
-                            <span class="w-1.5 h-1.5 rounded-full mr-2 bg-red-500"></span>
-                            Inactivo
-                        </span>
-                    @endif
+                    <x-ui.badge :variant="$item->active ? 'success' : 'error'">
+                        {{ $item->active ? 'Activo' : 'Inactivo' }}
+                    </x-ui.badge>
                 </div>
             </div>
 
@@ -114,9 +106,9 @@
                 <div class="mt-10 pt-6 border-t flex flex-col sm:flex-row justify-between items-center gap-4">
                     <div class="text-[10px] text-gray-300 uppercase tracking-tighter font-mono">ID: {{ $item->id }}</div>
                     <div class="flex gap-3 w-full sm:w-auto">
-                        <x-secondary-button x-on:click="$dispatch('close')" class="flex-1 sm:flex-none justify-center">
+                        <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')" class="flex-1 sm:flex-none justify-center">
                             Cerrar
-                        </x-secondary-button>
+                        </x-ui.button>
                         <a href="{{ route('clients.delivery_points.edit', $item) }}" class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2 bg-indigo-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 transition duration-150 shadow-md shadow-indigo-100">
                             <x-heroicon-s-pencil class="w-4 h-4 mr-2" /> Editar Punto
                         </a>

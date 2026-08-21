@@ -61,13 +61,9 @@
                         elseif($item->quantity <= $item->min_stock) $status = 'low';
                     @endphp
 
-                    @if($status == 'ok')
-                        <span class="px-2 py-1 text-[10px] font-black uppercase rounded-full bg-emerald-100 text-emerald-700">Suficiente</span>
-                    @elseif($status == 'low')
-                        <span class="px-2 py-1 text-[10px] font-black uppercase rounded-full bg-amber-100 text-amber-700">Stock Bajo</span>
-                    @else
-                        <span class="px-2 py-1 text-[10px] font-black uppercase rounded-full bg-red-100 text-red-700">Agotado</span>
-                    @endif
+                    <x-ui.badge :variant="match($status) { 'ok' => 'success', 'low' => 'warning', default => 'error' }" size="sm">
+                        {{ match($status) { 'ok' => 'Suficiente', 'low' => 'Stock Bajo', default => 'Agotado' } }}
+                    </x-ui.badge>
                 </td>
             @endif
 
