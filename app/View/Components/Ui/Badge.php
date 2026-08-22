@@ -32,7 +32,7 @@ class Badge extends Component
         $base = "inline-flex items-center font-semibold rounded-full border transition-colors duration-200";
 
         $sizes = [
-            'sm' => 'px-2.5 py-0.5 text-[9px] gap-1.5',
+            'sm' => 'px-2.5 py-0.5 text-[10px] gap-1.5',
             'md' => 'px-4 py-1.5 text-xs gap-2',
         ];
 
@@ -42,12 +42,12 @@ class Badge extends Component
     private function getVariantClasses(): array
     {
         return [
-            'primary' => 'bg-zertix-primary/10 dark:bg-zertix-primary/20 text-zertix-primary border-zertix-primary',
-            'success' => 'bg-state-success/10 dark:bg-state-success/20 text-state-success border-state-success',
-            'warning' => 'bg-state-warning/10 dark:bg-state-warning/20 text-state-warning border-state-warning',
-            'error'   => 'bg-state-error/10 dark:bg-state-error/20 text-state-error border-state-error',
-            'info'    => 'bg-state-info/10 dark:bg-state-info/20 text-state-info border-state-info',
-            'slate'   => 'bg-slate-500/10 dark:bg-slate-500/20 text-slate-600 dark:text-slate-400 border-slate-500',
+            'primary' => 'bg-zertix-primary/10 text-zertix-primary border-zertix-primary',
+            'success' => 'bg-state-success/10 text-state-success border-state-success',
+            'warning' => 'bg-state-warning/10 text-state-warning border-state-warning',
+            'error'   => 'bg-state-error/10 text-state-error border-state-error',
+            'info'    => 'bg-state-info/10 text-state-info border-state-info',
+            'slate'   => 'bg-slate-500/10 text-slate-700 border-slate-500',
         ];
     }
 
@@ -92,7 +92,7 @@ class Badge extends Component
             'warning' => 'text-state-warning',
             'error'   => 'text-state-error',
             'info'    => 'text-state-info',
-            'slate'   => 'text-slate-600 dark:text-slate-400',
+            'slate'   => 'text-slate-700',
         ];
 
         return $size . ' ' . ($colors[$this->variant] ?? $colors['info']);
