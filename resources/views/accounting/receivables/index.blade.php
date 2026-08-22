@@ -8,21 +8,16 @@
 @endpush
 
 <x-app-layout>
-    <div class="w-full max-w-7xl mx-auto py-4 px-2 sm:px-3 lg:px-4">
-        <div class="bg-white shadow-xl rounded-xl">
-            <x-ui.toasts />
+    <div class="p-4 md:p-6 flex flex-col gap-6">
 
-            <div class="p-6">
-                <x-page-toolbar title="Cuentas por Cobrar (Facturación)"></x-page-toolbar>
+        <x-ui.page-header title="Cuentas por Cobrar (Facturación)" description="Gestiona las facturas pendientes de cobro y su estado de pago." :count="$items->total()" countLabel="cuentas" />
 
-                {{-- Filtros del Pipeline --}}
-                @include('accounting.receivables.partials.filters')
+        {{-- Filtros del Pipeline --}}
+        @include('accounting.receivables.partials.filters')
 
-                {{-- Tabla AJAX --}}
-                <div id="receivables-table" class="w-full overflow-hidden">
-                    @include('accounting.receivables.partials.table')
-                </div>
-            </div>
+        {{-- Tabla AJAX --}}
+        <div id="receivables-table" class="w-full overflow-hidden">
+            @include('accounting.receivables.partials.table')
         </div>
     </div>
 </x-app-layout>

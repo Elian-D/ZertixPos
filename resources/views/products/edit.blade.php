@@ -31,7 +31,6 @@
             @csrf
             @method('PUT')
 
-            <x-ui.toasts />
 
             <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
                 <x-form-header

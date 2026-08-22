@@ -8,29 +8,23 @@
 </script>
 
 <x-app-layout>
-    <div class="w-full max-w-7xl mx-auto py-4 px-2 sm:px-3 lg:px-4">
-        <div class="bg-white shadow-xl rounded-xl">
-            <x-ui.toasts />
+    <div class="p-4 md:p-6 flex flex-col gap-6">
+        <x-ui.page-header title="Motor de Cotizaciones" description="Crea y da seguimiento a las cotizaciones enviadas a clientes antes de convertirlas en ventas." :count="$items->total()" countLabel="cotizaciones">
+            <x-slot name="actions">
+                @can('create quotes')
+                    <x-ui.button href="{{ route('sales.quotes.create') }}" variant="primary" iconLeft="heroicon-s-plus-circle">
+                        Nueva Cotización
+                    </x-ui.button>
+                @endcan
+            </x-slot>
+        </x-ui.page-header>
 
-            <div class="p-6">
-                <x-page-toolbar title="Motor de Cotizaciones">
-                    <x-slot name="actions">
-                        @can('create quotes')
-                            <x-ui.button href="{{ route('sales.quotes.create') }}" variant="primary" iconLeft="heroicon-s-plus-circle">
-                                Nueva Cotización
-                            </x-ui.button>
-                        @endcan
-                    </x-slot>
-                </x-page-toolbar>
+        {{-- Filtros del Pipeline --}}
+        @include('sales.quotes.partials.filters')
 
-                {{-- Filtros del Pipeline --}}
-                @include('sales.quotes.partials.filters')
-
-                {{-- Contenedor de Tabla AJAX --}}
-                <div id="quotes-table" class="w-full overflow-hidden">
-                    @include('sales.quotes.partials.table')
-                </div>
-            </div>
+        {{-- Contenedor de Tabla AJAX --}}
+        <div id="quotes-table" class="w-full overflow-hidden">
+            @include('sales.quotes.partials.table')
         </div>
     </div>
 </x-app-layout>

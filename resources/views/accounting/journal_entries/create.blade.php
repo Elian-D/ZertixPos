@@ -7,7 +7,6 @@
             class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
             @csrf
 
-            <x-ui.toasts />
             
             <x-form-header
                 title="Nuevo Asiento Contable"

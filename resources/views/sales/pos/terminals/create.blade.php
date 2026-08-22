@@ -1,6 +1,5 @@
 <x-app-layout>
     <div class="max-w-6xl mx-auto py-8 px-4">
-        <x-ui.toasts />
 
         {{-- Encabezado plano, sin tarjeta ni botón X — "Cancelar" abajo ya cubre el
              volver atrás, un segundo botón de cierre arriba era redundante. --}}

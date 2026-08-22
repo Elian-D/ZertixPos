@@ -52,7 +52,6 @@
             </div>
         </div>
 
-        <x-ui.toasts />
 
         {{-- KPIs divididos en 2 filas de 3 --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-8">

@@ -31,7 +31,6 @@
         }">
 
         <div class="max-w-4xl mx-auto">
-            <x-ui.toasts />
 
             {{-- Banner de Plan — visible siempre, fuera de los tabs, para que el dueño
                  sepa qué Plan tiene activo sin tener que navegar a Funcionalidades del

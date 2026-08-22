@@ -8,37 +8,29 @@
 </script>
 
 <x-app-layout>
-    <div class="w-full max-w-7xl mx-auto py-4 px-2 sm:px-3 lg:px-4">
-        <div class="bg-white shadow-xl rounded-xl">
-            <x-ui.toasts />
+    <div class="p-4 md:p-6 flex flex-col gap-6">
+        <x-ui.page-header title="Auditoría y Reportes NCF" description="Audita los comprobantes fiscales emitidos y genera los reportes exigidos por la DGII." :count="$items->total()" countLabel="registros">
+            <x-slot:secondary>
+                {{-- Exportar Excel (Revisión interna) --}}
+                <x-ui.button href="{{ route('finance.ncf.logs.export.excel', request()->all()) }}"
+                    appearance="ghost" variant="secondary" class="w-full justify-start" iconLeft="heroicon-s-document-arrow-down">
+                    Excel
+                </x-ui.button>
 
-            <div class="p-6">
-                <x-page-toolbar title="Auditoría y Reportes NCF">
-                    <x-slot name="actions">
-                        <div class="flex flex-wrap gap-2">
-                            {{-- Exportar Excel (Revisión interna) --}}
-                            <x-ui.button href="{{ route('finance.ncf.logs.export.excel', request()->all()) }}"
-                                appearance="ghost" variant="secondary" iconLeft="heroicon-s-document-arrow-down">
-                                Excel
-                            </x-ui.button>
+                {{-- Botón para abrir modal de periodo TXT --}}
+                <x-ui.button x-data="" x-on:click="$dispatch('open-modal', 'export-607-modal')"
+                    appearance="ghost" variant="secondary" class="w-full justify-start" iconLeft="heroicon-s-arrow-down-tray">
+                    Generar 607 (TXT)
+                </x-ui.button>
+            </x-slot:secondary>
+        </x-ui.page-header>
 
-                            {{-- Botón para abrir modal de periodo TXT --}}
-                            <x-ui.button x-data="" x-on:click="$dispatch('open-modal', 'export-607-modal')"
-                                appearance="ghost" variant="secondary" iconLeft="heroicon-s-arrow-down-tray">
-                                Generar 607 (TXT)
-                            </x-ui.button>
-                        </div>
-                    </x-slot>
-                </x-page-toolbar>
+        {{-- Filtros del Monitor --}}
+        @include('sales.ncf.logs.partials.filters')
 
-                {{-- Filtros del Monitor --}}
-                @include('sales.ncf.logs.partials.filters')
-
-                {{-- Contenedor de Tabla AJAX --}}
-                <div id="ncf-logs-table" class="w-full overflow-hidden mt-4">
-                    @include('sales.ncf.logs.partials.table')
-                </div>
-            </div>
+        {{-- Contenedor de Tabla AJAX --}}
+        <div id="ncf-logs-table" class="w-full overflow-hidden">
+            @include('sales.ncf.logs.partials.table')
         </div>
     </div>
 

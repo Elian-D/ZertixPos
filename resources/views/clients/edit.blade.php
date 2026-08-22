@@ -16,7 +16,6 @@
             @if(isset($client)) 
                 @method('PUT') 
             @endif
-            <x-ui.toasts />
             <x-form-header
                 :title="isset($client) ? 'Editar Cliente: ' . $client->name : 'Nuevo Cliente'"
                 subtitle="Complete todos los campos requeridos para la gestión comercial."
