@@ -44,7 +44,7 @@
         {{-- ELIMINADA la clase ml-XX para que el sidebar FLOTE cuando esté colapsado. --}}
         {{-- x-cloak acá evita que se pinte el estado intermedio (sidebar ya visible, --}}
         {{-- contenido todavía sin el margen aplicado) mientras Alpine calcula isSidebarOpen. --}}
-        <div class="flex min-h-screen bg-gray-100" x-cloak>
+        <div class="flex h-screen overflow-hidden bg-gray-100" x-cloak>
             
             {{-- SIDEBAR --}}
             <x-sidebar.layout>
@@ -239,7 +239,7 @@
             </div>
 
             {{-- CONTENIDO PRINCIPAL --}}
-            <div class="flex-1 flex flex-col min-w-0 transition-all duration-300 ml-0"
+            <div class="flex-1 flex flex-col min-w-0 overflow-hidden transition-all duration-300 ml-0"
                 :class="{
                     'sm:ml-64': isSidebarOpen,
                     'sm:ml-20': !isSidebarOpen
@@ -247,15 +247,32 @@
 
                 {{-- HEADER / TOPBAR --}}
                 <x-header />
-                
-                {{-- CONTENIDO VARIABLE --}}
-                {{-- AÑADIDO: Se añade el margen solo en PC y lo controla x-data para compensar el sidebar. --}}
-                <main class="p-6 transition-all duration-300 w-full">
-                    {{ $slot }}
+
+                {{--
+                    CONTENIDO VARIABLE — misma estructura que app.blade.php de Orvian (Fase 7):
+                    <main> es el único que scrollea (overflow-y-auto, flex-col) para que el header
+                    quede siempre fijo arriba; adentro, un div con el padding real del contenido
+                    (donde van breadcrumbs de REQ-7.8 antes de $slot) y, como hermano después de
+                    ese div, el lugar para <x-ui.footer /> de REQ-7.7 — footer pegado al fondo del
+                    scroll, no al fondo de la ventana, igual que en Orvian.
+                --}}
+                <main class="flex-1 overflow-y-auto custom-scroll flex flex-col">
+                    <div class="flex-1 p-4 md:p-6 relative">
+                        <x-ui.breadcrumbs />
+                        {{ $slot }}
+                    </div>
+                    <x-ui.footer />
                 </main>
 
             </div>
         </div>
+
+        {{-- Fuera del wrapper .h-screen.overflow-hidden a propósito (igual que Orvian): un solo
+             x-ui.toasts para toda la app, no uno por vista. Vivir fuera evita depender de que
+             ningún ancestro con transform/filter (que rompería position:fixed) se agregue después
+             dentro del wrapper de contenido. --}}
+        <x-ui.toasts />
+
         @stack('scripts')
         
         {{-- Usamos la configuración manual para que no inyecte Alpine doble --}}

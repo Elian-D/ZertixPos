@@ -1,35 +1,30 @@
 <x-app-layout>
-    <div class="max-w-7xl mx-auto py-8 px-4">
-
-        <x-ui.toasts />
+    <div class="p-4 md:p-6 flex flex-col gap-6">
 
         {{-- TOOLBAR --}}
-        <x-page-toolbar title="Papelera de Tippos de Equipos" subtitle="Tipos de Equipos eliminados recientemente">
+        <x-ui.page-header title="Papelera de Tippos de Equipos" description="Consulta y restaura los tipos de equipo eliminados o bórralos de forma definitiva." :count="$items->total()" countLabel="tipos de equipos eliminados">
             <x-slot name="actions">
                 <x-ui.button href="{{ route('clients.equipmentTypes.index') }}" appearance="ghost" variant="secondary" iconLeft="heroicon-s-arrow-left">
                     Volver a Tipos Equipos
                 </x-ui.button>
             </x-slot>
-        </x-page-toolbar>
+        </x-ui.page-header>
 
-        {{-- CONTENEDOR DE TABLA Y FILTROS --}}
-        <div class="bg-white shadow-xl rounded-xl border border-gray-100 mt-6 p-6">
-            <div class="p-4 border-b border-gray-100 bg-gray-50/50 rounded-t-xl">
-                <form id="equipment-trash-filters" class="flex gap-4">
-                    <div class="relative flex-1">
-                        <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <x-heroicon-s-magnifying-glass class="h-4 w-4 text-gray-400" />
-                        </span>
-                        <input type="text" name="search" 
-                                class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-white placeholder-gray-500 focus:ring-indigo-500 sm:text-sm shadow-sm" 
-                                placeholder="Buscar nombre o prefijo...">
-                    </div>
-                </form>
-            </div>
+        <div class="p-4 border-b border-gray-100 bg-gray-50/50 rounded-t-xl">
+            <form id="equipment-trash-filters" class="flex gap-4">
+                <div class="relative flex-1">
+                    <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <x-heroicon-s-magnifying-glass class="h-4 w-4 text-gray-400" />
+                    </span>
+                    <input type="text" name="search"
+                            class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg bg-white placeholder-gray-500 focus:ring-indigo-500 sm:text-sm shadow-sm"
+                            placeholder="Buscar nombre o prefijo...">
+                </div>
+            </form>
+        </div>
 
-            <div>
-                @include('clients.equipmentTypes.partials.eliminados-table', ['items' => $items])
-            </div>
+        <div>
+            @include('clients.equipmentTypes.partials.eliminados-table', ['items' => $items])
         </div>
     </div>
 </x-app-layout>

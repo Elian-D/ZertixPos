@@ -5,7 +5,6 @@
             class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100 transition-all">
             @csrf
 
-            <x-ui.toasts />
             
             {{-- HEADER --}}
             <div class="bg-white border-b border-gray-100 p-6 flex justify-between items-center">

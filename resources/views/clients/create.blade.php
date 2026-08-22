@@ -11,7 +11,6 @@
                 }">
             @csrf
             
-            <x-ui.toasts />
             
             <x-form-header
             title="Nuevo Cliente"

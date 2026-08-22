@@ -5,27 +5,22 @@
     };
 </script>
 <x-app-layout>
-    <div class="w-full max-w-7xl mx-auto py-4 px-2 sm:px-3 lg:px-4">
-        <div class="bg-white shadow-xl rounded-xl">
-            <x-ui.toasts />
+    <div class="p-4 md:p-6 flex flex-col gap-6">
 
-            <div class="p-6">
-                <x-page-toolbar title="Estado Actual de Inventario">
-                    <x-slot name="actions">
-                        <x-ui.button href="{{ route('inventory.stocks.export', request()->query()) }}" appearance="ghost" variant="secondary" iconLeft="heroicon-s-arrow-down-tray">
-                            Exportar Inventario
-                        </x-ui.button>
-                    </x-slot>
-                </x-page-toolbar>
+        <x-ui.page-header title="Estado Actual de Inventario" description="Consulta las existencias actuales de tus productos por almacén." :count="$stocks->total()" countLabel="existencias">
+            <x-slot:secondary>
+                <x-ui.button href="{{ route('inventory.stocks.export', request()->query()) }}" appearance="ghost" variant="secondary" iconLeft="heroicon-s-arrow-down-tray" class="w-full justify-start">
+                    Exportar Inventario
+                </x-ui.button>
+            </x-slot:secondary>
+        </x-ui.page-header>
 
-                {{-- FILTROS --}}
-                @include('inventory.stocks.partials.filters')
+        {{-- FILTROS --}}
+        @include('inventory.stocks.partials.filters')
 
-                {{-- TABLA AJAX --}}
-                <div id="stocks-table" class="w-full overflow-hidden mt-4">
-                    @include('inventory.stocks.partials.table')
-                </div>
-            </div>
+        {{-- TABLA AJAX --}}
+        <div id="stocks-table" class="w-full overflow-hidden">
+            @include('inventory.stocks.partials.table')
         </div>
     </div>
 </x-app-layout>

@@ -112,7 +112,7 @@
                         }));
 
                         // Toast sin recargar la página (el toast de sesión solo pinta en el HTML inicial).
-                        window.dispatchEvent(new CustomEvent('toast', {
+                        window.dispatchEvent(new CustomEvent('notify', {
                             detail: {
                                 type: 'success',
                                 title: 'Cliente creado',

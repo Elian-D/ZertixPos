@@ -6,7 +6,6 @@
             @csrf
             @method('PUT')
 
-            <x-ui.toasts />
             
             <x-form-header
                 title="Editar: {{ $item->name }}"
