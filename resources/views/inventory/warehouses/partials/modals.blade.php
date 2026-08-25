@@ -11,32 +11,47 @@
 
             <div class="space-y-4">
                 {{-- Nombre --}}
-                <div>
-                    <x-input-label for="name" value="Nombre del almacén" />
-                    <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" placeholder="Ej: Bodega Central o Camión #01" required />
-                </div>
+                <x-ui.forms.input
+                    label="Nombre del almacén"
+                    id="name"
+                    name="name"
+                    type="text"
+                    placeholder="Ej: Bodega Central o Camión #01"
+                    :error="$errors->first('name')"
+                    required
+                />
 
                 {{-- Tipo de Almacén --}}
-                <div>
-                    <x-input-label for="type" value="Tipo de ubicación" />
-                    <select name="type" id="type" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
-                        @foreach($types as $value => $label)
-                            <option value="{{ $value }}" {{ old('type') == $value ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                <x-ui.forms.select
+                    label="Tipo de ubicación"
+                    name="type"
+                    id="type"
+                    :error="$errors->first('type')"
+                    required
+                >
+                    @foreach($types as $value => $label)
+                        <option value="{{ $value }}" {{ old('type') == $value ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </x-ui.forms.select>
 
                 {{-- Dirección/Ubicación --}}
-                <div>
-                    <x-input-label for="address" value="Dirección o Referencia" />
-                    <x-text-input id="address" name="address" type="text" class="mt-1 block w-full" placeholder="Dirección física o placa del vehículo" />
-                </div>
+                <x-ui.forms.input
+                    label="Dirección o Referencia"
+                    id="address"
+                    name="address"
+                    type="text"
+                    placeholder="Dirección física o placa del vehículo"
+                    :error="$errors->first('address')"
+                />
 
                 {{-- Descripción --}}
-                <div>
-                    <x-input-label for="description" value="Descripción (Opcional)" />
-                    <textarea name="description" id="description" rows="2" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">{{ old('description') }}</textarea>
-                </div>
+                <x-ui.forms.textarea
+                    label="Descripción (Opcional)"
+                    name="description"
+                    id="description"
+                    :rows="2"
+                    :error="$errors->first('description')"
+                >{{ old('description') }}</x-ui.forms.textarea>
 
                 {{-- Estado Operativo (Mantenemos tu diseño de radios) --}}
                 <div>
@@ -209,29 +224,40 @@
             @csrf @method('PUT')
 
             <div class="space-y-4">
-                <div>
-                    <x-input-label value="Nombre del almacén" />
-                    <x-text-input name="name" type="text" class="mt-1 block w-full" value="{{ $item->name }}" required />
-                </div>
+                <x-ui.forms.input
+                    label="Nombre del almacén"
+                    name="name"
+                    type="text"
+                    value="{{ $item->name }}"
+                    :error="$errors->first('name')"
+                    required
+                />
 
-                <div>
-                    <x-input-label value="Tipo de ubicación" />
-                    <select name="type" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
-                        @foreach($types as $value => $label)
-                            <option value="{{ $value }}" {{ (old('type', $item->type) == $value) ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                <x-ui.forms.select
+                    label="Tipo de ubicación"
+                    name="type"
+                    :error="$errors->first('type')"
+                    required
+                >
+                    @foreach($types as $value => $label)
+                        <option value="{{ $value }}" {{ (old('type', $item->type) == $value) ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </x-ui.forms.select>
 
-                <div>
-                    <x-input-label value="Dirección o Referencia" />
-                    <x-text-input name="address" type="text" class="mt-1 block w-full" value="{{ $item->address }}" />
-                </div>
+                <x-ui.forms.input
+                    label="Dirección o Referencia"
+                    name="address"
+                    type="text"
+                    value="{{ $item->address }}"
+                    :error="$errors->first('address')"
+                />
 
-                <div>
-                    <x-input-label value="Descripción" />
-                    <textarea name="description" rows="2" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">{{ old('description', $item->description) }}</textarea>
-                </div>
+                <x-ui.forms.textarea
+                    label="Descripción"
+                    name="description"
+                    :rows="2"
+                    :error="$errors->first('description')"
+                >{{ old('description', $item->description) }}</x-ui.forms.textarea>
 
                 <div>
                     <x-input-label value="Estado Operativo" />

@@ -18,13 +18,22 @@
                 {{-- SECCIÓN 1: CABECERA --}}
                 <section class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50/50 p-6 rounded-xl border border-gray-100">
                     <div class="md:col-span-1">
-                        <x-input-label value="Fecha Contable" />
-                        <x-text-input type="date" name="entry_date" class="w-full mt-1" 
-                            value="{{ date('Y-m-d') }}" required />
+                        <x-ui.forms.input
+                            label="Fecha Contable"
+                            type="date"
+                            name="entry_date"
+                            value="{{ date('Y-m-d') }}"
+                            :error="$errors->first('entry_date')"
+                            required
+                        />
                     </div>
                     <div class="md:col-span-1">
-                        <x-input-label value="Referencia / Documento" />
-                        <x-text-input name="reference" class="w-full mt-1" placeholder="Ej: CH-001 o FAC-502" />
+                        <x-ui.forms.input
+                            label="Referencia / Documento"
+                            name="reference"
+                            placeholder="Ej: CH-001 o FAC-502"
+                            :error="$errors->first('reference')"
+                        />
                     </div>
                     <div class="md:col-span-1">
                         <x-input-label value="Estado Inicial" />
@@ -33,9 +42,14 @@
                         </div>
                     </div>
                     <div class="md:col-span-3">
-                        <x-input-label value="Concepto o Glosa" />
-                        <textarea name="description" rows="2" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm" 
-                            placeholder="Describa el motivo de la transacción..." required></textarea>
+                        <x-ui.forms.textarea
+                            label="Concepto o Glosa"
+                            name="description"
+                            :rows="2"
+                            placeholder="Describa el motivo de la transacción..."
+                            :error="$errors->first('description')"
+                            required
+                        ></x-ui.forms.textarea>
                     </div>
                 </section>
 

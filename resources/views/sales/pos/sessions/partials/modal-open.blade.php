@@ -73,17 +73,15 @@
         <div class="space-y-5">
             {{-- 1. Selección de Terminal --}}
             <div>
-                <x-input-label for="terminal_id" value="Seleccionar Terminal / Punto de Venta" />
-                <select name="terminal_id" id="terminal_id" x-model="terminalId"
-                    @change="handleTerminalChange()"
-                    class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-emerald-500 focus:border-emerald-500 text-sm" required>
-                    <option value="">Seleccione una terminal disponible...</option>
+                <x-ui.forms.select label="Seleccionar Terminal / Punto de Venta" name="terminal_id" id="terminal_id"
+                    x-model="terminalId" @change="handleTerminalChange()" required
+                    placeholder="Seleccione una terminal disponible...">
                     @foreach($available_terminals as $terminal)
                         <option value="{{ $terminal->id }}">
                             {{ $terminal->name }} ({{ $terminal->warehouse->name ?? 'Sin Almacén' }})
                         </option>
                     @endforeach
-                </select>
+                </x-ui.forms.select>
             </div>
 
             {{-- 2. Validación de PIN (REDISEÑADO) --}}
@@ -184,10 +182,8 @@
 
             {{-- 4. Notas --}}
             <div x-show="terminalId && (!needsPin || isVerified)" x-transition>
-                <x-input-label for="notes" value="Observaciones de Apertura" />
-                <textarea name="notes" id="notes" rows="2" 
-                    class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-emerald-500 focus:border-emerald-500 text-sm" 
-                    placeholder="Escriba aquí cualquier observación pertinente..."></textarea>
+                <x-ui.forms.textarea label="Observaciones de Apertura" name="notes" id="notes" :rows="2"
+                    placeholder="Escriba aquí cualquier observación pertinente..."></x-ui.forms.textarea>
             </div>
         </div>
 

@@ -29,20 +29,17 @@
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="md:col-span-2">
-                    <x-input-label value="Nombre de la Terminal" />
-                    <x-text-input name="name" class="w-full mt-1 focus:border-zertix-primary focus:ring-zertix-primary" :value="old('name', $posTerminal->name ?? '')" placeholder="Ej: Caja Principal 01" required />
+                    <x-ui.forms.input label="Nombre de la Terminal" name="name" value="{{ old('name', $posTerminal->name ?? '') }}" placeholder="Ej: Caja Principal 01" required :error="$errors->first('name')" />
                 </div>
 
                 <div class="md:col-span-2">
-                    <x-input-label value="Almacén de Despacho" />
-                    <select name="warehouse_id" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-zertix-primary focus:ring-zertix-primary text-sm" required>
-                        <option value="">Seleccione almacén...</option>
+                    <x-ui.forms.select label="Almacén de Despacho" name="warehouse_id" placeholder="Seleccione almacén..." required :error="$errors->first('warehouse_id')">
                         @foreach($warehouses as $warehouse)
                             <option value="{{ $warehouse->id }}" {{ old('warehouse_id', $posTerminal->warehouse_id ?? '') == $warehouse->id ? 'selected' : '' }}>
                                 {{ $warehouse->name }}
                             </option>
                         @endforeach
-                    </select>
+                    </x-ui.forms.select>
                     <p class="mt-1 text-[10px] text-gray-400 italic">El inventario se descontará de este almacén.</p>
                 </div>
             </div>
@@ -57,11 +54,14 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {{-- Terminal Móvil --}}
-                <label class="relative flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all"
-                       :class="isMobile ? 'border-zertix-primary bg-zertix-primary/5' : 'border-gray-100 hover:border-gray-200'">
-                    <input type="hidden" name="is_mobile" value="0">
-                    <input type="checkbox" name="is_mobile" value="1" x-model="isMobile" class="sr-only">
+                {{-- Terminal Móvil — @click="isMobile = !isMobile" en la tarjeta completa
+                     conserva el "clic en cualquier parte de la tarjeta" que daba el <label>
+                     original; el wrapper interno con @click.stop evita que el propio click
+                     del switch (que ya hace su propio toggle) dispare un segundo toggle por
+                     burbujeo, dejando la tarjeta en el estado contrario al que se ve. --}}
+                <div class="relative flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all"
+                     @click="isMobile = !isMobile"
+                     :class="isMobile ? 'border-zertix-primary bg-zertix-primary/5' : 'border-gray-100 hover:border-gray-200'">
                     <div class="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-colors"
                          :class="isMobile ? 'bg-zertix-primary text-white' : 'bg-gray-100 text-gray-400'">
                         <x-heroicon-s-device-phone-mobile class="w-5 h-5" />
@@ -70,16 +70,16 @@
                         <p class="text-sm font-bold text-gray-800">Terminal Móvil</p>
                         <p class="text-xs text-gray-500 mt-0.5">Terminal portátil, ej. tablet en ruta.</p>
                     </div>
-                    <div class="shrink-0 w-10 h-6 rounded-full transition-colors relative mt-0.5" :class="isMobile ? 'bg-zertix-primary' : 'bg-gray-300'">
-                        <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform" :class="isMobile ? 'translate-x-4' : ''"></div>
+                    <input type="hidden" name="is_mobile" value="0">
+                    <div class="mt-0.5" @click.stop>
+                        <x-ui.forms.toggle name="is_mobile" value="1" x-model="isMobile" />
                     </div>
-                </label>
+                </div>
 
                 {{-- Terminal Activa --}}
-                <label class="relative flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all"
-                       :class="isActive ? 'border-zertix-primary bg-zertix-primary/5' : 'border-gray-100 hover:border-gray-200'">
-                    <input type="hidden" name="is_active" value="0">
-                    <input type="checkbox" name="is_active" value="1" x-model="isActive" class="sr-only">
+                <div class="relative flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all"
+                     @click="isActive = !isActive"
+                     :class="isActive ? 'border-zertix-primary bg-zertix-primary/5' : 'border-gray-100 hover:border-gray-200'">
                     <div class="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-colors"
                          :class="isActive ? 'bg-zertix-primary text-white' : 'bg-gray-100 text-gray-400'">
                         <x-heroicon-s-power class="w-5 h-5" />
@@ -88,16 +88,16 @@
                         <p class="text-sm font-bold text-gray-800">Terminal Activa</p>
                         <p class="text-xs text-gray-500 mt-0.5">Disponible para abrir turno. Inactiva no aparece en el Lobby.</p>
                     </div>
-                    <div class="shrink-0 w-10 h-6 rounded-full transition-colors relative mt-0.5" :class="isActive ? 'bg-zertix-primary' : 'bg-gray-300'">
-                        <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform" :class="isActive ? 'translate-x-4' : ''"></div>
+                    <input type="hidden" name="is_active" value="0">
+                    <div class="mt-0.5" @click.stop>
+                        <x-ui.forms.toggle name="is_active" value="1" x-model="isActive" />
                     </div>
-                </label>
+                </div>
 
                 {{-- Requiere PIN de Seguridad --}}
-                <label class="relative flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all"
-                       :class="requiresPin ? 'border-zertix-primary bg-zertix-primary/5' : 'border-gray-100 hover:border-gray-200'">
-                    <input type="hidden" name="requires_pin" value="0">
-                    <input type="checkbox" name="requires_pin" value="1" x-model="requiresPin" class="sr-only">
+                <div class="relative flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all"
+                     @click="requiresPin = !requiresPin"
+                     :class="requiresPin ? 'border-zertix-primary bg-zertix-primary/5' : 'border-gray-100 hover:border-gray-200'">
                     <div class="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-colors"
                          :class="requiresPin ? 'bg-zertix-primary text-white' : 'bg-gray-100 text-gray-400'">
                         <x-heroicon-s-lock-closed class="w-5 h-5" />
@@ -106,16 +106,16 @@
                         <p class="text-sm font-bold text-gray-800">Requiere PIN de Seguridad</p>
                         <p class="text-xs text-gray-500 mt-0.5">Exige código de 4 dígitos para operar esta terminal.</p>
                     </div>
-                    <div class="shrink-0 w-10 h-6 rounded-full transition-colors relative mt-0.5" :class="requiresPin ? 'bg-zertix-primary' : 'bg-gray-300'">
-                        <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform" :class="requiresPin ? 'translate-x-4' : ''"></div>
+                    <input type="hidden" name="requires_pin" value="0">
+                    <div class="mt-0.5" @click.stop>
+                        <x-ui.forms.toggle name="requires_pin" value="1" x-model="requiresPin" />
                     </div>
-                </label>
+                </div>
 
                 {{-- Permite Cobro de Cuentas por Cobrar (Fase 6, REQ-6.5) --}}
-                <label class="relative flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all"
-                       :class="allowReceivableCollection ? 'border-zertix-primary bg-zertix-primary/5' : 'border-gray-100 hover:border-gray-200'">
-                    <input type="hidden" name="allow_receivable_collection" value="0">
-                    <input type="checkbox" name="allow_receivable_collection" value="1" x-model="allowReceivableCollection" class="sr-only">
+                <div class="relative flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all"
+                     @click="allowReceivableCollection = !allowReceivableCollection"
+                     :class="allowReceivableCollection ? 'border-zertix-primary bg-zertix-primary/5' : 'border-gray-100 hover:border-gray-200'">
                     <div class="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-colors"
                          :class="allowReceivableCollection ? 'bg-zertix-primary text-white' : 'bg-gray-100 text-gray-400'">
                         <x-heroicon-s-currency-dollar class="w-5 h-5" />
@@ -124,10 +124,11 @@
                         <p class="text-sm font-bold text-gray-800">Permite Cobro de Cuentas por Cobrar</p>
                         <p class="text-xs text-gray-500 mt-0.5">Habilita el botón "Cobrar Deudas" en el punto de venta.</p>
                     </div>
-                    <div class="shrink-0 w-10 h-6 rounded-full transition-colors relative mt-0.5" :class="allowReceivableCollection ? 'bg-zertix-primary' : 'bg-gray-300'">
-                        <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform" :class="allowReceivableCollection ? 'translate-x-4' : ''"></div>
+                    <input type="hidden" name="allow_receivable_collection" value="0">
+                    <div class="mt-0.5" @click.stop>
+                        <x-ui.forms.toggle name="allow_receivable_collection" value="1" x-model="allowReceivableCollection" />
                     </div>
-                </label>
+                </div>
             </div>
 
             {{-- Panel de PIN: solo visible si "Requiere PIN de Seguridad" está activo — se
@@ -176,21 +177,18 @@
             <div class="space-y-6">
                 @if(general_config()?->esModoFiscal())
                     <div>
-                        <x-input-label value="NCF por Defecto" />
-                        <select name="default_ncf_type_id" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-zertix-primary focus:ring-zertix-primary text-sm">
-                            <option value="">Seleccione tipo...</option>
+                        <x-ui.forms.select label="NCF por Defecto" name="default_ncf_type_id" placeholder="Seleccione tipo..." :error="$errors->first('default_ncf_type_id')">
                             @foreach($ncf_types as $ncf)
                                 <option value="{{ $ncf['id'] }}" {{ old('default_ncf_type_id', $posTerminal->default_ncf_type_id ?? '') == $ncf['id'] ? 'selected' : '' }}>
                                     {{ $ncf['name'] }}
                                 </option>
                             @endforeach
-                        </select>
+                        </x-ui.forms.select>
                     </div>
                 @endif
 
                 <div>
-                    <x-input-label value="Cliente por Defecto" />
-                    <select name="default_client_id" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:border-zertix-primary focus:ring-zertix-primary text-sm">
+                    <x-ui.forms.select label="Cliente por Defecto" name="default_client_id" placeholder="" :error="$errors->first('default_client_id')">
                         <option value="" {{ is_null(old('default_client_id', $posTerminal->default_client_id ?? null)) ? 'selected' : '' }}>
                             Heredar de Ajustes POS (Actual: {{ $global_client_name }})
                         </option>
@@ -199,7 +197,7 @@
                                 {{ $client['name'] }} @if($client['tax_id'] != 'N/A') — {{ $client['tax_id'] }} @endif
                             </option>
                         @endforeach
-                    </select>
+                    </x-ui.forms.select>
                 </div>
             </div>
         </section>
@@ -244,14 +242,8 @@
             <div class="space-y-5">
                 <div class="space-y-2">
                     <div class="flex items-center justify-between gap-3">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="hidden" name="allow_item_discount" value="0">
-                            <input type="checkbox" name="allow_item_discount" value="1" x-model="allowItemDiscount" class="sr-only">
-                            <div class="shrink-0 w-10 h-6 rounded-full transition-colors relative" :class="allowItemDiscount ? 'bg-zertix-primary' : 'bg-gray-300'">
-                                <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform" :class="allowItemDiscount ? 'translate-x-4' : ''"></div>
-                            </div>
-                            <span class="text-sm font-semibold text-gray-700">Por Ítem</span>
-                        </label>
+                        <input type="hidden" name="allow_item_discount" value="0">
+                        <x-ui.forms.toggle name="allow_item_discount" value="1" x-model="allowItemDiscount" label="Por Ítem" />
                         <div class="relative w-20">
                             <x-text-input type="number" step="0.01" min="0" max="100" name="max_item_discount_percentage" class="w-full text-right pr-6 py-1.5 text-sm focus:border-zertix-primary focus:ring-zertix-primary" :value="old('max_item_discount_percentage', $posTerminal->max_item_discount_percentage ?? 5.00)" ::disabled="!allowItemDiscount" ::required="allowItemDiscount" />
                             <span class="absolute inset-y-0 right-2 flex items-center text-gray-400 text-xs">%</span>
@@ -262,14 +254,8 @@
 
                 <div class="space-y-2">
                     <div class="flex items-center justify-between gap-3">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="hidden" name="allow_global_discount" value="0">
-                            <input type="checkbox" name="allow_global_discount" value="1" x-model="allowGlobalDiscount" class="sr-only">
-                            <div class="shrink-0 w-10 h-6 rounded-full transition-colors relative" :class="allowGlobalDiscount ? 'bg-zertix-primary' : 'bg-gray-300'">
-                                <div class="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform" :class="allowGlobalDiscount ? 'translate-x-4' : ''"></div>
-                            </div>
-                            <span class="text-sm font-semibold text-gray-700">Global</span>
-                        </label>
+                        <input type="hidden" name="allow_global_discount" value="0">
+                        <x-ui.forms.toggle name="allow_global_discount" value="1" x-model="allowGlobalDiscount" label="Global" />
                         <div class="relative w-20">
                             <x-text-input type="number" step="0.01" min="0" max="100" name="max_global_discount_percentage" class="w-full text-right pr-6 py-1.5 text-sm focus:border-zertix-primary focus:ring-zertix-primary" :value="old('max_global_discount_percentage', $posTerminal->max_global_discount_percentage ?? 10.00)" ::disabled="!allowGlobalDiscount" ::required="allowGlobalDiscount" />
                             <span class="absolute inset-y-0 right-2 flex items-center text-gray-400 text-xs">%</span>

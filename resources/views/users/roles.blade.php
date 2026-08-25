@@ -31,35 +31,27 @@
 
                     {{-- 1. CAMPO: ASIGNACIÓN DE ROL --}}
                     <div class="mb-6">
-                        <label for="role_id" class="block text-sm font-medium text-gray-700 mb-2">Seleccione el Nuevo Rol:</label>
-
-                        <select 
-                                name="role_id" {{-- ✨ CAMBIO 1: Debe ser 'role_id' para coincidir con el controlador ✨ --}}
-                                id="role_id" 
-                                required
-                                class="w-full border-gray-300 rounded-md shadow-sm text-base py-2.5 px-4 
-                                        focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50 
-                                        @error('role_id') border-red-500 focus:border-red-500 focus:ring-red-200 @enderror">
-                            
-                            <option value="" disabled selected>-- Elija un Rol --</option>
-                            
+                        <x-ui.forms.select
+                            label="Seleccione el Nuevo Rol:"
+                            name="role_id"
+                            id="role_id"
+                            required
+                            placeholder="-- Elija un Rol --"
+                            :error="$errors->first('role_id')"
+                        >
                             @foreach($roles as $role)
                                 @php
                                     // Verifica si el ID del rol actual está en el array $userRoles
                                     $isSelected = in_array($role->id, $userRoles);
                                 @endphp
-                                
-                                <option 
-                                    value="{{ $role->id }}" {{-- ✨ CAMBIO 2: Debe ser el ID del rol ✨ --}}
+
+                                <option
+                                    value="{{ $role->id }}"
                                     {{ $isSelected ? 'selected' : '' }}>
                                     {{ $role->name }}
                                 </option>
                             @endforeach
-                        </select>
-                        
-                        @error('role_id') {{-- Se valida el campo 'role_id' --}}
-                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p> 
-                        @enderror
+                        </x-ui.forms.select>
                     </div>
 
                     {{-- Botones de Acción --}}

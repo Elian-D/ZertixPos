@@ -18,12 +18,13 @@
                     
                     {{-- Formulario de Búsqueda Estilizado --}}
                     <form action="{{ route('roles.index') }}" method="GET" class="w-full md:w-1/3">
-                        <div class="relative">
-                            <input type="text" name="search" placeholder="Buscar roles..." 
-                                   value="{{ $search ?? '' }}"
-                                   class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm pl-10 pr-4 py-2">
-                            <x-heroicon-s-magnifying-glass class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                        </div>
+                        <x-ui.forms.input
+                            type="text"
+                            name="search"
+                            placeholder="Buscar roles..."
+                            value="{{ $search ?? '' }}"
+                            icon-left="heroicon-s-magnifying-glass"
+                        />
                     </form>
 
                     {{-- Botón Estilizado para Crear Rol --}}

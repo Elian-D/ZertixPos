@@ -4,14 +4,14 @@
             class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
             @csrf
 
-            
+
             <x-form-header
                 title="Nuevo Punto de Venta"
                 subtitle="Complete la información para registrar un nuevo comercio."
                 :back-route="route('clients.delivery_points.index')" />
 
             <div class="p-8 space-y-10">
-                
+
                 {{-- Sección 1: Información Principal --}}
                 <section>
                     <div class="flex items-center gap-2 mb-6 border-b border-gray-100 pb-2">
@@ -21,31 +21,45 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="md:col-span-2">
-                            <x-input-label value="Nombre del Punto de Venta" />
-                            <x-text-input name="name" class="w-full mt-1" :value="old('name')" placeholder="Ej: Colmado La Bendición" required />
+                            <x-ui.forms.input
+                                label="Nombre del Punto de Venta"
+                                name="name"
+                                value="{{ old('name') }}"
+                                placeholder="Ej: Colmado La Bendición"
+                                :error="$errors->first('name')"
+                                required
+                            />
                         </div>
 
                         <div>
-                            <x-input-label value="Cliente Propietario" />
-                            <select name="client_id" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm">
-                                <option value="">Seleccione un cliente...</option>
+                            <x-ui.forms.select
+                                label="Cliente Propietario"
+                                name="client_id"
+                                placeholder="Seleccione un cliente..."
+                                :error="$errors->first('client_id')"
+                                required
+                            >
                                 @foreach($clients as $client)
                                     <option value="{{ $client->id }}" {{ old('client_id') == $client->id ? 'selected' : '' }}>
                                         {{ $client->name }}
                                     </option>
                                 @endforeach
-                            </select>
+                            </x-ui.forms.select>
                         </div>
 
                         <div>
-                            <x-input-label value="Tipo de Negocio" />
-                            <select name="business_type_id" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm">
+                            <x-ui.forms.select
+                                label="Tipo de Negocio"
+                                name="business_type_id"
+                                :error="$errors->first('business_type_id')"
+                                required
+                            >
                                 @foreach($businessTypes as $type)
                                     <option value="{{ $type->id }}" {{ old('business_type_id') == $type->id ? 'selected' : '' }}>
                                         {{ $type->nombre }}
                                     </option>
                                 @endforeach
-                            </select>
+                            </x-ui.forms.select>
                         </div>
                     </div>
                 </section>
@@ -59,21 +73,35 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div>
-                            <x-input-label value="Nombre del Contacto" />
-                            <x-text-input name="contact_name" class="w-full mt-1" :value="old('contact_name')" placeholder="Nombre del encargado" />
+                            <x-ui.forms.input
+                                label="Nombre del Contacto"
+                                name="contact_name"
+                                value="{{ old('contact_name') }}"
+                                placeholder="Nombre del encargado"
+                                :error="$errors->first('contact_name')"
+                            />
                         </div>
 
                         <div>
-                            <x-input-label value="Teléfono del Contacto" />
-                            <x-text-input name="contact_phone" class="w-full mt-1" :value="old('contact_phone')" placeholder="809-000-0000" />
+                            <x-ui.forms.input
+                                label="Teléfono del Contacto"
+                                name="contact_phone"
+                                value="{{ old('contact_phone') }}"
+                                placeholder="809-000-0000"
+                                :error="$errors->first('contact_phone')"
+                            />
                         </div>
 
                         <div>
-                            <x-input-label value="Estado Inicial" />
-                            <select name="active" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm">
+                            <x-ui.forms.select
+                                label="Estado Inicial"
+                                name="active"
+                                placeholder=""
+                                :error="$errors->first('active')"
+                            >
                                 <option value="1" {{ old('active', '1') == '1' ? 'selected' : '' }}>Activo / Operativo</option>
                                 <option value="0" {{ old('active') == '0' ? 'selected' : '' }}>Inactivo / Cerrado</option>
-                            </select>
+                            </x-ui.forms.select>
                         </div>
                     </div>
                 </section>
@@ -92,39 +120,70 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
-                            <x-input-label value="Provincia" />
-                            <select name="provincia_id" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm">
-                                <option value="">Seleccione provincia...</option>
+                            <x-ui.forms.select
+                                label="Provincia"
+                                name="provincia_id"
+                                placeholder="Seleccione provincia..."
+                                :error="$errors->first('provincia_id')"
+                                required
+                            >
                                 @foreach($states as $state)
                                     <option value="{{ $state->id }}" {{ old('provincia_id') == $state->id ? 'selected' : '' }}>
                                         {{ $state->name }}
                                     </option>
                                 @endforeach
-                            </select>
+                            </x-ui.forms.select>
                         </div>
                         <div>
-                            <x-input-label value="Ciudad" />
-                            <x-text-input name="city" class="w-full mt-1" :value="old('city')" placeholder="Ej: Santo Domingo" required />
+                            <x-ui.forms.input
+                                label="Ciudad"
+                                name="city"
+                                value="{{ old('city') }}"
+                                placeholder="Ej: Santo Domingo"
+                                :error="$errors->first('city')"
+                                required
+                            />
                         </div>
                     </div>
 
                     <div class="space-y-4">
                         <div id="map" style="width:100%; height:300px; border-radius:12px; border:1px solid #e5e7eb" class="shadow-inner"></div>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <x-input-label value="Latitud" />
-                                <x-text-input name="latitude" id="lat" class="w-full mt-1 bg-gray-50 font-mono text-xs" :value="old('latitude', '18.4861')" readonly />
+                                <x-ui.forms.input
+                                    label="Latitud"
+                                    name="latitude"
+                                    id="lat"
+                                    class="bg-gray-50 font-mono text-xs"
+                                    value="{{ old('latitude', '18.4861') }}"
+                                    :error="$errors->first('latitude')"
+                                    hint="Se completa automáticamente al usar el mapa"
+                                    readonly
+                                />
                             </div>
                             <div>
-                                <x-input-label value="Longitud" />
-                                <x-text-input name="longitude" id="lng" class="w-full mt-1 bg-gray-50 font-mono text-xs" :value="old('longitude', '-69.9312')" readonly />
+                                <x-ui.forms.input
+                                    label="Longitud"
+                                    name="longitude"
+                                    id="lng"
+                                    class="bg-gray-50 font-mono text-xs"
+                                    value="{{ old('longitude', '-69.9312') }}"
+                                    :error="$errors->first('longitude')"
+                                    hint="Se completa automáticamente al usar el mapa"
+                                    readonly
+                                />
                             </div>
                         </div>
 
                         <div>
-                            <x-input-label value="Dirección Descriptiva" />
-                            <x-text-input name="address" class="w-full mt-1" :value="old('address')" placeholder="Calle, número, referencia próxima..." />
+                            <x-ui.forms.input
+                                label="Dirección Descriptiva"
+                                name="address"
+                                value="{{ old('address') }}"
+                                placeholder="Calle, número, referencia próxima..."
+                                :error="$errors->first('address')"
+                            />
                         </div>
                     </div>
                 </section>
@@ -135,7 +194,12 @@
                         <div class="w-7 h-7 bg-gray-600 text-white rounded-full flex items-center justify-center font-bold text-xs">4</div>
                         <h3 class="font-bold text-gray-700 uppercase text-xs tracking-wider">Notas Adicionales</h3>
                     </div>
-                    <textarea name="notes" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm" placeholder="Cualquier detalle relevante...">{{ old('notes') }}</textarea>
+                    <x-ui.forms.textarea
+                        name="notes"
+                        :rows="3"
+                        placeholder="Cualquier detalle relevante..."
+                        :error="$errors->first('notes')"
+                    >{{ old('notes') }}</x-ui.forms.textarea>
                 </section>
             </div>
 

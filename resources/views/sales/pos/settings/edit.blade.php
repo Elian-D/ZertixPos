@@ -16,25 +16,19 @@
                     <div class="p-4 sm:p-8 space-y-4 sm:space-y-6">
                         <div class="grid grid-cols-1 gap-4 sm:gap-6">
                             <div>
-                                <label class="text-[10px] sm:text-xs font-bold text-slate-400 uppercase mb-2 block tracking-wider">Cliente por Defecto (Walk-in)</label>
-                                <select name="default_walkin_customer_id" class="w-full bg-slate-50 border-2 border-slate-100 rounded-xl sm:rounded-2xl px-4 py-3 sm:px-5 sm:py-4 text-sm sm:text-base font-semibold text-slate-700 focus:border-indigo-400 transition-all">
+                                <x-ui.forms.select label="Cliente por Defecto (Walk-in)" name="default_walkin_customer_id" placeholder="">
                                     @foreach($clients as $client)
                                         <option value="{{ $client->id }}" {{ $settings->default_walkin_customer_id == $client->id ? 'selected' : '' }}>
                                             {{ $client->name }}
                                         </option>
                                     @endforeach
-                                </select>
+                                </x-ui.forms.select>
                             </div>
-                            
-                            <div class="flex items-center justify-between p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl border border-slate-100">
-                                <div class="flex-1 min-w-0 pr-3">
-                                    <p class="text-xs sm:text-sm font-bold text-slate-700">Creación Rápida</p>
-                                    <p class="text-[10px] sm:text-[11px] text-slate-500 mt-0.5">Permitir crear clientes desde el POS.</p>
-                                </div>
-                                <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                                    <input type="checkbox" name="allow_quick_customer_creation" value="1" class="sr-only peer" {{ $settings->allow_quick_customer_creation ? 'checked' : '' }}>
-                                    <div class="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-indigo-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                                </label>
+
+                            <div class="p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl border border-slate-100">
+                                <x-ui.forms.toggle label="Creación Rápida" name="allow_quick_customer_creation"
+                                    :checked="$settings->allow_quick_customer_creation"
+                                    description="Permitir crear clientes desde el POS." />
                             </div>
                         </div>
 
@@ -46,10 +40,10 @@
                                     <p class="text-[10px] sm:text-xs text-amber-700/70 mt-1">Permite imprimir o enviar cotizaciones sin que se descuente stock ni se genere una deuda en el sistema.</p>
                                 </div>
                             </div>
-                            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0 self-end sm:self-auto">
-                                <input type="checkbox" name="allow_quote_without_save" value="1" class="sr-only peer" {{ $settings->allow_quote_without_save ? 'checked' : '' }}>
-                                <div class="w-14 h-7 bg-amber-200/50 peer-focus:ring-4 peer-focus:ring-amber-100 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-amber-500 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-6 after:w-6 after:transition-all"></div>
-                            </label>
+                            <div class="flex-shrink-0 self-end sm:self-auto">
+                                <x-ui.forms.toggle name="allow_quote_without_save"
+                                    :checked="$settings->allow_quote_without_save" />
+                            </div>
                         </div>
                     </div>
                 </section>
@@ -81,15 +75,10 @@
                             </div>
                         </div>
                         
-                        <div class="flex items-center justify-between p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl border border-slate-100">
-                            <div class="flex-1 min-w-0 pr-3">
-                                <p class="text-xs sm:text-sm font-bold text-slate-700">Auto-imprimir Recibo</p>
-                                <p class="text-[10px] sm:text-[11px] text-slate-500 mt-0.5">Lanza la impresión al cobrar.</p>
-                            </div>
-                            <label class="relative inline-flex items-center cursor-pointer flex-shrink-0">
-                                <input type="checkbox" name="auto_print_receipt" value="1" class="sr-only peer" {{ $settings->auto_print_receipt ? 'checked' : '' }}>
-                                <div class="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-indigo-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all"></div>
-                            </label>
+                        <div class="p-3 sm:p-4 bg-slate-50 rounded-xl sm:rounded-2xl border border-slate-100">
+                            <x-ui.forms.toggle label="Auto-imprimir Recibo" name="auto_print_receipt"
+                                :checked="$settings->auto_print_receipt"
+                                description="Lanza la impresión al cobrar." />
                         </div>
                     </div>
                 </section>

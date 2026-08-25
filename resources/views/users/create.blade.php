@@ -11,46 +11,40 @@
                 <form action="{{ route('users.store') }}" method="POST">
                     @csrf
                     
-                    {{-- 1. CAMPO: Nombre (Sin cambios) --}}
+                    {{-- 1. CAMPO: Nombre --}}
                     <div class="mb-6">
-                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Nombre del Usuario:</label>
-                        
-                        <input type="text" 
-                                name="name" 
-                                id="name" 
-                                value="{{ old('name') }}"
-                                placeholder="Ej: Juan Pérez"
-                                required
-                                class="w-full border-gray-300 rounded-md shadow-sm text-base py-2.5 px-4 
-                                        focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50
-                                        @error('name') border-red-500 focus:border-red-500 focus:ring-red-200 @enderror">
-
-                        @error('name') 
-                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p> 
-                        @enderror
+                        <x-ui.forms.input
+                            label="Nombre del Usuario:"
+                            type="text"
+                            name="name"
+                            id="name"
+                            value="{{ old('name') }}"
+                            placeholder="Ej: Juan Pérez"
+                            required
+                            :error="$errors->first('name')"
+                        />
                     </div>
 
-                    {{-- 2. CAMPO: Email (Sin cambios) --}}
+                    {{-- 2. CAMPO: Email --}}
                     <div class="mb-6">
-                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Correo Electrónico:</label>
-                        
-                        <input type="email" 
-                                name="email" 
-                                id="email" 
-                                value="{{ old('email') }}"
-                                placeholder="ejemplo@dominio.com"
-                                required
-                                class="w-full border-gray-300 rounded-md shadow-sm text-base py-2.5 px-4 
-                                        focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50
-                                        @error('email') border-red-500 focus:border-red-500 focus:ring-red-200 @enderror">
-
-                        @error('email') 
-                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p> 
-                        @enderror
+                        <x-ui.forms.input
+                            label="Correo Electrónico:"
+                            type="email"
+                            name="email"
+                            id="email"
+                            value="{{ old('email') }}"
+                            placeholder="ejemplo@dominio.com"
+                            required
+                            :error="$errors->first('email')"
+                        />
                     </div>
 
                 {{-- CONTENEDOR PRINCIPAL para el estado 'show' compartido --}}
-                    <div x-data="{ show: false }"> 
+                    {{-- Password y Password Confirmation se dejan con <input> nativo: el botón
+                         de mostrar/ocultar contraseña (ícono clickeable superpuesto que cambia
+                         `:type`) no encaja en x-ui.forms.input — iconRight solo acepta un
+                         heroicon estático sin @click, no un botón interactivo. --}}
+                    <div x-data="{ show: false }">
                         
                         {{-- 3. CAMPO: Contraseña (Con el botón de control) --}}
                         <div class="mb-6"> 

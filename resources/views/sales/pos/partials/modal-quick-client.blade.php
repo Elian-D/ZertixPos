@@ -157,13 +157,12 @@
 
             {{-- 1. Nombre Completo --}}
             <div>
-                <x-input-label for="q-name" value="Nombre del Cliente / Razón Social" />
-                <x-text-input 
-                    id="q-name" 
-                    x-model="name" 
-                    class="mt-1 block w-full bg-gray-50 focus:bg-white" 
-                    placeholder="Ej: Juan Pérez o Empresa S.A.S" 
-                    required 
+                <x-ui.forms.input
+                    id="q-name"
+                    label="Nombre del Cliente / Razón Social"
+                    x-model="name"
+                    placeholder="Ej: Juan Pérez o Empresa S.A.S"
+                    required
                     autofocus />
             </div>
 
@@ -207,11 +206,10 @@
             <div class="grid grid-cols-2 gap-4">
                 {{-- 3. Teléfono --}}
                 <div>
-                    <x-input-label for="q-phone" value="Teléfono" />
-                    <x-text-input 
-                        id="q-phone" 
-                        x-model="phone" 
-                        class="mt-1 block w-full" 
+                    <x-ui.forms.input
+                        id="q-phone"
+                        label="Teléfono"
+                        x-model="phone"
                         placeholder="809-000-0000"
                         type="tel" />
                 </div>
@@ -230,11 +228,10 @@
 
             {{-- 5. Dirección --}}
             <div>
-                <x-input-label for="q-address" value="Dirección Corta" />
-                <x-text-input 
-                    id="q-address" 
-                    x-model="address" 
-                    class="mt-1 block w-full text-sm" 
+                <x-ui.forms.input
+                    id="q-address"
+                    label="Dirección Corta"
+                    x-model="address"
                     placeholder="Calle, No., Sector..." />
             </div>
 

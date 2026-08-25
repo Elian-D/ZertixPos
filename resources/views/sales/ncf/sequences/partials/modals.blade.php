@@ -31,14 +31,12 @@
         <div class="space-y-4">
             {{-- Tipo de NCF --}}
             <div>
-                <x-input-label for="ncf_type_id" value="Tipo de Comprobante" />
-                <select name="ncf_type_id" id="ncf_type_id" x-model="typeId" required
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm text-sm focus:ring-indigo-500">
-                    <option value="">Seleccione tipo...</option>
+                <x-ui.forms.select label="Tipo de Comprobante" name="ncf_type_id" id="ncf_type_id" x-model="typeId"
+                    required placeholder="Seleccione tipo..." :error="$errors->first('ncf_type_id')">
                     @foreach($ncf_types as $id => $name)
                         <option value="{{ $id }}">{{ $name }}</option>
                     @endforeach
-                </select>
+                </x-ui.forms.select>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
@@ -50,40 +48,35 @@
                 </div>
                 {{-- Vencimiento (Default 31 Dic) --}}
                 <div>
-                    <x-input-label for="expiry_date" value="Vencimiento (Automático)" />
-                    <div class="relative">
-                        <x-text-input 
-                            type="date" 
-                            name="expiry_date" 
-                            value="{{ now()->addYear()->endOfYear()->format('Y-m-d') }}" 
-                            class="mt-1 block w-full bg-gray-50 text-gray-500 cursor-not-allowed" 
-                            readonly 
-                        />
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <x-heroicon-s-lock-closed class="h-4 w-4 text-gray-400" />
-                        </div>
-                    </div>
-                    <p class="text-[10px] text-indigo-500 mt-1 italic">Vence el último día del año siguente.</p>
+                    <x-ui.forms.input
+                        type="date"
+                        label="Vencimiento (Automático)"
+                        name="expiry_date"
+                        value="{{ now()->addYear()->endOfYear()->format('Y-m-d') }}"
+                        icon-right="heroicon-s-lock-closed"
+                        readonly
+                        :error="$errors->first('expiry_date')"
+                        hint="Vence el último día del año siguiente."
+                    />
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <x-input-label for="from" value="Desde (Inicio)" />
-                    <x-text-input type="number" name="from" x-model.number="startNum" min="1" class="mt-1 block w-full font-mono" required />
+                    <x-ui.forms.input type="number" label="Desde (Inicio)" name="from" x-model.number="startNum"
+                        min="1" class="font-mono" required :error="$errors->first('from')" />
                 </div>
                 <div>
-                    <x-input-label for="to" value="Hasta (Fin)" />
-                    <x-text-input type="number" name="to" x-model.number="endNum" @bind:min="startNum" class="mt-1 block w-full font-mono" required />
+                    <x-ui.forms.input type="number" label="Hasta (Fin)" name="to" x-model.number="endNum"
+                        @bind:min="startNum" class="font-mono" required :error="$errors->first('to')" />
                 </div>
             </div>
 
             {{-- Alerta de Agotamiento --}}
             <div>
-                <x-input-label for="alert_threshold" value="Alerta de Agotamiento (Quedando:)" />
-                <x-text-input type="number" name="alert_threshold" value="50" min="1"
-                    class="mt-1 block w-full" placeholder="Ej. 50" required />
-                <p class="text-[10px] text-gray-500 mt-1">Se notificará cuando queden estos números disponibles.</p>
+                <x-ui.forms.input type="number" label="Alerta de Agotamiento (Quedando:)" name="alert_threshold"
+                    value="50" min="1" placeholder="Ej. 50" required :error="$errors->first('alert_threshold')"
+                    hint="Se notificará cuando queden estos números disponibles." />
             </div>
 
             {{-- Preview --}}
@@ -130,19 +123,18 @@
                 </div>
 
                 <div>
-                    <x-input-label for="new_to" value="Nuevo Límite (Hasta)" />
-                    <x-text-input 
-                        type="number" 
-                        name="new_to" 
+                    <x-ui.forms.input
+                        type="number"
+                        label="Nuevo Límite (Hasta)"
+                        name="new_to"
                         id="new_to"
-                        value="{{ $item->to + 100 }}" 
-                        min="{{ $item->to + 1 }}" 
-                        required 
-                        class="mt-1 block w-full font-mono text-lg"
+                        value="{{ $item->to + 100 }}"
+                        min="{{ $item->to + 1 }}"
+                        required
+                        class="font-mono text-lg"
+                        :error="$errors->first('new_to')"
+                        hint="Debe ser mayor al límite actual."
                     />
-                    <p class="text-[10px] text-indigo-500 mt-1 italic">
-                        * Debe ser mayor al límite actual.
-                    </p>
                 </div>
             </div>
 
@@ -225,10 +217,8 @@
                     @method('PATCH')
                     <div class="flex items-end gap-2">
                         <div class="flex-1">
-                            <x-input-label for="alert_threshold" value="Cambiar Umbral de Alerta" class="text-[10px]" />
-                            <x-text-input type="number" name="alert_threshold" 
-                                value="{{ $item->alert_threshold }}" 
-                                class="block w-full text-xs" />
+                            <x-ui.forms.input type="number" label="Cambiar Umbral de Alerta" name="alert_threshold"
+                                value="{{ $item->alert_threshold }}" />
                         </div>
                         <x-ui.button type="submit" variant="primary" class="py-2 px-3 text-[10px]">
                             Actualizar

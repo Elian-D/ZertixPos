@@ -31,51 +31,47 @@
         <div class="space-y-4">
             {{-- Tipo de Venta --}}
             <div>
-                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Condicion de Venta</label>
-                <select name="payment_type" x-model="paymentType" class="w-full text-sm border-gray-300 rounded-md shadow-sm focus:ring-indigo-500">
+                <x-ui.forms.select label="Condicion de Venta" name="payment_type" x-model="paymentType" placeholder="">
                     <option value="cash">Contado</option>
                     {{-- Consumidor Final nunca es creditable (REQ-2.3) — no tiene
                          identidad real a quien cobrarle después. --}}
                     @if($quote->customer_id != 1)
                         <option value="credit">Credito (CxC)</option>
                     @endif
-                </select>
+                </x-ui.forms.select>
             </div>
 
             {{-- Metodo de Pago --}}
             <div x-show="paymentType === 'cash'">
-                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Metodo de Pago</label>
-                <select name="tipo_pago_id" x-model="selectedTipoPagoId" class="w-full text-sm border-gray-300 rounded-md shadow-sm">
+                <x-ui.forms.select label="Metodo de Pago" name="tipo_pago_id" x-model="selectedTipoPagoId" placeholder="">
                     @forelse($tipo_pagos as $pago)
                         <option value="{{ $pago['id'] }}">{{ $pago['nombre'] }}</option>
                     @empty
                         <option disabled>No hay metodos de pago disponibles</option>
                     @endforelse
-                </select>
+                </x-ui.forms.select>
             </div>
 
             {{-- Referencia: oculta para Efectivo/Tarjeta, opcional en el resto — nunca
                  bloquea el envío (Fase 6, REQ-6.9). Único de los 4 puntos donde el campo
                  no existía en absoluto antes de esta fase. --}}
             <div x-show="paymentType === 'cash' && !isCashOrCardMethod" x-cloak>
-                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Referencia (Opcional)</label>
-                <input type="text" name="reference"
-                       placeholder="Últimos 4 dígitos, # de autorización, # de cheque…"
-                       class="w-full text-sm border-gray-300 rounded-md shadow-sm placeholder-gray-400">
+                <x-ui.forms.input label="Referencia (Opcional)" type="text" name="reference"
+                       placeholder="Últimos 4 dígitos, # de autorización, # de cheque…" />
             </div>
 
             {{-- Comprobante Fiscal --}}
             @if(module_enabled('sales.ncf'))
             <div>
-                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Tipo de Comprobante (NCF)</label>
-                <select name="ncf_type_id" class="w-full text-sm border-gray-300 rounded-md shadow-sm">
+                <x-ui.forms.select label="Tipo de Comprobante (NCF)" name="ncf_type_id" placeholder=""
+                    hint="Deje 'Sin Comprobante' para una venta interna sin impacto fiscal">
                     <option value="">Sin Comprobante (Consumidor Final)</option>
                     @forelse($ncf_types as $ncf)
                         <option value="{{ $ncf['id'] }}">{{ $ncf['name'] }} ({{ $ncf['code'] }})</option>
                     @empty
                         <option disabled>No hay tipos NCF disponibles</option>
                     @endforelse
-                </select>
+                </x-ui.forms.select>
             </div>
             @endif
 

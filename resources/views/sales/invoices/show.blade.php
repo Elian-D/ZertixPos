@@ -20,11 +20,10 @@
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <select id="formatSelector" 
-                            class="block px-4 py-2.5 bg-white border border-gray-300 rounded-lg font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500">
-                            <option value="ticket">Ticket (Térmica)</option>
-                            <option value="letter">Carta (PDF)</option>
-                    </select>
+                    <x-ui.forms.select id="formatSelector" placeholder="">
+                        <option value="ticket">Ticket (Térmica)</option>
+                        <option value="letter">Carta (PDF)</option>
+                    </x-ui.forms.select>
 
                     <a id="printBtn" 
                        href="{{ route('finance.invoices.print', $invoice) }}?format=ticket" 

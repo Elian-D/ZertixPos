@@ -69,18 +69,17 @@
         <div class="overflow-y-auto overscroll-contain flex-1 custom-scrollbar">
             <div class="p-3 space-y-0.5">
                 @foreach($allColumns as $key => $label)
-                    <label class="flex items-center px-3 py-2.5 hover:bg-indigo-50 rounded-lg cursor-pointer group transition-all">
-                        <input type="checkbox" 
-                            name="columns[]" 
-                            value="{{ $key }}" 
+                    <div class="px-3 py-2.5 hover:bg-indigo-50 rounded-lg transition-all">
+                        <x-ui.forms.checkbox
+                            label="{{ $label }}"
+                            name="columns[]"
+                            id="column-{{ $key }}"
+                            value="{{ $key }}"
                             data-column-key="{{ $key }}"
-                            @if($formId) form="{{ $formId }}" @endif
-                            @checked(in_array($key, $visibleColumns))
-                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mr-3 flex-shrink-0">
-                        <span class="text-sm text-gray-700 group-hover:text-indigo-700 font-medium transition-colors">
-                            {{ $label }}
-                        </span>
-                    </label>
+                            :form="$formId ?: null"
+                            :checked="in_array($key, $visibleColumns)"
+                        />
+                    </div>
                 @endforeach
             </div>
         </div>

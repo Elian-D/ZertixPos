@@ -87,34 +87,30 @@
                 <label class="block text-xs font-bold text-gray-600 uppercase mb-2" x-text="'Nuevo valor para ' + label"></label>
                 
                 <template x-if="inputType === 'select'">
-                    <select x-model="selectedValue" class="w-full border-gray-300 rounded-lg text-sm">
-                        <option value="">Seleccionar...</option>
+                    <x-ui.forms.select x-model="selectedValue" placeholder="Seleccionar...">
                         <template x-for="opt in options" :key="opt.id">
                             <option :value="opt.id" x-text="opt.label"></option>
                         </template>
-                    </select>
+                    </x-ui.forms.select>
                 </template>
 
                 <template x-if="inputType === 'text'">
-                    <input type="text" x-model="selectedValue" 
-                        class="w-full border-gray-300 rounded-lg text-sm" 
-                        placeholder="Escriba el nuevo valor...">
+                    <x-ui.forms.input type="text" x-model="selectedValue"
+                        placeholder="Escriba el nuevo valor..." />
                 </template>
 
                 <template x-if="inputType === 'number'">
-                    <input type="number" x-model="selectedValue" 
-                        class="w-full border-gray-300 rounded-lg text-sm">
+                    <x-ui.forms.input type="number" x-model="selectedValue" />
                 </template>
             </div>
 
             <label class="block text-xs font-bold text-gray-600 uppercase mb-2">
                 Escribe <span class="text-indigo-600 font-black" x-text="label.toLowerCase()"></span> para confirmar:
             </label>
-            <input type="text" 
+            <x-ui.forms.input type="text"
                 x-model="confirmText"
                 @keydown.enter="submit"
-                class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                :placeholder="'Escribe ' + label.toLowerCase() + '...'">
+                x-bind:placeholder="'Escribe ' + label.toLowerCase() + '...'" />
         </div>
 
         <div class="mt-6 flex justify-end gap-3">

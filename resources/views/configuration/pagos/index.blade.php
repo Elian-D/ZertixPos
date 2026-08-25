@@ -128,29 +128,30 @@
 
             {{-- Input --}}
             <div class="mt-4">
-                <x-input-label for="nombre" value="Nombre del tipo de pago" />
-                <x-text-input
+                <x-ui.forms.input
+                    label="Nombre del tipo de pago"
                     id="nombre"
                     name="nombre"
                     type="text"
-                    class="mt-1 block w-full"
                     placeholder="Nuevo tipo de pago"
                     required
+                    :error="$errors->first('nombre')"
                 />
-                <x-input-error :messages="$errors->get('nombre')" class="mt-2" />
             </div>
 
             @if ($showAccountingColumn)
                 <div class="mt-4">
-                    <x-input-label for="accounting_account_id" value="Cuenta Contable Asociada" />
-                    <select name="accounting_account_id" id="accounting_account_id"
-                            class="mt-1 block w-full rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">-- Seleccione una cuenta --</option>
+                    <x-ui.forms.select
+                        label="Cuenta Contable Asociada"
+                        name="accounting_account_id"
+                        id="accounting_account_id"
+                        placeholder="-- Seleccione una cuenta --"
+                        :error="$errors->first('accounting_account_id')"
+                    >
                         @foreach($cuentasContables as $cuenta)
                             <option value="{{ $cuenta->id }}">{{ $cuenta->code }} - {{ $cuenta->name }}</option>
                         @endforeach
-                    </select>
-                    <x-input-error :messages="$errors->get('accounting_account_id')" class="mt-2" />
+                    </x-ui.forms.select>
                 </div>
             @endif
 
@@ -199,33 +200,32 @@
 
             {{-- INPUT --}}
             <div class="mt-4">
-                <x-input-label for="nombre-{{ $pago->id }}" value="Nombre" />
-
-                <x-text-input
+                <x-ui.forms.input
+                    label="Nombre"
                     id="nombre-{{ $pago->id }}"
                     name="nombre"
                     type="text"
-                    class="mt-1 block w-full"
                     value="{{ old('nombre', $pago->nombre) }}"
                     required
                     autofocus
+                    :error="$errors->first('nombre')"
                 />
-
-                <x-input-error :messages="$errors->get('nombre')" class="mt-2" />
             </div>
 
             @if ($showAccountingColumn)
                 <div class="mt-4">
-                    <x-input-label for="edit_account_{{ $pago->id }}" value="Cuenta Contable Asociada" />
-                    <select name="accounting_account_id" id="edit_account_{{ $pago->id }}"
-                            class="mt-1 block w-full rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">-- Seleccione una cuenta --</option>
+                    <x-ui.forms.select
+                        label="Cuenta Contable Asociada"
+                        name="accounting_account_id"
+                        id="edit_account_{{ $pago->id }}"
+                        placeholder="-- Seleccione una cuenta --"
+                    >
                         @foreach($cuentasContables as $cuenta)
                             <option value="{{ $cuenta->id }}" {{ $pago->accounting_account_id == $cuenta->id ? 'selected' : '' }}>
                                 {{ $cuenta->code }} - {{ $cuenta->name }}
                             </option>
                         @endforeach
-                    </select>
+                    </x-ui.forms.select>
                 </div>
             @endif
 

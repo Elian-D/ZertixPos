@@ -23,81 +23,102 @@
         
         <div class="space-y-4">
             {{-- 1. Tipo de Movimiento (Primero para definir el flujo) --}}
-            <div>
-                <x-input-label for="type" value="Tipo de Operación" />
-                <select name="type" id="type" x-model="type"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                    <option value="adjustment">Ajuste Manual</option>
-                    <option value="input">Entrada Adicional</option>
-                    <option value="output">Salida / Merma</option>
-                    <option value="transfer">Transferencia entre Almacenes</option>
-                </select>
-            </div>
+            <x-ui.forms.select
+                label="Tipo de Operación"
+                name="type"
+                id="type"
+                x-model="type"
+                placeholder=""
+                :error="$errors->first('type')"
+                required
+            >
+                <option value="adjustment">Ajuste Manual</option>
+                <option value="input">Entrada Adicional</option>
+                <option value="output">Salida / Merma</option>
+                <option value="transfer">Transferencia entre Almacenes</option>
+            </x-ui.forms.select>
 
             {{-- 2. Producto --}}
-            <div>
-                <x-input-label for="product_id" value="Producto" />
-                <select name="product_id" id="product_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm" required>
-                    <option value="">Seleccione un producto...</option>
-                    @foreach($products as $product)
-                        <option value="{{ $product->id }}">{{ $product->name }}</option>
-                    @endforeach
-                </select>
-            </div>
+            <x-ui.forms.select
+                label="Producto"
+                name="product_id"
+                id="product_id"
+                placeholder="Seleccione un producto..."
+                :error="$errors->first('product_id')"
+                required
+            >
+                @foreach($products as $product)
+                    <option value="{{ $product->id }}">{{ $product->name }}</option>
+                @endforeach
+            </x-ui.forms.select>
 
             <div class="grid grid-cols-1 gap-4" :class="type === 'transfer' ? 'sm:grid-cols-2' : ''">
                 {{-- 3. Almacén Origen --}}
                 <div>
-                    <x-input-label for="warehouse_id" x-text="type === 'transfer' ? 'Almacén Origen' : 'Almacén'" />
-                    <select name="warehouse_id" id="warehouse_id" x-model="originId"
-                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm" required>
-                        <option value="">Seleccione...</option>
+                    {{-- Label dinámico vía Alpine: x-ui.forms.select no soporta label reactivo,
+                         así que reproducimos su estilo manualmente y dejamos el select sin label propio. --}}
+                    <label for="warehouse_id" class="text-xs font-semibold mb-1.5 block transition-colors duration-200 text-slate-600" x-text="type === 'transfer' ? 'Almacén Origen' : 'Almacén'"></label>
+                    <x-ui.forms.select
+                        name="warehouse_id"
+                        id="warehouse_id"
+                        x-model="originId"
+                        placeholder="Seleccione..."
+                        :error="$errors->first('warehouse_id')"
+                        required
+                    >
                         @foreach($warehouses as $wh)
                             <option value="{{ $wh->id }}">{{ $wh->name }}</option>
                         @endforeach
-                    </select>
+                    </x-ui.forms.select>
                 </div>
 
                 {{-- 4. Almacén Destino (Dinámico para Transferencias) --}}
                 <template x-if="type === 'transfer'">
                     <div x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95">
-                        <x-input-label for="to_warehouse_id" value="Almacén Destino" />
-                        <select name="to_warehouse_id" id="to_warehouse_id" 
-                            class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm" required>
-                            <option value="">Seleccione destino...</option>
+                        <x-ui.forms.select
+                            label="Almacén Destino"
+                            name="to_warehouse_id"
+                            id="to_warehouse_id"
+                            placeholder="Seleccione destino..."
+                            :error="$errors->first('to_warehouse_id')"
+                            required
+                        >
                             @foreach($warehouses as $wh)
                                 {{-- Validamos que no sea el mismo que el de origen usando Alpine --}}
                                 <option value="{{ $wh->id }}" x-show="originId != {{ $wh->id }}">{{ $wh->name }}</option>
                             @endforeach
-                        </select>
+                        </x-ui.forms.select>
                     </div>
                 </template>
             </div>
 
             {{-- 5. Cantidad con validaciones dinámicas --}}
-            <div>
-                <x-input-label for="quantity" value="Cantidad" />
-                <x-text-input id="quantity" 
-                    name="quantity" 
-                    type="number" 
-                    step="0.01" 
-                    x-model="quantity"
-                    ::min="type !== 'adjustment' ? '0.01' : ''"
-                    class="mt-1 block w-full" 
-                    placeholder="0.00" 
-                    required />
-                <p class="mt-1 text-[10px] italic font-medium" 
-                   :class="type === 'adjustment' ? 'text-blue-500' : 'text-amber-600'" 
-                   x-text="helperText"></p>
-            </div>
+            <x-ui.forms.input
+                label="Cantidad"
+                id="quantity"
+                name="quantity"
+                type="number"
+                step="0.01"
+                x-model="quantity"
+                ::min="type !== 'adjustment' ? '0.01' : ''"
+                placeholder="0.00"
+                :error="$errors->first('quantity')"
+                required
+            />
+            <p class="-mt-2 text-[10px] italic font-medium"
+               :class="type === 'adjustment' ? 'text-blue-500' : 'text-amber-600'"
+               x-text="helperText"></p>
 
             {{-- 6. Descripción --}}
-            <div>
-                <x-input-label for="description" value="Motivo / Descripción" />
-                <textarea name="description" id="description" rows="2" 
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm" 
-                    placeholder="Ej: Ajuste por rotura o transferencia de stock excedente..." required></textarea>
-            </div>
+            <x-ui.forms.textarea
+                label="Motivo / Descripción"
+                name="description"
+                id="description"
+                :rows="2"
+                placeholder="Ej: Ajuste por rotura o transferencia de stock excedente..."
+                :error="$errors->first('description')"
+                required
+            ></x-ui.forms.textarea>
         </div>
 
         <div class="mt-6 flex justify-end gap-3">

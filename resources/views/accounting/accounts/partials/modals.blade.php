@@ -10,45 +10,66 @@
 
         <div class="space-y-4">
             {{-- Código --}}
-            <div>
-                <x-input-label for="code" value="Código Contable" />
-                <x-text-input id="code" name="code" type="text" class="mt-1 block w-full font-mono" placeholder="Ej: 1.1.01" required />
-            </div>
+            <x-ui.forms.input
+                label="Código Contable"
+                id="code"
+                name="code"
+                type="text"
+                class="font-mono"
+                placeholder="Ej: 1.1.01"
+                :error="$errors->first('code')"
+                required
+            />
 
             {{-- Nombre --}}
-            <div>
-                <x-input-label for="name" value="Nombre de la Cuenta" />
-                <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" placeholder="Ej: Caja General" required />
-            </div>
+            <x-ui.forms.input
+                label="Nombre de la Cuenta"
+                id="name"
+                name="name"
+                type="text"
+                placeholder="Ej: Caja General"
+                :error="$errors->first('name')"
+                required
+            />
 
             {{-- Cuenta Padre --}}
-            <div>
-                <x-input-label for="parent_id" value="Cuenta Superior (Padre)" />
-                <select name="parent_id" id="parent_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
-                    <option value="">-- Ninguna (Cuenta Raíz) --</option>
-                    @foreach($parentAccounts as $parent)
-                        <option value="{{ $parent->id }}" {{ old('parent_id') == $parent->id ? 'selected' : '' }}>
-                            {{ $parent->code }} - {{ $parent->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+            <x-ui.forms.select
+                label="Cuenta Superior (Padre)"
+                name="parent_id"
+                id="parent_id"
+                placeholder="-- Ninguna (Cuenta Raíz) --"
+                :error="$errors->first('parent_id')"
+            >
+                @foreach($parentAccounts as $parent)
+                    <option value="{{ $parent->id }}" {{ old('parent_id') == $parent->id ? 'selected' : '' }}>
+                        {{ $parent->code }} - {{ $parent->name }}
+                    </option>
+                @endforeach
+            </x-ui.forms.select>
 
             {{-- Tipo de Cuenta --}}
-            <div>
-                <x-input-label for="type" value="Tipo de Cuenta" />
-                <select name="type" id="type" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
-                    @foreach($accountTypes as $value => $label)
-                        <option value="{{ $value }}" {{ old('type') == $value ? 'selected' : '' }}>{{ $label }}</option>
-                    @endforeach
-                </select>
-            </div>
+            <x-ui.forms.select
+                label="Tipo de Cuenta"
+                name="type"
+                id="type"
+                hint="Determina el comportamiento contable de la cuenta (activo, pasivo, capital, ingreso o gasto)."
+                :error="$errors->first('type')"
+                required
+            >
+                @foreach($accountTypes as $value => $label)
+                    <option value="{{ $value }}" {{ old('type') == $value ? 'selected' : '' }}>{{ $label }}</option>
+                @endforeach
+            </x-ui.forms.select>
 
             {{-- Es Posteable (Recibe Asientos) --}}
-            <div class="flex items-center gap-2 py-2">
-                <input type="checkbox" name="is_selectable" id="is_selectable" value="1" {{ old('is_selectable', '1') == '1' ? 'checked' : '' }} class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                <x-input-label for="is_selectable" value="¿Esta cuenta recibe asientos contables?" class="inline" />
-            </div>
+            <x-ui.forms.checkbox
+                label="¿Esta cuenta recibe asientos contables?"
+                name="is_selectable"
+                id="is_selectable"
+                value="1"
+                :checked="old('is_selectable', '1') == '1'"
+                description="Las cuentas no posteables solo agrupan totales de sus subcuentas."
+            />
 
             {{-- Estado --}}
             <div>
@@ -231,42 +252,57 @@
 
         <div class="space-y-4">
             <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <x-input-label value="Código" />
-                    <x-text-input name="code" type="text" class="mt-1 block w-full font-mono bg-gray-50" value="{{ $item->code }}" required />
-                </div>
-                <div>
-                    <x-input-label value="Tipo" />
-                    <select name="type" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
-                        @foreach($accountTypes as $value => $label)
-                            <option value="{{ $value }}" {{ old('type', $item->type) == $value ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-
-            <div>
-                <x-input-label value="Nombre de la Cuenta" />
-                <x-text-input name="name" type="text" class="mt-1 block w-full" value="{{ $item->name }}" required />
-            </div>
-
-            <div>
-                <x-input-label value="Cuenta Superior (Padre)" />
-                <select name="parent_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
-                    <option value="">-- Ninguna (Cuenta Raíz) --</option>
-                    @foreach($parentAccounts as $parent)
-                        @continue($parent->id == $item->id) {{-- No puede ser su propio padre --}}
-                        <option value="{{ $parent->id }}" {{ old('parent_id', $item->parent_id) == $parent->id ? 'selected' : '' }}>
-                            {{ $parent->code }} - {{ $parent->name }}
-                        </option>
+                <x-ui.forms.input
+                    label="Código"
+                    name="code"
+                    type="text"
+                    class="font-mono bg-gray-50"
+                    value="{{ $item->code }}"
+                    :error="$errors->first('code')"
+                    required
+                />
+                <x-ui.forms.select
+                    label="Tipo"
+                    name="type"
+                    :error="$errors->first('type')"
+                    required
+                >
+                    @foreach($accountTypes as $value => $label)
+                        <option value="{{ $value }}" {{ old('type', $item->type) == $value ? 'selected' : '' }}>{{ $label }}</option>
                     @endforeach
-                </select>
+                </x-ui.forms.select>
             </div>
 
-            <div class="flex items-center gap-2 py-2 border-t border-b border-gray-50">
-                <input type="checkbox" name="is_selectable" id="edit_selectable_{{ $item->id }}" value="1" {{ old('is_selectable', $item->is_selectable) ? 'checked' : '' }} class="rounded border-gray-300 text-indigo-600">
-                <x-input-label for="edit_selectable_{{ $item->id }}" value="¿Recibe asientos contables?" class="inline" />
-            </div>
+            <x-ui.forms.input
+                label="Nombre de la Cuenta"
+                name="name"
+                type="text"
+                value="{{ $item->name }}"
+                :error="$errors->first('name')"
+                required
+            />
+
+            <x-ui.forms.select
+                label="Cuenta Superior (Padre)"
+                name="parent_id"
+                placeholder="-- Ninguna (Cuenta Raíz) --"
+                :error="$errors->first('parent_id')"
+            >
+                @foreach($parentAccounts as $parent)
+                    @continue($parent->id == $item->id) {{-- No puede ser su propio padre --}}
+                    <option value="{{ $parent->id }}" {{ old('parent_id', $item->parent_id) == $parent->id ? 'selected' : '' }}>
+                        {{ $parent->code }} - {{ $parent->name }}
+                    </option>
+                @endforeach
+            </x-ui.forms.select>
+
+            <x-ui.forms.checkbox
+                label="¿Recibe asientos contables?"
+                name="is_selectable"
+                id="edit_selectable_{{ $item->id }}"
+                value="1"
+                :checked="old('is_selectable', $item->is_selectable) ? true : false"
+            />
 
             <div>
                 <x-input-label value="Estado" />
