@@ -254,14 +254,14 @@
 
         {{-- Campo de Motivo --}}
         <div class="mt-4 text-left">
-            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Motivo de Anulación (DGII)</label>
-            <select name="cancellation_reason" required class="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <x-ui.forms.select label="Motivo de Anulación (DGII)" name="cancellation_reason" required
+                hint="Requerido por la DGII para el reporte de anulación del NCF">
                 <option value="01 - ERRORES DE DIGITACION">01 - Errores de digitación</option>
                 <option value="02 - ERRORES DE IMPRESION">02 - Errores de impresión</option>
                 <option value="03 - PRODUCTO DEFECTUOSO">03 - Producto defectuoso</option>
                 <option value="04 - DEVOLUCION">04 - Devolución</option>
                 <option value="05 - OTROS">05 - Otros</option>
-            </select>
+            </x-ui.forms.select>
         </div>
 
         <div class="mt-8 flex justify-center gap-3">

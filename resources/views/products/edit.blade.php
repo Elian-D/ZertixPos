@@ -7,7 +7,6 @@
             unitId: '{{ old('unit_id', $product->unit_id) }}',
             servicesCategoryId: @js($categories->firstWhere('name', 'Servicios')?->id),
             unidadUnitId: @js($units->firstWhere('name', 'Unidad')?->id),
-            isActive: {{ old('is_active', $product->is_active) ? 'true' : 'false' }},
             imagePreview: @js($product->image_path ? $product->image_url : null),
             activeTab: 'identificacion',
             selectType(service) {
@@ -82,11 +81,14 @@
                         </div>
 
                         {{-- Nombre --}}
-                        <div>
-                            <label class="text-xs font-bold text-slate-400 uppercase mb-2 block tracking-wider">Nombre del producto <span class="text-red-500">*</span></label>
-                            <input type="text" name="name" value="{{ old('name', $product->name) }}" required placeholder="Ej: Funda de Hielo 10lb"
-                                class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-semibold text-slate-700 focus:border-zertix-primary focus:ring-0" />
-                        </div>
+                        <x-ui.forms.input
+                            label="Nombre del producto"
+                            name="name"
+                            value="{{ old('name', $product->name) }}"
+                            placeholder="Ej: Funda de Hielo 10lb"
+                            :error="$errors->first('name')"
+                            required
+                        />
 
                         {{-- Tipo de Ítem --}}
                         <div>
@@ -113,28 +115,37 @@
 
                         {{-- Categoría y Unidad --}}
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label class="text-xs font-bold text-slate-400 uppercase mb-2 block tracking-wider">Categoría</label>
-                                <select name="category_id" x-model="categoryId" required
-                                    class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-semibold text-slate-700 focus:border-zertix-primary">
-                                    @foreach($categories as $category)
-                                        <option value="{{ $category->id }}">{{ $category->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
+                            <x-ui.forms.select
+                                label="Categoría"
+                                name="category_id"
+                                x-model="categoryId"
+                                placeholder=""
+                                :error="$errors->first('category_id')"
+                                required
+                            >
+                                @foreach($categories as $category)
+                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                @endforeach
+                            </x-ui.forms.select>
 
                             <div>
-                                <label class="text-xs font-bold text-slate-400 uppercase mb-2 block tracking-wider">Unidad de Medida</label>
                                 <template x-if="!isService">
-                                    <select name="unit_id" x-model="unitId" required
-                                        class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-semibold text-slate-700 focus:border-zertix-primary">
+                                    <x-ui.forms.select
+                                        label="Unidad de Medida"
+                                        name="unit_id"
+                                        x-model="unitId"
+                                        placeholder=""
+                                        :error="$errors->first('unit_id')"
+                                        required
+                                    >
                                         @foreach($units as $unit)
                                             <option value="{{ $unit->id }}">{{ $unit->name }} ({{ $unit->abbreviation }})</option>
                                         @endforeach
-                                    </select>
+                                    </x-ui.forms.select>
                                 </template>
                                 <template x-if="isService">
                                     <div>
+                                        <label class="text-xs font-bold text-slate-400 uppercase mb-2 block tracking-wider">Unidad de Medida</label>
                                         <input type="hidden" name="unit_id" :value="unitId">
                                         <div class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm text-slate-400">
                                             {{ $units->firstWhere('name', 'Unidad')?->name ?? 'Unidad' }} (fija para servicios)
@@ -145,24 +156,24 @@
                         </div>
 
                         {{-- Descripción --}}
-                        <div>
-                            <label class="text-xs font-bold text-slate-400 uppercase mb-2 block tracking-wider">Descripción</label>
-                            <textarea name="description" rows="3" placeholder="Detalles adicionales..."
-                                class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-semibold text-slate-700 focus:border-zertix-primary focus:ring-0">{{ old('description', $product->description) }}</textarea>
-                        </div>
+                        <x-ui.forms.textarea
+                            label="Descripción"
+                            name="description"
+                            :rows="3"
+                            placeholder="Detalles adicionales..."
+                            :error="$errors->first('description')"
+                        >{{ old('description', $product->description) }}</x-ui.forms.textarea>
 
                         {{-- Activo --}}
-                        <div class="flex items-center gap-4 bg-zertix-primary/5 p-5 rounded-2xl border border-zertix-primary/20">
+                        <div class="bg-zertix-primary/5 p-5 rounded-2xl border border-zertix-primary/20">
                             <input type="hidden" name="is_active" value="0">
-                            <label class="relative inline-flex items-center cursor-pointer shrink-0">
-                                <input type="checkbox" name="is_active" value="1" x-model="isActive" class="sr-only peer">
-                                <div class="w-11 h-6 bg-slate-200 rounded-full peer peer-checked:bg-zertix-primary transition-colors"></div>
-                                <div class="absolute left-1 top-1 bg-white w-4 h-4 rounded-full transition-transform peer-checked:translate-x-5"></div>
-                            </label>
-                            <div>
-                                <span class="text-sm font-bold text-slate-700 block">Activo</span>
-                                <span class="text-xs text-slate-400">Determina si el producto/servicio aparece en el POS.</span>
-                            </div>
+                            <x-ui.forms.toggle
+                                label="Activo"
+                                name="is_active"
+                                value="1"
+                                description="Determina si el producto/servicio aparece en el POS."
+                                :checked="(bool) old('is_active', $product->is_active)"
+                            />
                         </div>
                     </div>
                 </div>
@@ -172,24 +183,32 @@
                     <div class="p-8 space-y-6">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label class="text-xs font-bold text-slate-400 uppercase mb-2 block tracking-wider">Precio de Costo ({{ config('regional.currency_symbol') }})</label>
-                                <div class="relative">
-                                    <span class="absolute inset-y-0 left-5 flex items-center text-slate-400 text-sm font-bold">{{ config('regional.currency_symbol') }}</span>
-                                    <input type="number" step="0.01" name="cost" value="{{ old('cost', $product->cost) }}" required
-                                        class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl pl-14 pr-5 py-4 text-sm font-semibold text-slate-700 focus:border-zertix-primary focus:ring-0" />
-                                </div>
+                                <x-ui.forms.input
+                                    label="Precio de Costo ({{ config('regional.currency_symbol') }})"
+                                    name="cost"
+                                    type="number"
+                                    step="0.01"
+                                    value="{{ old('cost', $product->cost) }}"
+                                    placeholder="0.00"
+                                    required
+                                    :error="$errors->first('cost')"
+                                />
                                 <p class="mt-2 text-xs text-slate-400" x-show="!isService">El precio pagado al proveedor por la compra de este artículo de inventario.</p>
                                 <p class="mt-2 text-xs text-slate-400" x-show="isService">Deja en 0 si es mano de obra propia. Si el servicio es subcontratado o pagas una comisión fija, escribe aquí ese costo directo.</p>
                             </div>
 
                             <div>
-                                <label class="text-xs font-bold text-slate-400 uppercase mb-2 block tracking-wider">Precio de Venta ({{ config('regional.currency_symbol') }}) <span class="text-red-500">*</span></label>
-                                <div class="relative">
-                                    <span class="absolute inset-y-0 left-5 flex items-center text-slate-400 text-sm font-bold">{{ config('regional.currency_symbol') }}</span>
-                                    <input type="number" step="0.01" name="price" value="{{ old('price', $product->price) }}" required
-                                        class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl pl-14 pr-5 py-4 text-sm font-semibold text-slate-700 focus:border-zertix-primary focus:ring-0" />
-                                </div>
-                                <p class="mt-2 text-xs text-slate-400">Precio neto — sin impuesto incluido. Los impuestos marcados abajo se suman al cobrar.</p>
+                                <x-ui.forms.input
+                                    label="Precio de Venta ({{ config('regional.currency_symbol') }})"
+                                    name="price"
+                                    type="number"
+                                    step="0.01"
+                                    value="{{ old('price', $product->price) }}"
+                                    placeholder="0.00"
+                                    required
+                                    hint="Precio neto — sin impuesto incluido. Los impuestos marcados abajo se suman al cobrar."
+                                    :error="$errors->first('price')"
+                                />
                             </div>
                         </div>
 
@@ -209,19 +228,21 @@
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">ITBIS (elige uno)</p>
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-5">
                                 @foreach($itbisTaxes as $key => $tax)
-                                    <label class="flex items-center gap-2 text-sm font-semibold text-slate-700 cursor-pointer">
-                                        <input type="radio" name="tax_keys[]" value="{{ $key }}"
-                                            {{ in_array($key, $oldTaxKeys) ? 'checked' : '' }}
-                                            class="border-slate-300 text-zertix-primary focus:ring-zertix-primary w-4 h-4">
-                                        {{ $tax['label'] }}
-                                    </label>
+                                    <x-ui.forms.radio
+                                        label="{{ $tax['label'] }}"
+                                        name="tax_keys[]"
+                                        id="tax_key_{{ $key }}"
+                                        value="{{ $key }}"
+                                        :checked="in_array($key, $oldTaxKeys)"
+                                    />
                                 @endforeach
-                                <label class="flex items-center gap-2 text-sm font-semibold text-slate-700 cursor-pointer">
-                                    <input type="radio" name="tax_keys[]" value=""
-                                        {{ collect($oldTaxKeys)->intersect($itbisTaxes->keys())->isEmpty() ? 'checked' : '' }}
-                                        class="border-slate-300 text-zertix-primary focus:ring-zertix-primary w-4 h-4">
-                                    Sin ITBIS
-                                </label>
+                                <x-ui.forms.radio
+                                    label="Sin ITBIS"
+                                    name="tax_keys[]"
+                                    id="tax_key_none"
+                                    value=""
+                                    :checked="collect($oldTaxKeys)->intersect($itbisTaxes->keys())->isEmpty()"
+                                />
                             </div>
 
                             {{-- Aditivos: se apilan libremente entre sí y con el ITBIS elegido
@@ -229,12 +250,13 @@
                             <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Otros impuestos (opcional, apilables)</p>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 @foreach($addonTaxes as $key => $tax)
-                                    <label class="flex items-center gap-2.5 text-sm font-semibold text-slate-700 cursor-pointer">
-                                        <input type="checkbox" name="tax_keys[]" value="{{ $key }}"
-                                            {{ in_array($key, $oldTaxKeys) ? 'checked' : '' }}
-                                            class="rounded border-slate-300 text-zertix-primary focus:ring-zertix-primary w-4 h-4">
-                                        {{ $tax['label'] }}
-                                    </label>
+                                    <x-ui.forms.checkbox
+                                        label="{{ $tax['label'] }}"
+                                        name="tax_keys[]"
+                                        id="tax_key_{{ $key }}"
+                                        value="{{ $key }}"
+                                        :checked="in_array($key, $oldTaxKeys)"
+                                    />
                                 @endforeach
                             </div>
                             <p class="mt-4 text-xs text-slate-500">

@@ -41,6 +41,11 @@
             </div>
 
             {{-- Columna 2: Upload --}}
+            {{-- Se deja el <input type="file"> nativo con su caja "drag & drop" bespoke
+                 (borde punteado, ícono grande, texto "PROCESAR DATOS" en botón separado):
+                 no encaja visualmente en x-ui.forms.file-input, que está diseñado como
+                 campo de formulario estándar (caja delgada estilo input), no como zona de
+                 importación masiva. Migrarlo aquí cambiaría el diseño de esta pantalla. --}}
             <div x-data="{ fileName: '', uploading: false }" class="bg-indigo-50/40 rounded-3xl p-8 border-2 border-dashed border-indigo-200 flex flex-col justify-center">
                 <h3 class="font-bold text-gray-700 mb-6 flex items-center text-base">
                     <span class="flex items-center justify-center w-6 h-6 rounded-full bg-indigo-600 text-white text-xs mr-3">2</span>

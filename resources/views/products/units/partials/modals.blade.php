@@ -11,44 +11,36 @@
             @csrf
 
             <div class="space-y-4">
-                <div>
-                    <x-input-label for="name" value="Nombre de la nueva unidad de medida" />
-                    <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" required />
-                </div>
+                <x-ui.forms.input
+                    label="Nombre de la nueva unidad de medida"
+                    name="name"
+                    :error="$errors->first('name')"
+                    required
+                />
 
-                <div>
-                    <x-input-label for="abbreviation" value="Abvreviación de la unidad de medida" />
-                    <x-text-input id="abbreviation" name="abbreviation" type="text" class="mt-1 block w-full" required />
-                </div>
+                <x-ui.forms.input
+                    label="Abvreviación de la unidad de medida"
+                    name="abbreviation"
+                    :error="$errors->first('abbreviation')"
+                    hint="Debe ser única en el sistema — se usa como código corto en reportes y tickets (ej. UND, LB, GAL)"
+                    required
+                />
 
-                <div>
-                    <x-input-label value="Estado Operativo" />
-                    
-                    {{-- Contenedor con w-full para ocupar todo el ancho --}}
-                    <div class="flex p-1 bg-gray-100 rounded-lg mt-1 w-full">
-                        
-                        {{-- Opción Activo --}}
-                        <label class="flex-1">
-                            <input type="radio" name="is_active" value="1" class="peer hidden"
-                                {{ old('is_active', $unit->is_active ?? '1') == '1' ? 'checked' : '' }}>
-                            <span class="block text-center px-3 py-2 text-sm font-medium rounded-md cursor-pointer transition-all
-                                text-gray-500 hover:text-gray-700
-                                peer-checked:bg-green-500 peer-checked:text-white peer-checked:shadow-sm">
-                                Activo
-                            </span>
-                        </label>
-
-                        {{-- Opción Inactivo --}}
-                        <label class="flex-1">
-                            <input type="radio" name="is_active" value="0" class="peer hidden"
-                                {{ old('is_active', $unit->is_active ?? '1') == '0' ? 'checked' : '' }}>
-                            <span class="block text-center px-3 py-2 text-sm font-medium rounded-md cursor-pointer transition-all
-                                text-gray-500 hover:text-gray-700
-                                peer-checked:bg-red-500 peer-checked:text-white peer-checked:shadow-sm">
-                                Inactivo
-                            </span>
-                        </label>
-                    </div>
+                <div class="flex flex-col gap-2">
+                    <x-ui.forms.radio
+                        label="Activo"
+                        name="is_active"
+                        id="is_active_1"
+                        value="1"
+                        :checked="old('is_active', $unit->is_active ?? '1') == '1'"
+                    />
+                    <x-ui.forms.radio
+                        label="Inactivo"
+                        name="is_active"
+                        id="is_active_0"
+                        value="0"
+                        :checked="old('is_active', $unit->is_active ?? '1') == '0'"
+                    />
                 </div>
             </div>
 
@@ -72,45 +64,38 @@
             @csrf @method('PUT')
 
             <div class="space-y-4">
-                <div>
-                    <x-input-label value="Nombre de la unidad de medida" />
-                    <x-text-input name="name" type="text" class="mt-1 block w-full" value="{{ $item->name }}" required />
-                </div>
+                <x-ui.forms.input
+                    label="Nombre de la unidad de medida"
+                    name="name"
+                    value="{{ $item->name }}"
+                    :error="$errors->first('name')"
+                    required
+                />
 
-                <div>
-                    <x-input-label for="abbreviation" value="Abvreviación de la unidad de medida" />
-                    <x-text-input id="abbreviation" name="abbreviation" type="text" class="mt-1 block w-full" value="{{ $item->abbreviation }}" required />
-                </div>
+                <x-ui.forms.input
+                    label="Abvreviación de la unidad de medida"
+                    name="abbreviation"
+                    value="{{ $item->abbreviation }}"
+                    :error="$errors->first('abbreviation')"
+                    hint="Debe ser única en el sistema — se usa como código corto en reportes y tickets (ej. UND, LB, GAL)"
+                    required
+                />
 
-
-                <div>
-                    <x-input-label value="Estado Operativo" />
-                    
-                    {{-- Contenedor con w-full para ocupar todo el ancho --}}
-                    <div class="flex p-1 bg-gray-100 rounded-lg mt-1 w-full">
-                        
-                        {{-- Opción Activo --}}
-                        <label class="flex-1">
-                            <input type="radio" name="is_active" value="1" class="peer hidden"
-                                {{ old('is_active', $item->is_active ?? '1') == '1' ? 'checked' : '' }}>
-                            <span class="block text-center px-3 py-2 text-sm font-medium rounded-md cursor-pointer transition-all
-                                text-gray-500 hover:text-gray-700
-                                peer-checked:bg-green-500 peer-checked:text-white peer-checked:shadow-sm">
-                                Activo
-                            </span>
-                        </label>
-
-                        {{-- Opción Inactivo --}}
-                        <label class="flex-1">
-                            <input type="radio" name="is_active" value="0" class="peer hidden"
-                                {{ old('is_active', $item->is_active ?? '1') == '0' ? 'checked' : '' }}>
-                            <span class="block text-center px-3 py-2 text-sm font-medium rounded-md cursor-pointer transition-all
-                                text-gray-500 hover:text-gray-700
-                                peer-checked:bg-red-500 peer-checked:text-white peer-checked:shadow-sm">
-                                Inactivo
-                            </span>
-                        </label>
-                    </div>
+                <div class="flex flex-col gap-2">
+                    <x-ui.forms.radio
+                        label="Activo"
+                        name="is_active"
+                        id="is_active_1_{{ $item->id }}"
+                        value="1"
+                        :checked="old('is_active', $item->is_active ?? '1') == '1'"
+                    />
+                    <x-ui.forms.radio
+                        label="Inactivo"
+                        name="is_active"
+                        id="is_active_0_{{ $item->id }}"
+                        value="0"
+                        :checked="old('is_active', $item->is_active ?? '1') == '0'"
+                    />
                 </div>
 
             </div>

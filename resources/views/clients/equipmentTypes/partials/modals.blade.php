@@ -12,16 +12,21 @@
 
             <div class="space-y-4">
                 <div>
-                    <x-input-label for="nombre" value="Nombre del Tipo de Equipo" />
-                    <x-text-input id="nombre" name="nombre" type="text" class="mt-1 block w-full" required />
+                    <x-ui.forms.input
+                        id="nombre"
+                        name="nombre"
+                        type="text"
+                        label="Nombre del Tipo de Equipo"
+                        :error="$errors->first('nombre')"
+                        required
+                    />
                 </div>
 
                 <div>
-                    <x-input-label value="Estado Operativo" />
-                    <select name="activo" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm">
+                    <x-ui.forms.select label="Estado Operativo" name="activo" placeholder="">
                         <option value="1" {{ old('activo', '1') == '1' ? 'selected' : '' }}>Activo</option>
                         <option value="0" {{ old('activo') == '0' ? 'selected' : '' }}>Inactivo</option>
-                    </select>
+                    </x-ui.forms.select>
                 </div>
             </div>
 
@@ -46,16 +51,21 @@
 
             <div class="space-y-4">
                 <div>
-                    <x-input-label value="Nombre" />
-                    <x-text-input name="nombre" type="text" class="mt-1 block w-full" value="{{ $item->nombre }}" required />
+                    <x-ui.forms.input
+                        name="nombre"
+                        type="text"
+                        label="Nombre"
+                        value="{{ $item->nombre }}"
+                        :error="$errors->first('nombre')"
+                        required
+                    />
                 </div>
 
                 <div>
-                    <x-input-label value="Estado Operativo" />
-                    <select name="activo" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm">
+                    <x-ui.forms.select label="Estado Operativo" name="activo" placeholder="">
                         <option value="1" {{ old('activo', '1') == '1' ? 'selected' : '' }}>Activo</option>
                         <option value="0" {{ old('activo') == '0' ? 'selected' : '' }}>Inactivo / Mantenimiento</option>
-                    </select>
+                    </x-ui.forms.select>
                 </div>
             </div>
             <div class="mt-6 flex justify-end gap-3">

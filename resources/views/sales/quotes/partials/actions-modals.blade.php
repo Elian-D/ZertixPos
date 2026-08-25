@@ -10,10 +10,8 @@
             <p class="text-xs text-gray-500 mb-4">Esta acción es irreversible.</p>
             
             <div class="text-left mb-4">
-                <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Motivo / Observación</label>
-                <textarea name="reason" rows="2" required 
-                class="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-red-500 focus:ring-red-500"
-                placeholder="Indique por qué se cancela..."></textarea>
+                <x-ui.forms.textarea label="Motivo / Observación" name="reason" :rows="2" required
+                    placeholder="Indique por qué se cancela..."></x-ui.forms.textarea>
             </div>
             
             <div class="flex justify-center gap-3">
@@ -77,46 +75,42 @@
             <div class="space-y-4">
                 {{-- Tipo de Venta --}}
                 <div>
-                    <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Condición de Venta</label>
-                    <select name="payment_type" x-model="paymentType" class="w-full text-sm border-gray-300 rounded-md shadow-sm focus:ring-indigo-500">
+                    <x-ui.forms.select label="Condición de Venta" name="payment_type" x-model="paymentType" placeholder="">
                         <option value="cash">Contado</option>
                         {{-- Consumidor Final nunca es creditable (REQ-2.3) — no tiene
                              identidad real a quien cobrarle después. --}}
                         @if($quote->customer_id != 1)
                             <option value="credit">Crédito (CxC)</option>
                         @endif
-                    </select>
+                    </x-ui.forms.select>
                 </div>
 
                 {{-- Método de Pago --}}
                 <div x-show="paymentType === 'cash'">
-                    <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Método de Pago</label>
-                    <select name="tipo_pago_id" x-model="selectedTipoPagoId" class="w-full text-sm border-gray-300 rounded-md shadow-sm">
+                    <x-ui.forms.select label="Método de Pago" name="tipo_pago_id" x-model="selectedTipoPagoId" placeholder="">
                         @foreach($tipo_pagos as $pago)
                             <option value="{{ $pago['id'] }}">{{ $pago['nombre'] }}</option>
                         @endforeach
-                    </select>
+                    </x-ui.forms.select>
                 </div>
 
                 {{-- Referencia: oculta para Efectivo/Tarjeta, opcional en el resto — nunca
                      bloquea el envío (Fase 6, REQ-6.9). --}}
                 <div x-show="paymentType === 'cash' && !isCashOrCardMethod" x-cloak>
-                    <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Referencia (Opcional)</label>
-                    <input type="text" name="reference"
-                           placeholder="Últimos 4 dígitos, # de autorización, # de cheque…"
-                           class="w-full text-sm border-gray-300 rounded-md shadow-sm placeholder-gray-400">
+                    <x-ui.forms.input label="Referencia (Opcional)" type="text" name="reference"
+                           placeholder="Últimos 4 dígitos, # de autorización, # de cheque…" />
                 </div>
 
                 {{-- Comprobante Fiscal --}}
                 @if(module_enabled('sales.ncf'))
                 <div>
-                    <label class="block text-[10px] font-bold text-gray-700 uppercase mb-1">Tipo de Comprobante (NCF)</label>
-                    <select name="ncf_type_id" class="w-full text-sm border-gray-300 rounded-md shadow-sm">
+                    <x-ui.forms.select label="Tipo de Comprobante (NCF)" name="ncf_type_id" placeholder=""
+                        hint="Deje 'Sin Comprobante' para una venta interna sin impacto fiscal">
                         <option value="">Sin Comprobante (Consumidor Final)</option>
                         @foreach($ncf_types as $ncf)
                             <option value="{{ $ncf['id'] }}">{{ $ncf['name'] }} ({{ $ncf['code'] }})</option>
                         @endforeach
-                    </select>
+                    </x-ui.forms.select>
                 </div>
                 @endif
 

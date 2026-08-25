@@ -402,39 +402,54 @@
             <input type="hidden" name="type" value="input">
 
             <div class="space-y-4">
-                <div>
-                    <x-input-label for="input_product_id" value="Producto" />
-                    <select name="product_id" id="input_product_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm text-sm" required>
-                        <option value="">Seleccione el producto...</option>
-                        @foreach($products as $product)
-                            <option value="{{ $product->id }}">{{ $product->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                <x-ui.forms.select
+                    label="Producto"
+                    name="product_id"
+                    id="input_product_id"
+                    placeholder="Seleccione el producto..."
+                    :error="$errors->first('product_id')"
+                    required
+                >
+                    @foreach($products as $product)
+                        <option value="{{ $product->id }}">{{ $product->name }}</option>
+                    @endforeach
+                </x-ui.forms.select>
 
-                <div>
-                    <x-input-label for="input_warehouse_id" value="Almacén de Destino" />
-                    <select name="warehouse_id" id="input_warehouse_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm text-sm" required>
-                        <option value="">Seleccione almacén...</option>
-                        @foreach($warehouses as $wh)
-                            <option value="{{ $wh->id }}">{{ $wh->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                <x-ui.forms.select
+                    label="Almacén de Destino"
+                    name="warehouse_id"
+                    id="input_warehouse_id"
+                    placeholder="Seleccione almacén..."
+                    :error="$errors->first('warehouse_id')"
+                    required
+                >
+                    @foreach($warehouses as $wh)
+                        <option value="{{ $wh->id }}">{{ $wh->name }}</option>
+                    @endforeach
+                </x-ui.forms.select>
 
-                <div>
-                    <x-input-label for="input_quantity" value="Cantidad" />
-                    <x-text-input id="input_quantity" name="quantity" type="number" step="0.01" min="0.01"
-                        class="mt-1 block w-full" placeholder="0.00" required />
-                    <p class="mt-1 text-[10px] text-indigo-500 italic font-medium">Se sumará al stock actual del almacén</p>
-                </div>
+                <x-ui.forms.input
+                    label="Cantidad"
+                    id="input_quantity"
+                    name="quantity"
+                    type="number"
+                    step="0.01"
+                    min="0.01"
+                    placeholder="0.00"
+                    hint="Se sumará al stock actual del almacén"
+                    :error="$errors->first('quantity')"
+                    required
+                />
 
-                <div>
-                    <x-input-label for="input_description" value="Notas" />
-                    <textarea name="description" id="input_description" rows="2" 
-                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm text-sm" 
-                        placeholder="Ej: Compra factura #1234, Producción lote #105" required></textarea>
-                </div>
+                <x-ui.forms.textarea
+                    label="Notas"
+                    name="description"
+                    id="input_description"
+                    :rows="2"
+                    placeholder="Ej: Compra factura #1234, Producción lote #105"
+                    :error="$errors->first('description')"
+                    required
+                ></x-ui.forms.textarea>
             </div>
 
             <div class="mt-6 flex justify-end gap-3">

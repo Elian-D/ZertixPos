@@ -138,33 +138,24 @@
                             </p>
 
                             <div>
-                                <select name="difference_reason" x-model="reason"
-                                    class="block w-full border-gray-300 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                                    <option value="">Selecciona un motivo...</option>
+                                <x-ui.forms.select name="difference_reason" x-model="reason"
+                                    placeholder="Selecciona un motivo..." :error="$errors->first('difference_reason')">
                                     @foreach($reasons as $value => $label)
                                         <option value="{{ $value }}">{{ $label }}</option>
                                     @endforeach
-                                </select>
-                                @error('difference_reason')
-                                    <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                                @enderror
+                                </x-ui.forms.select>
                             </div>
 
                             <div x-show="reason === 'otro'" x-transition>
-                                <textarea name="difference_notes" x-model="differenceNotes" rows="2"
-                                    class="block w-full border-gray-300 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                                    placeholder="Explica qué pasó con el efectivo..."></textarea>
-                                @error('difference_notes')
-                                    <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                                @enderror
+                                <x-ui.forms.textarea name="difference_notes" x-model="differenceNotes" :rows="2"
+                                    placeholder="Explica qué pasó con el efectivo..."
+                                    :error="$errors->first('difference_notes')"></x-ui.forms.textarea>
                             </div>
                         </div>
 
                         <div>
-                            <x-input-label for="notes" value="Observaciones Generales (Opcional)" />
-                            <textarea name="notes" id="notes" rows="2"
-                                class="mt-1 block w-full border-gray-300 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                                placeholder="Cualquier otra novedad del turno, aparte del descuadre..."></textarea>
+                            <x-ui.forms.textarea label="Observaciones Generales (Opcional)" name="notes" id="notes" :rows="2"
+                                placeholder="Cualquier otra novedad del turno, aparte del descuadre..."></x-ui.forms.textarea>
                         </div>
                     </div>
 

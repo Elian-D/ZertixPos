@@ -14,21 +14,16 @@
                     
                     {{-- Campo de Formulario --}}
                     <div class="mb-6">
-                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Nombre del Rol:</label>
-                        
-                        <input type="text" 
-                               name="name" 
-                               id="name" 
-                               value="{{ old('name') }}"
-                               placeholder="Ej: Administrador, Vendedor, Logística"
-                               class="w-full border-gray-300 rounded-md shadow-sm text-base py-2.5 px-4 
-                                      focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50
-                                      @error('name') border-red-500 focus:border-red-500 focus:ring-red-200 @enderror">
-
-                        {{-- Mensaje de Error Estilizado --}}
-                        @error('name') 
-                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p> 
-                        @enderror
+                        <x-ui.forms.input
+                            label="Nombre del Rol:"
+                            type="text"
+                            name="name"
+                            id="name"
+                            value="{{ old('name') }}"
+                            placeholder="Ej: Administrador, Vendedor, Logística"
+                            required
+                            :error="$errors->first('name')"
+                        />
                     </div>
 
                     {{-- Botones de Acción --}}

@@ -53,28 +53,24 @@
 
                         {{-- Selector de Cliente --}}
                         <div class="md:col-span-5">
-                            <x-input-label value="Cliente" class="mb-1 text-xs text-gray-500 uppercase tracking-wider" />
-                            <div class="relative">
-                                <select name="client_id" x-model="formData.client_id" @change="validateNcfAndClient()"
-                                    class="w-full border-gray-300 rounded-lg text-sm focus:ring-indigo-500 shadow-sm pl-10">
-                                    <template x-for="client in filteredClients" :key="client.id">
-                                        <option :value="client.id" x-text="client.name"></option>
-                                    </template>
-                                </select>
-                                <x-heroicon-o-user class="w-5 h-5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2"/>
-                            </div>
+                            <x-ui.forms.select label="Cliente" name="client_id" icon-left="heroicon-o-user"
+                                placeholder="" x-model="formData.client_id" @change="validateNcfAndClient()"
+                                :error="$errors->first('client_id')">
+                                <template x-for="client in filteredClients" :key="client.id">
+                                    <option :value="client.id" x-text="client.name"></option>
+                                </template>
+                            </x-ui.forms.select>
                         </div>
 
                         {{-- Almacén (Compacto) --}}
                         <div class="md:col-span-3">
-                            <x-input-label value="Almacén" class="mb-1 text-xs text-gray-500 uppercase tracking-wider" />
-                            <select name="warehouse_id" x-model="formData.warehouse_id" @change="clearItems()"
-                                class="w-full border-gray-300 rounded-lg text-sm focus:ring-indigo-500 shadow-sm transition-all" required>
-                                <option value="">Seleccione origen...</option>
+                            <x-ui.forms.select label="Almacén" name="warehouse_id" placeholder="Seleccione origen..."
+                                x-model="formData.warehouse_id" @change="clearItems()" required
+                                :error="$errors->first('warehouse_id')">
                                 @foreach($warehouses as $wh)
                                     <option value="{{ $wh->id }}">{{ $wh->name }}</option>
                                 @endforeach
-                            </select>
+                            </x-ui.forms.select>
                         </div>
                     </div>
 
@@ -286,10 +282,9 @@
                 {{-- SECCIÓN 3: TOTALES --}}
                 <section class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <div class="md:col-span-2">
-                        <x-input-label value="Notas de la Venta" class="text-xs text-gray-500 uppercase tracking-wider" />
-                        <textarea name="notes" rows="3" 
-                                class="w-full mt-2 border-gray-300 rounded-xl text-sm focus:ring-indigo-500 transition-all" 
-                                placeholder="Detalles adicionales de la factura..."></textarea>
+                        <x-ui.forms.textarea label="Notas de la Venta" name="notes" :rows="3"
+                            placeholder="Detalles adicionales de la factura..."
+                            :error="$errors->first('notes')"></x-ui.forms.textarea>
                     </div>
 
                     <div class="bg-gray-900 text-white rounded-2xl p-6 shadow-2xl space-y-4 relative overflow-hidden transition-all duration-500">

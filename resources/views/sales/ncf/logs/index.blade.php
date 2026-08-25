@@ -41,10 +41,10 @@
             <p class="text-sm text-gray-600 mb-4">Seleccione el periodo fiscal para generar el archivo de texto.</p>
             
             <div>
-                <x-input-label for="periodo" value="Periodo (Año/Mes)" />
-                <x-text-input type="month" name="periodo" id="periodo" 
-                              value="{{ now()->format('Y-m') }}" 
-                              required class="w-full mt-1" />
+                <x-ui.forms.input type="month" label="Periodo (Año/Mes)" name="periodo" id="periodo"
+                              value="{{ now()->format('Y-m') }}"
+                              required
+                              hint="Genera el reporte 607 exigido por la DGII para el periodo seleccionado" />
                 {{-- Convertimos YYYY-MM a YYYYMM para el controlador en el backend si es necesario --}}
             </div>
 

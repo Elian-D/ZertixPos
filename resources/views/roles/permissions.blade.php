@@ -55,18 +55,13 @@
                                 
                                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3">
                                     @foreach($perms as $permission)
-                                        <div class="flex items-center space-x-2">
-                                            <input type="checkbox" 
-                                                   name="permissions[]" 
-                                                   value="{{ $permission->name }}"
-                                                   id="perm_{{ $permission->id }}"
-                                                   {{ in_array($permission->name, $rolePermissions) ? 'checked' : '' }}
-                                                   class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                                            <label for="perm_{{ $permission->id }}" class="text-gray-700 text-sm cursor-pointer">
-                                                {{-- Muestra solo la acción para un look más limpio --}}
-                                                {{ ucfirst(explode('.', $permission->name)[1] ?? $permission->name) }}
-                                            </label>
-                                        </div>
+                                        <x-ui.forms.checkbox
+                                            label="{{ ucfirst(explode('.', $permission->name)[1] ?? $permission->name) }}"
+                                            name="permissions[]"
+                                            id="perm_{{ $permission->id }}"
+                                            value="{{ $permission->name }}"
+                                            :checked="in_array($permission->name, $rolePermissions)"
+                                        />
                                     @endforeach
                                 </div>
                             </div>

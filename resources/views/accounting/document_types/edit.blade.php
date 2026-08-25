@@ -17,8 +17,13 @@
                 {{-- SECCIÓN 1: IDENTIFICACIÓN --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50/50 p-6 rounded-xl border border-gray-100">
                     <div class="md:col-span-2">
-                        <x-input-label value="Nombre del Documento" />
-                        <x-text-input name="name" class="w-full mt-1" :value="old('name', $item->name)" required />
+                        <x-ui.forms.input
+                            label="Nombre del Documento"
+                            name="name"
+                            value="{{ old('name', $item->name) }}"
+                            :error="$errors->first('name')"
+                            required
+                        />
                     </div>
 
                     <div>
@@ -29,8 +34,13 @@
                     </div>
 
                     <div>
-                        <x-input-label value="Prefijo" />
-                        <x-text-input name="prefix" class="w-full mt-1 font-mono uppercase" :value="old('prefix', $item->prefix)" />
+                        <x-ui.forms.input
+                            label="Prefijo"
+                            name="prefix"
+                            class="font-mono uppercase"
+                            value="{{ old('prefix', $item->prefix) }}"
+                            :error="$errors->first('prefix')"
+                        />
                     </div>
                 </div>
 
@@ -51,13 +61,16 @@
                                 </div>
                             </div>
                         @else
-                            <x-input-label value="Correlativo Actual" />
-                            <x-text-input type="number" min="0" name="current_number" class="w-full mt-1 font-mono"
-                                :value="old('current_number', $item->current_number)" />
-                            <p class="text-[10px] text-gray-400 mt-1">
-                                Ajustable libremente hasta que se emita el primer documento con este tipo.
-                            </p>
-                            <x-input-error :messages="$errors->get('current_number')" class="mt-2" />
+                            <x-ui.forms.input
+                                label="Correlativo Actual"
+                                type="number"
+                                min="0"
+                                name="current_number"
+                                class="font-mono"
+                                value="{{ old('current_number', $item->current_number) }}"
+                                hint="Ajustable libremente hasta que se emita el primer documento con este tipo."
+                                :error="$errors->first('current_number')"
+                            />
                         @endif
                     </div>
                 </section>
