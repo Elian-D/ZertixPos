@@ -31,7 +31,7 @@
                     @php $ranges = ['today' => 'Hoy', '7days' => '7D', 'this_month' => 'Este Mes', '30days' => '30D', 'this_year' => 'Este Año']; @endphp
                     <div class="flex gap-1 min-w-max">
                         @foreach($ranges as $key => $label)
-                            <a href="{{ route('finance.ncf.dashboard', ['range' => $key, 'ncf_type' => $filters['ncf_type'], 'status' => $filters['status']]) }}" 
+                            <a href="{{ route('reports.ncf', ['range' => $key, 'ncf_type' => $filters['ncf_type'], 'status' => $filters['status']]) }}" 
                             class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap {{ $filters['current_range'] == $key ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50' }}">
                                 {{ $label }}
                             </a>
@@ -40,7 +40,7 @@
                 </div>
 
                 {{-- Filtro por Tipo de NCF --}}
-                <form action="{{ route('finance.ncf.dashboard') }}" method="GET" class="flex gap-2">
+                <form action="{{ route('reports.ncf') }}" method="GET" class="flex gap-2">
                     <input type="hidden" name="range" value="{{ $filters['current_range'] }}">
                     <input type="hidden" name="start_date" value="{{ $filters['start'] }}">
                     <input type="hidden" name="end_date" value="{{ $filters['end'] }}">
@@ -69,7 +69,7 @@
                 </form>
 
                 {{-- Selector de Rango Manual --}}
-                <form action="{{ route('finance.ncf.dashboard') }}" method="GET" 
+                <form action="{{ route('reports.ncf') }}" method="GET" 
                     class="flex items-center bg-white border border-gray-200 rounded-xl p-1 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all min-w-max">
                     <input type="hidden" name="range" value="custom">
                     <input type="hidden" name="ncf_type" value="{{ $filters['ncf_type'] }}">

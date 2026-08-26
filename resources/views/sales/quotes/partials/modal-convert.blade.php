@@ -1,5 +1,5 @@
 <x-modal name="confirm-convert-quote-{{ $quote->id }}" maxWidth="md">
-    <form action="{{ route('sales.quotes.convert', $quote) }}" method="POST" class="p-6 text-left"
+    <form action="{{ route('clients.quotes.convert', $quote) }}" method="POST" class="p-6 text-left"
           x-data="{
               paymentType: 'cash',
               selectedTipoPagoId: {{ optional($tipo_pagos->first())->id ?? 'null' }},

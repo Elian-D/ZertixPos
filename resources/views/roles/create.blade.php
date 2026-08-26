@@ -9,7 +9,7 @@
                 <h2 class="text-xl font-medium text-gray-700 mb-6 border-b pb-3">{{ __('Crear Nuevo Rol') }}</h2>
                 {{-- Se redujo a text-xl y font-medium, con una línea sutil de separación. --}}
                 
-                <form action="{{ route('roles.store') }}" method="POST">
+                <form action="{{ route('config.roles.store') }}" method="POST">
                     @csrf
                     
                     {{-- Campo de Formulario --}}
@@ -30,7 +30,7 @@
                     <div class="flex justify-end space-x-4 pt-4 border-t border-gray-100">
                         
                         {{-- Botón Cancelar (Regresar a la lista) --}}
-                        <x-ui.button href="{{ route('roles.index') }}" appearance="ghost" variant="secondary">
+                        <x-ui.button href="{{ route('config.roles.index') }}" appearance="ghost" variant="secondary">
                             Cancelar
                         </x-ui.button>
 

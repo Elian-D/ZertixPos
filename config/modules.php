@@ -36,7 +36,7 @@ return [
     //     // OJO: no incluye receivables/payments — CxC y su abono operativo son núcleo
     //     // flexible (REQ-02.8: CollectionService separa abono operativo de asiento
     //     // contable; solo el asiento formal, no la ruta, depende de este flag).
-    //     'route_prefixes' => ['app/finance/journal_entries', 'app/finance/accounts', 'app/finance/dashboard'],
+    //     'route_prefixes' => ['app/finance/journal_entries', 'app/finance/accounts', 'app/reports/finance'],
     // ],
 
     // 'purchases.vendors' => [

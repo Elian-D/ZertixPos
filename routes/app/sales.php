@@ -9,7 +9,6 @@ use App\Http\Controllers\Sales\Pos\PosSessionController;
 use App\Http\Controllers\Sales\Pos\PosTerminalController;
 use App\Http\Controllers\Sales\Pos\PosTerminalLockController;
 use App\Http\Controllers\Sales\SaleController;
-use App\Http\Controllers\Sales\SalesDashboardController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('sales')->as('sales.')->group(function () {
@@ -209,6 +208,9 @@ Route::prefix('sales')->as('sales.')->group(function () {
             ->name('collect.store')
             ->middleware(['auth', 'verified', 'permission:pos sessions manage', 'check.terminal.access']);
     });
-
-    Route::get('/dashboard', SalesDashboardController::class)->name('dashboard');
 });
+
+// Dashboard Ventas movido a routes/app/reports.php como reports.sales
+// (Fase 7.9, sidebar) — vivía bajo app/sales/dashboard, mismo prefijo que el
+// resto de este grupo, así que el sidebar resaltaba "Ventas" Y "Reportes" a
+// la vez al visitarlo.

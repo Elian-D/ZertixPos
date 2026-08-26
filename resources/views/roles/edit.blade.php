@@ -11,7 +11,7 @@
                 </h2>
                 {{-- Se usa text-xl, font-medium y una línea sutil para el minimalismo. --}}
                 
-                <form action="{{ route('roles.update', $role) }}" method="POST">
+                <form action="{{ route('config.roles.update', $role) }}" method="POST">
                     @csrf
                     @method('PUT')
                     
@@ -33,7 +33,7 @@
                     <div class="flex justify-end space-x-4 pt-4 border-t border-gray-100">
                         
                         {{-- Botón Cancelar (Regresar a la lista) --}}
-                        <x-ui.button href="{{ route('roles.index') }}" appearance="ghost" variant="secondary">
+                        <x-ui.button href="{{ route('config.roles.index') }}" appearance="ghost" variant="secondary">
                             Cancelar
                         </x-ui.button>
 

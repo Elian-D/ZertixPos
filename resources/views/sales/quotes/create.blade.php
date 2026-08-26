@@ -6,7 +6,7 @@
             <x-form-header 
                 title="Generar Cotización" 
                 subtitle="Cree una propuesta formal para su cliente. Podrá convertirla en venta más tarde."
-                :back-route="route('sales.quotes.index')" />
+                :back-route="route('clients.quotes.index')" />
 
             <div class="p-8">
                 {{-- 

@@ -10,7 +10,7 @@
                     {{ __('Editar usuario: ') }} <span class="text-indigo-600 font-semibold">{{ $user->name }}</span>
                 </h2>
                 
-                <form action="{{ route('users.update', $user) }}" method="POST">
+                <form action="{{ route('config.users.update', $user) }}" method="POST">
                     @csrf
                     @method('PUT')
 
@@ -115,7 +115,7 @@
                     <div class="flex justify-end space-x-4 pt-4 border-t border-gray-100">
                         
                         {{-- Botón Cancelar (Regresar a la lista) --}}
-                        <x-ui.button href="{{ route('users.index') }}" appearance="ghost" variant="secondary">
+                        <x-ui.button href="{{ route('config.users.index') }}" appearance="ghost" variant="secondary">
                             Cancelar
                         </x-ui.button>
 

@@ -24,7 +24,7 @@
                     @php $ranges = ['today' => 'Hoy', '7days' => '7D', 'this_month' => 'Este Mes', '30days' => '30D', 'this_year' => 'Este Año']; @endphp
                     <div class="flex gap-1 min-w-max">
                         @foreach($ranges as $key => $label)
-                            <a href="{{ route('finance.dashboard.index', ['range' => $key]) }}" 
+                            <a href="{{ route('reports.finance', ['range' => $key]) }}" 
                             class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap {{ $filters['current_range'] == $key ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50' }}">
                                 {{ $label }}
                             </a>
@@ -33,7 +33,7 @@
                 </div>
 
                 {{-- Selector de Rango Manual --}}
-                <form action="{{ route('finance.dashboard.index') }}" method="GET" 
+                <form action="{{ route('reports.finance') }}" method="GET" 
                     class="flex items-center bg-white border border-gray-200 rounded-xl p-1 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all min-w-max">
                     <input type="hidden" name="range" value="custom">
                     <div class="flex items-center px-2 gap-1">

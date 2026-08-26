@@ -4,7 +4,7 @@
             
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div class="flex-1">
-                    <a href="{{ route('sales.quotes.index') }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 text-sm font-semibold transition mb-3">
+                    <a href="{{ route('clients.quotes.index') }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 text-sm font-semibold transition mb-3">
                         <x-heroicon-s-arrow-left class="w-4 h-4 mr-1.5" />
                         Regresar al Historial
                     </a>
@@ -37,7 +37,7 @@
                     </x-ui.forms.select>
 
                     <a id="printBtn" 
-                       href="{{ route('sales.quotes.print', ['quote' => $quote, 'format' => 'letter']) }}" 
+                       href="{{ route('clients.quotes.print', ['quote' => $quote, 'format' => 'letter']) }}" 
                        target="_blank" 
                        class="inline-flex items-center px-5 py-2.5 bg-gray-900 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-gray-800 shadow-lg active:scale-95 transition-all">
                         <x-heroicon-s-printer class="w-4 h-4 mr-2" />
@@ -45,7 +45,7 @@
                     </a>
                     
                     <a id="downloadBtn"
-                       href="{{ route('sales.quotes.print', ['quote' => $quote, 'format' => 'letter']) }}?download=1" 
+                       href="{{ route('clients.quotes.print', ['quote' => $quote, 'format' => 'letter']) }}?download=1" 
                        class="inline-flex items-center px-5 py-2.5 bg-white border border-gray-300 rounded-lg font-bold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 active:scale-95 transition-all"
                        target="blank">
                         <x-heroicon-s-arrow-down-tray class="w-4 h-4 mr-2" />
@@ -170,7 +170,7 @@
                             <div class="bg-white shadow-2xl ring-1 ring-black/5 rounded-lg overflow-hidden h-full">
                                 <iframe 
                                     id="quoteIframe"
-                                    src="{{ route('sales.quotes.preview', $quote) }}" 
+                                    src="{{ route('clients.quotes.preview', $quote) }}" 
                                     class="w-full h-full border-0 bg-white"
                                     loading="lazy"
                                     title="Preview de Cotizacion">
@@ -271,8 +271,8 @@
 
     <script>
         const config = {
-            letter: "{{ route('sales.quotes.print', ['quote' => $quote, 'format' => 'letter']) }}",
-            ticket: "{{ route('sales.quotes.print', ['quote' => $quote, 'format' => 'ticket']) }}"
+            letter: "{{ route('clients.quotes.print', ['quote' => $quote, 'format' => 'letter']) }}",
+            ticket: "{{ route('clients.quotes.print', ['quote' => $quote, 'format' => 'ticket']) }}"
         };
 
         const formatSelector = document.getElementById('formatSelector');
@@ -292,7 +292,7 @@
             previewContainer.classList.remove('is-letter', 'is-ticket');
             previewContainer.classList.add(`is-${format}`);
             
-            quoteIframe.src = "{{ route('sales.quotes.preview', $quote) }}?format=" + format;
+            quoteIframe.src = "{{ route('clients.quotes.preview', $quote) }}?format=" + format;
         });
     </script>
 

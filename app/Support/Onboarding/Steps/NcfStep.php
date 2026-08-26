@@ -29,7 +29,7 @@ class NcfStep implements OnboardingStepInterface
 
     public function ctaRoute(): string
     {
-        return 'finance.ncf.dashboard';
+        return 'reports.ncf';
     }
 
     public function requiredModule(): ?string

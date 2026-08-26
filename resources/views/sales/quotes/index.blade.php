@@ -12,7 +12,7 @@
         <x-ui.page-header title="Motor de Cotizaciones" description="Crea y da seguimiento a las cotizaciones enviadas a clientes antes de convertirlas en ventas." :count="$items->total()" countLabel="cotizaciones">
             <x-slot name="actions">
                 @can('create quotes')
-                    <x-ui.button href="{{ route('sales.quotes.create') }}" variant="primary" iconLeft="heroicon-s-plus-circle">
+                    <x-ui.button href="{{ route('clients.quotes.create') }}" variant="primary" iconLeft="heroicon-s-plus-circle">
                         Nueva Cotización
                     </x-ui.button>
                 @endcan

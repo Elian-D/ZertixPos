@@ -195,7 +195,7 @@ class QuoteBuilder extends Component
                 session()->flash('success', 'Cotización #'.$quote->id.' creada.');
             }
 
-            return redirect()->route('sales.quotes.index');
+            return redirect()->route('clients.quotes.index');
 
         } catch (\Exception $e) {
             $this->addError('general', 'Error al procesar: '.$e->getMessage());

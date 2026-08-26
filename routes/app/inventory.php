@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Inventory\InventoryDashboardController;
 use App\Http\Controllers\Inventory\InventoryMovementController;
 use App\Http\Controllers\Inventory\InventoryStockController;
 use App\Http\Controllers\Inventory\WarehouseController;
@@ -60,9 +59,10 @@ Route::middleware('module:inventory.tracking')->prefix('inventory')->as('invento
             ->name('movements.export');
     });
 
-    Route::get('/dashboard', InventoryDashboardController::class)
-        ->middleware('permission:view inventory dashboard')
-        ->name('dashboard.index');
+    // Dashboard Inventario movido a routes/app/reports.php como reports.inventory
+    // (Fase 7.9, sidebar) — vivía bajo app/inventory/dashboard, mismo prefijo
+    // que el resto de este grupo, así que el sidebar resaltaba "Inventario" Y
+    // "Reportes" a la vez al visitarlo.
 
     // routes/app/products.php (antes) — merge dentro de Inventario (REQ-3.5),
     // namespace inventory.products.*, contenido sin cambios.

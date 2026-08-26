@@ -126,7 +126,7 @@
             <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-1.5">
                     {{-- Ver --}}
-                    <a href="{{ route('sales.quotes.show', $quote) }}" title="Ver Detalle"
+                    <a href="{{ route('clients.quotes.show', $quote) }}" title="Ver Detalle"
                        class="bg-white border border-gray-200 text-gray-500 hover:bg-indigo-600 hover:text-white p-1.5 rounded-lg transition-all">
                         <x-heroicon-s-eye class="w-4 h-4" />
                     </a>
@@ -160,7 +160,7 @@
 
                         {{-- Editar (Solo si es borrador y no ha expirado) --}}
                         @if($quote->status === \App\Models\Sales\Quotes\Quote::STATUS_DRAFT && !$quote->expires_at->isPast())
-                            <a href="{{ route('sales.quotes.edit', $quote) }}" 
+                            <a href="{{ route('clients.quotes.edit', $quote) }}" 
                             class="bg-white border border-gray-200 text-amber-600 hover:bg-amber-50 p-2 rounded-lg transition-all shadow-sm">
                                 <x-heroicon-s-pencil-square class="w-4 h-4" />
                             </a>
