@@ -150,6 +150,26 @@ Componente para entradas de texto de una sola línea. Soporta todos los tipos de
 | `disabled` | `bool` | `false` | Desactiva el campo |
 | `readonly` | `bool` | `false` | Campo de solo lectura |
 
+### Toggle mostrar/ocultar contraseña (REQ-7.11)
+
+**`type="password"` trae el botón de mostrar/ocultar de fábrica — no es opt-in.** No hay ningún caso real en el sistema donde un campo de contraseña deba impedir revelarla, así que no existe un prop separado para activarlo. Cuando `type="password"`:
+
+- El `<input>` deja de usar el atributo estático `type="password"` y pasa a un binding reactivo de Alpine: `:type="showPassword ? 'text' : 'password'"`.
+- El slot del ícono derecho lo ocupa un `<button type="button">` con `heroicon-s-eye-slash`/`heroicon-s-eye` — a diferencia del `iconRight` estático (que es `pointer-events-none`), este sí recibe clicks.
+- `iconRight` se **ignora** si `type="password"` — el espacio derecho es del toggle, no hay forma de combinar ambos.
+- El error (`exclamation-circle`) sigue teniendo prioridad sobre el toggle, igual que sobre `iconRight`.
+
+```blade
+<x-ui.forms.input
+    type="password"
+    label="Contraseña"
+    name="password"
+    icon-left="heroicon-s-lock-closed"
+    :error="$errors->first('password')"
+    required
+/>
+```
+
 ### Ejemplos
 
 **Input básico con icono y hint:**
