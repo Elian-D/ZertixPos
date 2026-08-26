@@ -11,6 +11,7 @@ use App\Models\Inventory\Warehouse;
 use App\Models\Sales\Pos\PosSession;
 use App\Models\Sales\Pos\PosTerminal;
 use App\Models\Sales\Sale;
+use Illuminate\Support\Facades\DB;
 
 class SaleCatalogService
 {
@@ -82,21 +83,35 @@ class SaleCatalogService
 
             // 3. Productos con Stock: Relacionados con sus almacenes
             // Traemos los productos que tienen existencia en al menos un lugar
-            'products' => InventoryStock::with(['product' => function ($query) {
-                $query->select('id', 'name', 'price');
-            }])
-                ->where('quantity', '>', 0)
-                ->get()
-                ->filter(fn ($stock) => $stock->product !== null) // Evita errores si un stock no tiene producto
-                ->map(function ($stock) {
+            'products' => (function () {
+                $stocks = InventoryStock::with(['product' => function ($query) {
+                    $query->select('id', 'name', 'price');
+                }])
+                    ->where('quantity', '>', 0)
+                    ->get()
+                    ->filter(fn ($stock) => $stock->product !== null); // Evita errores si un stock no tiene producto
+
+                // Precargado en una sola query (evita N+1 de Product::taxRate() por
+                // producto): suma de tasas apiladas por producto (Fase 5, REQ-5.1).
+                $taxRates = DB::table('product_taxes')
+                    ->whereIn('product_id', $stocks->pluck('product_id')->unique())
+                    ->get()
+                    ->groupBy('product_id')
+                    ->map(fn ($rows) => $rows->sum(fn ($row) => config("impuestos.{$row->tax_key}.rate", 0)));
+
+                return $stocks->map(function ($stock) use ($taxRates) {
                     return [
                         'id' => $stock->product_id,
                         'name' => $stock->product->name,
                         'price' => $stock->product->price,
+                        // Suma de tasas apiladas — el carrito la snapshotea al agregar
+                        // el producto, igual que el precio.
+                        'tax_rate' => (float) ($taxRates->get($stock->product_id) ?? 0),
                         'warehouse_id' => $stock->warehouse_id,
                         'stock' => $stock->quantity,
                     ];
-                })->values()->toArray(),
+                })->values()->toArray();
+            })(),
 
             // 4. Configuración de Documento (Para previsualizar el siguiente folio)
             'document_config' => DocumentType::where('code', 'FAC')

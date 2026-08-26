@@ -2,14 +2,15 @@
 
 <div x-data="{ open: false }" class="relative w-full md:w-auto text-left">
     <button @click="open = !open" type="button"
-        class="inline-flex justify-center items-center w-full md:w-auto px-4 py-2 border rounded-lg bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm transition">
+        class="inline-flex justify-center items-center w-full md:w-auto px-4 py-2 border rounded-lg bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zertix-primary-500 shadow-sm transition">
         <x-heroicon-s-funnel class="mr-2 h-4 w-4 text-gray-400" />
         {{ $label }}
         <x-heroicon-s-chevron-down class="ml-2 -mr-1 h-4 w-4 text-gray-400 transition-transform" x-bind:class="open ? 'rotate-180' : ''" />
     </button>
 
     {{-- Backdrop oscuro solo en móvil --}}
-    <div x-show="open" 
+    <div x-show="open"
+         x-cloak
          class="fixed inset-0 bg-black/20 backdrop-blur-sm z-[90] md:hidden"
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0"
@@ -18,7 +19,8 @@
     </div>
 
     {{-- Panel de Filtros: Centrado en móvil, dropdown en desktop --}}
-    <div x-show="open" 
+    <div x-show="open"
+        x-cloak
         @click.away="open = false"
         x-transition:enter="transition ease-out duration-200"
         x-transition:enter-start="opacity-0 translate-y-4 md:translate-y-0 md:scale-95"

@@ -3,8 +3,6 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-6">
 
-                {{-- Toast de error (ej. límite de usuarios del plan al entrar directo a /users/create) --}}
-                <x-ui.toasts />
 
                 {{-- 1. MENSAJE DE SESIÓN --}}
                 @if(session('success'))
@@ -20,13 +18,14 @@
                 <div class="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
                     
                     {{-- Formulario de Búsqueda Estilizado --}}
-                    <form action="{{ route('users.index') }}" method="GET" class="w-full md:w-1/3">
-                        <div class="relative">
-                            <input type="text" name="search" placeholder="Buscar usuarios..." 
-                                   value="{{ $search ?? '' }}"
-                                   class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm pl-10 pr-4 py-2">
-                            <x-heroicon-s-magnifying-glass class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                        </div>
+                    <form action="{{ route('config.users.index') }}" method="GET" class="w-full md:w-1/3">
+                        <x-ui.forms.input
+                            type="text"
+                            name="search"
+                            placeholder="Buscar usuarios..."
+                            value="{{ $search ?? '' }}"
+                            icon-left="heroicon-s-magnifying-glass"
+                        />
                     </form>
 
                     {{-- Botón Crear Usuario — deshabilitado (no oculto) al llegar al límite del
@@ -34,23 +33,19 @@
                          botón simplemente desaparezca. --}}
                     <div class="flex flex-col items-end gap-1">
                         @if ($canCreateMoreUsers)
-                            <a href="{{ route('users.create') }}"
-                               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
-                                <x-heroicon-s-plus class="w-5 h-5 mr-2 -ml-1" />
+                            <x-ui.button href="{{ route('config.users.create') }}" variant="primary" iconLeft="heroicon-s-plus">
                                 {{ __('Crear Nuevo Usuario') }}
-                            </a>
+                            </x-ui.button>
                             @if (! is_null($usersLimit))
                                 <p class="text-xs text-gray-400">
                                     {{ $totalUsersCount }}/{{ $usersLimit }} usuarios utilizados
                                 </p>
                             @endif
                         @else
-                            <button type="button" disabled
-                                    title="Tu plan actual permite un máximo de {{ $usersLimit }} usuario(s). Actualizá tu plan para agregar más."
-                                    class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-gray-300 cursor-not-allowed">
-                                <x-heroicon-s-plus class="w-5 h-5 mr-2 -ml-1" />
+                            <x-ui.button type="button" disabled variant="primary" iconLeft="heroicon-s-plus"
+                                title="Tu plan actual permite un máximo de {{ $usersLimit }} usuario(s). Actualizá tu plan para agregar más.">
                                 {{ __('Crear Nuevo Usuario') }}
-                            </button>
+                            </x-ui.button>
                             <p class="text-xs text-amber-600 font-medium">
                                 Límite del plan alcanzado ({{ $totalUsersCount }}/{{ $usersLimit }} usuarios) — actualizá tu plan para agregar más.
                             </p>
@@ -70,7 +65,7 @@
                             <td class="hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 w-1/12">{{ $user->id }}</td>
                             {{-- Columna 2: Avatar --}}
                             <td class="hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 w-1/12 ">
-                                    <div class="w-9 h-9 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center border-2 border-transparent hover:border-indigo-400 transition-colors duration-200">
+                                    <div class="w-9 h-9 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center border-2 border-transparent hover:border-zertix-primary-400 transition-colors duration-200">
                                         
                                         {{-- Lógica para AVATAR DE INICIALES --}}
                                         @if ( $user->avatar_url)
@@ -104,13 +99,13 @@
                             <td class="block md:table-cell px-6 py-4 whitespace-nowrap text-sm font-medium w-full md:w-auto">
                                 <div class="flex items-center space-x-2">
                                     {{-- Botón Editar --}}
-                                    <a href="{{ route('users.edit', $user) }}" title="Editar Usuario" class="text-indigo-600 hover:text-indigo-900 p-1 rounded-md hover:bg-indigo-100"><x-heroicon-s-pencil class="w-5 h-5" /></a>
+                                    <a href="{{ route('config.users.edit', $user) }}" title="Editar Usuario" class="text-zertix-primary-600 hover:text-zertix-primary-900 p-1 rounded-md hover:bg-zertix-primary-100"><x-heroicon-s-pencil class="w-5 h-5" /></a>
                                     
                                     {{-- Botón Roles --}}
-                                    <a href="{{ route('users.roles.edit', $user) }}" title="Asignar Roles y Permisos" class="text-teal-600 hover:text-teal-900 p-1 rounded-md hover:bg-teal-100"><x-heroicon-s-key class="w-5 h-5" /></a>
+                                    <a href="{{ route('config.users.roles.edit', $user) }}" title="Asignar Roles y Permisos" class="text-teal-600 hover:text-teal-900 p-1 rounded-md hover:bg-teal-100"><x-heroicon-s-key class="w-5 h-5" /></a>
 
                                     {{-- Botón Eliminar (Disparador del Modal) --}}
-                                    <form action="{{ route('users.destroy', $user) }}" method="POST" class="inline-block" x-data>
+                                    <form action="{{ route('config.users.destroy', $user) }}" method="POST" class="inline-block" x-data>
                                         @csrf @method('DELETE')
                                         <button type="button" @click="$dispatch('open-modal', 'confirm-user-deletion-{{ $user->id }}')" 
                                             title="Eliminar Usuario"
@@ -137,7 +132,7 @@
 @foreach($users as $user)
     {{-- Asegúrate de que $errors->userDeletion->isNotEmpty() esté disponible en caso de error --}}
     <x-modal name="confirm-user-deletion-{{ $user->id }}" :show="false" maxWidth="md">
-        <form method="post" action="{{ route('users.destroy', $user) }}" class="p-6">
+        <form method="post" action="{{ route('config.users.destroy', $user) }}" class="p-6">
             @csrf
             @method('delete')
 
@@ -155,15 +150,14 @@
             <div class="mt-6 flex justify-end">
                 
                 {{-- Botón Cancelar --}}
-                <x-secondary-button x-on:click="$dispatch('close')">
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">
                     {{ __('Cancelar') }}
-                </x-secondary-button>
+                </x-ui.button>
 
                 {{-- Botón Eliminar (Rojo) --}}
-                <x-danger-button class="ms-3">
-                    <x-heroicon-s-trash class="w-4 h-4 mr-2" />
+                <x-ui.button type="submit" variant="error" iconLeft="heroicon-s-trash" class="ms-3">
                     {{ __('Eliminar Usuario') }}
-                </x-danger-button>
+                </x-ui.button>
             </div>
         </form>
     </x-modal>

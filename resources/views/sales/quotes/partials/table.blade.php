@@ -4,7 +4,7 @@
             
             {{-- 1. ID --}}
             @if(in_array('id', $visibleColumns))
-                <td class="px-6 py-4 text-sm font-mono font-bold text-indigo-700">
+                <td class="px-6 py-4 text-sm font-mono font-bold text-zertix-primary-700">
                     #{{ $quote->id }}
                 </td>
             @endif
@@ -51,19 +51,27 @@
             @if(in_array('status', $visibleColumns))
                 <td class="px-6 py-4 text-center">
                     @php
-                        $sStyles = \App\Models\Sales\Quotes\Quote::getStatusStyles();
                         $sLabels = \App\Models\Sales\Quotes\Quote::getStatuses();
+                        $sVariant = match($quote->status) {
+                            \App\Models\Sales\Quotes\Quote::STATUS_DRAFT => 'slate',
+                            \App\Models\Sales\Quotes\Quote::STATUS_APPROVED => 'info',
+                            \App\Models\Sales\Quotes\Quote::STATUS_CONVERTED => 'success',
+                            \App\Models\Sales\Quotes\Quote::STATUS_EXPIRED => 'warning',
+                            \App\Models\Sales\Quotes\Quote::STATUS_CANCELLED => 'error',
+                            default => 'slate',
+                        };
                     @endphp
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm border {{ $sStyles[$quote->status] ?? 'bg-gray-100 text-gray-700' }}">
+                    <x-ui.badge :variant="$sVariant" size="sm" :dot="false">
                         {{ $sLabels[$quote->status] ?? $quote->status }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 
-            {{-- 7. Monto Total --}}
+            {{-- 7. Monto Total — grand_total (neto + impuesto), no total, mismo criterio
+                 del índice de productos (REQ-5.11) aplicado acá (Fase 5, REQ-5.12). --}}
             @if(in_array('total', $visibleColumns))
                 <td class="px-6 py-4 text-sm text-right font-bold text-gray-900">
-                    <span class="text-[10px] font-normal text-gray-400 mr-1">{{ config('regional.currency_symbol') }}</span>{{ number_format($quote->total, 2) }}
+                    <span class="text-[10px] font-normal text-gray-400 mr-1">{{ config('regional.currency_symbol') }}</span>{{ number_format($quote->grand_total, 2) }}
                 </td>
             @endif
 
@@ -84,7 +92,7 @@
             @if(in_array('sale_id', $visibleColumns))
                 <td class="px-6 py-4 text-center">
                     @if($quote->sale && $quote->sale->invoice)
-                        <a href="{{ route('sales.invoices.show', $quote->sale->invoice->id) }}" class="whitespace-nowrap inline-flex items-center px-2 py-1 bg-emerald-50 text-emerald-700 rounded border border-emerald-100 text-[10px] font-bold hover:bg-emerald-100 transition">
+                        <a href="{{ route('finance.invoices.show', $quote->sale->invoice->id) }}" class="whitespace-nowrap inline-flex items-center px-2 py-1 bg-emerald-50 text-emerald-700 rounded border border-emerald-100 text-[10px] font-bold hover:bg-emerald-100 transition">
                             {{ $quote->sale->number }}
                         </a>
                     @else
@@ -118,8 +126,8 @@
             <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-1.5">
                     {{-- Ver --}}
-                    <a href="{{ route('sales.quotes.show', $quote) }}" title="Ver Detalle"
-                       class="bg-white border border-gray-200 text-gray-500 hover:bg-indigo-600 hover:text-white p-1.5 rounded-lg transition-all">
+                    <a href="{{ route('clients.quotes.show', $quote) }}" title="Ver Detalle"
+                       class="bg-white border border-gray-200 text-gray-500 hover:bg-zertix-primary-600 hover:text-white p-1.5 rounded-lg transition-all">
                         <x-heroicon-s-eye class="w-4 h-4" />
                     </a>
 
@@ -137,7 +145,7 @@
                         {{-- Convertir (Solo si está Aprobada) --}}
                         @if($quote->status === \App\Models\Sales\Quotes\Quote::STATUS_APPROVED)
                             <button @click="$dispatch('open-modal', 'confirm-convert-quote-{{ $quote->id }}')" 
-                                    class="bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white p-1.5 rounded-lg transition-all shadow-sm" title="Convertir a Venta">
+                                    class="bg-zertix-primary-50 border border-zertix-primary-200 text-zertix-primary-700 hover:bg-zertix-primary-600 hover:text-white p-1.5 rounded-lg transition-all shadow-sm" title="Convertir a Venta">
                                 <x-heroicon-s-shopping-cart class="w-4 h-4" />
                             </button>
                         @endif
@@ -152,7 +160,7 @@
 
                         {{-- Editar (Solo si es borrador y no ha expirado) --}}
                         @if($quote->status === \App\Models\Sales\Quotes\Quote::STATUS_DRAFT && !$quote->expires_at->isPast())
-                            <a href="{{ route('sales.quotes.edit', $quote) }}" 
+                            <a href="{{ route('clients.quotes.edit', $quote) }}" 
                             class="bg-white border border-gray-200 text-amber-600 hover:bg-amber-50 p-2 rounded-lg transition-all shadow-sm">
                                 <x-heroicon-s-pencil-square class="w-4 h-4" />
                             </a>

@@ -28,7 +28,6 @@ class ConfiguracionGeneralSeeder extends Seeder
                 'nombre_empresa' => '',
                 'provincia_id' => $distritoNacional,
                 'municipio_id' => null, // Se define luego desde el panel
-                'impuesto_id' => 1,
             ]
         );
     }

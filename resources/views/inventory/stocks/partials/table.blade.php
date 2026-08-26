@@ -61,13 +61,9 @@
                         elseif($item->quantity <= $item->min_stock) $status = 'low';
                     @endphp
 
-                    @if($status == 'ok')
-                        <span class="px-2 py-1 text-[10px] font-black uppercase rounded-full bg-emerald-100 text-emerald-700">Suficiente</span>
-                    @elseif($status == 'low')
-                        <span class="px-2 py-1 text-[10px] font-black uppercase rounded-full bg-amber-100 text-amber-700">Stock Bajo</span>
-                    @else
-                        <span class="px-2 py-1 text-[10px] font-black uppercase rounded-full bg-red-100 text-red-700">Agotado</span>
-                    @endif
+                    <x-ui.badge :variant="match($status) { 'ok' => 'success', 'low' => 'warning', default => 'error' }" size="sm">
+                        {{ match($status) { 'ok' => 'Suficiente', 'low' => 'Stock Bajo', default => 'Agotado' } }}
+                    </x-ui.badge>
                 </td>
             @endif
 
@@ -87,12 +83,12 @@
             {{-- Acciones --}}
             <td class="px-6 py-4">
                 <div class="flex items-center justify-end gap-3">
-                    <button @click="$dispatch('open-modal', 'view-stock-{{ $item->id }}')" class="text-gray-400 hover:text-indigo-600 transition">
+                    <button @click="$dispatch('open-modal', 'view-stock-{{ $item->id }}')" class="text-gray-400 hover:text-zertix-primary-600 transition">
                         <x-heroicon-s-eye class="w-5 h-5" />
                     </button>
                     
                     <button @click="$dispatch('open-modal', 'edit-min-stock-{{ $item->id }}')" 
-                    class="text-indigo-600 hover:text-indigo-900 p-2 rounded-lg hover:bg-indigo-50 transition-colors"
+                    class="text-zertix-primary-600 hover:text-zertix-primary-900 p-2 rounded-lg hover:bg-zertix-primary-50 transition-colors"
                     title="Ajustar Stock Mínimo">
                     <x-heroicon-s-bell-alert class="w-5 h-5" />
                 </button>

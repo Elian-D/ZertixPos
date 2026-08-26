@@ -40,22 +40,22 @@ class AccountingAccountController extends Controller
 
         if ($request->ajax()) {
             return view('accounting.accounts.partials.table', [
-                'items'          => $accounts,
+                'items' => $accounts,
                 'visibleColumns' => $visibleColumns,
-                'allColumns'     => AccountingAccountTable::allColumns(),
+                'allColumns' => AccountingAccountTable::allColumns(),
                 'defaultDesktop' => AccountingAccountTable::defaultDesktop(),
-                'defaultMobile'  => AccountingAccountTable::defaultMobile(),
+                'defaultMobile' => AccountingAccountTable::defaultMobile(),
             ], $catalogs
             )->render();
         }
 
         return view('accounting.accounts.index', array_merge(
             [
-                'items'          => $accounts,
+                'items' => $accounts,
                 'visibleColumns' => $visibleColumns,
-                'allColumns'     => AccountingAccountTable::allColumns(),
+                'allColumns' => AccountingAccountTable::allColumns(),
                 'defaultDesktop' => AccountingAccountTable::defaultDesktop(),
-                'defaultMobile'  => AccountingAccountTable::defaultMobile(),
+                'defaultMobile' => AccountingAccountTable::defaultMobile(),
             ],
             $catalogs
         ));
@@ -69,7 +69,7 @@ class AccountingAccountController extends Controller
         $account = $this->service->createAccount($request->validated());
 
         return redirect()
-            ->route('accounting.accounts.index')
+            ->route('finance.accounts.index')
             ->with('success', "Cuenta \"{$account->code} - {$account->name}\" creada correctamente.");
     }
 
@@ -81,7 +81,7 @@ class AccountingAccountController extends Controller
         $this->service->updateAccount($accounting_account, $request->validated());
 
         return redirect()
-            ->route('accounting.accounts.index')
+            ->route('finance.accounts.index')
             ->with('success', "Cuenta \"{$accounting_account->name}\" actualizada con éxito.");
     }
 
@@ -96,7 +96,7 @@ class AccountingAccountController extends Controller
         if ($account->children()->count() > 0) {
             return redirect()
                 ->back()
-                ->with('error', "No se puede eliminar la cuenta porque tiene sub-cuentas asociadas.");
+                ->with('error', 'No se puede eliminar la cuenta porque tiene sub-cuentas asociadas.');
         }
 
         return $this->destroyTrait($account);
@@ -105,9 +105,28 @@ class AccountingAccountController extends Controller
     /**
      * Configuración para el SoftDeletesTrait
      */
-    protected function getModelClass(): string { return AccountingAccount::class; }
-    protected function getViewFolder(): string { return 'accounting.accounts'; }
-    protected function getRouteIndex(): string { return 'accounting.accounts.index'; }
-    protected function getRouteEliminadas(): string { return 'accounting.accounts.eliminados'; } // O una vista de papelera si decides crearla
-    protected function getEntityName(): string { return 'Cuenta Contable'; }
+    protected function getModelClass(): string
+    {
+        return AccountingAccount::class;
+    }
+
+    protected function getViewFolder(): string
+    {
+        return 'accounting.accounts';
+    }
+
+    protected function getRouteIndex(): string
+    {
+        return 'finance.accounts.index';
+    }
+
+    protected function getRouteEliminadas(): string
+    {
+        return 'finance.accounts.eliminados';
+    } // O una vista de papelera si decides crearla
+
+    protected function getEntityName(): string
+    {
+        return 'Cuenta Contable';
+    }
 }

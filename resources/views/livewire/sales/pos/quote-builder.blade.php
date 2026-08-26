@@ -2,14 +2,12 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {{-- Cliente --}}
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
-            <select wire:model="clientId" class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                <option value="">Seleccione un cliente...</option>
+            <x-ui.forms.select label="Cliente" wire:model="clientId" placeholder="Seleccione un cliente..."
+                :error="$errors->first('clientId')">
                 @foreach($clients as $client)
                     <option value="{{ $client->id }}">{{ $client->name }}</option>
                 @endforeach
-            </select>
-            @error('clientId') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+            </x-ui.forms.select>
         </div>
 
         {{-- Buscador de Productos (Inyectamos el otro componente aquí) --}}
@@ -36,7 +34,12 @@
                 @forelse($items as $index => $item)
                     <tr wire:key="item-row-{{ $item['product_id'] }}-{{ $index }}" class="border-b">
                         <td class="px-4 py-3 font-medium text-gray-900">{{ $item['name'] }}</td>
-                        <td class="px-4 py-3">{{ config('regional.currency_symbol') }}{{ number_format($item['price'], 2) }}</td>
+                        <td class="px-4 py-3">
+                            {{-- Precio con impuesto incluido (mismo criterio que el POS
+                                 Workspace, REQ-5.9) — evita que se cotice un precio y se
+                                 facture otro más alto al convertir. --}}
+                            {{ config('regional.currency_symbol') }}{{ number_format($item['price_with_tax'] ?? $item['price'], 2) }}
+                        </td>
                         <td class="px-4 py-3">
                             <input type="number" 
                                 wire:model.live.debounce.500ms="items.{{ $index }}.quantity" 
@@ -88,8 +91,8 @@
     {{-- Resumen y Acción --}}
     <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div class="w-full md:w-1/2">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Notas (Opcional)</label>
-            <textarea wire:model="notes" rows="3" class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"></textarea>
+            <x-ui.forms.textarea label="Notas (Opcional)" wire:model="notes" :rows="3"
+                :error="$errors->first('notes')"></x-ui.forms.textarea>
         </div>
 
         <div class="w-full md:w-1/3 bg-gray-50 p-4 rounded-lg">
@@ -101,9 +104,15 @@
                 <span>Descuento</span>
                 <span>-{{ config('regional.currency_symbol') }}{{ number_format($discountTotal, 2) }}</span>
             </div>
+            @if($tax > 0)
+                <div class="flex justify-between mb-2 text-gray-500">
+                    <span>Impuestos</span>
+                    <span>{{ config('regional.currency_symbol') }}{{ number_format($tax, 2) }}</span>
+                </div>
+            @endif
             <div class="flex justify-between mt-4 pt-4 border-t border-gray-200">
                 <span class="text-lg font-bold">Total</span>
-                <span class="text-xl font-black">{{ config('regional.currency_symbol') }}{{ number_format($total, 2) }}</span>
+                <span class="text-xl font-black">{{ config('regional.currency_symbol') }}{{ number_format($grandTotal, 2) }}</span>
             </div>
 
             {{-- NUEVO: Bloque de Errores Críticos / Generales del Servidor --}}

@@ -27,6 +27,18 @@ class Product extends Model
     }
 
     /**
+     * Precio con impuesto incluido — lo que el cliente realmente paga en caja.
+     * Puramente de presentación (mismo criterio que grossPrice() en el POS
+     * Workspace, REQ-5.9): `price` sigue siendo siempre el neto persistido,
+     * ningún cálculo de venta/validación/asiento lee este accessor (Fase 5,
+     * REQ-5.11).
+     */
+    public function getPriceWithTaxAttribute(): float
+    {
+        return round($this->price * (1 + $this->taxRate() / 100), 2);
+    }
+
+    /**
      * URL pública de la imagen, relativa a la raíz (no absoluta vía asset()/APP_URL).
      * Evita imágenes rotas cuando el puerto real del servidor difiere del configurado en APP_URL.
      */
@@ -53,6 +65,30 @@ class Product extends Model
     public function stocks()
     {
         return $this->hasMany(\App\Models\Inventory\InventoryStock::class);
+    }
+
+    /* ===========================
+     |  IMPUESTOS (Fase 5, REQ-5.1)
+     =========================== */
+
+    /**
+     * Claves de config('impuestos') asignadas a este producto. No es una relación
+     * Eloquent real (no hay modelo Tax en BD) — solo resuelve claves del pivote.
+     */
+    public function taxes(): array
+    {
+        return \Illuminate\Support\Facades\DB::table('product_taxes')
+            ->where('product_id', $this->id)
+            ->pluck('tax_key')
+            ->all();
+    }
+
+    /**
+     * Suma de tasas apiladas (ej. ITBIS 18% + ISC 10% = 28%).
+     */
+    public function taxRate(): float
+    {
+        return collect($this->taxes())->sum(fn ($key) => config("impuestos.{$key}.rate", 0));
     }
 
     /* ===========================

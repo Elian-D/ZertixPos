@@ -192,6 +192,9 @@
     <table class="arqueo-table" style="width: 60%;">
         <tr><td>Fondo Inicial</td><td class="text-right">{{ $currency }}{{ number_format($session->opening_balance, 2) }}</td></tr>
         <tr><td>Ventas en Efectivo</td><td class="text-right">{{ $currency }}{{ number_format($session->cash_sales, 2) }}</td></tr>
+        @if($session->cash_collections > 0)
+            <tr><td>Cobros CxC en Efectivo</td><td class="text-right">{{ $currency }}{{ number_format($session->cash_collections, 2) }}</td></tr>
+        @endif
         <tr class="total-row"><td>Esperado en Caja</td><td class="text-right">{{ $currency }}{{ number_format($session->isClosed() ? $session->expected_balance : $session->calculateExpected(), 2) }}</td></tr>
         @if($session->isClosed())
             <tr><td>Monto Real Contado</td><td class="text-right">{{ $currency }}{{ number_format($session->closing_balance, 2) }}</td></tr>

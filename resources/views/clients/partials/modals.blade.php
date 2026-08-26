@@ -6,7 +6,7 @@
             <div class="bg-gradient-to-r from-gray-50 to-white px-8 py-6 border-b relative">
                 <div class="flex justify-between items-start">
                     <div class="flex gap-4 items-center">
-                        <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-700 shadow-sm">
+                        <div class="w-12 h-12 bg-zertix-primary-100 rounded-xl flex items-center justify-center text-zertix-primary-700 shadow-sm">
                             @if($client->type === 'company')
                                 <x-heroicon-s-building-office class="w-7 h-7"/>
                             @else
@@ -27,14 +27,13 @@
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ring-1 ring-inset shadow-sm {{ $client->is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-gray-100 text-gray-500' }} ring-black/5">
-                            <span class="w-1.5 h-1.5 rounded-full mr-2 bg-current animate-pulse"></span>
+                        <x-ui.badge :variant="$client->is_active ? 'success' : 'slate'">
                             {{ $client->is_active ? 'Activo' : 'Inactivo' }}
-                        </span>
+                        </x-ui.badge>
                         @if($client->esMoroso())
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-red-50 text-red-600 ring-1 ring-red-200">
+                            <x-ui.badge variant="error" :dot="false">
                                 Moroso
-                            </span>
+                            </x-ui.badge>
                         @endif
                     </div>
                 </div>
@@ -46,7 +45,7 @@
                     {{-- Columna Izquierda: Identidad y Finanzas --}}
                     <div class="space-y-6">
                         <section>
-                            <h4 class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <h4 class="text-xs font-bold text-zertix-primary-600 uppercase tracking-widest mb-4 flex items-center gap-2">
                                 <x-heroicon-s-identification class="w-4 h-4"/> Identificación y Fiscal
                             </h4>
                             <div class="space-y-3">
@@ -54,15 +53,15 @@
                                     <span class="text-[10px] text-gray-400 uppercase font-bold block">Tipo y Documento</span>
                                     <p class="text-sm font-semibold text-gray-700">
                                         {{ $client->tax_label }}:
-                                        <span class="text-indigo-600 ml-1 font-mono">{{ $client->tax_id ?? 'N/A' }}</span>
+                                        <span class="text-zertix-primary-600 ml-1 font-mono">{{ $client->tax_id ?? 'N/A' }}</span>
                                     </p>
                                 </div>
                                 @if (module_enabled('accounting.advanced'))
-                                    <div class="bg-indigo-50/30 p-3 rounded-lg border border-indigo-100/50">
-                                        <span class="text-[10px] text-indigo-400 uppercase font-bold block">Cuenta Contable</span>
-                                        <p class="text-sm font-bold text-indigo-900">
+                                    <div class="bg-zertix-primary-50/30 p-3 rounded-lg border border-zertix-primary-100/50">
+                                        <span class="text-[10px] text-zertix-primary-400 uppercase font-bold block">Cuenta Contable</span>
+                                        <p class="text-sm font-bold text-zertix-primary-900">
                                             {{ $client->accountingAccount->name ?? 'Cuentas por Cobrar Clientes' }}
-                                            <span class="block text-[10px] font-normal text-indigo-500">{{ $client->accountingAccount->code ?? '1102-01' }}</span>
+                                            <span class="block text-[10px] font-normal text-zertix-primary-500">{{ $client->accountingAccount->code ?? '1102-01' }}</span>
                                         </p>
                                     </div>
                                 @endif
@@ -143,7 +142,7 @@
                             <div class="space-y-3 px-1">
                                 <div class="flex items-center gap-3">
                                     <x-heroicon-s-envelope class="w-4 h-4 text-gray-300"/>
-                                    <a href="mailto:{{ $client->email }}" class="text-sm text-indigo-600 hover:underline">{{ $client->email ?? 'N/A' }}</a>
+                                    <a href="mailto:{{ $client->email }}" class="text-sm text-zertix-primary-600 hover:underline">{{ $client->email ?? 'N/A' }}</a>
                                 </div>
                                 <div class="flex items-center gap-3">
                                     <x-heroicon-s-device-phone-mobile class="w-4 h-4 text-gray-300"/>
@@ -163,27 +162,31 @@
                 <div class="mt-10 pt-6 border-t flex flex-col sm:flex-row justify-between items-center gap-4">
                     <div class="text-[10px] text-gray-300 uppercase tracking-tighter font-mono">ID: {{ $client->id }}</div>
                     <div class="flex gap-3 w-full sm:w-auto">
-                        <x-secondary-button x-on:click="$dispatch('close')" class="flex-1 sm:flex-none justify-center">
+                        <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')" class="flex-1 sm:flex-none justify-center">
                             Cerrar
-                        </x-secondary-button>
-                        <a href="{{ route('clients.edit', $client) }}" class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2 bg-indigo-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition duration-150">
-                            <x-heroicon-s-pencil class="w-4 h-4 mr-2" /> Editar
-                        </a>
+                        </x-ui.button>
+                        @unless($client->isConsumidorFinal())
+                            <a href="{{ route('clients.edit', $client) }}" class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2 bg-zertix-primary-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-zertix-primary-700 transition duration-150">
+                                <x-heroicon-s-pencil class="w-4 h-4 mr-2" /> Editar
+                            </a>
+                        @endunless
                     </div>
                 </div>
             </div>
         </div>
     </x-modal>
 
-    <x-ui.confirm-deletion-modal 
-    :id="$client->id"
-    :title="'¿Eliminar Cliente?'"
-    :itemName="$client->name"
-    :type="'el cliente'"
-    :route="route('clients.destroy', $client)"
-    >
-    <strong>Aviso:</strong> Esta operación se puede deshacer desde la papelera.
-    </x-ui.confirm-deletion-modal>
+    @unless($client->isConsumidorFinal())
+        <x-ui.confirm-deletion-modal
+        :id="$client->id"
+        :title="'¿Eliminar Cliente?'"
+        :itemName="$client->name"
+        :type="'el cliente'"
+        :route="route('clients.destroy', $client)"
+        >
+        <strong>Aviso:</strong> Esta operación se puede deshacer desde la papelera.
+        </x-ui.confirm-deletion-modal>
+    @endunless
     @endforeach
 
     

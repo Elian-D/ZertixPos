@@ -4,7 +4,7 @@ namespace App\Models\Clients;
 
 use App\Enums\TaxIdentifierType;
 use App\Models\Accounting\AccountingAccount;
-use App\Models\Accounting\Payment;
+use App\Models\Accounting\ClientCollection;
 use App\Models\Accounting\Receivable;
 use App\Models\Geo\Municipality;
 use App\Models\Geo\Province;
@@ -74,9 +74,9 @@ class Client extends Model
         return $this->belongsTo(AccountingAccount::class, 'accounting_account_id');
     }
 
-    public function payments(): HasMany
+    public function collections(): HasMany
     {
-        return $this->hasMany(Payment::class);
+        return $this->hasMany(ClientCollection::class);
     }
 
     /**
@@ -142,6 +142,16 @@ class Client extends Model
     }
 
     /**
+     * `Consumidor Final` (id 1) es consumido sin filtrar por al menos 8 puntos
+     * del sistema (Sale, StoreSaleRequest, PosSetting, catálogos de POS/Cotizaciones/
+     * Ventas) — editarlo, desactivarlo o eliminarlo rompería esos flujos.
+     */
+    public function isConsumidorFinal(): bool
+    {
+        return $this->name === 'Consumidor Final';
+    }
+
+    /**
      * Estado de ciclo de vida — decisión manual (Fase 11, REQ-11.3). Mismo
      * patrón que Warehouse/Category/Unit/BusinessType.
      */
@@ -163,8 +173,12 @@ class Client extends Model
     {
         $diasGracia = general_config()->dias_gracia_mora ?? 0;
 
+        // whereNotIn, no solo "!= PAID" (Fase 8, REQ-8.1): una Receivable ANULADA
+        // (STATUS_CANCELLED, ver SaleService::cancel()) ya no representa una deuda
+        // real, pero "!= PAID" la dejaba pasar igual — si estaba vencida antes de
+        // anularse, marcaba al cliente como moroso por una factura que ya no cuenta.
         return $this->receivables()
-            ->where('status', '!=', Receivable::STATUS_PAID)
+            ->whereNotIn('status', [Receivable::STATUS_PAID, Receivable::STATUS_CANCELLED])
             ->where('due_date', '<', now()->subDays($diasGracia))
             ->exists();
     }
@@ -173,7 +187,7 @@ class Client extends Model
     {
         return $query->whereHas('receivables', function ($q) {
             $diasGracia = general_config()->dias_gracia_mora ?? 0;
-            $q->where('status', '!=', Receivable::STATUS_PAID)
+            $q->whereNotIn('status', [Receivable::STATUS_PAID, Receivable::STATUS_CANCELLED])
                 ->where('due_date', '<', now()->subDays($diasGracia));
         });
     }

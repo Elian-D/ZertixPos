@@ -17,21 +17,20 @@
                 <div class="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
                     
                     {{-- Formulario de Búsqueda Estilizado --}}
-                    <form action="{{ route('roles.index') }}" method="GET" class="w-full md:w-1/3">
-                        <div class="relative">
-                            <input type="text" name="search" placeholder="Buscar roles..." 
-                                   value="{{ $search ?? '' }}"
-                                   class="w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm pl-10 pr-4 py-2">
-                            <x-heroicon-s-magnifying-glass class="w-4 h-4 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                        </div>
+                    <form action="{{ route('config.roles.index') }}" method="GET" class="w-full md:w-1/3">
+                        <x-ui.forms.input
+                            type="text"
+                            name="search"
+                            placeholder="Buscar roles..."
+                            value="{{ $search ?? '' }}"
+                            icon-left="heroicon-s-magnifying-glass"
+                        />
                     </form>
 
                     {{-- Botón Estilizado para Crear Rol --}}
-                    <a href="{{ route('roles.create') }}"
-                       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
-                        <x-heroicon-s-plus class="w-5 h-5 mr-2 -ml-1" />
+                    <x-ui.button href="{{ route('config.roles.create') }}" variant="primary" iconLeft="heroicon-s-plus">
                         {{ __('Crear Nuevo Rol') }}
-                    </a>
+                    </x-ui.button>
                 </div>
 
                 {{-- 3. TABLA ESTILIZADA --}}
@@ -55,13 +54,13 @@
                             <td class="block md:table-cell px-6 py-4 whitespace-nowrap text-sm font-medium w-full md:w-auto">
                                 <div class="flex items-center space-x-2">
                                     {{-- Botón Editar --}}
-                                    <a href="{{ route('roles.edit', $role) }}" title="Editar Rol" class="text-indigo-600 hover:text-indigo-900 p-1 rounded-md hover:bg-indigo-100"><x-heroicon-s-pencil class="w-5 h-5" /></a>
+                                    <a href="{{ route('config.roles.edit', $role) }}" title="Editar Rol" class="text-zertix-primary-600 hover:text-zertix-primary-900 p-1 rounded-md hover:bg-zertix-primary-100"><x-heroicon-s-pencil class="w-5 h-5" /></a>
                                     
                                     {{-- Botón Permisos --}}
-                                    <a href="{{ route('roles.permissions.edit', $role) }}" title="Asignar Permisos" class="text-teal-600 hover:text-teal-900 p-1 rounded-md hover:bg-teal-100"><x-heroicon-s-key class="w-5 h-5" /></a>
+                                    <a href="{{ route('config.roles.permissions.edit', $role) }}" title="Asignar Permisos" class="text-teal-600 hover:text-teal-900 p-1 rounded-md hover:bg-teal-100"><x-heroicon-s-key class="w-5 h-5" /></a>
 
                                     {{-- Botón Eliminar (Disparador del Modal) --}}
-                                    <form action="{{ route('roles.destroy', $role) }}" method="POST" class="inline-block" x-data>
+                                    <form action="{{ route('config.roles.destroy', $role) }}" method="POST" class="inline-block" x-data>
                                         @csrf @method('DELETE')
                                         <button type="button" @click="$dispatch('open-modal', 'confirm-role-deletion-{{ $role->id }}')" 
                                             title="Eliminar Rol"
@@ -86,7 +85,7 @@
 {{-- MODALES --}}
 @foreach($roles as $role)
     <x-modal name="confirm-role-deletion-{{ $role->id }}" :show="$errors->roleDeletion->isNotEmpty()" maxWidth="md">
-        <form method="post" action="{{ route('roles.destroy', $role) }}" class="p-6">
+        <form method="post" action="{{ route('config.roles.destroy', $role) }}" class="p-6">
             @csrf
             @method('delete')
 
@@ -101,14 +100,13 @@
             </p>
 
             <div class="mt-6 flex justify-end">
-                <x-secondary-button x-on:click="$dispatch('close')">
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">
                     {{ __('Cancelar') }}
-                </x-secondary-button>
+                </x-ui.button>
 
-                <x-danger-button class="ms-3">
-                    <x-heroicon-s-trash class="w-4 h-4 mr-2" />
+                <x-ui.button type="submit" variant="error" iconLeft="heroicon-s-trash" class="ms-3">
                     {{ __('Eliminar Rol') }}
-                </x-danger-button>
+                </x-ui.button>
             </div>
         </form>
     </x-modal>

@@ -1,4 +1,4 @@
-// resources/js/admin/sales/ncf/ncf-types.js
+// resources/js/pages/nfc-types.js
 import AjaxDataTable from '../components/ajax-datatable/index';
 
 document.addEventListener('DOMContentLoaded', () => {

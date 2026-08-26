@@ -4,7 +4,7 @@
         <h2 class="text-lg font-medium text-gray-900">Nuevo Tipo de Comprobante</h2>
         <p class="mt-1 text-sm text-gray-600">Defina las reglas para un nuevo tipo de NCF o e-NCF.</p>
 
-        <form action="{{ route('sales.ncf.types.store') }}" 
+        <form action="{{ route('finance.ncf.types.store') }}" 
               method="POST" 
               class="mt-6 space-y-4"
               x-data="{ 
@@ -15,33 +15,24 @@
             
             <div class="grid grid-cols-3 gap-4">
                 <div class="col-span-2">
-                    <x-input-label for="name" value="Nombre del Comprobante" />
-                    <x-text-input name="name" id="name" type="text" class="mt-1 block w-full" placeholder="Ej: Factura de Crédito Fiscal" required />
+                    <x-ui.forms.input label="Nombre del Comprobante" name="name" id="name" type="text"
+                        placeholder="Ej: Factura de Crédito Fiscal" required :error="$errors->first('name')" />
                 </div>
                 <div>
-                    <x-input-label for="code" value="Código" />
-                    <x-text-input name="code" id="code" type="text" class="mt-1 block w-full text-center font-mono" placeholder="01" maxlength="2" required />
+                    <x-ui.forms.input label="Código" name="code" id="code" type="text"
+                        class="text-center font-mono" placeholder="01" maxlength="2" required
+                        :error="$errors->first('code')" hint="Código DGII de 2 dígitos (ej. 01, 02, 14)" />
                 </div>
             </div>
 
             {{-- Configuración Técnica con Checkboxes Estilizados --}}
             <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 space-y-4">
-                <div class="flex items-center justify-between">
-                    <label for="is_electronic" class="flex flex-col">
-                        <span class="text-sm font-medium text-gray-700">¿Es Electrónico? (e-NCF)</span>
-                        <span class="text-[10px] text-gray-400">Determina si usa el prefijo 'E'</span>
-                    </label>
-                    <input type="checkbox" name="is_electronic" id="is_electronic" value="1" x-model="isElectronic"
-                           class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 w-5 h-5">
-                </div>
+                <x-ui.forms.checkbox label="¿Es Electrónico? (e-NCF)" name="is_electronic" id="is_electronic"
+                    value="1" x-model="isElectronic" description="Determina si usa el prefijo 'E'" />
 
-                <div class="flex items-center justify-between pt-2 border-t border-gray-200">
-                    <label for="requires_rnc" class="flex flex-col">
-                        <span class="text-sm font-medium text-gray-700">Requiere RNC Obligatorio</span>
-                        <span class="text-[10px] text-gray-400">Valida RNC del cliente en el POS</span>
-                    </label>
-                    <input type="checkbox" name="requires_rnc" id="requires_rnc" value="1"
-                           class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 w-5 h-5">
+                <div class="pt-2 border-t border-gray-200">
+                    <x-ui.forms.checkbox label="Requiere RNC Obligatorio" name="requires_rnc" id="requires_rnc"
+                        value="1" description="Valida RNC del cliente en el POS" />
                 </div>
             </div>
 
@@ -54,8 +45,8 @@
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-                <x-primary-button class="bg-indigo-600">Guardar Tipo</x-primary-button>
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+                <x-ui.button type="submit" variant="primary">Guardar Tipo</x-ui.button>
             </div>
         </form>
     </div>
@@ -72,47 +63,41 @@
                 </span>
             </div>
             
-            <form action="{{ route('sales.ncf.types.update', $type->id) }}" method="POST" class="space-y-5">
+            <form action="{{ route('finance.ncf.types.update', $type->id) }}" method="POST" class="space-y-5">
                 @csrf
                 @method('PUT')
                 
                 {{-- Nombre --}}
                 <div>
-                    <x-input-label for="edit_name_{{ $type->id }}" value="Nombre del Comprobante" />
-                    <x-text-input name="name" id="edit_name_{{ $type->id }}" type="text" class="mt-1 block w-full" value="{{ $type->name }}" required />
+                    <x-ui.forms.input label="Nombre del Comprobante" name="name" id="edit_name_{{ $type->id }}"
+                        type="text" value="{{ $type->name }}" required :error="$errors->first('name')" />
                 </div>
 
                 {{-- Visualización de Identificadores (No editables por seguridad fiscal) --}}
-                <div class="grid grid-cols-2 gap-4 bg-indigo-50 p-4 rounded-xl border border-indigo-100 shadow-sm text-center">
+                <div class="grid grid-cols-2 gap-4 bg-zertix-primary-50 p-4 rounded-xl border border-zertix-primary-100 shadow-sm text-center">
                     <div>
-                        <span class="text-[10px] text-indigo-400 uppercase font-black tracking-widest block">Código DGII</span>
-                        <span class="font-mono text-indigo-700 font-bold text-2xl">{{ $type->code }}</span>
+                        <span class="text-[10px] text-zertix-primary-400 uppercase font-black tracking-widest block">Código DGII</span>
+                        <span class="font-mono text-zertix-primary-700 font-bold text-2xl">{{ $type->code }}</span>
                     </div>
                     <div>
-                        <span class="text-[10px] text-indigo-400 uppercase font-black tracking-widest block">Prefijo Serie</span>
-                        <span class="font-mono text-indigo-700 font-bold text-2xl">{{ $type->prefix }}</span>
+                        <span class="text-[10px] text-zertix-primary-400 uppercase font-black tracking-widest block">Prefijo Serie</span>
+                        <span class="font-mono text-zertix-primary-700 font-bold text-2xl">{{ $type->prefix }}</span>
                     </div>
                 </div>
 
                 <div class="space-y-4">
                     {{-- Toggle: RNC --}}
-                    <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
-                        <label for="edit_rnc_{{ $type->id }}" class="flex flex-col cursor-pointer">
-                            <span class="text-sm font-bold text-gray-700">Validación de RNC</span>
-                            <span class="text-xs text-gray-500">Hacer obligatorio para el POS</span>
-                        </label>
-                        <input type="checkbox" name="requires_rnc" id="edit_rnc_{{ $type->id }}" value="1" {{ $type->requires_rnc ? 'checked' : '' }}
-                               class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 w-6 h-6">
+                    <div class="p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+                        <x-ui.forms.checkbox label="Validación de RNC" name="requires_rnc"
+                            id="edit_rnc_{{ $type->id }}" value="1" :checked="$type->requires_rnc"
+                            description="Hacer obligatorio para el POS" />
                     </div>
 
                     {{-- Toggle: Estado Activo --}}
-                    <div class="flex items-center justify-between p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
-                        <label for="edit_active_{{ $type->id }}" class="flex flex-col cursor-pointer">
-                            <span class="text-sm font-bold text-gray-700">Disponibilidad</span>
-                            <span class="text-xs text-gray-500">Permitir uso en facturación</span>
-                        </label>
-                        <input type="checkbox" name="is_active" id="edit_active_{{ $type->id }}" value="1" {{ $type->is_active ? 'checked' : '' }}
-                               class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500 w-6 h-6">
+                    <div class="p-3 bg-white border border-gray-200 rounded-lg shadow-sm">
+                        <x-ui.forms.checkbox label="Disponibilidad" name="is_active"
+                            id="edit_active_{{ $type->id }}" value="1" :checked="$type->is_active"
+                            description="Permitir uso en facturación" />
                     </div>
 
                     {{-- Alerta de Seguridad (Si tiene secuencias) --}}
@@ -136,10 +121,10 @@
                 </div>
 
                 <div class="mt-6 flex justify-end gap-3 pt-4 border-t border-gray-100">
-                    <x-secondary-button x-on:click="$dispatch('close')">Descartar</x-secondary-button>
-                    <x-primary-button class="bg-indigo-600 hover:bg-indigo-700 shadow-md">
+                    <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Descartar</x-ui.button>
+                    <x-ui.button type="submit" variant="primary" class="shadow-md">
                         Guardar Cambios
-                    </x-primary-button>
+                    </x-ui.button>
                 </div>
             </form>
         </div>

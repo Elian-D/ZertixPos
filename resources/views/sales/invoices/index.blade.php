@@ -8,26 +8,24 @@
 </script>
 
 <x-app-layout>
-    <div class="w-full max-w-7xl mx-auto py-4 px-2 sm:px-3 lg:px-4">
-        <div class="bg-white shadow-xl rounded-xl">
-            <x-ui.toasts />
+    <div class="p-4 md:p-6 flex flex-col gap-6">
+        <x-ui.page-header title="Historial de Facturación" description="Consulta el historial completo de facturas emitidas y su estado de pago." :count="$items->total()" countLabel="facturas">
+            <x-slot:secondary>
+                <x-ui.button
+                    variant="secondary" appearance="ghost" class="w-full justify-start" iconLeft="heroicon-s-arrow-down-tray"
+                    x-on:click="const form = document.getElementById('invoices-filters'); const params = form ? new URLSearchParams(new FormData(form)).toString() : ''; window.location.href = '{{ route('finance.invoices.export') }}' + (params ? '?' + params : '');"
+                >
+                    Exportar (Excel)
+                </x-ui.button>
+            </x-slot:secondary>
+        </x-ui.page-header>
 
-            <div class="p-6">
-                <x-page-toolbar title="Historial de Facturación">
-                    <x-slot name="actions">
-                        {{-- Botón de Exportación (Excel) --}}
-                        <x-data-table.export-button :route="route('sales.invoices.export')" formId="invoices-filters" />
-                    </x-slot>
-                </x-page-toolbar>
+        {{-- Filtros del Pipeline específicos para Facturas --}}
+        @include('sales.invoices.partials.filters')
 
-                {{-- Filtros del Pipeline específicos para Facturas --}}
-                @include('sales.invoices.partials.filters')
-
-                {{-- Contenedor de Tabla AJAX --}}
-                <div id="invoices-table" class="w-full overflow-hidden">
-                    @include('sales.invoices.partials.table')
-                </div>
-            </div>
+        {{-- Contenedor de Tabla AJAX --}}
+        <div id="invoices-table" class="w-full overflow-hidden">
+            @include('sales.invoices.partials.table')
         </div>
     </div>
 </x-app-layout>

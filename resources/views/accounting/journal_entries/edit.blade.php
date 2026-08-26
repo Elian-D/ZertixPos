@@ -3,29 +3,38 @@
          x-data="journalEntryForm({{ $item->items->toJson() }})" 
          x-init="init()">
         
-        <form action="{{ route('accounting.journal_entries.update', $item) }}" method="POST"
+        <form action="{{ route('finance.journal_entries.update', $item) }}" method="POST"
             class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
             @csrf
             @method('PUT')
 
-            <x-ui.toasts />
             
             <x-form-header
                 title="Editar Asiento Contable"
                 subtitle="Modifique los valores del asiento antes de su asentamiento definitivo."
-                :back-route="route('accounting.journal_entries.index')" />
+                :back-route="route('finance.journal_entries.index')" />
 
             <div class="p-8 space-y-8">
                 {{-- SECCIÓN 1: CABECERA --}}
                 <section class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50/50 p-6 rounded-xl border border-gray-100">
                     <div class="md:col-span-1">
-                        <x-input-label value="Fecha Contable" />
-                        <x-text-input type="date" name="entry_date" class="w-full mt-1" 
-                            value="{{ $item->entry_date->format('Y-m-d') }}" required />
+                        <x-ui.forms.input
+                            label="Fecha Contable"
+                            type="date"
+                            name="entry_date"
+                            value="{{ $item->entry_date->format('Y-m-d') }}"
+                            :error="$errors->first('entry_date')"
+                            required
+                        />
                     </div>
                     <div class="md:col-span-1">
-                        <x-input-label value="Referencia / Documento" />
-                        <x-text-input name="reference" class="w-full mt-1" value="{{ $item->reference }}" placeholder="Ej: CH-001" />
+                        <x-ui.forms.input
+                            label="Referencia / Documento"
+                            name="reference"
+                            value="{{ $item->reference }}"
+                            placeholder="Ej: CH-001"
+                            :error="$errors->first('reference')"
+                        />
                     </div>
                     <div class="md:col-span-1">
                         <x-input-label value="Estado Actual" />
@@ -34,9 +43,13 @@
                         </div>
                     </div>
                     <div class="md:col-span-3">
-                        <x-input-label value="Concepto o Glosa" />
-                        <textarea name="description" rows="2" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm" 
-                            required>{{ $item->description }}</textarea>
+                        <x-ui.forms.textarea
+                            label="Concepto o Glosa"
+                            name="description"
+                            :rows="2"
+                            :error="$errors->first('description')"
+                            required
+                        >{{ $item->description }}</x-ui.forms.textarea>
                     </div>
                 </section>
 
@@ -44,7 +57,7 @@
                 <section>
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="font-bold text-gray-800 uppercase text-xs tracking-wider">Movimientos del Asiento</h3>
-                        <button type="button" @click="addLine()" class="text-xs bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg hover:bg-indigo-600 hover:text-white transition-all font-bold">
+                        <button type="button" @click="addLine()" class="text-xs bg-zertix-primary-50 text-zertix-primary-600 px-3 py-1.5 rounded-lg hover:bg-zertix-primary-600 hover:text-white transition-all font-bold">
                             + Añadir Línea
                         </button>
                     </div>
@@ -66,7 +79,7 @@
                                             <select :name="`items[${index}][accounting_account_id]`" 
                                                     x-model="line.accounting_account_id" 
                                                     @change="calculateTotals()"
-                                                    class="w-full border-gray-200 rounded-lg text-sm focus:ring-indigo-500" required>
+                                                    class="w-full border-gray-200 rounded-lg text-sm focus:ring-zertix-primary-500" required>
                                                 <option value="">Seleccione cuenta...</option>
                                                 @foreach($catalogs['accounts'] as $acc)
                                                     <option value="{{ $acc->id }}">{{ $acc->code }} - {{ $acc->name }}</option>
@@ -81,7 +94,7 @@
                                         <td class="p-2">
                                             <input type="number" :name="`items[${index}][credit]`" x-model.number="line.credit"
                                                 step="0.01" min="0" @input="calculateTotals()"
-                                                class="w-full border-gray-200 rounded-lg text-sm text-right font-mono focus:ring-indigo-500">
+                                                class="w-full border-gray-200 rounded-lg text-sm text-right font-mono focus:ring-zertix-primary-500">
                                         </td>
                                         <td class="p-2 text-center">
                                             <button type="button" @click="removeLine(index)" x-show="lines.length > 2"
@@ -106,10 +119,10 @@
             </div>
 
             <div class="p-6 bg-gray-50 flex justify-end gap-3 border-t">
-                <a href="{{ route('accounting.journal_entries.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500">Cancelar</a>
-                <x-primary-button class="bg-indigo-600" ::disabled="!isBalanced || totalDebit <= 0 || hasDuplicates">
+                <a href="{{ route('finance.journal_entries.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500">Cancelar</a>
+                <x-ui.button type="submit" variant="primary" ::disabled="!isBalanced || totalDebit <= 0 || hasDuplicates">
                     Actualizar Asiento
-                </x-primary-button>
+                </x-ui.button>
             </div>
         </form>
     </div>

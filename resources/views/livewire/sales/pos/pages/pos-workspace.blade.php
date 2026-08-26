@@ -6,7 +6,6 @@
         tipoPagos: @js($tipoPagos),
         ncfTypes: @js($ncfTypes),
         usaNcf: @js($usaNcf),
-        taxRate: @js($taxRate),
         maxItemDiscountPct: @js($maxItemDiscountPercentage),
         maxGlobalDiscountPct: @js($maxGlobalDiscountPercentage),
         allowItemDiscount: @js((bool) $allowItemDiscount),
@@ -14,15 +13,19 @@
         walkinClientId: @js($walkinClientId),
         defaultNcfTypeId: @js($terminal->default_ncf_type_id),
         checkoutUrl: @js(route('sales.pos.checkout.store', $terminal)),
+        collectUrl: @js(route('sales.pos.collect.store', $terminal)),
         heartbeatUrl: @js(route('sales.pos.heartbeat')),
         lockUrl: @js(route('sales.pos.lock', $terminal)),
         requiresPin: @js($terminal->requiresPinVerification()),
-        printUrl: @js($lastInvoiceId ? route('sales.invoices.print', ['invoice' => $lastInvoiceId, 'format' => 'ticket']) : null),
+        printUrl: @js($lastInvoiceId ? route('finance.invoices.print', ['invoice' => $lastInvoiceId, 'format' => 'ticket']) : null),
+        collectPrintUrl: @js($lastCollectionId ? route('finance.collections.print', ['payment' => $lastCollectionId]) : null),
         autoPrint: @js((bool) ($posConfig?->auto_print_receipt ?? false)),
         lastSale: @js($lastSale),
         terminalId: @js($terminal->id),
         inventoryTrackingEnabled: @js(module_enabled('inventory.tracking')),
         receivablesEnabled: @js(module_enabled('sales.receivables')),
+        canCollect: @js((bool) $canCollect),
+        debtors: @js($debtors),
      })"
      x-init="init()">
 
@@ -56,21 +59,46 @@
         <div class="flex items-center gap-1.5 sm:gap-3 shrink-0">
             <div class="hidden md:block text-right text-xs text-gray-500 font-mono" x-text="clock"></div>
 
-            <a href="{{ route('sales.pos.sessions.show', $session) }}"
-               title="Ver Caja"
-               class="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-gray-800 px-2.5 sm:px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors">
-                <x-heroicon-s-banknotes class="w-4 h-4 sm:hidden" />
-                <span class="hidden sm:inline">Ver Caja</span>
-            </a>
+            {{-- Desktop/tablet (>= lg): botones sueltos, mismo threshold que el split
+                 desktop.blade.php/mobile.blade.php. En mobile estos 3 (y los que se sumen
+                 después — cotizaciones, lector QR, etc.) viven en el kebab de abajo, no
+                 acá: con solo 3 ya quedaban chiquitos y pegados, fácil de tocar el
+                 equivocado con el pulgar, y la lista solo va a crecer. --}}
+            <div class="hidden lg:flex items-center gap-3">
+                @if($canCollect)
+                    <a href="#"
+                       @click.prevent="resetCollectPanel(); $dispatch('open-modal', 'pos-collect-modal')"
+                       title="Cobrar deudas pendientes de clientes (CxC)"
+                       class="flex items-center gap-1.5 text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 px-3 py-2 rounded-lg transition-colors">
+                        <x-heroicon-s-currency-dollar class="w-4 h-4" />
+                        <span>Cobrar Deudas</span>
+                    </a>
+                @endif
 
-            @if($terminal->requiresPinVerification())
-                <a href="{{ route('sales.pos.lock', $terminal) }}"
-                   title="Bloquear"
-                   class="flex items-center gap-1.5 text-xs font-bold text-white bg-gray-800 hover:bg-gray-900 px-2.5 sm:px-3 py-2 rounded-lg transition-colors">
-                    <x-heroicon-s-lock-closed class="w-4 h-4" />
-                    <span class="hidden sm:inline">Bloquear</span>
+                <a href="{{ route('sales.pos.sessions.show', $session) }}"
+                   title="Ver Caja"
+                   class="flex items-center gap-1.5 text-xs font-bold text-gray-500 hover:text-gray-800 px-3 py-2 rounded-lg hover:bg-gray-100 transition-colors">
+                    <x-heroicon-s-banknotes class="w-4 h-4" />
+                    <span>Ver Caja</span>
                 </a>
-            @endif
+
+                @if($terminal->requiresPinVerification())
+                    <a href="{{ route('sales.pos.lock', $terminal) }}"
+                       title="Bloquear"
+                       class="flex items-center gap-1.5 text-xs font-bold text-white bg-gray-800 hover:bg-gray-900 px-3 py-2 rounded-lg transition-colors">
+                        <x-heroicon-s-lock-closed class="w-4 h-4" />
+                        <span>Bloquear</span>
+                    </a>
+                @endif
+            </div>
+
+            {{-- Mobile (< lg): kebab con bottom sheet (definido en mobile.blade.php,
+                 comparte el estado raíz menuSheetOpen). --}}
+            <button type="button" @click="menuSheetOpen = true"
+                    title="Más opciones"
+                    class="lg:hidden w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-100 text-gray-500">
+                <x-heroicon-s-ellipsis-vertical class="w-5 h-5" />
+            </button>
         </div>
     </header>
 
@@ -85,6 +113,9 @@
 
     @include('livewire.sales.pos.pages.pos-workspace.client-modal')
     @include('livewire.sales.pos.pages.pos-workspace.checkout-modal')
+    @if($canCollect)
+        @include('livewire.sales.pos.pages.pos-workspace.collect-modal')
+    @endif
 
     {{-- Modal Cliente Rápido (Fase 7.5) --}}
     @include('sales.pos.partials.modal-quick-client')
@@ -100,6 +131,10 @@
                 items: [],
                 globalDiscountPercentage: 0,
                 clock: '',
+                // Bottom sheet del menú mobile (Cobrar Deudas/Ver Caja/Bloquear) — vive acá
+                // (estado raíz, no dentro de mobile.blade.php) porque el botón que lo abre
+                // está en el header compartido, fuera del scope local de mobile.blade.php.
+                menuSheetOpen: false,
                 formData: {
                     client_id: config.walkinClientId,
                     payment_type: 'cash',
@@ -119,6 +154,16 @@
                 clientRnc: '',
                 rncLookup: { loading: false, error: '', data: null },
                 totals: { gross: 0, discount: 0, subtotal: 0, tax: 0, total: 0 },
+
+                // --- Fase 6: Cobro de CxC desde el TPV ---
+                collectClientId: '',
+                collectClientSearch: '',
+                collectReceivableId: '',
+                collectAmount: '',
+                collectAmountUnlocked: false,
+                collectTipoPagoId: (config.tipoPagos.find(t => t.slug === 'efectivo') ?? config.tipoPagos[0])?.id ?? null,
+                collectReference: '',
+                collectSubmitting: false,
 
                 init() {
                     this.updateClock();
@@ -168,6 +213,16 @@
                         window.open(this.printUrl, '_blank');
                     }
 
+                    // Mismo mecanismo de auto-impresión, para el recibo de Cobro recién
+                    // registrado (Fase 6, REQ-6.8) — mismo dedupe por sessionStorage.
+                    if (this.autoPrint && this.collectPrintUrl) {
+                        const dedupeKey = 'pos-auto-printed:' + this.collectPrintUrl;
+                        if (!sessionStorage.getItem(dedupeKey)) {
+                            sessionStorage.setItem(dedupeKey, '1');
+                            window.open(this.collectPrintUrl, '_blank');
+                        }
+                    }
+
                     // Feedback de venta recién completada (el Workspace se recarga limpio tras el checkout).
                     if (this.lastSale) {
                         this.$nextTick(() => this.$dispatch('open-modal', 'pos-success-modal'));
@@ -176,6 +231,16 @@
 
                 updateClock() {
                     this.clock = new Date().toTimeString().split(' ')[0];
+                },
+
+                // Precio con impuesto incluido — lo que el cajero debe cotizar/cobrar por
+                // unidad. Antes se mostraba `product.price`/`item.price` (siempre neto) en
+                // el catálogo y en el carrito, pero el total del carrito sí sumaba el
+                // impuesto — el cajero cotizaba un precio y el sistema cobraba otro más
+                // alto al confirmar. Solo cambia lo que se MUESTRA; `item.price` sigue
+                // siendo el neto real que se envía al backend (Fase 5, REQ-5.3).
+                grossPrice(entity) {
+                    return entity.price * (1 + ((entity.tax_rate || 0) / 100));
                 },
 
                 // --- 7.2 Product Engine ---
@@ -217,6 +282,10 @@
                             product_id: product.id,
                             name: product.name,
                             price: product.price,
+                            // Snapshot al agregar, igual que price — si se reasignan los
+                            // impuestos del producto a mitad de venta no debe afectar lo
+                            // que ya está en el carrito (Fase 5, REQ-5.3).
+                            tax_rate: product.tax_rate ?? 0,
                             stock: product.stock,
                             is_stockable: product.is_stockable,
                             quantity: 1,
@@ -298,7 +367,16 @@
 
                     const discountTotal = itemDiscounts + globalAmount;
                     const netSubtotal = bruto - discountTotal;
-                    const tax = this.usaNcf ? netSubtotal * (this.taxRate / 100) : 0;
+
+                    // Impuesto por línea (Fase 5, REQ-5.3) — cada producto trae su propia
+                    // tasa (posiblemente 0 si es Exento), ya no una tasa global atada a si
+                    // la venta lleva NCF. Se calcula sobre el neto YA con descuento
+                    // (por ítem + su parte del global) aplicado a esa línea.
+                    let tax = 0;
+                    this.items.forEach(item => {
+                        const lineNet = (item.price * item.quantity) - item.discount_amount;
+                        tax += lineNet * ((item.tax_rate || 0) / 100);
+                    });
 
                     this.totals = {
                         gross: bruto,
@@ -315,6 +393,13 @@
                 get isCashMethod() {
                     const tp = this.tipoPagos.find(t => t.id === this.formData.tipo_pago_id);
                     return tp ? tp.slug === 'efectivo' : true;
+                },
+
+                // Fase 6, REQ-6.9: Tarjeta ya viene verificada por el datáfono antes de
+                // llegar acá — pedir referencia ahí no aporta una prueba que no exista ya.
+                get isCardMethod() {
+                    const tp = this.tipoPagos.find(t => t.id === this.formData.tipo_pago_id);
+                    return tp ? tp.slug === 'tarjeta' : false;
                 },
 
                 onPaymentTypeChange() {
@@ -370,6 +455,11 @@
                 paymentLineIsCash(payment) {
                     const tp = this.tipoPagos.find(t => t.id === payment.tipo_pago_id);
                     return tp ? tp.slug === 'efectivo' : true;
+                },
+
+                paymentLineIsCard(payment) {
+                    const tp = this.tipoPagos.find(t => t.id === payment.tipo_pago_id);
+                    return tp ? tp.slug === 'tarjeta' : false;
                 },
 
                 onTipoPagoChange() {
@@ -541,11 +631,9 @@
 
                     if (this.splitPayment) {
                         if (this.payments.length === 0) return true;
-                        if (Math.abs(this.paymentsRemaining) > 0.01) return true;
-                        return this.payments.some(p => !this.paymentLineIsCash(p) && !p.reference?.trim());
-                    }
 
-                    if (!this.isCashMethod && !this.paymentReference.trim()) return true;
+                        return Math.abs(this.paymentsRemaining) > 0.01;
+                    }
 
                     return this.isCashMethod && this.formData.cash_received < this.totals.total;
                 },
@@ -557,6 +645,88 @@
                     }
                     // Evita doble venta si el cajero toca "Cobrar" dos veces mientras el POST está en curso.
                     this.submitting = true;
+                },
+
+                // --- Fase 6: Cobro de CxC desde el TPV (REQ-6.2/6.3/6.4) ---
+                get filteredDebtors() {
+                    const term = this.collectClientSearch.trim().toLowerCase();
+                    if (!term) return this.debtors;
+                    return this.debtors.filter(d => d.name.toLowerCase().includes(term));
+                },
+
+                get selectedDebtor() {
+                    return this.debtors.find(d => d.id === this.collectClientId) ?? null;
+                },
+
+                get selectedReceivable() {
+                    return this.selectedDebtor?.receivables.find(r => r.id === this.collectReceivableId) ?? null;
+                },
+
+                selectCollectClient(clientId) {
+                    this.collectClientId = clientId;
+                    this.collectReceivableId = '';
+                    this.collectAmount = '';
+                    this.collectAmountUnlocked = false;
+                },
+
+                selectCollectReceivable(receivableId) {
+                    this.collectReceivableId = receivableId;
+                    this.collectAmount = '';
+                    this.collectAmountUnlocked = false;
+                },
+
+                setCollectHalf() {
+                    if (!this.selectedReceivable) return;
+                    this.collectAmount = (this.selectedReceivable.current_balance / 2).toFixed(2);
+                },
+
+                setCollectFull() {
+                    if (!this.selectedReceivable) return;
+                    this.collectAmount = this.selectedReceivable.current_balance.toFixed(2);
+                },
+
+                unlockCollectAmount() {
+                    this.collectAmountUnlocked = true;
+                    this.$nextTick(() => this.$refs.collectAmountInput?.focus());
+                },
+
+                // Reusa isCashMethod tal cual (7.4) contra el método elegido en el panel de
+                // Cobro, en vez de reinventar la misma lógica (REQ-6.4).
+                get collectIsCashMethod() {
+                    const tp = this.tipoPagos.find(t => t.id === this.collectTipoPagoId);
+                    return tp ? tp.slug === 'efectivo' : true;
+                },
+
+                // Fase 6, REQ-6.9 — mismo criterio que isCardMethod del checkout de venta.
+                get collectIsCardMethod() {
+                    const tp = this.tipoPagos.find(t => t.id === this.collectTipoPagoId);
+                    return tp ? tp.slug === 'tarjeta' : false;
+                },
+
+                get collectSubmitDisabled() {
+                    if (!this.collectReceivableId) return true;
+                    const amount = parseFloat(this.collectAmount);
+                    if (!amount || amount <= 0) return true;
+                    if (this.selectedReceivable && amount > this.selectedReceivable.current_balance) return true;
+
+                    return false;
+                },
+
+                resetCollectPanel() {
+                    this.collectClientId = '';
+                    this.collectClientSearch = '';
+                    this.collectReceivableId = '';
+                    this.collectAmount = '';
+                    this.collectAmountUnlocked = false;
+                    this.collectReference = '';
+                },
+
+                onCollectSubmit(event) {
+                    if (this.collectSubmitDisabled || this.collectSubmitting) {
+                        event.preventDefault();
+                        return;
+                    }
+                    this.collectSubmitting = true;
                 },
 
                 // --- 7.7 Session Security ---
@@ -585,7 +755,10 @@
                 },
 
                 formatMoney(amount) {
-                    return '{{ config('regional.currency_symbol') }}' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2 }).format(amount || 0);
+                    // Sin maximumFractionDigits, Intl.NumberFormat usa su default (3) y
+                    // deja ver basura de punto flotante (ej. 149.40000000000003 → "149.400")
+                    // en vez de redondear a 2 como el resto del sistema (factura, backend).
+                    return '{{ config('regional.currency_symbol') }}' + new Intl.NumberFormat('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(amount || 0);
                 },
             };
         }

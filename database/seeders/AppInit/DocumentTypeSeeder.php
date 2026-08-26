@@ -14,18 +14,28 @@ class DocumentTypeSeeder extends Seeder
                 'name' => 'Factura de Venta',
                 'code' => 'FAC',
                 'prefix' => 'FAC',
-                'current_number' => 0,
             ],
             [
-                'name' => 'Comprobante de Pago',
+                // REQ-4.2, Opción A: el code/prefix 'PAG' se mantiene tal cual — es
+                // información legal/histórica ya impresa en recibos reales (PAG-000102,
+                // etc.) — solo el name mostrado cambia a "Recibo de Cobro".
+                'name' => 'Recibo de Cobro',
                 'code' => 'PAG',
                 'prefix' => 'PAG',
-                'current_number' => 0,
             ],
         ];
 
         foreach ($docs as $doc) {
-            DocumentType::updateOrCreate(['code' => $doc['code']], $doc);
+            // current_number es un correlativo real, no un valor de catálogo — nunca
+            // se pisa en un re-run del seeder (un updateOrCreate ingenuo con
+            // 'current_number' => 0 en el payload resetea el correlativo de
+            // instalaciones ya en producción cada vez que este seeder corre de nuevo).
+            $type = DocumentType::firstOrNew(['code' => $doc['code']]);
+            $type->fill($doc);
+            if (! $type->exists) {
+                $type->current_number = 0;
+            }
+            $type->save();
         }
 
         // REC, MAN y NC nunca se consultan en ningún punto del código (confirmado por

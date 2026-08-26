@@ -15,7 +15,7 @@ return [
         'icon' => 'heroicon-s-truck',
         'category' => 'satellite',
         'depends_on' => ['clients.core'],
-        'route_prefixes' => ['admin/clients/pos', 'admin/clients/businessTypes'],
+        'route_prefixes' => ['app/clients/delivery-points', 'app/clients/businessTypes'],
     ],
 
     'clients.field_assets' => [
@@ -24,7 +24,7 @@ return [
         'icon' => 'heroicon-s-wrench-screwdriver',
         'category' => 'satellite',
         'depends_on' => ['clients.core'],
-        'route_prefixes' => ['admin/clients/equipments', 'admin/clients/equipmentTypes'],
+        'route_prefixes' => ['app/clients/equipments', 'app/clients/equipmentTypes'],
     ],
 
     // 'accounting.advanced' => [
@@ -34,9 +34,9 @@ return [
     //     'category' => 'satellite',
     //     'depends_on' => ['sales.core'],
     //     // OJO: no incluye receivables/payments — CxC y su abono operativo son núcleo
-    //     // flexible (REQ-02.8: PaymentService separa abono operativo de asiento
+    //     // flexible (REQ-02.8: CollectionService separa abono operativo de asiento
     //     // contable; solo el asiento formal, no la ruta, depende de este flag).
-    //     'route_prefixes' => ['admin/accounting/journal_entries', 'admin/accounting/accounts', 'admin/accounting/dashboard'],
+    //     'route_prefixes' => ['app/finance/journal_entries', 'app/finance/accounts', 'app/reports/finance'],
     // ],
 
     // 'purchases.vendors' => [
@@ -47,7 +47,7 @@ return [
     //     // Dependencia dura satélite→flexible: BLOQUEO explícito al guardar, nunca
     //     // cascada (ver SystemFeatures::HARD_DEPENDENCIES, REQ-10.7).
     //     'depends_on' => ['inventory.tracking'],
-    //     'route_prefixes' => ['admin/purchases'],
+    //     'route_prefixes' => ['app/purchases'],
     // ],
 
     'sales.ncf' => [
@@ -56,7 +56,7 @@ return [
         'icon' => 'heroicon-s-document-text',
         'category' => 'satellite',
         'depends_on' => ['sales.core'],
-        'route_prefixes' => ['admin/sales/ncf'],
+        'route_prefixes' => ['app/finance/ncf'],
     ],
 
     // 'sales.credit_notes_b04' NO es un módulo propio (revisión REQ-10.9) — el B04 es
@@ -77,7 +77,7 @@ return [
         'description' => 'Descuenta y controla existencias por almacén en cada venta o movimiento.',
         'icon' => 'heroicon-s-archive-box',
         'category' => 'base_flexible',
-        'route_prefixes' => ['admin/inventory'],
+        'route_prefixes' => ['app/inventory'],
     ],
 
     'sales.receivables' => [
@@ -85,7 +85,7 @@ return [
         'description' => 'Vende a crédito y da seguimiento a los saldos pendientes de tus clientes.',
         'icon' => 'heroicon-s-banknotes',
         'category' => 'base_flexible',
-        'route_prefixes' => ['admin/accounting/receivables'],
+        'route_prefixes' => ['app/finance/receivables'],
     ],
 
     // 'sales.payables' => [
@@ -97,7 +97,7 @@ return [
     //     // ítem 3.5) — se registra ya con este flag para no repetir el error de
     //     // Contabilidad (construirlo fijo y desacoplarlo después). Sin ruta real
     //     // todavía: no hay middleware `module:` aplicado a nada por este flag.
-    //     'route_prefixes' => ['admin/accounting/payables'],
+    //     'route_prefixes' => ['app/finance/payables'],
     // ],
 
     'sales.quotes' => [
@@ -105,6 +105,48 @@ return [
         'description' => 'Crea propuestas de venta antes de facturar y conviértelas en ventas reales.',
         'icon' => 'heroicon-s-document-duplicate',
         'category' => 'base_flexible',
-        'route_prefixes' => ['admin/sales/quotes'],
+        'route_prefixes' => ['app/sales/quotes'],
     ],
+
+    // 'sales.propina_legal' => [
+    //     'label' => 'Propina Legal',
+    //     'description' => 'Cargo de servicio del 10% sobre la venta completa, para restaurantes y bares.',
+    //     'icon' => 'heroicon-s-receipt-percent',
+    //     // Ninguna de las dos categorías existentes calza del todo: no es 'satellite'
+    //     // (no debería depender de a qué Plan/tier está suscrito el negocio — un
+    //     // restaurante lo necesita sin importar el plan que pague) ni 'base_flexible'
+    //     // tal cual está definida hoy (esos nacen ENCENDIDOS por defecto en todo Plan;
+    //     // Propina Legal tiene que nacer APAGADA — la mayoría de instalaciones de
+    //     // ZertixPOS hoy no son restaurantes). Falta una tercera categoría real
+    //     // ('flexible_opt_in'?: apagado por defecto, togglable por el dueño, nunca
+    //     // gateado por Plan) — no crearla solo para este módulo hasta que haga falta
+    //     // un segundo caso igual; documentado acá para no reabrir esta discusión desde
+    //     // cero. Mientras tanto, activar a mano vía InstallationModule::updateOrCreate()
+    //     // (o el seeder que corresponda) es aceptable como solución temporal.
+    //     'category' => 'base_flexible', // ver nota de arriba — placeholder, no literal
+    //     'depends_on' => ['sales.core'],
+    //     'route_prefixes' => [], // no tiene pantalla propia — ver lógica abajo
+    // ],
+    //
+    // Diseño completo ya discutido (docs/features/v1.2.0.md Fase 5, REQ-5.7) — queda
+    // documentado acá, no implementado, hasta que un cliente de restaurante/bar
+    // realmente lo necesite (debería desarrollarse rápido con esto ya resuelto):
+    //
+    // 1. Deliberadamente FUERA del pivote product_taxes (config/impuestos.php) — no es
+    //    un impuesto DGII (no se remite al fisco, es para los empleados) y se aplica a
+    //    la venta completa, no producto por producto. Mezclarlo con ITBIS/ISC en el
+    //    mismo pivote contaminaría los reportes fiscales 606/607.
+    // 2. Con el módulo activo: el checkout POS ofrece un toggle "Aplicar Propina
+    //    Legal" por venta (no es automático ni obligatorio en cada venta).
+    // 3. La tasa (10%) vive en config('impuestos.propina_legal.rate') — el módulo
+    //    solo decide SI el toggle existe en el checkout, no la tasa en sí. Evita
+    //    tener la tasa flotando sin conectarse a ningún lado (gap detectado en la
+    //    revisión de la Fase 5: el texto original de REQ-5.7 no dejaba explícito que
+    //    el cálculo debe leer esa misma clave de config, no un 10% hardcodeado aparte).
+    // 4. Si el toggle se marca: `sales.service_charge_amount` = net_amount * tasa,
+    //    columna ya contemplada en la migración de REQ-5.2 (ver v1.2.0.md).
+    // 5. Va a su propio pasivo contable (`service_charge_payable`, ver nota sobre
+    //    roles contables en v1.2.0.md REQ-5.5) — no es ingreso del negocio.
+    // 6. Con el módulo apagado (default): el toggle no aparece, `service_charge_amount`
+    //    siempre es 0, sin excepción.
 ];

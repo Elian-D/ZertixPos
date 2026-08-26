@@ -31,10 +31,9 @@
             {{-- Estado --}}
             @if(in_array('activo', $visibleColumns))
                 <td class="px-6 py-4">
-                    <span class="px-2 py-1 text-xs rounded-full font-bold
-                        {{ $item->activo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                    <x-ui.badge :variant="$item->activo ? 'success' : 'error'" size="sm">
                         {{ $item->activo ? 'Activo' : 'Inactivo' }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 
@@ -54,27 +53,21 @@
             {{-- Acciones --}}
             <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
-                    @php 
-                        $isLastActives = $item->activo && $equipmentsTypes->where('activo', true)->count() <= 1; 
-                    @endphp
-
                     <form action="{{ route('clients.equipmentTypes.toggle', $item) }}" method="POST">
                         @csrf @method('PATCH')
-                        <button type="submit" 
-                            {{ $isLastActives ? 'disabled' : '' }}
-                            class="text-xs px-2 py-1 rounded border {{ $isLastActives ? 'bg-gray-50 text-gray-400 border-gray-200 cursor-not-allowed' : ($item->activo ? 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100' : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100') }}">
-                            {{ $isLastActives ? 'Mínimo Activos' : ($item->activo ? 'Desactivar' : 'Activar') }}
+                        <button type="submit"
+                            class="text-xs px-2 py-1 rounded border {{ $item->activo ? 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100' : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' }}">
+                            {{ $item->activo ? 'Desactivar' : 'Activar' }}
                         </button>
                     </form>
 
-                    <button @click="$dispatch('open-modal', 'edit-tipoEquipo-{{ $item->id }}')" class="text-indigo-600 hover:text-indigo-900 p-1 rounded hover:bg-indigo-50">
+                    <button @click="$dispatch('open-modal', 'edit-tipoEquipo-{{ $item->id }}')" class="text-zertix-primary-600 hover:text-zertix-primary-900 p-1 rounded hover:bg-zertix-primary-50">
                         <x-heroicon-s-pencil class="w-5 h-5" />
                     </button>
 
-                    <button 
-                        @if(!$isLastActives) @click="$dispatch('open-modal', 'confirm-deletion-{{ $item->id }}')" @endif
-                        class="p-1 rounded {{ $isLastActives ? 'text-gray-300 cursor-not-allowed' : 'text-red-600 hover:text-red-900 hover:bg-red-50' }}"
-                        {{ $isLastActives ? 'title=No_puedes_eliminar_un_tipo_de_equipo_activo_minimo' : '' }}>
+                    <button
+                        @click="$dispatch('open-modal', 'confirm-deletion-{{ $item->id }}')"
+                        class="p-1 rounded text-red-600 hover:text-red-900 hover:bg-red-50">
                         <x-heroicon-s-trash class="w-5 h-5" />
                     </button>
                 </div>

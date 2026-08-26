@@ -18,7 +18,7 @@
                 <button type="button" @click="filterSheetOpen = true"
                         class="sm:hidden w-full flex items-center justify-between gap-2 bg-white border border-gray-200 rounded-xl px-4 py-2.5 shadow-sm">
                     <span class="flex items-center gap-2 text-sm font-semibold text-gray-700">
-                        <x-heroicon-s-calendar-days class="w-4 h-4 text-indigo-600"/>
+                        <x-heroicon-s-calendar-days class="w-4 h-4 text-zertix-primary-600"/>
                         {{ $filters['current_range'] === 'custom' ? $filters['start'].' al '.$filters['end'] : ($ranges[$filters['current_range']] ?? 'Filtrar') }}
                     </span>
                     <x-heroicon-s-chevron-down class="w-4 h-4 text-gray-400"/>
@@ -28,16 +28,16 @@
                 <div class="hidden sm:inline-flex bg-gray-100 p-1 rounded-xl border border-gray-200 shadow-sm overflow-x-auto">
                     <div class="flex gap-1 min-w-max">
                         @foreach($ranges as $key => $label)
-                            <a href="{{ route('accounting.overview.index', ['range' => $key]) }}"
-                               class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap {{ $filters['current_range'] == $key ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50' }}">
+                            <a href="{{ route('finance.overview.index', ['range' => $key]) }}"
+                               class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap {{ $filters['current_range'] == $key ? 'bg-white text-zertix-primary-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50' }}">
                                 {{ $label }}
                             </a>
                         @endforeach
                     </div>
                 </div>
 
-                <form action="{{ route('accounting.overview.index') }}" method="GET"
-                      class="hidden sm:flex items-center bg-white border border-gray-200 rounded-xl p-1 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all min-w-max">
+                <form action="{{ route('finance.overview.index') }}" method="GET"
+                      class="hidden sm:flex items-center bg-white border border-gray-200 rounded-xl p-1 shadow-sm focus-within:ring-2 focus-within:ring-zertix-primary-500/20 transition-all min-w-max">
                     <input type="hidden" name="range" value="custom">
                     <div class="flex items-center px-2 gap-1">
                         <input type="date" name="start_date" value="{{ $filters['start'] }}"
@@ -47,7 +47,7 @@
                                class="text-xs border-none focus:ring-0 p-1 text-gray-600 bg-transparent w-[110px]">
                     </div>
                     <button type="submit"
-                            class="p-2 bg-gray-50 hover:bg-indigo-50 text-indigo-600 rounded-lg transition-colors border-l border-gray-100 flex-shrink-0">
+                            class="p-2 bg-gray-50 hover:bg-zertix-primary-50 text-zertix-primary-600 rounded-lg transition-colors border-l border-gray-100 flex-shrink-0">
                         <x-heroicon-s-magnifying-glass class="w-4 h-4"/>
                     </button>
                 </form>
@@ -75,8 +75,8 @@
 
                         <div class="grid grid-cols-2 gap-2 mb-6">
                             @foreach($ranges as $key => $label)
-                                <a href="{{ route('accounting.overview.index', ['range' => $key]) }}"
-                                   class="px-4 py-3 text-sm font-semibold rounded-lg text-center transition-colors {{ $filters['current_range'] == $key ? 'bg-indigo-600 text-white' : 'bg-gray-100 text-gray-700' }}">
+                                <a href="{{ route('finance.overview.index', ['range' => $key]) }}"
+                                   class="px-4 py-3 text-sm font-semibold rounded-lg text-center transition-colors {{ $filters['current_range'] == $key ? 'bg-zertix-primary-600 text-white' : 'bg-gray-100 text-gray-700' }}">
                                     {{ $label }}
                                 </a>
                             @endforeach
@@ -88,7 +88,7 @@
                             <div class="h-px bg-gray-100 flex-1"></div>
                         </div>
 
-                        <form action="{{ route('accounting.overview.index') }}" method="GET" class="space-y-3">
+                        <form action="{{ route('finance.overview.index') }}" method="GET" class="space-y-3">
                             <input type="hidden" name="range" value="custom">
                             <div>
                                 <label class="text-xs font-semibold text-gray-500 mb-1 block">Desde</label>
@@ -100,7 +100,7 @@
                                 <input type="date" name="end_date" value="{{ $filters['end'] }}"
                                        class="w-full border border-gray-200 rounded-lg p-2.5 text-sm text-gray-700">
                             </div>
-                            <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-sm rounded-lg py-3 transition-colors">
+                            <button type="submit" class="w-full bg-zertix-primary-600 hover:bg-zertix-primary-700 text-white font-bold text-sm rounded-lg py-3 transition-colors">
                                 Aplicar
                             </button>
                         </form>
@@ -130,9 +130,9 @@
                     </div>
                 </div>
                 <p class="mt-2 text-4xl font-bold text-gray-900 tabular-nums">{{ config('regional.currency_symbol') }}{{ number_format($stats['gross_profit'], 2) }}</p>
-                <span class="inline-flex items-center mt-1.5 px-1.5 py-0.5 rounded text-xs font-semibold {{ $stats['gross_profit'] >= 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700' }}">
+                <x-ui.badge :variant="$stats['gross_profit'] >= 0 ? 'success' : 'error'" size="sm" :dot="false" class="mt-1.5">
                     {{ number_format($stats['margin'], 1) }}% margen
-                </span>
+                </x-ui.badge>
             </div>
         </div>
 
@@ -189,7 +189,7 @@
         <div class="bg-white rounded-lg border border-gray-200">
             <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
                 <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wide">Cuentas por Cobrar Pendientes</h3>
-                <a href="{{ route('accounting.receivables.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition">Ver todas →</a>
+                <a href="{{ route('finance.receivables.index') }}" class="text-xs font-semibold text-zertix-primary-600 hover:text-zertix-primary-800 transition">Ver todas →</a>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">

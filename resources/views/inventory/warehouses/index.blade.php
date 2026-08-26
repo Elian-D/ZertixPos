@@ -1,34 +1,26 @@
 <x-app-layout>
-    <div class="w-full max-w-7xl mx-auto py-4 px-2 sm:px-3 lg:px-4">
-        <div class="bg-white shadow-xl rounded-xl">
+    <div class="p-4 md:p-6 flex flex-col gap-6">
 
-            <x-ui.toasts />
+        <x-ui.page-header title="Gestión de Almacenes" description="Gestiona los almacenes donde se distribuye tu inventario." :count="$warehouses->total()" countLabel="almacenes">
+            <x-slot name="actions">
 
-            <div class="p-6">
-                <x-page-toolbar title="Gestión de Almacenes">
-                    <x-slot name="actions">
+            <x-ui.button href="{{ route('inventory.warehouses.eliminados') }}" appearance="ghost" variant="secondary" iconLeft="heroicon-s-trash">
+                Papelera
+            </x-ui.button>
 
-                    <a href="{{ route('inventory.warehouses.eliminados') }}"
-                    class="inline-flex items-center px-4 py-2 text-sm font-medium text-gray-600 bg-gray-50 border border-gray-200 rounded-lg hover:bg-gray-100">
-                        <x-heroicon-s-trash class="w-4 h-4 mr-2" />
-                        Papelera
-                    </a>
+            <x-ui.button variant="primary" iconLeft="heroicon-s-plus" x-data x-on:click="$dispatch('open-modal', 'crear-warehouse')">
+                Nuevo Almacén
+            </x-ui.button>
 
-                    <x-primary-button class="inline-flex items-center px-4 py-2 bg-green-600 rounded-md text-xs font-semibold text-white uppercase hover:bg-green-700" x-data x-on:click="$dispatch('open-modal', 'crear-warehouse')">
-                        <x-heroicon-s-plus class="w-5 h-5 mr-2" /> Nuevo Almacén
-                    </x-primary-button>
-                    
-                    </x-slot>
-                </x-page-toolbar>
+            </x-slot>
+        </x-ui.page-header>
 
-                {{-- FILTROS --}}
-                @include('inventory.warehouses.partials.filters')
+        {{-- FILTROS --}}
+        @include('inventory.warehouses.partials.filters')
 
-                {{-- TABLA AJAX --}}
-                <div id="warehouses-table" class="w-full overflow-hidden">
-                    @include('inventory.warehouses.partials.table')
-                </div>
-            </div>
+        {{-- TABLA AJAX --}}
+        <div id="warehouses-table" class="w-full overflow-hidden">
+            @include('inventory.warehouses.partials.table')
         </div>
     </div>
 </x-app-layout>

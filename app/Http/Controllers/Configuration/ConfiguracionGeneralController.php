@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Configuration;
 use App\Enums\TaxIdentifierType;
 use App\Http\Controllers\Controller;
 use App\Models\Configuration\ConfiguracionGeneral;
-use App\Models\Configuration\Impuesto;
 use App\Models\Geo\Municipality;
 use App\Models\Geo\Province;
 use Illuminate\Http\Request;
@@ -18,7 +17,6 @@ class ConfiguracionGeneralController extends Controller
     {
         $config = ConfiguracionGeneral::actual();
         $provinces = Province::ordered()->get();
-        $impuestos = Impuesto::all();
 
         // Precargado completo (~158 filas) — filtrado cascada provincia->municipio
         // se hace en Alpine.js del lado del cliente, sin request AJAX (Fase 6.9).
@@ -31,8 +29,7 @@ class ConfiguracionGeneralController extends Controller
             'config',
             'provinces',
             'municipalities',
-            'taxTypes',
-            'impuestos'
+            'taxTypes'
         ));
     }
 
@@ -51,11 +48,6 @@ class ConfiguracionGeneralController extends Controller
             'provincia_id' => 'required|exists:provinces,id',
             'municipio_id' => 'nullable|exists:municipalities,id',
             'dias_gracia_mora' => 'nullable|integer|min:0',
-
-            'impuesto_nombre' => 'required|string|max:255',
-            'impuesto_tipo' => 'required|in:porcentaje,fijo',
-            'impuesto_valor' => 'required|numeric|min:0',
-            'impuesto_incluido' => 'nullable|boolean',
         ]);
 
         // El toggle de NCF (antes acá, 'ncf_enabled') se eliminó de esta pantalla
@@ -79,18 +71,6 @@ class ConfiguracionGeneralController extends Controller
                 $validated['logo'] = $config->logo;
             }
         }
-
-        $impuesto = Impuesto::updateOrCreate(
-            ['id' => $config?->impuesto_id], // Si existe lo edita, si no, crea uno nuevo
-            [
-                'nombre' => $validated['impuesto_nombre'],
-                'tipo' => $validated['impuesto_tipo'],
-                'valor' => $validated['impuesto_valor'],
-                'es_incluido' => $request->has('impuesto_incluido'),
-            ]
-        );
-
-        $validated['impuesto_id'] = $impuesto->id;
 
         ConfiguracionGeneral::updateOrCreate(['id' => 1], $validated);
 

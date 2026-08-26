@@ -5,10 +5,10 @@ namespace App\Http\Controllers\Clients;
 use App\Filters\EquipmentTypes\EquipmentTypesFilters;
 use App\Http\Controllers\Controller;
 use App\Models\Clients\EquipmentType;
+use App\Tables\EquipmentTypesTable;
 use App\Traits\SoftDeletesTrait;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
-use App\Tables\EquipmentTypesTable;
 
 class EquipmentTypeController extends Controller
 {
@@ -27,20 +27,20 @@ class EquipmentTypeController extends Controller
         if ($request->ajax()) {
             return view('clients.equipmentTypes.partials.table', [
                 'equipmentsTypes' => $equipmentsTypes,
-                'visibleColumns'  => $visibleColumns,
-                'allColumns'      => EquipmentTypesTable::allColumns(),
-                'defaultDesktop'  => EquipmentTypesTable::defaultDesktop(),
-                'defaultMobile'   => EquipmentTypesTable::defaultMobile(),
+                'visibleColumns' => $visibleColumns,
+                'allColumns' => EquipmentTypesTable::allColumns(),
+                'defaultDesktop' => EquipmentTypesTable::defaultDesktop(),
+                'defaultMobile' => EquipmentTypesTable::defaultMobile(),
             ])->render();
         }
 
         return view('clients.equipmentTypes.index', array_merge(
             [
-                'equipmentsTypes'     => $equipmentsTypes,
+                'equipmentsTypes' => $equipmentsTypes,
                 'visibleColumns' => $visibleColumns,
-                'allColumns'     => EquipmentTypesTable::allColumns(),
+                'allColumns' => EquipmentTypesTable::allColumns(),
                 'defaultDesktop' => EquipmentTypesTable::defaultDesktop(),
-                'defaultMobile'  => EquipmentTypesTable::defaultMobile(),
+                'defaultMobile' => EquipmentTypesTable::defaultMobile(),
             ],
         ));
     }
@@ -55,68 +55,45 @@ class EquipmentTypeController extends Controller
             'activo' => 'sometimes|boolean',
         ]);
 
-
         $equipo = EquipmentType::create([
             'nombre' => $request->nombre,
             'activo' => $request->activo,
         ]);
 
-
         // ... (redirección)
         return redirect()
             ->route('clients.equipmentTypes.index')
-            ->with('success', 'Tipo de equipo "' . $equipo->nombre . '" creado exitosamente.');
+            ->with('success', 'Tipo de equipo "'.$equipo->nombre.'" creado exitosamente.');
     }
-
 
     /**
      * Actualizar datos
      */
-    public function update(Request $request, EquipmentType $equipo) {
+    public function update(Request $request, EquipmentType $equipo)
+    {
         $request->validate([
-            'nombre' => 'required|string|' . Rule::unique('equipment_types')->ignore($equipo->id),
+            'nombre' => 'required|string|'.Rule::unique('equipment_types')->ignore($equipo->id),
             'activo' => 'sometimes|boolean',
         ]);
 
         $data = ['nombre' => $request->nombre, 'activo' => $request->activo];
 
-        if ($equipo->activo) {
-            $activosCount = EquipmentType::activos()->count();
-            
-            if ($activosCount <= 1) {
-                return redirect()
-                    ->route('clients.equipmentTypes.index')
-                    ->with('error', 'No se puede desactivar. Deben existir al menos 1 estados activos en el catálogo.');
-            }
-        }
-
         $equipo->update($data);
-
 
         // ... (redirección)
         return redirect()
             ->route('clients.equipmentTypes.index')
-            ->with('success', 'Tipo de equipo "' . $equipo->nombre . '" actualizado exitosamente.');
+            ->with('success', 'Tipo de equipo "'.$equipo->nombre.'" actualizado exitosamente.');
     }
 
     public function toggleEstado(EquipmentType $equipo)
     {
-        if ($equipo->activo) {
-            $activosCount = EquipmentType::activos()->count();
-            
-            if ($activosCount <= 1) {
-                return redirect()
-                    ->route('clients.equipmentTypes.index')
-                    ->with('error', 'No se puede desactivar. Deben existir al menos 1 estados activos en el catálogo.');
-            }
-        }
         $equipo->toggleActivo();
 
         return redirect()
             ->route('clients.equipmentTypes.index')
-            ->with('success', 'Estado actualizado para "' . $equipo->nombre . '".');
+            ->with('success', 'Estado actualizado para "'.$equipo->nombre.'".');
     }
-
 
     // Elimina la EquipmentType si no tiene relaciones (o desactiva la eliminación por defecto).
     public function destroy(EquipmentType $equipo)
@@ -125,9 +102,28 @@ class EquipmentTypeController extends Controller
     }
 
     // Métodos abstractos que el trait necesita
-    protected function getModelClass(): string { return \App\Models\Clients\EquipmentType::class; }
-    protected function getViewFolder(): string { return 'clients.equipmentTypes'; }
-    protected function getRouteIndex(): string { return 'clients.equipmentTypes.index'; }
-    protected function getRouteEliminadas(): string { return 'clients.equipmentTypes.eliminados'; }
-    protected function getEntityName(): string { return 'Tipo de Equipo'; }
+    protected function getModelClass(): string
+    {
+        return \App\Models\Clients\EquipmentType::class;
+    }
+
+    protected function getViewFolder(): string
+    {
+        return 'clients.equipmentTypes';
+    }
+
+    protected function getRouteIndex(): string
+    {
+        return 'clients.equipmentTypes.index';
+    }
+
+    protected function getRouteEliminadas(): string
+    {
+        return 'clients.equipmentTypes.eliminados';
+    }
+
+    protected function getEntityName(): string
+    {
+        return 'Tipo de Equipo';
+    }
 }

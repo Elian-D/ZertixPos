@@ -2,17 +2,17 @@
 
 namespace App\Http\Controllers\Inventory;
 
+use App\Filters\Warehouses\WarehousesFilters;
 use App\Http\Controllers\Controller;
-use App\Models\Inventory\Warehouse;
-use App\Services\Inventory\WarehouseService\WarehouseService;
-use App\Services\Inventory\WarehouseService\WarehouseCatalogService;
 use App\Http\Requests\Inventory\StoreWarehouseRequest;
 use App\Http\Requests\Inventory\UpdateWarehouseRequest;
+use App\Models\Inventory\Warehouse;
+use App\Services\Inventory\WarehouseService\WarehouseCatalogService;
+use App\Services\Inventory\WarehouseService\WarehouseService;
 use App\Tables\WarehouseTable;
-use App\Filters\Warehouses\WarehousesFilters;
 use App\Traits\SoftDeletesTrait;
-use Illuminate\Http\Request;
 use Exception;
+use Illuminate\Http\Request;
 
 class WarehouseController extends Controller
 {
@@ -35,11 +35,11 @@ class WarehouseController extends Controller
             ->withQueryString();
 
         $viewData = array_merge([
-            'warehouses'     => $warehouses,
+            'warehouses' => $warehouses,
             'visibleColumns' => $visibleColumns,
-            'allColumns'     => WarehouseTable::allColumns(),
+            'allColumns' => WarehouseTable::allColumns(),
             'defaultDesktop' => WarehouseTable::defaultDesktop(),
-            'defaultMobile'  => WarehouseTable::defaultMobile(),
+            'defaultMobile' => WarehouseTable::defaultMobile(),
         ], $this->catalogService->getForIndex());
 
         if ($request->ajax()) {
@@ -53,11 +53,12 @@ class WarehouseController extends Controller
     {
         try {
             $warehouse = $this->service->store($request->validated());
-            
+
             return redirect()->route('inventory.warehouses.index')
-                ->with('success', "Almacén \"{$warehouse->name}\" creado con éxito y vinculado a la cuenta: {$warehouse->accountingAccount->code}");
+                ->with('success', "Almacén \"{$warehouse->name}\" creado con éxito.".
+                    ($warehouse->accountingAccount ? " Vinculado a la cuenta: {$warehouse->accountingAccount->code}." : ''));
         } catch (Exception $e) {
-            return back()->with('error', 'Error al crear el almacén: ' . $e->getMessage())->withInput();
+            return back()->with('error', 'Error al crear el almacén: '.$e->getMessage())->withInput();
         }
     }
 
@@ -65,7 +66,7 @@ class WarehouseController extends Controller
     {
         try {
             $this->service->update($warehouse, $request->validated());
-            
+
             return redirect()->route('inventory.warehouses.index')
                 ->with('success', "Almacén \"{$warehouse->name}\" actualizado correctamente.");
         } catch (Exception $e) {
@@ -77,6 +78,7 @@ class WarehouseController extends Controller
     {
         try {
             $this->service->toggle($warehouse);
+
             return back()->with('success', 'Estado del almacén actualizado con éxito.');
         } catch (Exception $e) {
             return back()->with('error', $e->getMessage());
@@ -86,7 +88,7 @@ class WarehouseController extends Controller
     public function destroy($id)
     {
         $warehouse = Warehouse::findOrFail($id);
-        
+
         // Validación preventiva: No borrar si tiene cuentas con saldo (opcional aquí, ideal en el service)
         if ($warehouse->stocks()->where('quantity', '>', 0)->exists()) {
             return back()->with('error', 'No se puede eliminar un almacén que aún tiene existencia de productos.');
@@ -94,9 +96,29 @@ class WarehouseController extends Controller
 
         return $this->destroyTrait($warehouse);
     }
-    protected function getModelClass(): string { return Warehouse::class; }
-    protected function getViewFolder(): string { return 'inventory.warehouses'; }
-    protected function getRouteIndex(): string { return 'inventory.warehouses.index'; }
-    protected function getRouteEliminadas(): string { return 'inventory.warehouses.eliminados'; }
-    protected function getEntityName(): string { return 'Almacén'; }
+
+    protected function getModelClass(): string
+    {
+        return Warehouse::class;
+    }
+
+    protected function getViewFolder(): string
+    {
+        return 'inventory.warehouses';
+    }
+
+    protected function getRouteIndex(): string
+    {
+        return 'inventory.warehouses.index';
+    }
+
+    protected function getRouteEliminadas(): string
+    {
+        return 'inventory.warehouses.eliminados';
+    }
+
+    protected function getEntityName(): string
+    {
+        return 'Almacén';
+    }
 }

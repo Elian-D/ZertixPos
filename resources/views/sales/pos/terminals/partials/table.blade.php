@@ -10,7 +10,7 @@
                 <td class="whitespace-nowrap px-6 py-4 text-sm font-medium text-gray-900">
                     <div class="flex items-center">
                         @if($item->is_mobile)
-                            <x-heroicon-s-device-phone-mobile class="w-4 h-4 mr-2 text-indigo-500" title="Dispositivo Móvil" />
+                            <x-heroicon-s-device-phone-mobile class="w-4 h-4 mr-2 text-zertix-primary-500" title="Dispositivo Móvil" />
                         @else
                             <x-heroicon-s-computer-desktop class="w-4 h-4 mr-2 text-gray-400" title="Terminal Fija" />
                         @endif
@@ -77,9 +77,9 @@
 
             @if(in_array('is_active', $visibleColumns))
                 <td class="px-6 py-4">
-                    <span class="px-2 py-1 text-xs rounded-full font-bold {{ $item->is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                    <x-ui.badge :variant="$item->is_active ? 'success' : 'error'" size="sm" :dot="false">
                         {{ $item->is_active ? 'Activo' : 'Inactivo' }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 
@@ -100,14 +100,14 @@
                 <div class="flex items-center justify-end gap-2">
                     @can('view pos terminals')
                         <button @click="$dispatch('open-modal', 'view-terminal-{{ $item->id }}')" 
-                                class="bg-gray-100 text-gray-600 hover:bg-indigo-600 hover:text-white p-2 rounded-full transition-all shadow-sm">
+                                class="bg-gray-100 text-gray-600 hover:bg-zertix-primary-600 hover:text-white p-2 rounded-full transition-all shadow-sm">
                             <x-heroicon-s-eye class="w-4 h-4" />
                         </button>
                     @endcan
 
                     @can('edit pos terminals')
                         <a href="{{ route('sales.pos.terminals.edit', $item) }}" 
-                           class="text-indigo-600 hover:text-indigo-900 p-2 rounded-full hover:bg-indigo-50 transition">
+                           class="text-zertix-primary-600 hover:text-zertix-primary-900 p-2 rounded-full hover:bg-zertix-primary-50 transition">
                             <x-heroicon-s-pencil class="w-4 h-4" />
                         </a>
                     @endcan

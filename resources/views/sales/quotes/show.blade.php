@@ -4,7 +4,7 @@
             
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div class="flex-1">
-                    <a href="{{ route('sales.quotes.index') }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 text-sm font-semibold transition mb-3">
+                    <a href="{{ route('clients.quotes.index') }}" class="inline-flex items-center text-zertix-primary-600 hover:text-zertix-primary-800 text-sm font-semibold transition mb-3">
                         <x-heroicon-s-arrow-left class="w-4 h-4 mr-1.5" />
                         Regresar al Historial
                     </a>
@@ -12,33 +12,32 @@
                         <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">
                             Cotizacion <span class="text-amber-600">#{{ str_pad($quote->id, 8, '0', STR_PAD_LEFT) }}</span>
                         </h2>
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider
-                            @if($quote->status === 'draft') bg-gray-100 text-gray-700 ring-1 ring-gray-600/20
-                            @elseif($quote->status === 'approved') bg-emerald-100 text-emerald-700 ring-1 ring-emerald-600/20
-                            @elseif($quote->status === 'converted') bg-blue-100 text-blue-700 ring-1 ring-blue-600/20
-                            @elseif($quote->status === 'expired') bg-red-100 text-red-700 ring-1 ring-red-600/20
-                            @else bg-gray-100 text-gray-700 ring-1 ring-gray-600/20
-                            @endif">
-                            {{ 
+                        <x-ui.badge :variant="match($quote->status) {
+                                'draft' => 'slate',
+                                'approved' => 'success',
+                                'converted' => 'info',
+                                'expired' => 'error',
+                                default => 'slate',
+                            }" :dot="false">
+                            {{
                                 $quote->status === 'draft' ? 'Borrador'
                                 : ($quote->status === 'approved' ? 'Aprobada'
                                 : ($quote->status === 'converted' ? 'Convertida'
                                 : ($quote->status === 'expired' ? 'Expirada'
                                 : ($quote->status === 'cancelled' ? 'Cancelada' : ucfirst($quote->status)))))
                             }}
-                        </span>
+                        </x-ui.badge>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <select id="formatSelector" 
-                            class="block px-4 py-2.5 bg-white border border-gray-300 rounded-lg font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500">
+                    <x-ui.forms.select id="formatSelector" placeholder="">
                         <option value="letter">Carta (PDF)</option>
                         <option value="ticket">Ticket (Termica)</option>
-                    </select>
+                    </x-ui.forms.select>
 
                     <a id="printBtn" 
-                       href="{{ route('sales.quotes.print', ['quote' => $quote, 'format' => 'letter']) }}" 
+                       href="{{ route('clients.quotes.print', ['quote' => $quote, 'format' => 'letter']) }}" 
                        target="_blank" 
                        class="inline-flex items-center px-5 py-2.5 bg-gray-900 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-gray-800 shadow-lg active:scale-95 transition-all">
                         <x-heroicon-s-printer class="w-4 h-4 mr-2" />
@@ -46,7 +45,7 @@
                     </a>
                     
                     <a id="downloadBtn"
-                       href="{{ route('sales.quotes.print', ['quote' => $quote, 'format' => 'letter']) }}?download=1" 
+                       href="{{ route('clients.quotes.print', ['quote' => $quote, 'format' => 'letter']) }}?download=1" 
                        class="inline-flex items-center px-5 py-2.5 bg-white border border-gray-300 rounded-lg font-bold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 active:scale-95 transition-all"
                        target="blank">
                         <x-heroicon-s-arrow-down-tray class="w-4 h-4 mr-2" />
@@ -107,21 +106,20 @@
                                     $isExpired = $daysRemaining < 0;
                                 @endphp
                                 
-                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-bold
-                                    {{ $isExpired ? 'bg-red-100 text-red-700' : 'bg-emerald-100 text-emerald-700' }}">
+                                <x-ui.badge :variant="$isExpired ? 'error' : 'success'" :dot="false" size="sm">
                                     @if($isExpired)
                                         Expirada hace {{ abs($daysRemaining) }} dia{{ abs($daysRemaining) !== 1 ? 's' : '' }}
                                     @else
                                         {{ $daysRemaining }} dia{{ $daysRemaining !== 1 ? 's' : '' }} disponible{{ $daysRemaining !== 1 ? 's' : '' }}
                                     @endif
-                                </span>
+                                </x-ui.badge>
                             </div>
                         </div>
                     </div>
 
-                    <div class="bg-indigo-600 rounded-2xl p-5 shadow-md text-white">
+                    <div class="bg-zertix-primary-600 rounded-2xl p-5 shadow-md text-white">
                         <h4 class="text-[10px] font-black uppercase tracking-widest mb-4 opacity-80">Resumen Financiero</h4>
-                        <div class="space-y-3 border-b border-indigo-400 pb-3 mb-3">
+                        <div class="space-y-3 border-b border-zertix-primary-400 pb-3 mb-3">
                             <div class="flex justify-between items-center">
                                 <span class="text-[11px] opacity-70">Subtotal:</span>
                                 <span class="text-sm font-bold">{{ config('regional.currency_symbol') }}{{ number_format($quote->subtotal, 2) }}</span>
@@ -132,10 +130,18 @@
                                 <span class="text-sm font-bold">-{{ config('regional.currency_symbol') }}{{ number_format($quote->discount_total, 2) }}</span>
                             </div>
                             @endif
+                            {{-- Desglose real por tipo de impuesto (Fase 5, REQ-5.12) — mismo
+                                 patrón que la factura (REQ-5.6). --}}
+                            @foreach($quote->items->pluck('tax_breakdown')->filter()->flatten(1)->groupBy('key') as $key => $lines)
+                                <div class="flex justify-between items-center">
+                                    <span class="text-[11px] opacity-70">{{ $lines->first()['label'] }}:</span>
+                                    <span class="text-sm font-bold">{{ config('regional.currency_symbol') }}{{ number_format($lines->sum('amount'), 2) }}</span>
+                                </div>
+                            @endforeach
                         </div>
                         <div class="flex justify-between items-center">
                             <span class="text-sm font-black">TOTAL:</span>
-                            <span class="text-2xl font-black">{{ config('regional.currency_symbol') }}{{ number_format($quote->total, 2) }}</span>
+                            <span class="text-2xl font-black">{{ config('regional.currency_symbol') }}{{ number_format($quote->grand_total, 2) }}</span>
                         </div>
                     </div>
 
@@ -164,7 +170,7 @@
                             <div class="bg-white shadow-2xl ring-1 ring-black/5 rounded-lg overflow-hidden h-full">
                                 <iframe 
                                     id="quoteIframe"
-                                    src="{{ route('sales.quotes.preview', $quote) }}" 
+                                    src="{{ route('clients.quotes.preview', $quote) }}" 
                                     class="w-full h-full border-0 bg-white"
                                     loading="lazy"
                                     title="Preview de Cotizacion">
@@ -265,8 +271,8 @@
 
     <script>
         const config = {
-            letter: "{{ route('sales.quotes.print', ['quote' => $quote, 'format' => 'letter']) }}",
-            ticket: "{{ route('sales.quotes.print', ['quote' => $quote, 'format' => 'ticket']) }}"
+            letter: "{{ route('clients.quotes.print', ['quote' => $quote, 'format' => 'letter']) }}",
+            ticket: "{{ route('clients.quotes.print', ['quote' => $quote, 'format' => 'ticket']) }}"
         };
 
         const formatSelector = document.getElementById('formatSelector');
@@ -286,7 +292,7 @@
             previewContainer.classList.remove('is-letter', 'is-ticket');
             previewContainer.classList.add(`is-${format}`);
             
-            quoteIframe.src = "{{ route('sales.quotes.preview', $quote) }}?format=" + format;
+            quoteIframe.src = "{{ route('clients.quotes.preview', $quote) }}?format=" + format;
         });
     </script>
 

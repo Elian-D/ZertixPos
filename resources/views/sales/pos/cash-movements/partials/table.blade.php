@@ -20,7 +20,7 @@
             @if(in_array('pos_session_id', $visibleColumns))
                 <td class="px-6 py-4 text-sm text-gray-600">
                     <div class="flex flex-col">
-                        <span class="font-medium text-indigo-600">SES-{{ $movement->pos_session_id }}</span>
+                        <span class="font-medium text-zertix-primary-600">SES-{{ $movement->pos_session_id }}</span>
                         <span class="text-[10px] text-gray-400">{{ $movement->session->terminal->name ?? 'N/A' }}</span>
                     </div>
                 </td>
@@ -73,14 +73,17 @@
             @if(in_array('type', $visibleColumns))
                 <td class="px-6 py-4 whitespace-nowrap">
                     @php
-                        $style = \App\Models\Sales\Pos\PosCashMovement::getTypeStyles()[$movement->type] ?? 'bg-gray-100 text-gray-800';
                         $icon = \App\Models\Sales\Pos\PosCashMovement::getTypeIcons()[$movement->type] ?? 'heroicon-s-minus';
                         $label = \App\Models\Sales\Pos\PosCashMovement::getTypes()[$movement->type] ?? $movement->type;
+                        $variant = match($movement->type) {
+                            \App\Models\Sales\Pos\PosCashMovement::TYPE_IN => 'success',
+                            \App\Models\Sales\Pos\PosCashMovement::TYPE_OUT => 'warning',
+                            default => 'slate',
+                        };
                     @endphp
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase border {{ $style }}">
-                        <x-dynamic-component :component="$icon" class="w-3 h-3 mr-1" />
+                    <x-ui.badge :variant="$variant" :icon="$icon" size="sm">
                         {{ $label }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 
@@ -124,7 +127,7 @@
             <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-3">
                     <button @click="$dispatch('open-modal', 'view-movement-{{ $movement->id }}')" 
-                            class="bg-gray-50 text-gray-500 hover:bg-indigo-600 hover:text-white p-2 rounded-full transition-all shadow-sm"
+                            class="bg-gray-50 text-gray-500 hover:bg-zertix-primary-600 hover:text-white p-2 rounded-full transition-all shadow-sm"
                             title="Ver detalles del movimiento">
                         <x-heroicon-s-eye class="w-4 h-4" />
                     </button>

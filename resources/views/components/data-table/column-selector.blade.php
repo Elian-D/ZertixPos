@@ -20,7 +20,8 @@
     </button>
 
     {{-- Backdrop oscuro solo en móvil --}}
-    <div x-show="open" 
+    <div x-show="open"
+         x-cloak
          class="fixed inset-0 bg-black/20 backdrop-blur-sm z-[90] md:hidden"
          x-transition:enter="transition ease-out duration-200"
          x-transition:enter-start="opacity-0"
@@ -29,7 +30,8 @@
     </div>
 
     {{-- Panel de Columnas: Centrado en móvil, dropdown en desktop --}}
-    <div x-show="open" 
+    <div x-show="open"
+        x-cloak
         @click.away="open = false"
         x-transition:enter="transition ease-out duration-200"
         x-transition:enter-start="opacity-0 translate-y-4 md:translate-y-0 md:scale-95"
@@ -57,7 +59,7 @@
         <div class="px-4 py-2 border-b border-gray-50 bg-white flex-shrink-0">
             <button type="button" 
                 onclick="window.resetTableColumns()"
-                class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-indigo-600 hover:text-white bg-indigo-50 hover:bg-indigo-600 rounded-lg transition-all">
+                class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-zertix-primary-600 hover:text-white bg-zertix-primary-50 hover:bg-zertix-primary-600 rounded-lg transition-all">
                 <x-heroicon-s-arrow-path class="w-4 h-4" />
                 Restablecer por defecto
             </button>
@@ -67,18 +69,17 @@
         <div class="overflow-y-auto overscroll-contain flex-1 custom-scrollbar">
             <div class="p-3 space-y-0.5">
                 @foreach($allColumns as $key => $label)
-                    <label class="flex items-center px-3 py-2.5 hover:bg-indigo-50 rounded-lg cursor-pointer group transition-all">
-                        <input type="checkbox" 
-                            name="columns[]" 
-                            value="{{ $key }}" 
+                    <div class="px-3 py-2.5 hover:bg-zertix-primary-50 rounded-lg transition-all">
+                        <x-ui.forms.checkbox
+                            label="{{ $label }}"
+                            name="columns[]"
+                            id="column-{{ $key }}"
+                            value="{{ $key }}"
                             data-column-key="{{ $key }}"
-                            @if($formId) form="{{ $formId }}" @endif
-                            @checked(in_array($key, $visibleColumns))
-                            class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 mr-3 flex-shrink-0">
-                        <span class="text-sm text-gray-700 group-hover:text-indigo-700 font-medium transition-colors">
-                            {{ $label }}
-                        </span>
-                    </label>
+                            :form="$formId ?: null"
+                            :checked="in_array($key, $visibleColumns)"
+                        />
+                    </div>
                 @endforeach
             </div>
         </div>

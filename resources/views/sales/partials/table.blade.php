@@ -12,7 +12,7 @@
 
             {{-- Folio / Número --}}
             @if(in_array('number', $visibleColumns))
-                <td class="px-6 py-4 text-sm font-mono font-bold text-indigo-700">
+                <td class="px-6 py-4 text-sm font-mono font-bold text-zertix-primary-700">
                     {{ $sale->number }}
                 </td>
             @endif
@@ -69,16 +69,18 @@
             @if(in_array('payment_type', $visibleColumns))
                 <td class="px-6 py-4">
                     @php
-                        $pStyles = \App\Models\Sales\Sale::getPaymentTypeStyles();
                         $pIcons  = \App\Models\Sales\Sale::getPaymentTypeIcons();
                         $pLabels = \App\Models\Sales\Sale::getPaymentTypes();
-                        $currentStyle = $pStyles[$sale->payment_type] ?? 'bg-gray-100 text-gray-700';
                         $currentIcon  = $pIcons[$sale->payment_type] ?? 'heroicon-s-question-mark-circle';
+                        $currentVariant = match($sale->payment_type) {
+                            \App\Models\Sales\Sale::PAYMENT_CASH => 'info',
+                            \App\Models\Sales\Sale::PAYMENT_CREDIT => 'warning',
+                            default => 'slate',
+                        };
                     @endphp
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight ring-1 ring-inset {{ $currentStyle }}">
-                        <x-dynamic-component :component="$currentIcon" class="w-3 h-3 mr-1" />
+                    <x-ui.badge :variant="$currentVariant" :icon="$currentIcon" size="sm">
                         {{ $pLabels[$sale->payment_type] ?? $sale->payment_type }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
             
@@ -102,22 +104,22 @@
 
                         $paymentLabel = $isCredit ? 'Crédito' : ($isMixed ? 'Mixto' : ($singlePayment->nombre ?? 'N/A'));
 
-                        $pmStyles = \App\Models\Configuration\TipoPago::getBadgeStyles();
-                        $pmIcons  = \App\Models\Configuration\TipoPago::getBadgeIcons();
-                        $paymentBadgeStyle = $pmStyles[$paymentBadgeKey] ?? \App\Models\Configuration\TipoPago::getDefaultBadgeStyle();
-                        $paymentBadgeIcon  = $pmIcons[$paymentBadgeKey] ?? \App\Models\Configuration\TipoPago::getDefaultBadgeIcon();
+                        $pmHex   = \App\Models\Configuration\TipoPago::getBadgeHexColors();
+                        $pmIcons = \App\Models\Configuration\TipoPago::getBadgeIcons();
+                        $paymentBadgeHex  = $pmHex[$paymentBadgeKey] ?? \App\Models\Configuration\TipoPago::getDefaultBadgeHex();
+                        $paymentBadgeIcon = $pmIcons[$paymentBadgeKey] ?? \App\Models\Configuration\TipoPago::getDefaultBadgeIcon();
                     @endphp
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight ring-1 ring-inset {{ $paymentBadgeStyle }}">
-                        <x-dynamic-component :component="$paymentBadgeIcon" class="w-3 h-3 mr-1" />
+                    <x-ui.badge :hex="$paymentBadgeHex" :icon="$paymentBadgeIcon" size="sm">
                         {{ $paymentLabel }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 
-            {{-- Total Venta --}}
+            {{-- Total Venta — grand_total (neto + impuesto), no total_amount (bruto,
+                 ver auditoría post-REQ-5.12 en docs/features/v1.2.0.md). --}}
             @if(in_array('total_amount', $visibleColumns))
                 <td class="px-6 py-4 text-sm text-right font-bold text-gray-900">
-                    <span class="text-[10px] font-normal text-gray-400 mr-1">{{ config('regional.currency_symbol') }}</span>{{ number_format($sale->total_amount, 2) }}
+                    <span class="text-[10px] font-normal text-gray-400 mr-1">{{ config('regional.currency_symbol') }}</span>{{ number_format($sale->grand_total, 2) }}
                 </td>
             @endif
 
@@ -125,12 +127,16 @@
             @if(in_array('status', $visibleColumns))
                 <td class="px-6 py-4 text-center">
                     @php
-                        $sStyles = \App\Models\Sales\Sale::getStatusStyles();
                         $sLabels = \App\Models\Sales\Sale::getStatuses();
+                        $sVariant = match($sale->status) {
+                            \App\Models\Sales\Sale::STATUS_COMPLETED => 'success',
+                            \App\Models\Sales\Sale::STATUS_CANCELED => 'error',
+                            default => 'slate',
+                        };
                     @endphp
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm ring-1 ring-inset {{ $sStyles[$sale->status] ?? 'bg-gray-100 text-gray-700' }}">
+                    <x-ui.badge :variant="$sVariant" size="sm" :dot="false">
                         {{ $sLabels[$sale->status] ?? $sale->status }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 
@@ -169,7 +175,7 @@
                 <div class="flex items-center justify-end gap-2">
                     {{-- Ver Detalle --}}
                     <button @click="$dispatch('open-modal', 'view-sale-{{ $sale->id }}')" 
-                            class="bg-white border border-gray-200 text-gray-500 hover:bg-indigo-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
+                            class="bg-white border border-gray-200 text-gray-500 hover:bg-zertix-primary-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
                             title="Ver Detalle de Venta">
                         <x-heroicon-s-eye class="w-4 h-4" />
                     </button>
