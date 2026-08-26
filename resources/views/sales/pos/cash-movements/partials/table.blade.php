@@ -20,7 +20,7 @@
             @if(in_array('pos_session_id', $visibleColumns))
                 <td class="px-6 py-4 text-sm text-gray-600">
                     <div class="flex flex-col">
-                        <span class="font-medium text-indigo-600">SES-{{ $movement->pos_session_id }}</span>
+                        <span class="font-medium text-zertix-primary-600">SES-{{ $movement->pos_session_id }}</span>
                         <span class="text-[10px] text-gray-400">{{ $movement->session->terminal->name ?? 'N/A' }}</span>
                     </div>
                 </td>
@@ -127,7 +127,7 @@
             <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-3">
                     <button @click="$dispatch('open-modal', 'view-movement-{{ $movement->id }}')" 
-                            class="bg-gray-50 text-gray-500 hover:bg-indigo-600 hover:text-white p-2 rounded-full transition-all shadow-sm"
+                            class="bg-gray-50 text-gray-500 hover:bg-zertix-primary-600 hover:text-white p-2 rounded-full transition-all shadow-sm"
                             title="Ver detalles del movimiento">
                         <x-heroicon-s-eye class="w-4 h-4" />
                     </button>

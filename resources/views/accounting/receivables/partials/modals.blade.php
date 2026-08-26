@@ -6,7 +6,7 @@
                 <div>
                     <h3 class="text-xl font-black text-gray-900 tracking-tight">Detalle de Cuenta por Cobrar</h3>
                     <div class="flex items-center gap-2 mt-1">
-                        <span class="text-xs font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                        <span class="text-xs font-mono text-zertix-primary-600 bg-zertix-primary-50 px-2 py-0.5 rounded border border-zertix-primary-100">
                             {{ $item->document_number }}
                         </span>
                         <span class="text-gray-300 text-xs">•</span>
@@ -32,7 +32,7 @@
                     {{-- Columna Izquierda --}}
                     <div class="space-y-6">
                         <div class="flex gap-3">
-                            <div class="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 shrink-0">
+                            <div class="w-10 h-10 bg-zertix-primary-50 rounded-lg flex items-center justify-center text-zertix-primary-600 shrink-0">
                                 <x-heroicon-s-user class="w-5 h-5"/>
                             </div>
                             <div>
@@ -70,7 +70,7 @@
                     {{-- Columna Derecha: Finanzas y Contabilidad --}}
                     <div class="space-y-6">
                         {{-- Card de Estado de Cuenta --}}
-                        <div class="p-5 {{ $item->status === 'paid' ? 'bg-emerald-900' : 'bg-indigo-900' }} rounded-2xl shadow-lg relative overflow-hidden">
+                        <div class="p-5 {{ $item->status === 'paid' ? 'bg-emerald-900' : 'bg-zertix-primary-900' }} rounded-2xl shadow-lg relative overflow-hidden">
                             <div class="absolute -right-4 -top-4 w-24 h-24 bg-white/10 rounded-full blur-2xl"></div>
                             
                             <span class="text-[10px] font-bold text-white/50 uppercase tracking-widest block mb-4">Resumen de Cobro</span>
@@ -106,10 +106,10 @@
                                     <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Cuenta Contable Destino</span>
                                     @if($item->client->accounting_account_id)
                                         {{-- Cuenta propia del cliente --}}
-                                        <p class="text-xs font-mono text-indigo-600">
+                                        <p class="text-xs font-mono text-zertix-primary-600">
                                             {{ $item->client->accountingAccount->code }} <br>
                                             <span class="font-sans font-bold text-gray-800">{{ $item->client->accountingAccount->name }}</span>
-                                            <span class="block text-[9px] text-indigo-400 font-sans italic underline decoration-indigo-200">Cuenta específica del cliente</span>
+                                            <span class="block text-[9px] text-zertix-primary-400 font-sans italic underline decoration-zertix-primary-200">Cuenta específica del cliente</span>
                                         </p>
                                     @else
                                         {{-- Cuenta general de la CxC --}}

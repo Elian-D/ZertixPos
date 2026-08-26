@@ -17,7 +17,7 @@
 <div class="relative w-full md:w-72" x-data>
     <button
         type="button"
-        class="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex items-center cursor-pointer hover:text-indigo-600 transition-colors"
+        class="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex items-center cursor-pointer hover:text-zertix-primary-600 transition-colors"
         @click="$refs.dtSearchInput.form.dispatchEvent(new Event('submit'))"
         title="Buscar"
     >

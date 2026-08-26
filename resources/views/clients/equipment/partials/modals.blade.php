@@ -7,7 +7,7 @@
         <div class="bg-gradient-to-r from-gray-50 to-white px-8 py-6 border-b relative">
             <div class="flex justify-between items-start">
                 <div class="flex gap-4 items-center">
-                    <div class="w-12 h-12 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-700 shadow-sm">
+                    <div class="w-12 h-12 bg-zertix-primary-100 rounded-xl flex items-center justify-center text-zertix-primary-700 shadow-sm">
                         <x-heroicon-s-cube class="w-7 h-7"/>
                     </div>
                     <div>
@@ -37,7 +37,7 @@
                 {{-- Columna Izquierda: Información Técnica --}}
                 <div class="space-y-6">
                     <section>
-                        <h4 class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <h4 class="text-xs font-bold text-zertix-primary-600 uppercase tracking-widest mb-4 flex items-center gap-2">
                             <x-heroicon-s-identification class="w-4 h-4"/> Detalles Técnicos
                         </h4>
                         <div class="bg-gray-50 p-4 rounded-lg border border-gray-100 space-y-4">
@@ -110,7 +110,7 @@
                     </x-ui.button>
                     
                     <a href="{{ route('clients.equipment.edit', $item) }}" 
-                       class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2 bg-indigo-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 transition duration-150 shadow-md shadow-indigo-100">
+                       class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2 bg-zertix-primary-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-zertix-primary-700 active:bg-zertix-primary-900 transition duration-150 shadow-md shadow-zertix-primary-100">
                         <x-heroicon-s-pencil class="w-4 h-4 mr-2" /> Editar Equipo
                     </a>
                 </div>

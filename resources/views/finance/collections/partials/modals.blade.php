@@ -7,7 +7,7 @@
                 <div>
                     <h3 class="text-xl font-black text-gray-900 tracking-tight">Comprobante de Cobro</h3>
                     <div class="flex items-center gap-2 mt-1">
-                        <span class="text-xs font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                        <span class="text-xs font-mono text-zertix-primary-600 bg-zertix-primary-50 px-2 py-0.5 rounded border border-zertix-primary-100">
                             Recibo No. {{ $payment->receipt_number }}
                         </span>
                         <span class="text-gray-300 text-xs">•</span>
@@ -31,7 +31,7 @@
                     {{-- Columna Izquierda: Datos del Cliente y Método --}}
                     <div class="space-y-6">
                         <div class="flex gap-3">
-                            <div class="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 shrink-0">
+                            <div class="w-10 h-10 bg-zertix-primary-50 rounded-lg flex items-center justify-center text-zertix-primary-600 shrink-0">
                                 <x-heroicon-s-user class="w-5 h-5"/>
                             </div>
                             <div>
@@ -98,7 +98,7 @@
                                 <div>
                                     <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Asiento Contable</span>
                                     @if($payment->journal_entry_id)
-                                        <p class="text-xs font-mono text-indigo-600">
+                                        <p class="text-xs font-mono text-zertix-primary-600">
                                             #{{ str_pad($payment->journal_entry_id, 6, '0', STR_PAD_LEFT) }} <br>
                                             <span class="font-sans font-bold text-gray-800">Transacción Contabilizada</span>
                                         </p>

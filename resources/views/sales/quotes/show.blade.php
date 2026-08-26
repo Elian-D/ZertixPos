@@ -4,7 +4,7 @@
             
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div class="flex-1">
-                    <a href="{{ route('clients.quotes.index') }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 text-sm font-semibold transition mb-3">
+                    <a href="{{ route('clients.quotes.index') }}" class="inline-flex items-center text-zertix-primary-600 hover:text-zertix-primary-800 text-sm font-semibold transition mb-3">
                         <x-heroicon-s-arrow-left class="w-4 h-4 mr-1.5" />
                         Regresar al Historial
                     </a>
@@ -117,9 +117,9 @@
                         </div>
                     </div>
 
-                    <div class="bg-indigo-600 rounded-2xl p-5 shadow-md text-white">
+                    <div class="bg-zertix-primary-600 rounded-2xl p-5 shadow-md text-white">
                         <h4 class="text-[10px] font-black uppercase tracking-widest mb-4 opacity-80">Resumen Financiero</h4>
-                        <div class="space-y-3 border-b border-indigo-400 pb-3 mb-3">
+                        <div class="space-y-3 border-b border-zertix-primary-400 pb-3 mb-3">
                             <div class="flex justify-between items-center">
                                 <span class="text-[11px] opacity-70">Subtotal:</span>
                                 <span class="text-sm font-bold">{{ config('regional.currency_symbol') }}{{ number_format($quote->subtotal, 2) }}</span>

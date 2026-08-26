@@ -77,7 +77,7 @@
         </h2>
 
         <p class="mt-2 text-sm text-gray-500 text-center">
-            Vas a aplicar la acción <span class="font-bold text-indigo-600" x-text="label"></span> a 
+            Vas a aplicar la acción <span class="font-bold text-zertix-primary-600" x-text="label"></span> a 
             <span class="font-bold text-gray-900" x-text="ids.length"></span> registros.
         </p>
 
@@ -105,7 +105,7 @@
             </div>
 
             <label class="block text-xs font-bold text-gray-600 uppercase mb-2">
-                Escribe <span class="text-indigo-600 font-black" x-text="label.toLowerCase()"></span> para confirmar:
+                Escribe <span class="text-zertix-primary-600 font-black" x-text="label.toLowerCase()"></span> para confirmar:
             </label>
             <x-ui.forms.input type="text"
                 x-model="confirmText"
@@ -123,7 +123,7 @@
             <button type="button" 
                 @click="submit"
                 :disabled="confirmText.toLowerCase() !== label.toLowerCase() || loading"
-                class="inline-flex items-center px-4 py-2 text-sm font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                class="inline-flex items-center px-4 py-2 text-sm font-bold text-white bg-zertix-primary-600 rounded-lg hover:bg-zertix-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition">
                 <template x-if="loading">
                     <x-heroicon-s-arrow-path class="w-4 h-4 mr-2 animate-spin" />
                 </template>

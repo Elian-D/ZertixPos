@@ -7,13 +7,13 @@
                     {!! __('pagination.previous') !!}
                 </span>
             @else
-                <a href="{{ $paginator->previousPageUrl() }}" class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-gray-50 hover:text-indigo-600 transition">
+                <a href="{{ $paginator->previousPageUrl() }}" class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-gray-50 hover:text-zertix-primary-600 transition">
                     {!! __('pagination.previous') !!}
                 </a>
             @endif
 
             @if ($paginator->hasMorePages())
-                <a href="{{ $paginator->nextPageUrl() }}" class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-gray-50 hover:text-indigo-600 transition">
+                <a href="{{ $paginator->nextPageUrl() }}" class="relative inline-flex items-center px-4 py-2 ml-3 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-md hover:bg-gray-50 hover:text-zertix-primary-600 transition">
                     {!! __('pagination.next') !!}
                 </a>
             @else
@@ -45,7 +45,7 @@
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
                         </span>
                     @else
-                        <a href="{{ $paginator->previousPageUrl() }}" rel="prev" class="relative inline-flex items-center px-3 py-2 bg-white text-gray-500 hover:bg-indigo-50 hover:text-indigo-600 transition">
+                        <a href="{{ $paginator->previousPageUrl() }}" rel="prev" class="relative inline-flex items-center px-3 py-2 bg-white text-gray-500 hover:bg-zertix-primary-50 hover:text-zertix-primary-600 transition">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
                         </a>
                     @endif
@@ -59,9 +59,9 @@
                         @if (is_array($element))
                             @foreach ($element as $page => $url)
                                 @if ($page == $paginator->currentPage())
-                                    <span aria-current="page" class="relative inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-bold border-l border-indigo-500">{{ $page }}</span>
+                                    <span aria-current="page" class="relative inline-flex items-center px-4 py-2 bg-zertix-primary-600 text-white text-sm font-bold border-l border-zertix-primary-500">{{ $page }}</span>
                                 @else
-                                    <a href="{{ $url }}" class="relative inline-flex items-center px-4 py-2 bg-white text-gray-600 text-sm font-medium border-l border-gray-100 hover:bg-indigo-50 hover:text-indigo-600 transition">
+                                    <a href="{{ $url }}" class="relative inline-flex items-center px-4 py-2 bg-white text-gray-600 text-sm font-medium border-l border-gray-100 hover:bg-zertix-primary-50 hover:text-zertix-primary-600 transition">
                                         {{ $page }}
                                     </a>
                                 @endif
@@ -71,7 +71,7 @@
 
                     {{-- Next Page Link --}}
                     @if ($paginator->hasMorePages())
-                        <a href="{{ $paginator->nextPageUrl() }}" rel="next" class="relative inline-flex items-center px-3 py-2 bg-white text-gray-500 border-l border-gray-100 hover:bg-indigo-50 hover:text-indigo-600 transition">
+                        <a href="{{ $paginator->nextPageUrl() }}" rel="next" class="relative inline-flex items-center px-3 py-2 bg-white text-gray-500 border-l border-gray-100 hover:bg-zertix-primary-50 hover:text-zertix-primary-600 transition">
                             <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" /></svg>
                         </a>
                     @else

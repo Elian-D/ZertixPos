@@ -5,7 +5,7 @@
             {{-- Tipo de Comprobante --}}
             @if(in_array('type_id', $visibleColumns))
                 <td class="px-6 py-4 text-sm">
-                    <div class="font-bold text-indigo-700">{{ $sequence->type->code }}</div>
+                    <div class="font-bold text-zertix-primary-700">{{ $sequence->type->code }}</div>
                     <div class="text-[10px] text-gray-500 uppercase leading-tight">{{ $sequence->type->name }}</div>
                 </td>
             @endif
@@ -30,7 +30,7 @@
             @if(in_array('current', $visibleColumns))
                 <td class="px-6 py-4 text-sm font-mono font-bold">
                     @if($sequence->current >= $sequence->from)
-                        <span class="text-indigo-600">{{ $sequence->series }}{{ $sequence->type->code }}{{ str_pad($sequence->current, 8, '0', STR_PAD_LEFT) }}</span>
+                        <span class="text-zertix-primary-600">{{ $sequence->series }}{{ $sequence->type->code }}{{ str_pad($sequence->current, 8, '0', STR_PAD_LEFT) }}</span>
                     @else
                         <span class="text-gray-300 italic text-[10px]">Sin uso</span>
                     @endif
@@ -127,7 +127,7 @@
 
                     {{-- Ver Detalle del Lote --}}
                     <button @click="$dispatch('open-modal', 'view-sequence-{{ $sequence->id }}')" 
-                            class="bg-white border border-gray-200 text-gray-500 hover:bg-indigo-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
+                            class="bg-white border border-gray-200 text-gray-500 hover:bg-zertix-primary-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
                             title="Ver Detalle y Estadísticas">
                         <x-heroicon-s-eye class="w-4 h-4" />
                     </button>

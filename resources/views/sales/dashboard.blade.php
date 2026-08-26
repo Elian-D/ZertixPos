@@ -26,7 +26,7 @@
                         <div class="flex gap-1 min-w-max">
                             @foreach($ranges as $key => $label)
                                 <a href="{{ route('reports.sales', ['range' => $key]) }}" 
-                                class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap {{ $filters['current_range'] == $key ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50' }}">
+                                class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap {{ $filters['current_range'] == $key ? 'bg-white text-zertix-primary-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50' }}">
                                     {{ $label }}
                                 </a>
                             @endforeach
@@ -35,7 +35,7 @@
 
                     {{-- Selector de Rango Manual --}}
                     <form action="{{ route('reports.sales') }}" method="GET" 
-                        class="flex items-center bg-white border border-gray-200 rounded-xl p-1 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all min-w-max">
+                        class="flex items-center bg-white border border-gray-200 rounded-xl p-1 shadow-sm focus-within:ring-2 focus-within:ring-zertix-primary-500/20 transition-all min-w-max">
                         <input type="hidden" name="range" value="custom">
                         <div class="flex items-center px-2 gap-1">
                             <input type="date" name="start_date" value="{{ $filters['start'] }}" 
@@ -45,7 +45,7 @@
                                 class="text-xs border-none focus:ring-0 p-1 text-gray-600 bg-transparent w-[110px]">
                         </div>
                         <button type="submit" 
-                                class="p-2 bg-gray-50 hover:bg-indigo-50 text-indigo-600 rounded-lg transition-colors border-l border-gray-100 flex-shrink-0">
+                                class="p-2 bg-gray-50 hover:bg-zertix-primary-50 text-zertix-primary-600 rounded-lg transition-colors border-l border-gray-100 flex-shrink-0">
                             <x-heroicon-s-magnifying-glass class="w-4 h-4"/>
                         </button>
                     </form>
@@ -65,7 +65,7 @@
             <x-dashboard.kpi-card 
                 title="Ventas Realizadas" 
                 :value="number_format($stats['total_count'])" 
-                icon="shopping-bag" color="indigo" secondary-text="Transacciones en el periodo"
+                icon="shopping-bag" color="primary" secondary-text="Transacciones en el periodo"
             />
 
             <x-dashboard.kpi-card 
@@ -141,7 +141,7 @@
                     @foreach($topProducts as $product)
                         <div class="py-3 flex items-center justify-between">
                             <span class="text-sm text-gray-600 font-medium">{{ $product->name }}</span>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-zertix-primary-50 text-zertix-primary-700">
                                 {{ number_format($product->qty, 0) }} unds
                             </span>
                         </div>
@@ -154,7 +154,7 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                 <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Últimas Facturas Emitidas</h3>
-                <a href="{{ route('finance.invoices.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition">Ver todas →</a>
+                <a href="{{ route('finance.invoices.index') }}" class="text-xs font-semibold text-zertix-primary-600 hover:text-zertix-primary-800 transition">Ver todas →</a>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
@@ -171,7 +171,7 @@
                         @foreach($recentSales as $sale)
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="font-bold text-indigo-600">{{ $sale->invoice_number }}</div>
+                                <div class="font-bold text-zertix-primary-600">{{ $sale->invoice_number }}</div>
                                 <div class="text-[11px] text-gray-400">{{ $sale->sale_date->format('d M, H:i A') }}</div>
                             </td>
                             <td class="px-6 py-4">

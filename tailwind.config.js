@@ -15,25 +15,38 @@ export default {
     // ====================================================================
     safelist: [
         {
-            // Patrones para las clases de fondo de los selectores de color (bg-X-600)
-            pattern: /bg-(green|indigo|red|yellow|gray|blue|purple)-600/,
-        },
-        {
-            // Patrones para las clases de anillo/borde del selector activo (ring-X-500)
-            pattern: /ring-(green|indigo|red|yellow|gray|blue|purple)-500/,
-        },
-        {
-            // Patrones para las clases de texto y fondo de la vista previa del badge
-            // (bg-X-100 y text-X-800)
-            pattern: /(bg|text)-(green|indigo|red|yellow|gray|blue|purple)-(100|800)/,
+            // REQ-7.10 (barrido de indigo→verde): clases construidas en runtime con
+            // interpolación PHP (ej. `bg-{{ $alert['color'] }}-50` en
+            // AccountingDashboardController/dashboards de accounting y ncf) — Tailwind
+            // no puede extraerlas por regex estático del archivo fuente, así que sin
+            // este safelist se purgarían aunque el color resuelto en runtime sea
+            // 'zertix-primary'.
+            pattern: /(bg|text|border|ring)-zertix-primary-(50|100|200|300|400|500|600|700|800|900)/,
         },
     ],
     // ====================================================================
-    
+
     theme: {
         extend: {
             colors: {
                 'zertix-primary': {
+                    // Escala 50-900 (REQ-7.10): generada por interpolación lineal RGB
+                    // desde los dos tonos de marca ya definidos (500 = DEFAULT exacto,
+                    // 600 = dark exacto) hacia blanco (50-400) y negro (700-900),
+                    // manteniendo el mismo matiz (~95°) en toda la escala. Existe para
+                    // reemplazar 1:1 cada shade de `indigo-*` que usaba el sistema
+                    // (badges, focus rings, botones) sin perder la gradación visual
+                    // que Tailwind's indigo sí traía de fábrica.
+                    50: '#F8FCF6',
+                    100: '#EFF9E8',
+                    200: '#DAF0CA',
+                    300: '#C3E7AA',
+                    400: '#A2D97B',
+                    500: '#7AC943',
+                    600: '#538331',
+                    700: '#426927',
+                    800: '#324F1D',
+                    900: '#213414',
                     DEFAULT: '#7AC943', // verde de marca — CTAs, estados activos
                     dark: '#538331',    // hover/pressed — lo que en la guía de Stitch aparece como "Tertiary"
                 },

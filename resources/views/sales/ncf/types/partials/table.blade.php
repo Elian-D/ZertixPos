@@ -21,7 +21,7 @@
 
             {{-- Código (01, 02, etc) --}}
             @if(in_array('code', $visibleColumns))
-                <td class="px-6 py-4 text-sm font-mono text-indigo-600 font-bold">
+                <td class="px-6 py-4 text-sm font-mono text-zertix-primary-600 font-bold">
                     {{ $type->code }}
                 </td>
             @endif
@@ -77,7 +77,7 @@
             <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-2">
                     <button @click="$dispatch('open-modal', 'edit-ncf-type-{{ $type->id }}')" 
-                            class="p-2 text-gray-400 hover:text-indigo-600 transition"
+                            class="p-2 text-gray-400 hover:text-zertix-primary-600 transition"
                             title="Editar Configuración">
                         <x-heroicon-s-pencil-square class="w-5 h-5" />
                     </button>

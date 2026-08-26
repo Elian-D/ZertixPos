@@ -25,7 +25,7 @@
                     <div class="flex gap-1 min-w-max">
                         @foreach($ranges as $key => $label)
                             <a href="{{ route('reports.finance', ['range' => $key]) }}" 
-                            class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap {{ $filters['current_range'] == $key ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50' }}">
+                            class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap {{ $filters['current_range'] == $key ? 'bg-white text-zertix-primary-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50' }}">
                                 {{ $label }}
                             </a>
                         @endforeach
@@ -34,7 +34,7 @@
 
                 {{-- Selector de Rango Manual --}}
                 <form action="{{ route('reports.finance') }}" method="GET" 
-                    class="flex items-center bg-white border border-gray-200 rounded-xl p-1 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all min-w-max">
+                    class="flex items-center bg-white border border-gray-200 rounded-xl p-1 shadow-sm focus-within:ring-2 focus-within:ring-zertix-primary-500/20 transition-all min-w-max">
                     <input type="hidden" name="range" value="custom">
                     <div class="flex items-center px-2 gap-1">
                         <input type="date" name="start_date" value="{{ $filters['start'] }}" 
@@ -44,7 +44,7 @@
                             class="text-xs border-none focus:ring-0 p-1 text-gray-600 bg-transparent w-[110px]">
                     </div>
                     <button type="submit" 
-                            class="p-2 bg-gray-50 hover:bg-indigo-50 text-indigo-600 rounded-lg transition-colors border-l border-gray-100 flex-shrink-0">
+                            class="p-2 bg-gray-50 hover:bg-zertix-primary-50 text-zertix-primary-600 rounded-lg transition-colors border-l border-gray-100 flex-shrink-0">
                         <x-heroicon-s-magnifying-glass class="w-4 h-4"/>
                     </button>
                 </form>
@@ -91,7 +91,7 @@
             <x-dashboard.kpi-card 
                 title="Patrimonio en Productos" 
                 :value="config('regional.currency_symbol') . number_format($stats['inventory_value'], 2)" 
-                icon="square-3-stack-3d" color="indigo" secondary-text="Valor en almacenes"
+                icon="square-3-stack-3d" color="primary" secondary-text="Valor en almacenes"
             />
 
             <x-dashboard.kpi-card 
@@ -177,7 +177,7 @@
                                 <div class="text-[11px] text-gray-400">{{ $entry->created_at->format('H:i A') }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="font-mono text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
+                                <span class="font-mono text-xs font-bold text-zertix-primary-600 bg-zertix-primary-50 px-2 py-1 rounded">
                                     {{ $entry->reference }}
                                 </span>
                             </td>

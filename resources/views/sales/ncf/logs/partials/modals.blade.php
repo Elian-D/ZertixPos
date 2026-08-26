@@ -14,7 +14,7 @@
 
         <div class="bg-gray-900 px-8 py-6 flex justify-between items-center text-white">
             <div>
-                <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-[0.2em] block mb-1">
+                <span class="text-[10px] font-bold text-zertix-primary-400 uppercase tracking-[0.2em] block mb-1">
                     {{ $log->type->name }}
                 </span>
                 <h3 class="text-2xl font-mono font-black tracking-widest">{{ $log->full_ncf }}</h3>
@@ -38,7 +38,7 @@
                         <div>
                             <p class="text-[10px] text-gray-400 font-bold uppercase">Factura y Monto</p>
                             <div class="flex flex-col">
-                                <span class="text-sm font-bold text-indigo-600">#{{ $log->sale->number ?? 'N/A' }}</span>
+                                <span class="text-sm font-bold text-zertix-primary-600">#{{ $log->sale->number ?? 'N/A' }}</span>
                                 <span class="text-xs font-medium text-gray-500">Total: {{ config('regional.currency_symbol') }} {{ number_format($log->sale->grand_total ?? 0, 2) }}</span>
                             </div>
                         </div>
@@ -58,7 +58,7 @@
                 <div class="space-y-4">
                     <h4 class="text-xs font-black text-gray-400 uppercase tracking-wider border-b pb-2">Información Fiscal Cliente</h4>
                     <div class="flex items-start gap-3">
-                        <div class="w-8 h-8 bg-indigo-50 rounded flex items-center justify-center text-indigo-600">
+                        <div class="w-8 h-8 bg-zertix-primary-50 rounded flex items-center justify-center text-zertix-primary-600">
                             <x-heroicon-s-user class="w-4 h-4"/>
                         </div>
                         <div>
@@ -67,7 +67,7 @@
                         </div>
                     </div>
                     <div class="flex items-start gap-3">
-                        <div class="w-8 h-8 bg-indigo-50 rounded flex items-center justify-center text-indigo-600">
+                        <div class="w-8 h-8 bg-zertix-primary-50 rounded flex items-center justify-center text-zertix-primary-600">
                             <x-heroicon-s-identification class="w-4 h-4"/>
                         </div>
                         <div>
@@ -101,7 +101,7 @@
             {{-- Auditoría de Usuario --}}
             <div class="bg-gray-50 rounded-lg p-4 flex justify-between items-center">
                 <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 bg-indigo-600 rounded-full flex items-center justify-center text-[10px] font-bold text-white uppercase">
+                    <div class="w-6 h-6 bg-zertix-primary-600 rounded-full flex items-center justify-center text-[10px] font-bold text-white uppercase">
                         {{ substr($log->user->name ?? 'S', 0, 1) }}
                     </div>
                     <span class="text-[11px] text-gray-500 font-medium">Registrado por: <strong>{{ $log->user->name ?? 'Sistema' }}</strong></span>
@@ -113,7 +113,7 @@
         <div class="px-8 py-4 bg-gray-50 border-t flex justify-end gap-3">
             <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cerrar</x-ui.button>
             @if($log->sale_id)
-                <a href="{{ route('finance.invoices.print', $log->sale_id) }}" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md text-[10px] font-black uppercase hover:bg-indigo-700 transition shadow-sm"  target="_blank>
+                <a href="{{ route('finance.invoices.print', $log->sale_id) }}" class="inline-flex items-center px-4 py-2 bg-zertix-primary-600 text-white rounded-md text-[10px] font-black uppercase hover:bg-zertix-primary-700 transition shadow-sm"  target="_blank>
                     <x-heroicon-s-eye class="w-3 h-3 mr-2"/> Ver Factura
                 </a>
             @endif

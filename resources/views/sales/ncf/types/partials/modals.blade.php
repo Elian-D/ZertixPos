@@ -74,14 +74,14 @@
                 </div>
 
                 {{-- Visualización de Identificadores (No editables por seguridad fiscal) --}}
-                <div class="grid grid-cols-2 gap-4 bg-indigo-50 p-4 rounded-xl border border-indigo-100 shadow-sm text-center">
+                <div class="grid grid-cols-2 gap-4 bg-zertix-primary-50 p-4 rounded-xl border border-zertix-primary-100 shadow-sm text-center">
                     <div>
-                        <span class="text-[10px] text-indigo-400 uppercase font-black tracking-widest block">Código DGII</span>
-                        <span class="font-mono text-indigo-700 font-bold text-2xl">{{ $type->code }}</span>
+                        <span class="text-[10px] text-zertix-primary-400 uppercase font-black tracking-widest block">Código DGII</span>
+                        <span class="font-mono text-zertix-primary-700 font-bold text-2xl">{{ $type->code }}</span>
                     </div>
                     <div>
-                        <span class="text-[10px] text-indigo-400 uppercase font-black tracking-widest block">Prefijo Serie</span>
-                        <span class="font-mono text-indigo-700 font-bold text-2xl">{{ $type->prefix }}</span>
+                        <span class="text-[10px] text-zertix-primary-400 uppercase font-black tracking-widest block">Prefijo Serie</span>
+                        <span class="font-mono text-zertix-primary-700 font-bold text-2xl">{{ $type->prefix }}</span>
                     </div>
                 </div>
 

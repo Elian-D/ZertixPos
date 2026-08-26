@@ -8,14 +8,14 @@
                     <nav class="flex mb-2" aria-label="Breadcrumb">
                         <ol class="inline-flex items-center space-x-1 md:space-x-2 text-[10px] uppercase tracking-wider font-bold">
                             <li class="inline-flex items-center text-gray-400">
-                                <a href="{{ route('sales.pos.sessions.index') }}" class="hover:text-indigo-600 transition">Turnos POS</a>
+                                <a href="{{ route('sales.pos.sessions.index') }}" class="hover:text-zertix-primary-600 transition">Turnos POS</a>
                             </li>
                             <x-heroicon-s-chevron-right class="w-3 h-3 text-gray-300" />
                             <li class="text-gray-500">Turno #{{ $posSession->id }}</li>
                         </ol>
                     </nav>
                     <h2 class="font-black text-3xl text-gray-800 tracking-tight">
-                        Detalle de Turno: <span class="text-indigo-600">{{ $posSession->terminal->name ?? 'Terminal eliminada' }}</span>
+                        Detalle de Turno: <span class="text-zertix-primary-600">{{ $posSession->terminal->name ?? 'Terminal eliminada' }}</span>
                     </h2>
                 </div>
 
@@ -132,7 +132,7 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-3xl border border-gray-100">
                 <div class="p-8">
                     <h3 class="text-lg font-black text-gray-800 mb-6 flex items-center gap-2">
-                        <x-heroicon-s-calculator class="w-5 h-5 text-indigo-500" />
+                        <x-heroicon-s-calculator class="w-5 h-5 text-zertix-primary-500" />
                         Resumen de Arqueo
                     </h3>
 
@@ -166,7 +166,7 @@
                                     : $posSession->expected_balance;
                             @endphp
 
-                            <div class="flex justify-between p-5 bg-indigo-600 rounded-xl text-white shadow-lg shadow-indigo-100 mt-4">
+                            <div class="flex justify-between p-5 bg-zertix-primary-600 rounded-xl text-white shadow-lg shadow-zertix-primary-100 mt-4">
                                 <span class="font-bold">(=) Monto Esperado en Caja</span>
                                 <span class="text-lg font-mono font-black">{{ config('regional.currency_symbol') }}{{ number_format($displayExpected, 2) }}</span>
                             </div>
@@ -196,7 +196,7 @@
             {{-- Detalle de Ventas --}}
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <h3 class="text-sm font-black text-gray-800 mb-4 flex items-center gap-2">
-                    <x-heroicon-s-shopping-cart class="w-4 h-4 text-indigo-500" />
+                    <x-heroicon-s-shopping-cart class="w-4 h-4 text-zertix-primary-500" />
                     Detalle de Ventas
                 </h3>
 
@@ -237,7 +237,7 @@
             {{-- Resumen de ventas por forma de pago --}}
             <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
                 <h3 class="text-sm font-black text-gray-800 mb-4 flex items-center gap-2">
-                    <x-heroicon-s-banknotes class="w-4 h-4 text-indigo-500" />
+                    <x-heroicon-s-banknotes class="w-4 h-4 text-zertix-primary-500" />
                     Resumen por Forma de Pago
                 </h3>
 

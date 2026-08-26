@@ -83,7 +83,7 @@
                 <div class="flex items-center justify-end gap-3">
                     {{-- BOTÓN VER DETALLES --}}
                     <button @click="$dispatch('open-modal', 'view-movement-{{ $movement->id }}')" 
-                            class="bg-gray-50 text-gray-500 hover:bg-indigo-600 hover:text-white p-2 rounded-full transition-all shadow-sm"
+                            class="bg-gray-50 text-gray-500 hover:bg-zertix-primary-600 hover:text-white p-2 rounded-full transition-all shadow-sm"
                             title="Ver auditoría completa">
                         <x-heroicon-s-eye class="w-4 h-4" />
                     </button>

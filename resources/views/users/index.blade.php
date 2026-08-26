@@ -65,7 +65,7 @@
                             <td class="hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 w-1/12">{{ $user->id }}</td>
                             {{-- Columna 2: Avatar --}}
                             <td class="hidden md:table-cell px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 w-1/12 ">
-                                    <div class="w-9 h-9 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center border-2 border-transparent hover:border-indigo-400 transition-colors duration-200">
+                                    <div class="w-9 h-9 rounded-full bg-gray-200 overflow-hidden flex items-center justify-center border-2 border-transparent hover:border-zertix-primary-400 transition-colors duration-200">
                                         
                                         {{-- Lógica para AVATAR DE INICIALES --}}
                                         @if ( $user->avatar_url)
@@ -99,7 +99,7 @@
                             <td class="block md:table-cell px-6 py-4 whitespace-nowrap text-sm font-medium w-full md:w-auto">
                                 <div class="flex items-center space-x-2">
                                     {{-- Botón Editar --}}
-                                    <a href="{{ route('config.users.edit', $user) }}" title="Editar Usuario" class="text-indigo-600 hover:text-indigo-900 p-1 rounded-md hover:bg-indigo-100"><x-heroicon-s-pencil class="w-5 h-5" /></a>
+                                    <a href="{{ route('config.users.edit', $user) }}" title="Editar Usuario" class="text-zertix-primary-600 hover:text-zertix-primary-900 p-1 rounded-md hover:bg-zertix-primary-100"><x-heroicon-s-pencil class="w-5 h-5" /></a>
                                     
                                     {{-- Botón Roles --}}
                                     <a href="{{ route('config.users.roles.edit', $user) }}" title="Asignar Roles y Permisos" class="text-teal-600 hover:text-teal-900 p-1 rounded-md hover:bg-teal-100"><x-heroicon-s-key class="w-5 h-5" /></a>

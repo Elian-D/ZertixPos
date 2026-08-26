@@ -59,7 +59,7 @@
         <div class="px-4 py-2 border-b border-gray-50 bg-white flex-shrink-0">
             <button type="button" 
                 onclick="window.resetTableColumns()"
-                class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-indigo-600 hover:text-white bg-indigo-50 hover:bg-indigo-600 rounded-lg transition-all">
+                class="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-zertix-primary-600 hover:text-white bg-zertix-primary-50 hover:bg-zertix-primary-600 rounded-lg transition-all">
                 <x-heroicon-s-arrow-path class="w-4 h-4" />
                 Restablecer por defecto
             </button>
@@ -69,7 +69,7 @@
         <div class="overflow-y-auto overscroll-contain flex-1 custom-scrollbar">
             <div class="p-3 space-y-0.5">
                 @foreach($allColumns as $key => $label)
-                    <div class="px-3 py-2.5 hover:bg-indigo-50 rounded-lg transition-all">
+                    <div class="px-3 py-2.5 hover:bg-zertix-primary-50 rounded-lg transition-all">
                         <x-ui.forms.checkbox
                             label="{{ $label }}"
                             name="columns[]"

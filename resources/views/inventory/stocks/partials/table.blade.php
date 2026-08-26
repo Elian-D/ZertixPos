@@ -83,12 +83,12 @@
             {{-- Acciones --}}
             <td class="px-6 py-4">
                 <div class="flex items-center justify-end gap-3">
-                    <button @click="$dispatch('open-modal', 'view-stock-{{ $item->id }}')" class="text-gray-400 hover:text-indigo-600 transition">
+                    <button @click="$dispatch('open-modal', 'view-stock-{{ $item->id }}')" class="text-gray-400 hover:text-zertix-primary-600 transition">
                         <x-heroicon-s-eye class="w-5 h-5" />
                     </button>
                     
                     <button @click="$dispatch('open-modal', 'edit-min-stock-{{ $item->id }}')" 
-                    class="text-indigo-600 hover:text-indigo-900 p-2 rounded-lg hover:bg-indigo-50 transition-colors"
+                    class="text-zertix-primary-600 hover:text-zertix-primary-900 p-2 rounded-lg hover:bg-zertix-primary-50 transition-colors"
                     title="Ajustar Stock Mínimo">
                     <x-heroicon-s-bell-alert class="w-5 h-5" />
                 </button>

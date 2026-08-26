@@ -80,14 +80,14 @@
             </div>
 
             {{-- Preview --}}
-            <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-3">
-                <span class="text-[10px] text-indigo-400 uppercase font-bold block mb-1">Vista Previa del NCF:</span>
-                <div class="flex items-baseline gap-1 font-mono text-lg font-bold text-indigo-700">
-                    <span x-text="currentPrefix" class="text-indigo-400"></span>
+            <div class="bg-zertix-primary-50 border border-zertix-primary-100 rounded-lg p-3">
+                <span class="text-[10px] text-zertix-primary-400 uppercase font-bold block mb-1">Vista Previa del NCF:</span>
+                <div class="flex items-baseline gap-1 font-mono text-lg font-bold text-zertix-primary-700">
+                    <span x-text="currentPrefix" class="text-zertix-primary-400"></span>
                     <span x-text="typeCode"></span>
                     <span x-text="formatNcf(startNum)"></span>
                 </div>
-                <p class="text-[10px] text-indigo-400 mt-1" x-show="isElectronic">
+                <p class="text-[10px] text-zertix-primary-400 mt-1" x-show="isElectronic">
                     * Estructura e-NCF detectada (10 dígitos de secuencia).
                 </p>
             </div>
@@ -149,7 +149,7 @@
 
 <x-modal name="view-sequence-{{ $item->id }}" maxWidth="lg">
     <div class="overflow-hidden rounded-xl bg-white">
-        <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 px-6 py-4 text-white">
+        <div class="bg-gradient-to-r from-zertix-primary-600 to-zertix-primary-800 px-6 py-4 text-white">
             <div class="flex justify-between items-center">
                 <div>
                     <h3 class="text-lg font-bold italic">{{ $item->type->name }}</h3>
@@ -178,9 +178,9 @@
                     <span class="text-[10px] text-gray-400 uppercase font-bold block">Total</span>
                     <span class="text-lg font-bold">{{ number_format($item->to - $item->from + 1) }}</span>
                 </div>
-                <div class="text-center p-3 bg-indigo-50 rounded-lg border border-indigo-100">
-                    <span class="text-[10px] text-indigo-400 uppercase font-bold block">Usados</span>
-                    <span class="text-lg font-bold text-indigo-700">{{ number_format($item->current - $item->from + 1) }}</span>
+                <div class="text-center p-3 bg-zertix-primary-50 rounded-lg border border-zertix-primary-100">
+                    <span class="text-[10px] text-zertix-primary-400 uppercase font-bold block">Usados</span>
+                    <span class="text-lg font-bold text-zertix-primary-700">{{ number_format($item->current - $item->from + 1) }}</span>
                 </div>
                 <div class="text-center p-3 {{ ($item->to - $item->current) <= 0 ? 'bg-red-50' : 'bg-green-50' }} rounded-lg">
                     <span class="text-[10px] {{ ($item->to - $item->current) <= 0 ? 'text-red-400' : 'text-green-400' }} uppercase font-bold block">Disponibles</span>

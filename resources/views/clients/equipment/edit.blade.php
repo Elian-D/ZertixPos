@@ -14,7 +14,7 @@
                 {{-- Sección 1: Identificación --}}
                 <section>
                     <div class="flex items-center gap-2 mb-6 border-b border-gray-100 pb-2">
-                        <div class="w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-xs">1</div>
+                        <div class="w-7 h-7 bg-zertix-primary-600 text-white rounded-full flex items-center justify-center font-bold text-xs">1</div>
                         <h3 class="font-bold text-gray-800 uppercase text-xs tracking-wider">Identificación</h3>
                     </div>
 
@@ -87,7 +87,7 @@
                 {{-- Sección 2: Detalles Técnicos --}}
                 <section>
                     <div class="flex items-center gap-2 mb-6 border-b border-gray-100 pb-2">
-                        <div class="w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-xs">2</div>
+                        <div class="w-7 h-7 bg-zertix-primary-600 text-white rounded-full flex items-center justify-center font-bold text-xs">2</div>
                         <h3 class="font-bold text-gray-800 uppercase text-xs tracking-wider">Especificaciones</h3>
                     </div>
 

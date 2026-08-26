@@ -26,7 +26,7 @@
                     <div class="flex gap-1 min-w-max">
                         @foreach($ranges as $key => $label)
                             <a href="{{ route('reports.inventory', ['range' => $key]) }}" 
-                               class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap {{ $filters['current_range'] == $key ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50' }}">
+                               class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap {{ $filters['current_range'] == $key ? 'bg-white text-zertix-primary-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50' }}">
                                 {{ $label }}
                             </a>
                         @endforeach
@@ -35,7 +35,7 @@
 
                 {{-- Selector de Rango Manual --}}
                 <form action="{{ route('reports.inventory') }}" method="GET" 
-                      class="flex items-center bg-white border border-gray-200 rounded-xl p-1 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all min-w-max">
+                      class="flex items-center bg-white border border-gray-200 rounded-xl p-1 shadow-sm focus-within:ring-2 focus-within:ring-zertix-primary-500/20 transition-all min-w-max">
                     <input type="hidden" name="range" value="custom">
                     <div class="flex items-center px-2 gap-1">
                         <input type="date" name="start_date" value="{{ $filters['start'] }}" 
@@ -45,7 +45,7 @@
                                class="text-xs border-none focus:ring-0 p-1 text-gray-600 bg-transparent w-[110px]">
                     </div>
                     <button type="submit" 
-                            class="p-2 bg-gray-50 hover:bg-indigo-50 text-indigo-600 rounded-lg transition-colors border-l border-gray-100 flex-shrink-0">
+                            class="p-2 bg-gray-50 hover:bg-zertix-primary-50 text-zertix-primary-600 rounded-lg transition-colors border-l border-gray-100 flex-shrink-0">
                         <x-heroicon-s-magnifying-glass class="w-4 h-4"/>
                     </button>
                 </form>
@@ -85,7 +85,7 @@
                 title="Almacenes Activos" 
                 :value="$stats['active_warehouses']" 
                 icon="building-office-2" 
-                color="indigo" 
+                color="primary" 
                 secondary-text="Ubicaciones operativas"
                 href="{{ route('inventory.warehouses.index') }}"
             />
@@ -149,7 +149,7 @@
                     <div class="flex items-center justify-between mb-4">
                         <h3 class="text-sm font-bold text-gray-900">Actividad Reciente</h3>
                         <a href="{{ route('inventory.movements.index') }}" 
-                           class="text-xs text-indigo-600 hover:text-indigo-700 font-semibold hover:underline">
+                           class="text-xs text-zertix-primary-600 hover:text-zertix-primary-700 font-semibold hover:underline">
                             Ver kardex
                         </a>
                     </div>

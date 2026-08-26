@@ -55,7 +55,7 @@
               }">
             @csrf
             <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center">
+                <div class="w-10 h-10 bg-zertix-primary-100 text-zertix-primary-600 rounded-full flex items-center justify-center">
                     <x-heroicon-s-arrow-path class="w-6 h-6"/>
                 </div>
                 <div>
@@ -69,7 +69,7 @@
                 {{-- grand_total (neto + impuesto) — no total (sin impuesto), para que lo
                      que se confirma acá coincida con lo que termina facturado (Fase 5,
                      REQ-5.12). --}}
-                <span class="text-lg font-black text-indigo-700">{{ number_format($quote->grand_total, 2) }}</span>
+                <span class="text-lg font-black text-zertix-primary-700">{{ number_format($quote->grand_total, 2) }}</span>
             </div>
 
             <div class="space-y-4">

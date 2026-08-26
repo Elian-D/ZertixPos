@@ -97,7 +97,7 @@
                     @endif
 
                     <button @click="$dispatch('open-modal', 'view-entry-{{ $entry->id }}')" 
-                            class="bg-white border border-gray-200 text-gray-500 hover:bg-indigo-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
+                            class="bg-white border border-gray-200 text-gray-500 hover:bg-zertix-primary-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
                             title="Ver Detalle Contable">
                         <x-heroicon-s-eye class="w-4 h-4" />
                     </button>
@@ -182,8 +182,8 @@
                         <tfoot class="bg-gray-50 font-bold border-t-2">
                             <tr>
                                 <td class="px-4 py-2 text-gray-500">TOTALES</td>
-                                <td class="px-4 py-2 text-right text-indigo-600">{{ number_format($entry->total_debit, 2) }}</td>
-                                <td class="px-4 py-2 text-right text-indigo-600">{{ number_format($entry->total_credit, 2) }}</td>
+                                <td class="px-4 py-2 text-right text-zertix-primary-600">{{ number_format($entry->total_debit, 2) }}</td>
+                                <td class="px-4 py-2 text-right text-zertix-primary-600">{{ number_format($entry->total_credit, 2) }}</td>
                             </tr>
                         </tfoot>
                     </table>

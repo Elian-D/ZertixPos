@@ -57,7 +57,7 @@
                 <section>
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="font-bold text-gray-800 uppercase text-xs tracking-wider">Movimientos del Asiento</h3>
-                        <button type="button" @click="addLine()" class="text-xs bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg hover:bg-indigo-600 hover:text-white transition-all font-bold">
+                        <button type="button" @click="addLine()" class="text-xs bg-zertix-primary-50 text-zertix-primary-600 px-3 py-1.5 rounded-lg hover:bg-zertix-primary-600 hover:text-white transition-all font-bold">
                             + Añadir Línea
                         </button>
                     </div>
@@ -79,7 +79,7 @@
                                             <select :name="`items[${index}][accounting_account_id]`" 
                                                     x-model="line.accounting_account_id" 
                                                     @change="calculateTotals()"
-                                                    class="w-full border-gray-200 rounded-lg text-sm focus:ring-indigo-500" required>
+                                                    class="w-full border-gray-200 rounded-lg text-sm focus:ring-zertix-primary-500" required>
                                                 <option value="">Seleccione cuenta...</option>
                                                 @foreach($catalogs['accounts'] as $acc)
                                                     <option value="{{ $acc->id }}">{{ $acc->code }} - {{ $acc->name }}</option>
@@ -94,7 +94,7 @@
                                         <td class="p-2">
                                             <input type="number" :name="`items[${index}][credit]`" x-model.number="line.credit"
                                                 step="0.01" min="0" @input="calculateTotals()"
-                                                class="w-full border-gray-200 rounded-lg text-sm text-right font-mono focus:ring-indigo-500">
+                                                class="w-full border-gray-200 rounded-lg text-sm text-right font-mono focus:ring-zertix-primary-500">
                                         </td>
                                         <td class="p-2 text-center">
                                             <button type="button" @click="removeLine(index)" x-show="lines.length > 2"

@@ -4,7 +4,7 @@
             
             {{-- 1. ID --}}
             @if(in_array('id', $visibleColumns))
-                <td class="px-6 py-4 text-sm font-mono font-bold text-indigo-700">
+                <td class="px-6 py-4 text-sm font-mono font-bold text-zertix-primary-700">
                     #{{ $quote->id }}
                 </td>
             @endif
@@ -127,7 +127,7 @@
                 <div class="flex items-center justify-end gap-1.5">
                     {{-- Ver --}}
                     <a href="{{ route('clients.quotes.show', $quote) }}" title="Ver Detalle"
-                       class="bg-white border border-gray-200 text-gray-500 hover:bg-indigo-600 hover:text-white p-1.5 rounded-lg transition-all">
+                       class="bg-white border border-gray-200 text-gray-500 hover:bg-zertix-primary-600 hover:text-white p-1.5 rounded-lg transition-all">
                         <x-heroicon-s-eye class="w-4 h-4" />
                     </a>
 
@@ -145,7 +145,7 @@
                         {{-- Convertir (Solo si está Aprobada) --}}
                         @if($quote->status === \App\Models\Sales\Quotes\Quote::STATUS_APPROVED)
                             <button @click="$dispatch('open-modal', 'confirm-convert-quote-{{ $quote->id }}')" 
-                                    class="bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-600 hover:text-white p-1.5 rounded-lg transition-all shadow-sm" title="Convertir a Venta">
+                                    class="bg-zertix-primary-50 border border-zertix-primary-200 text-zertix-primary-700 hover:bg-zertix-primary-600 hover:text-white p-1.5 rounded-lg transition-all shadow-sm" title="Convertir a Venta">
                                 <x-heroicon-s-shopping-cart class="w-4 h-4" />
                             </button>
                         @endif

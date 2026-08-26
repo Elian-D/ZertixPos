@@ -14,13 +14,13 @@
                 <h3 class="text-xl font-semibold text-gray-700 mb-4">Métricas Principales</h3>
                 <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                     
-                    <div class="bg-white p-5 rounded-xl shadow-lg border-b-4 border-indigo-500 hover:shadow-xl transition-shadow">
+                    <div class="bg-white p-5 rounded-xl shadow-lg border-b-4 border-zertix-primary-500 hover:shadow-xl transition-shadow">
                         <div class="flex items-center justify-between">
                             <div>
                                 <p class="text-sm font-medium text-gray-500 uppercase tracking-wider">Ventas Netas (Mes)</p>
                                 <p class="text-3xl font-bold text-gray-900 mt-1">{{ config('regional.currency_symbol') }}15,450.00</p>
                             </div>
-                            <x-heroicon-s-currency-dollar class="w-8 h-8 text-indigo-500 opacity-70" />
+                            <x-heroicon-s-currency-dollar class="w-8 h-8 text-zertix-primary-500 opacity-70" />
                         </div>
                         <p class="text-xs text-green-500 mt-2 flex items-center">
                             <x-heroicon-s-arrow-up class="w-4 h-4 mr-1" />
@@ -129,7 +129,7 @@
                                 <span class="font-bold text-green-600">{{ config('regional.currency_symbol') }}1,200.00</span>
                             </li>
                             <li class="py-3 text-center">
-                                <a href="/ventas" class="text-indigo-600 hover:text-indigo-800 font-medium text-sm">Ver todo el historial</a>
+                                <a href="/ventas" class="text-zertix-primary-600 hover:text-zertix-primary-800 font-medium text-sm">Ver todo el historial</a>
                             </li>
                         </ul>
                     </div>

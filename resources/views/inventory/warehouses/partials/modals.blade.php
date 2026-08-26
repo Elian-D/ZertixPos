@@ -106,7 +106,7 @@
                 {{-- Columna Izquierda: Información General --}}
                 <div class="space-y-6">
                     <div class="flex gap-3">
-                        <div class="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 shrink-0">
+                        <div class="w-10 h-10 bg-zertix-primary-50 rounded-lg flex items-center justify-center text-zertix-primary-600 shrink-0">
                             <x-heroicon-s-building-office-2 class="w-5 h-5"/>
                         </div>
                         <div>
@@ -144,9 +144,9 @@
                          (REQ-02.12), un almacén no depende de Contabilidad para nada más. --}}
                     @if (module_enabled('accounting.advanced'))
                         <div class="p-5 bg-slate-900 rounded-2xl shadow-lg relative overflow-hidden">
-                            <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl"></div>
+                            <div class="absolute -right-4 -top-4 w-24 h-24 bg-zertix-primary-500/10 rounded-full blur-2xl"></div>
 
-                            <span class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest block mb-4">Enlace Contable (Kardex)</span>
+                            <span class="text-[10px] font-bold text-zertix-primary-300 uppercase tracking-widest block mb-4">Enlace Contable (Kardex)</span>
 
                             <div class="flex items-start gap-3">
                                 <div class="p-2 bg-white/10 rounded-lg">
@@ -157,7 +157,7 @@
                                         <p class="text-sm font-mono font-bold text-white tracking-wider">
                                             {{ $item->accountingAccount->code }}
                                         </p>
-                                        <p class="text-[11px] text-indigo-200 font-medium leading-tight mt-1">
+                                        <p class="text-[11px] text-zertix-primary-200 font-medium leading-tight mt-1">
                                             {{ $item->accountingAccount->name }}
                                         </p>
                                     @else
@@ -170,7 +170,7 @@
 
                             <div class="flex justify-between items-center">
                                 <span class="text-[9px] text-white/50 uppercase font-bold">Uso de Cuenta:</span>
-                                <span class="px-2 py-0.5 bg-indigo-500/20 text-[9px] text-indigo-200 rounded border border-indigo-500/30 font-black">ACTIVO CIRCULANTE</span>
+                                <span class="px-2 py-0.5 bg-zertix-primary-500/20 text-[9px] text-zertix-primary-200 rounded border border-zertix-primary-500/30 font-black">ACTIVO CIRCULANTE</span>
                             </div>
                         </div>
                     @endif
@@ -207,7 +207,7 @@
         <div class="px-8 py-5 bg-gray-50 border-t flex justify-end gap-3">
             <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cerrar</x-ui.button>
             <button @click="$dispatch('close'); $dispatch('open-modal', 'edit-warehouse-{{ $item->id }}')" 
-                    class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition shadow-sm">
+                    class="inline-flex items-center px-4 py-2 bg-zertix-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-zertix-primary-700 transition shadow-sm">
                 <x-heroicon-s-pencil class="w-3 h-3 mr-2"/> Modificar Datos
             </button>
         </div>

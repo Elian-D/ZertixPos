@@ -54,7 +54,7 @@
                             <td class="block md:table-cell px-6 py-4 whitespace-nowrap text-sm font-medium w-full md:w-auto">
                                 <div class="flex items-center space-x-2">
                                     {{-- Botón Editar --}}
-                                    <a href="{{ route('config.roles.edit', $role) }}" title="Editar Rol" class="text-indigo-600 hover:text-indigo-900 p-1 rounded-md hover:bg-indigo-100"><x-heroicon-s-pencil class="w-5 h-5" /></a>
+                                    <a href="{{ route('config.roles.edit', $role) }}" title="Editar Rol" class="text-zertix-primary-600 hover:text-zertix-primary-900 p-1 rounded-md hover:bg-zertix-primary-100"><x-heroicon-s-pencil class="w-5 h-5" /></a>
                                     
                                     {{-- Botón Permisos --}}
                                     <a href="{{ route('config.roles.permissions.edit', $role) }}" title="Asignar Permisos" class="text-teal-600 hover:text-teal-900 p-1 rounded-md hover:bg-teal-100"><x-heroicon-s-key class="w-5 h-5" /></a>

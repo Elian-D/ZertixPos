@@ -15,7 +15,7 @@
             {{-- Venta Origen --}}
             @if(in_array('sale_id', $visibleColumns))
                 <td class="px-6 py-4 text-sm">
-                    <span class="text-indigo-600 font-medium italic">#{{ $invoice->sale->number ?? 'N/A' }}</span>
+                    <span class="text-zertix-primary-600 font-medium italic">#{{ $invoice->sale->number ?? 'N/A' }}</span>
                 </td>
             @endif
 
@@ -111,7 +111,7 @@
                 <div class="flex items-center justify-end gap-2">
                     {{-- Ver PDF/Vista Previa --}}
                     <a href="{{ route('finance.invoices.show', $invoice) }}" 
-                       class="bg-white border border-gray-200 text-gray-500 hover:bg-indigo-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
+                       class="bg-white border border-gray-200 text-gray-500 hover:bg-zertix-primary-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
                        title="Ver Factura">
                         <x-heroicon-s-eye class="w-4 h-4" />
                     </a>

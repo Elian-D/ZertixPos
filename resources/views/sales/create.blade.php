@@ -33,7 +33,7 @@
                             <div class="grid grid-cols-2 gap-2 p-1 bg-gray-100 rounded-xl">
                                 <button type="button" 
                                     @click="formData.payment_type = 'cash'; handlePaymentTypeChange()"
-                                    :class="formData.payment_type === 'cash' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'"
+                                    :class="formData.payment_type === 'cash' ? 'bg-white shadow-sm text-zertix-primary-600' : 'text-gray-500 hover:text-gray-700'"
                                     class="flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all">
                                     <x-heroicon-s-currency-dollar class="w-4 h-4"/>
                                     Contado
@@ -42,7 +42,7 @@
                                     @click="formData.payment_type = 'credit'; handlePaymentTypeChange()"
                                     :disabled="!config.receivablesEnabled"
                                     :title="!config.receivablesEnabled ? 'Cuentas por Cobrar está desactivado en Funcionalidades del Sistema' : ''"
-                                    :class="formData.payment_type === 'credit' ? 'bg-white shadow-sm text-indigo-600' : 'text-gray-500 hover:text-gray-700'"
+                                    :class="formData.payment_type === 'credit' ? 'bg-white shadow-sm text-zertix-primary-600' : 'text-gray-500 hover:text-gray-700'"
                                     class="flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed">
                                     <x-heroicon-s-credit-card class="w-4 h-4"/>
                                     Crédito
@@ -76,13 +76,13 @@
 
                     {{-- FILA 2: COMPROBANTE Y MÉTODO --}}
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100/50 flex items-center gap-4">
+                        <div class="bg-zertix-primary-50/50 p-4 rounded-xl border border-zertix-primary-100/50 flex items-center gap-4">
                             
                             <template x-if="config.ncfEnabled">
                                 <div class="flex-1">
-                                    <x-input-label value="Comprobante Fiscal" class="mb-1 text-[10px] text-indigo-400 uppercase font-bold" />
+                                    <x-input-label value="Comprobante Fiscal" class="mb-1 text-[10px] text-zertix-primary-400 uppercase font-bold" />
                                     <select name="ncf_type_id" x-model="formData.ncf_type_id"
-                                        class="w-full border-none bg-transparent p-0 text-sm font-black text-indigo-900 focus:ring-0">
+                                        class="w-full border-none bg-transparent p-0 text-sm font-black text-zertix-primary-900 focus:ring-0">
                                         <option value="">Seleccione NCF...</option>
                                         <template x-for="type in filteredNcfTypes" :key="type.id">
                                             <option :value="type.id" x-text="type.name"></option>
@@ -101,13 +101,13 @@
                                 </div>
                             </template>
 
-                            <div class="h-10 w-px bg-indigo-200"></div>
+                            <div class="h-10 w-px bg-zertix-primary-200"></div>
 
                             {{-- Método de Pago --}}
                             <div class="flex-1" x-show="formData.payment_type === 'cash'" x-transition>
-                                <x-input-label value="Método de Pago" class="mb-1 text-[10px] text-indigo-400 uppercase font-bold" />
+                                <x-input-label value="Método de Pago" class="mb-1 text-[10px] text-zertix-primary-400 uppercase font-bold" />
                                 <select name="tipo_pago_id" x-model="formData.tipo_pago_id" @change="handleTipoPagoChange()"
-                                    class="w-full border-none bg-transparent p-0 text-sm font-black text-indigo-900 focus:ring-0">
+                                    class="w-full border-none bg-transparent p-0 text-sm font-black text-zertix-primary-900 focus:ring-0">
                                     <option value="">Seleccione...</option>
                                     @foreach($tipo_pagos as $tp)
                                         <option value="{{ $tp->id }}">{{ $tp->nombre }}</option>
@@ -177,11 +177,11 @@
                     
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="font-bold text-gray-400 uppercase text-[10px] tracking-widest flex items-center gap-2">
-                            <span class="w-5 h-5 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center text-[10px] font-bold">2</span>
+                            <span class="w-5 h-5 bg-zertix-primary-50 text-zertix-primary-600 rounded-full flex items-center justify-center text-[10px] font-bold">2</span>
                             Detalle de Productos
                         </h3>
                         <button type="button" @click="addItem()"
-                            class="text-xs bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all font-bold active:scale-95">
+                            class="text-xs bg-zertix-primary-600 text-white px-4 py-2 rounded-lg hover:bg-zertix-primary-700 shadow-lg shadow-zertix-primary-100 transition-all font-bold active:scale-95">
                             + Añadir Producto
                         </button>
                     </div>
@@ -210,7 +210,7 @@
                                             <select :name="`items[${index}][product_id]`" 
                                                     x-model="item.product_id"
                                                     @change="updateProductData(index)"
-                                                    class="w-full border-gray-200 rounded-lg text-sm focus:ring-indigo-500 transition-all">
+                                                    class="w-full border-gray-200 rounded-lg text-sm focus:ring-zertix-primary-500 transition-all">
                                                 <option value="">Seleccione...</option>
                                                 <template x-for="p in filteredProducts" :key="p.id">
                                                     <option :value="p.id" x-text="p.name"></option>
@@ -225,7 +225,7 @@
                                                 x-model.number="item.quantity"
                                                 @input="calculateTotals()"
                                                 :max="item.stock" min="1"
-                                                class="w-full border-gray-200 rounded-lg text-sm text-center focus:ring-indigo-500">
+                                                class="w-full border-gray-200 rounded-lg text-sm text-center focus:ring-zertix-primary-500">
                                         </td>
                                         <td class="px-4 py-3">
                                             <input type="hidden" :name="`items[${index}][price]`" :value="item.price">
@@ -246,7 +246,7 @@
                                                     step="0.01"
                                                     {{-- 11.2: venta manual de backoffice, sin terminal asociada — sin límite de
                                                          descuento a propósito (no hay config global a la que heredar). --}}
-                                                    class="w-full border-gray-200 rounded-lg text-sm text-right p-2 pr-7 focus:ring-indigo-500 disabled:bg-gray-100">
+                                                    class="w-full border-gray-200 rounded-lg text-sm text-right p-2 pr-7 focus:ring-zertix-primary-500 disabled:bg-gray-100">
                                                 <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                                                     <span class="text-gray-400 text-xs">%</span>
                                                 </div>
@@ -288,7 +288,7 @@
                     </div>
 
                     <div class="bg-gray-900 text-white rounded-2xl p-6 shadow-2xl space-y-4 relative overflow-hidden transition-all duration-500">
-                        <div class="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 rounded-full -mr-12 -mt-12"></div>
+                        <div class="absolute top-0 right-0 w-24 h-24 bg-zertix-primary-500/10 rounded-full -mr-12 -mt-12"></div>
                         
                         {{-- Subtotal Bruto --}}
                         <div class="flex justify-between text-[10px] opacity-50 uppercase tracking-[0.2em]">
@@ -328,15 +328,15 @@
                                                 x-model.number="formData.cash_received" 
                                                 @input="calculateChange()" 
                                                 step="0.01"
-                                                class="w-full bg-white/5 border-white/10 rounded-lg pl-14 py-2 text-lg font-mono focus:ring-indigo-500 focus:bg-white/10 transition-all">
+                                                class="w-full bg-white/5 border-white/10 rounded-lg pl-14 py-2 text-lg font-mono focus:ring-zertix-primary-500 focus:bg-white/10 transition-all">
                                         </div>
                                     </div>
                                 </template>
 
                                 {{-- Visualización de Cambio y Campos Ocultos para el POST --}}
-                                <div class="flex justify-between items-center bg-indigo-500/20 p-3 rounded-xl border border-indigo-500/30">
-                                    <span class="text-[10px] font-bold text-indigo-300 uppercase">Cambio a Devolver</span>
-                                    <span class="text-xl font-black font-mono text-indigo-400" x-text="formatMoney(formData.cash_change)"></span>
+                                <div class="flex justify-between items-center bg-zertix-primary-500/20 p-3 rounded-xl border border-zertix-primary-500/30">
+                                    <span class="text-[10px] font-bold text-zertix-primary-300 uppercase">Cambio a Devolver</span>
+                                    <span class="text-xl font-black font-mono text-zertix-primary-400" x-text="formatMoney(formData.cash_change)"></span>
                                     
                                     {{-- ESTOS INPUTS SON VITALES PARA EL BACKEND --}}
                                     <input type="hidden" name="cash_change" :value="formData.cash_change">
@@ -350,7 +350,7 @@
 
                         <div class="pt-2">
                             <div class="flex justify-between items-end">
-                                <span class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Total a Pagar</span>
+                                <span class="text-[10px] font-bold text-zertix-primary-400 uppercase tracking-widest">Total a Pagar</span>
                                 {{-- totals.total es el NETO (lo que el cliente paga de verdad) --}}
                                 <span class="text-3xl font-black font-mono tracking-tight" x-text="formatMoney(totals.total)"></span>
                             </div>

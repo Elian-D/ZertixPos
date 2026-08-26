@@ -167,7 +167,7 @@ class AccountingDashboardController extends Controller
         if ($liquidityRatio > 3.0 && $cashFlow > 1000) {
             $alerts[] = [
                 'type' => 'success',
-                'color' => 'indigo',
+                'color' => 'zertix-primary',
                 'title' => 'Exceso de Liquidez',
                 'message' => 'Mantiene un ratio de liquidez de ' . number_format($liquidityRatio, 1) . '. Considere invertir el excedente en inventario crítico o reducir pasivos con costo financiero.'
             ];
