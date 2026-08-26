@@ -33,6 +33,7 @@ class PosTerminal extends Model
         'max_item_discount_percentage',
         'max_global_discount_percentage',
         'discount_policy',
+        'allow_receivable_collection',
     ];
 
     protected $casts = [
@@ -43,6 +44,7 @@ class PosTerminal extends Model
         'allow_global_discount' => 'boolean',
         'max_item_discount_percentage' => 'float',
         'max_global_discount_percentage' => 'float',
+        'allow_receivable_collection' => 'boolean',
     ];
 
     protected $hidden = [

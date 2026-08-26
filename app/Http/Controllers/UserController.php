@@ -37,7 +37,7 @@ class UserController extends Controller
     {
         $plan = current_plan();
         if ($plan && ! $plan->canCreateMoreUsers()) {
-            return redirect()->route('users.index')->with('error', "Tu plan actual ({$plan->name}) permite un máximo de {$plan->users_limit} usuario(s). Actualizá tu plan para agregar más.");
+            return redirect()->route('config.users.index')->with('error', "Tu plan actual ({$plan->name}) permite un máximo de {$plan->users_limit} usuario(s). Actualizá tu plan para agregar más.");
         }
 
         return view('users.create');
@@ -72,7 +72,7 @@ class UserController extends Controller
         $user->assignRole('Usuario Genérico');
 
         return redirect()
-            ->route('users.index')
+            ->route('config.users.index')
             ->with('success', 'Usuario creado correctamente');
     }
 
@@ -104,7 +104,7 @@ class UserController extends Controller
         $user->update($data);
 
         return redirect()
-            ->route('users.index')
+            ->route('config.users.index')
             ->with('success', 'Usuario actualizado correctamente');
     }
 
@@ -113,7 +113,7 @@ class UserController extends Controller
         $user->delete();
 
         return redirect()
-            ->route('users.index')
+            ->route('config.users.index')
             ->with('success', 'Usuario eliminado correctamente');
     }
 
@@ -136,7 +136,7 @@ class UserController extends Controller
         $user->roles()->sync([$request->role_id]);
 
         return redirect()
-            ->route('users.index')
+            ->route('config.users.index')
             ->with('success', 'Rol actualizado correctamente.');
     }
 }

@@ -2,7 +2,7 @@
 namespace App\Models\Accounting;
 
 use App\Models\Clients\Client;
-use Illuminate\Database\Eloquent\{Model, SoftDeletes, Relations\BelongsTo, Relations\MorphTo};
+use Illuminate\Database\Eloquent\{Model, SoftDeletes, Relations\BelongsTo, Relations\HasMany, Relations\MorphTo};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
 
@@ -102,4 +102,10 @@ class Receivable extends Model
     public function client(): BelongsTo { return $this->belongsTo(Client::class); }
     public function journalEntry(): BelongsTo { return $this->belongsTo(JournalEntry::class); }
     public function accountingAccount(): BelongsTo { return $this->belongsTo(AccountingAccount::class); }
+
+    /**
+     * Cobros aplicados a esta CxC (activos o anulados) — el hecho histórico que
+     * determina si ya se puede cancelar (Fase 6, REQ-6.11), no el saldo mutable.
+     */
+    public function collections(): HasMany { return $this->hasMany(ClientCollection::class, 'receivable_id'); }
 }

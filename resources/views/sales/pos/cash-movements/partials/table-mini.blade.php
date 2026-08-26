@@ -16,13 +16,9 @@
                     </td>
                     <td class="px-4 py-3 whitespace-nowrap">
                         @if($movement->type === 'in')
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                <x-heroicon-s-arrow-small-up class="w-3 h-3 mr-1" /> Entrada
-                            </span>
+                            <x-ui.badge variant="success" size="sm" icon="heroicon-s-arrow-small-up">Entrada</x-ui.badge>
                         @else
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
-                                <x-heroicon-s-arrow-small-down class="w-3 h-3 mr-1" /> Salida
-                            </span>
+                            <x-ui.badge variant="warning" size="sm" icon="heroicon-s-arrow-small-down">Salida</x-ui.badge>
                         @endif
                     </td>
                     <td class="px-4 py-3 text-sm text-gray-700">

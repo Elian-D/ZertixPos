@@ -162,7 +162,7 @@ The codebase follows a "Skinny Controllers" pattern with clear separation of con
 | **Sales** (`Sales/`) | `InvoiceController`, `QuoteController`, `SaleController` | `Invoice`, `Quote`, `QuoteItem`, `Sale`, `SaleItem`, `SalePayment` | Quoting, invoicing, and sale order processing |
 | **Sales → POS** (`Sales/Pos/`) | `PosTerminalController`, `PosSessionController`, `PosTerminalLockController`, `PosCashMovementController`, `PosConfigController` | `PosTerminal`, `PosSession`, `PosSetting`, `PosCashMovement` | Terminal sessions, cash drawer movements, PIN-gated access |
 | **Sales → NCF** (`Sales/Ncf/`) | `NcfSequenceController`, `NcfTypeController`, `NcfLogController`, `NcfDashboardController` | `NcfSequence`, `NcfType`, `NcfLog` | Dominican fiscal receipt (NCF) compliance — sequence assignment and audit log |
-| **Accounting** | `AccountingAccountController`, `JournalEntryController`, `ReceivableController`, `PaymentController` | `Account`, `Journal`, `Receivable` | Double-entry accounting |
+| **Accounting** | `AccountingAccountController`, `JournalEntryController`, `ReceivableController`, `CollectionController` | `Account`, `Journal`, `Receivable`, `ClientCollection` | Double-entry accounting |
 | **Clients** | `ClientController`, `EquipmentController`, `PointOfSaleController` (client-side POS reg.) | `Client`, `Equipment` | Customer management, credit limits, field equipment |
 | **Configuration** | `ConfiguracionGeneralController`, `TipoPagoController`, `EstadosClienteController` | `ConfiguracionGeneral`, `TipoPago`, etc. | System-wide settings (currency, tax, payment types) |
 

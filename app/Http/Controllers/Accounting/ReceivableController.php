@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers\Accounting;
 
+use App\Filters\Accounting\ReceivablesFilters\ReceivableFilters;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting\Receivable;
-use App\Services\Accounting\Receivable\ReceivableService;
 use App\Services\Accounting\Receivable\ReceivableCatalogService;
-use App\Filters\Accounting\ReceivablesFilters\ReceivableFilters;
+use App\Services\Accounting\Receivable\ReceivableService;
 use App\Tables\AccountingTables\ReceivableTable;
 use App\Traits\SoftDeletesTrait;
 use Illuminate\Http\Request;
@@ -36,26 +36,25 @@ class ReceivableController extends Controller
 
         if ($request->ajax()) {
             return view('accounting.receivables.partials.table', [
-                'items'          => $receivables,
+                'items' => $receivables,
                 'visibleColumns' => $visibleColumns,
-                'allColumns'     => ReceivableTable::allColumns(),
+                'allColumns' => ReceivableTable::allColumns(),
                 'defaultDesktop' => ReceivableTable::defaultDesktop(),
-                'defaultMobile'  => ReceivableTable::defaultMobile(),
+                'defaultMobile' => ReceivableTable::defaultMobile(),
             ])->render();
         }
 
         return view('accounting.receivables.index', array_merge(
             [
-                'items'          => $receivables,
+                'items' => $receivables,
                 'visibleColumns' => $visibleColumns,
-                'allColumns'     => ReceivableTable::allColumns(),
+                'allColumns' => ReceivableTable::allColumns(),
                 'defaultDesktop' => ReceivableTable::defaultDesktop(),
-                'defaultMobile'  => ReceivableTable::defaultMobile(),
+                'defaultMobile' => ReceivableTable::defaultMobile(),
             ],
             $catalogs
         ));
     }
-
 
     /**
      * Borrado de la vista (SoftDelete)
@@ -66,16 +65,35 @@ class ReceivableController extends Controller
 
         // Si no está anulada, forzamos que primero pase por cancel() para asegurar la contabilidad
         if ($receivable->status !== Receivable::STATUS_CANCELLED) {
-            return back()->with('error', "Para eliminar esta cuenta primero debe ser anulada para revertir la contabilidad.");
+            return back()->with('error', 'Para eliminar esta cuenta primero debe ser anulada para revertir la contabilidad.');
         }
 
         return $this->destroyTrait($receivable);
     }
 
     // Requerimientos del SoftDeletesTrait
-    protected function getModelClass(): string { return Receivable::class; }
-    protected function getViewFolder(): string { return 'accounting.receivables'; }
-    protected function getRouteIndex(): string { return 'accounting.receivables.index'; }
-    protected function getRouteEliminadas(): string { return 'receivables.eliminados'; }
-    protected function getEntityName(): string { return 'Cuenta por Cobrar'; }
+    protected function getModelClass(): string
+    {
+        return Receivable::class;
+    }
+
+    protected function getViewFolder(): string
+    {
+        return 'accounting.receivables';
+    }
+
+    protected function getRouteIndex(): string
+    {
+        return 'finance.receivables.index';
+    }
+
+    protected function getRouteEliminadas(): string
+    {
+        return 'finance.receivables.eliminados';
+    }
+
+    protected function getEntityName(): string
+    {
+        return 'Cuenta por Cobrar';
+    }
 }

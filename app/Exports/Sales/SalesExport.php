@@ -57,7 +57,8 @@ class SalesExport implements FromQuery, WithColumnWidths, WithDefaultStyles, Wit
             ->select([
                 'id', 'number', 'created_at', 'sale_date', 'client_id',
                 'warehouse_id', 'pos_terminal_id', 'pos_session_id',
-                'payment_type', 'total_amount', 'status', 'user_id', 'notes',
+                'payment_type', 'total_amount', 'net_amount', 'tax_amount',
+                'status', 'user_id', 'notes',
             ])->latest('sale_date');
     }
 
@@ -101,7 +102,9 @@ class SalesExport implements FromQuery, WithColumnWidths, WithDefaultStyles, Wit
             $this->terminalsCache[$sale->pos_terminal_id] ?? 'Oficina/Web',
             $this->paymentLabels[$sale->payment_type] ?? $sale->payment_type,
             $paymentMethods ?: 'No registrado',
-            $sale->total_amount,
+            // grand_total (neto + impuesto), no total_amount (bruto — ver auditoría
+            // post-REQ-5.12 en docs/features/v1.2.0.md).
+            $sale->grand_total,
             $this->statusLabels[$sale->status] ?? $sale->status,
             $this->usersCache[$sale->user_id] ?? 'Sistema',
             $sale->notes ?? '',

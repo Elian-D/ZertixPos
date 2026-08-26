@@ -11,7 +11,7 @@ class UpdateClientRequest extends FormRequest
     public function authorize(): bool
     {
         // Usamos el permiso del Seeder: 'clients edit'
-        return $this->user()->can('clients edit');
+        return $this->user()->can('clients edit') && ! $this->route('client')->isConsumidorFinal();
     }
 
     public function rules(): array

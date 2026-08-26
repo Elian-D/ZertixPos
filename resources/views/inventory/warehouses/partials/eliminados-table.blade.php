@@ -1,15 +1,11 @@
 {{-- 1. La Tabla limpia --}}
-<x-data-table 
-    :items="$items" 
-    :headers="['code' => 'Código', 'nombre' => 'Almacén', 'deleted_at' => 'Eliminado']"
-    :visibleColumns="['code', 'nombre', 'deleted_at', 'acciones']">
+<x-data-table
+    :items="$items"
+    :headers="['nombre' => 'Almacén', 'deleted_at' => 'Eliminado']"
+    :visibleColumns="['nombre', 'deleted_at', 'acciones']">
 
     @forelse($items as $warehouse)
         <tr class="hover:bg-gray-50 transition duration-150 group">
-            <td class="px-6 py-4 text-sm font-mono text-gray-600">
-                {{ $warehouse->code }}
-            </td>
-            
             <td class="px-6 py-4">
                 <div class="flex items-center">
                     <div class="w-8 h-8 rounded-full bg-red-50 flex items-center justify-center text-red-600 mr-3">
@@ -54,7 +50,7 @@
         </tr>
     @empty
         <tr>
-            <td colspan="4" class="px-6 py-12 text-center text-gray-500">
+            <td colspan="3" class="px-6 py-12 text-center text-gray-500">
                 <div class="flex flex-col items-center">
                     <x-heroicon-s-archive-box-x-mark class="w-12 h-12 text-gray-300 mb-2" />
                     <p>No hay almacenes en la papelera.</p>
@@ -71,7 +67,7 @@
         :title="'¿Eliminar Almacén Permanentemente?'"
         :itemName="$warehouse->name"
         :route="route('inventory.warehouses.borrarDefinitivo', $warehouse->id)"
-        :description="'Estás a punto de borrar definitivamente el almacén <strong>' . $warehouse->name . '</strong> (' . $warehouse->code . ').'"
+        :description="'Estás a punto de borrar definitivamente el almacén <strong>' . $warehouse->name . '</strong>.'"
     >
         <div>
             <strong>Aviso Crítico:</strong> Esta operación es irreversible. Si este almacén tuvo movimientos de inventario históricos, podrías perder coherencia en reportes antiguos.

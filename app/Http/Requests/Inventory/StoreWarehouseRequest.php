@@ -16,11 +16,11 @@ class StoreWarehouseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name'        => ['required', 'string', 'max:100'],
-            'type'        => ['required', 'string', Rule::in(array_keys(Warehouse::getTypes()))],
-            'address'     => ['nullable', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:100', 'unique:warehouses,name'],
+            'type' => ['required', 'string', Rule::in(array_keys(Warehouse::getTypes()))],
+            'address' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:500'],
-            'is_active'   => ['required', 'boolean'],
+            'is_active' => ['required', 'boolean'],
         ];
     }
 
@@ -28,7 +28,8 @@ class StoreWarehouseRequest extends FormRequest
     {
         return [
             'name.required' => 'El nombre del almacén es obligatorio para el registro contable.',
-            'type.in'       => 'El tipo de almacén seleccionado no es válido.',
+            'name.unique' => 'Ya existe un almacén con ese nombre.',
+            'type.in' => 'El tipo de almacén seleccionado no es válido.',
         ];
     }
 }

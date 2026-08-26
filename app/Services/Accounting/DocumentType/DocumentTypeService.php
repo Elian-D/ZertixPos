@@ -18,7 +18,6 @@ class DocumentTypeService
                 'code' => strtoupper($data['code']),
                 'prefix' => strtoupper($data['prefix'] ?? $data['code']),
                 'current_number' => $data['current_number'] ?? 0,
-                'is_active' => $data['is_active'] ?? true,
             ]);
         });
     }
@@ -49,13 +48,5 @@ class DocumentTypeService
 
             return $formattedNumber;
         });
-    }
-
-    /**
-     * Cambia el estado de activación.
-     */
-    public function toggleStatus(DocumentType $type): bool
-    {
-        return $type->update(['is_active' => ! $type->is_active]);
     }
 }

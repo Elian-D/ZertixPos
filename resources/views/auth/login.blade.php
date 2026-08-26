@@ -1,58 +1,55 @@
 <x-guest-layout>
     <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <x-auth-session-status class="text-center" :status="session('status')" />
 
-    <div class="text-center">
-        <h2 class="font-black text-lg lg:text-2xl">Iniciar sesión</h2>
-        <h3 class="text-gray-400 text-xs lg:text-lg">Ingresa tus credenciales para continuar</h3>
+    <div>
+        <h3 class="font-bold text-2xl text-slate-800 mb-2">Iniciar sesión</h3>
+        <p class="text-sm text-slate-500">Ingresa tus credenciales para continuar al panel de control.</p>
     </div>
-    <form method="POST" action="{{ route('login') }}">
+
+    <form method="POST" action="{{ route('login') }}" class="flex flex-col gap-5">
         @csrf
 
         <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Correo')"  />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" placeholder="ejemplo@gmail.com" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+        <x-ui.forms.input
+            type="email"
+            name="email"
+            label="Correo electrónico"
+            icon-left="heroicon-s-envelope"
+            placeholder="operador@tienda.com"
+            value="{{ old('email') }}"
+            :error="$errors->first('email')"
+            required
+            autofocus
+            autocomplete="username"
+        />
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Contraseña')" />
+        <!-- Password (toggle mostrar/ocultar de fábrica en x-ui.forms.input
+             cuando type="password", ver REQ-7.11 en docs/ui/forms.md) -->
+        <x-ui.forms.input
+            type="password"
+            name="password"
+            label="Contraseña"
+            icon-left="heroicon-s-lock-closed"
+            placeholder="••••••••"
+            :error="$errors->first('password')"
+            required
+            autocomplete="current-password"
+        />
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" 
-                            placeholder="•••••••••"/>
+        <!-- Remember Me and forgot password -->
+        <div class="flex items-center justify-between -mt-1">
+            <x-ui.forms.checkbox id="remember_me" name="remember" label="Recordarme" />
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
-
-        <!-- Remember Me and change password  -->
-        <div class="flex justify-between mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
-
-            </label>
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
+                <a class="text-sm font-medium text-zertix-secondary hover:text-zertix-primary transition-colors" href="{{ route('password.request') }}">
                     {{ __('¿Olvidaste tu contraseña?') }}
                 </a>
             @endif
         </div>
 
-        <div class="flex mt-4">
-            <x-primary-button class=" justify-center bg-custom-gradient-2 ms-3 w-full text-center ms-0 hover:text-blue-200">
-                {{ __('Entrar') }}
-            </x-primary-button>
-        </div>
-
-        <div>
-            <p class="mt-6 text-center text-sm text-gray-400">
-                © 2025 Suportec Network SRL · Todos los derechos reservados
-            </p>
-        </div>
+        <x-ui.button type="submit" variant="primary" :fullWidth="true" icon-right="heroicon-s-arrow-right" size="lg">
+            Entrar
+        </x-ui.button>
     </form>
 </x-guest-layout>

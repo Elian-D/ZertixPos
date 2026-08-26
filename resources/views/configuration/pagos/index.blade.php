@@ -21,192 +21,99 @@
                 </div>
             @endif
 
-            {{-- TÍTULO --}}
-            <h2 class="text-xl font-semibold text-gray-800 mb-6 border-b pb-3">
-                Tipos de pagos
-            </h2>
+            {{-- TÍTULO + ACCIONES --}}
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 border-b pb-3">
+                <h2 class="text-xl font-semibold text-gray-800">
+                    Métodos de Pago
+                </h2>
 
-            {{-- Toolbar --}}
-            <div class="flex flex-col md:flex-row justify-between gap-4 mb-6">
-
-                <form method="GET" class="w-full md:w-2/3 space-y-3">
-                    <div class="flex gap-2 items-center">
-
-                        {{-- Buscador --}}
-                        <input type="text" name="search" value="{{ $search }}" placeholder="Buscar tipo de pago..."
-                               class="w-full rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
-
-                        <button class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                            <x-heroicon-s-magnifying-glass class="w-5 h-5" />
-                        </button>
-
-                        {{-- Dropdown filtros (Se mantiene la misma lógica) --}}
-                        <div x-data="{ open: false }" class="relative">
-                            <button type="button" @click="open = !open"
-                                     class="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-md text-sm text-gray-700 bg-white hover:bg-gray-100">
-                                <x-heroicon-s-funnel class="w-4 h-4" />
-                                Filtros
-                                <x-heroicon-s-chevron-down class="w-4 h-4" />
-                            </button>
-
-                            <div x-show="open" @click.outside="open = false" x-transition
-                                 class="absolute right-0 z-20 mt-2 w-72 bg-white border border-gray-200 rounded-lg shadow-lg p-4 space-y-4">
-
-                                {{-- Estado --}}
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
-                                    <select name="estado" class="w-full rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
-                                        <option value="">Todos</option>
-                                        <option value="activo" {{ $estado === 'activo' ? 'selected' : '' }}>Activos</option>
-                                        <option value="inactivo" {{ $estado === 'inactivo' ? 'selected' : '' }}>Inactivos</option>
-                                    </select>
-                                </div>
-
-                                {{-- Acciones --}}
-                                <div class="flex justify-end gap-2 pt-2 border-t">
-                                    <a href="{{ route('configuration.pagos.index') }}"
-                                       class="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-100">
-                                        Limpiar
-                                    </a>
-                                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
-                                        Aplicar filtros
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </form>
-
-                {{-- Acciones --}}
                 <div class="flex gap-2 self-start md:self-center">
-                    
                     {{-- PAPELERA --}}
-                    <a href="{{ route('configuration.pagos.eliminados') }}"
-                    class="inline-flex items-center px-4 py-2
-                            border border-gray-300 rounded-md
-                            text-sm font-medium text-gray-700
-                            bg-white hover:bg-gray-100
-                            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
-                        <x-heroicon-s-trash class="w-5 h-5 mr-2" />
+                    <x-ui.button href="{{ route('configuration.pagos.eliminados') }}" appearance="ghost" variant="secondary" iconLeft="heroicon-s-trash">
                         Papelera
-                    </a>
+                    </x-ui.button>
 
                     {{-- BOTÓN NUEVO --}}
-                    <x-primary-button
-                        class="bg-green-600 hover:bg-green-700 self-start md:self-center"
+                    <x-ui.button
+                        variant="primary"
+                        iconLeft="heroicon-s-plus"
+                        class="self-start md:self-center"
                         x-data
                         x-on:click="$dispatch('open-modal', 'crear-pago')">
-                        <x-heroicon-s-plus class="w-5 h-5 mr-2" />
                         Nuevo Tipo Pago
-                    </x-primary-button>
+                    </x-ui.button>
                 </div>
             </div>
 
-            {{-- TABLA RESPONSIVA --}}
-            <x-data-table
-                :items="$tipoPago"
-                :headers="$showAccountingColumn ? ['Nombre', 'Cuenta Contable', 'Estado', 'Creado', 'Actualizado'] : ['Nombre', 'Estado', 'Creado', 'Actualizado']">
-
+            {{-- GRID DE CARDS --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 @forelse($tipoPago as $pago)
-                    {{-- Fila responsiva: Card en móvil, Fila de tabla en md+ --}}
-                    <tr class="block md:table-row hover:bg-gray-50 transition duration-150 p-4 border-b border-gray-200 md:border-b-0">
-
-                        {{-- COLUMNA 1: NOMBRE + ESTADO EN MÓVIL --}}
-                        <td class="block md:table-cell px-6 py-4 text-sm text-gray-600 w-full md:w-4/12">
-                            <div class="font-bold text-gray-900 text-base mb-1 md:font-normal md:text-sm flex items-center gap-2">
-                                {{ $pago->nombre }}
-                                {{-- Estado visible en móvil, oculto en desktop (Se muestra en su columna dedicada) --}}
-                                <span class="md:hidden">
-                                    @if($pago->estado)
-                                        <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">Activo</span>
-                                    @else
-                                        <span class="px-2 py-1 text-xs bg-gray-200 text-gray-600 rounded">Inactivo</span>
-                                    @endif
-                                </span>
-                            </div>
-                        </td>
-                        
-                        {{-- COLUMNA 2: CUENTA CONTABLE (Oculto en móvil, visible en md+) --}}
-                        @if ($showAccountingColumn)
-                            <td class="hidden md:table-cell px-6 py-4 text-sm text-gray-600">
-                                <span class="whitespace-nowrap font-mono text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
-                                    {{ $pago->account->code ?? 'S/N' }} - {{ $pago->account->name ?? 'Sin cuenta' }}
-                                </span>
-                            </td>
-                        @endif
-
-                        {{-- COLUMNA 2: ESTADO (Oculto en móvil, visible en md+) --}}
-                        <td class="hidden md:table-cell px-6 py-4 text-sm text-gray-600 w-2/12">
-                            @if($pago->estado)
-                                <span class="px-2 py-1 text-xs bg-green-100 text-green-700 rounded">Activo</span>
-                            @else
-                                <span class="px-2 py-1 text-xs bg-gray-200 text-gray-600 rounded">Inactivo</span>
-                            @endif
-                        </td>
-                        
-                        {{-- COLUMNA 3: CREADO (Oculto en móvil, visible en md+) --}}
-                        <td class="hidden md:table-cell px-6 py-4 whitespace-nowrap text-gray-600 w-2/12">
-                            {{ $pago->created_at->format('d/m/Y') }}
-                        </td>
-
-                        {{-- COLUMNA 4: ACTUALIZADO (Oculto en móvil, visible en md+) --}}
-                        <td class="hidden md:table-cell px-6 py-4 whitespace-nowrap text-gray-600 w-2/12">
-                            {{ $pago->updated_at->format('d/m/Y') }}
-                        </td>
-
-                        {{-- COLUMNA 5: ACCIONES (Visible en móvil y desktop) --}}
-                        <td class="block md:table-cell px-6 py-4 whitespace-nowrap text-sm font-medium w-full md:w-2/12">
-                            <div class="flex gap-2 mt-2 md:mt-0">
-                                {{-- TOGGLE ESTADO: Siempre permitido si quieres pausar un método --}}
-                                <form action="{{ route('configuration.pagos.toggle', $pago) }}" method="POST">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button class="text-sm px-3 py-1 rounded {{ $pago->estado ? 'bg-yellow-100 text-yellow-800' : 'bg-green-100 text-green-800' }}">
-                                        {{ $pago->estado ? 'Desactivar' : 'Activar' }}
-                                    </button>
-                                </form>
-
-                                {{-- BOTÓN EDITAR --}}
-                                @if($pago->estado)
-                                    @if($pago->isSystemProtected())
-                                        <button type="button" 
-                                            class="text-gray-400 p-1 cursor-not-allowed" 
-                                            title="Este método es requerido por el sistema y no puede ser editado">
-                                            <x-heroicon-s-pencil class="w-5 h-5" />
-                                        </button>
-                                    @else
-                                        <button type="button" @click="$dispatch('open-modal', 'edit-tipo-pago-{{ $pago->id }}')"
-                                            class="text-indigo-600 hover:text-indigo-900 p-1 rounded hover:bg-indigo-100">
-                                            <x-heroicon-s-pencil class="w-5 h-5" />
-                                        </button>
-                                    @endif
+                    <div class="bg-white border border-gray-200 rounded-2xl p-4 flex flex-col gap-3">
+                        <div class="flex items-start justify-between gap-2">
+                            <div>
+                                <h3 class="font-bold text-gray-900">{{ $pago->nombre }}</h3>
+                                @if($showAccountingColumn)
+                                    <span class="inline-block mt-1 whitespace-nowrap font-mono text-xs bg-blue-50 text-blue-700 px-2 py-1 rounded">
+                                        {{ $pago->account->code ?? 'S/N' }} - {{ $pago->account->name ?? 'Sin cuenta' }}
+                                    </span>
                                 @endif
+                            </div>
 
-                                {{-- ELIMINAR --}}
+                            <x-ui.badge :variant="$pago->estado ? 'success' : 'error'" size="sm" class="whitespace-nowrap">
+                                {{ $pago->estado ? 'Activo' : 'Inactivo' }}
+                            </x-ui.badge>
+                        </div>
+
+                        <div class="flex items-center gap-2 pt-2 border-t border-gray-100">
+                            {{-- TOGGLE ESTADO --}}
+                            <form action="{{ route('configuration.pagos.toggle', $pago) }}" method="POST">
+                                @csrf
+                                @method('PATCH')
+                                <button class="text-xs px-3 py-1 rounded border
+                                    {{ $pago->estado ? 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100' : 'bg-green-50 text-green-700 border-green-200 hover:bg-green-100' }}">
+                                    {{ $pago->estado ? 'Desactivar' : 'Activar' }}
+                                </button>
+                            </form>
+
+                            <div class="flex-1"></div>
+
+                            {{-- EDITAR --}}
+                            @if($pago->estado)
                                 @if($pago->isSystemProtected())
-                                    <button type="button" 
-                                        class="text-gray-400 p-1 cursor-not-allowed" 
-                                        title="Protegido por el sistema">
-                                        <x-heroicon-s-trash class="w-5 h-5" />
+                                    <button type="button"
+                                        class="text-gray-300 p-1 cursor-not-allowed"
+                                        title="Este método es requerido por el sistema y no puede ser editado">
+                                        <x-heroicon-s-pencil class="w-5 h-5" />
                                     </button>
                                 @else
-                                    <button type="button" @click="$dispatch('open-modal', 'confirm-payment-deletion-{{ $pago->id }}')" 
-                                        class="text-red-600 hover:text-red-900 p-1 rounded-md hover:bg-red-100">
-                                        <x-heroicon-s-trash class="w-5 h-5" />
+                                    <button type="button" @click="$dispatch('open-modal', 'edit-tipo-pago-{{ $pago->id }}')"
+                                        class="text-zertix-secondary p-1 rounded hover:bg-zertix-secondary/10">
+                                        <x-heroicon-s-pencil class="w-5 h-5" />
                                     </button>
                                 @endif
-                            </div>
-                        </td>
-                    </tr>
-                @empty
-                    <tr>
-                        <td colspan="{{ $showAccountingColumn ? 5 : 4 }}" class="text-center py-6 text-gray-500">
-                            No hay tipos de pago registrados.
-                        </td>
-                    </tr>
-                @endforelse
+                            @endif
 
-            </x-data-table>
+                            {{-- ELIMINAR --}}
+                            @if($pago->isSystemProtected())
+                                <button type="button"
+                                    class="text-gray-300 p-1 cursor-not-allowed"
+                                    title="Protegido por el sistema">
+                                    <x-heroicon-s-trash class="w-5 h-5" />
+                                </button>
+                            @else
+                                <button type="button" @click="$dispatch('open-modal', 'confirm-payment-deletion-{{ $pago->id }}')"
+                                    class="text-red-600 hover:text-red-900 p-1 rounded hover:bg-red-50">
+                                    <x-heroicon-s-trash class="w-5 h-5" />
+                                </button>
+                            @endif
+                        </div>
+                    </div>
+                @empty
+                    <div class="col-span-full text-center py-10 text-gray-500 italic">
+                        No hay tipos de pago registrados.
+                    </div>
+                @endforelse
+            </div>
         </div>
     </div>
 
@@ -221,43 +128,44 @@
 
             {{-- Input --}}
             <div class="mt-4">
-                <x-input-label for="nombre" value="Nombre del tipo de pago" />
-                <x-text-input
+                <x-ui.forms.input
+                    label="Nombre del tipo de pago"
                     id="nombre"
                     name="nombre"
                     type="text"
-                    class="mt-1 block w-full"
                     placeholder="Nuevo tipo de pago"
                     required
+                    :error="$errors->first('nombre')"
                 />
-                <x-input-error :messages="$errors->get('nombre')" class="mt-2" />
             </div>
 
             @if ($showAccountingColumn)
                 <div class="mt-4">
-                    <x-input-label for="accounting_account_id" value="Cuenta Contable Asociada" />
-                    <select name="accounting_account_id" id="accounting_account_id"
-                            class="mt-1 block w-full rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">-- Seleccione una cuenta --</option>
+                    <x-ui.forms.select
+                        label="Cuenta Contable Asociada"
+                        name="accounting_account_id"
+                        id="accounting_account_id"
+                        placeholder="-- Seleccione una cuenta --"
+                        :error="$errors->first('accounting_account_id')"
+                    >
                         @foreach($cuentasContables as $cuenta)
                             <option value="{{ $cuenta->id }}">{{ $cuenta->code }} - {{ $cuenta->name }}</option>
                         @endforeach
-                    </select>
-                    <x-input-error :messages="$errors->get('accounting_account_id')" class="mt-2" />
+                    </x-ui.forms.select>
                 </div>
             @endif
 
             {{-- Botones --}}
             <div class="mt-6 flex justify-end">
                 {{-- Cancelar --}}
-                <x-secondary-button x-on:click="$dispatch('close')">
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">
                     {{ __('Cancelar') }}
-                </x-secondary-button>
+                </x-ui.button>
 
                 {{-- Guardar --}}
-                <x-primary-button class="ms-3 bg-green-600 hover:bg-green-700">
+                <x-ui.button type="submit" variant="primary" class="ms-3">
                     {{ __('Agregar') }}
-                </x-primary-button>
+                </x-ui.button>
             </div>
         </form>
     </x-modal>
@@ -292,45 +200,44 @@
 
             {{-- INPUT --}}
             <div class="mt-4">
-                <x-input-label for="nombre-{{ $pago->id }}" value="Nombre" />
-                
-                <x-text-input
+                <x-ui.forms.input
+                    label="Nombre"
                     id="nombre-{{ $pago->id }}"
                     name="nombre"
                     type="text"
-                    class="mt-1 block w-full"
                     value="{{ old('nombre', $pago->nombre) }}"
                     required
                     autofocus
+                    :error="$errors->first('nombre')"
                 />
-
-                <x-input-error :messages="$errors->get('nombre')" class="mt-2" />
             </div>
 
             @if ($showAccountingColumn)
                 <div class="mt-4">
-                    <x-input-label for="edit_account_{{ $pago->id }}" value="Cuenta Contable Asociada" />
-                    <select name="accounting_account_id" id="edit_account_{{ $pago->id }}"
-                            class="mt-1 block w-full rounded-md border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
-                        <option value="">-- Seleccione una cuenta --</option>
+                    <x-ui.forms.select
+                        label="Cuenta Contable Asociada"
+                        name="accounting_account_id"
+                        id="edit_account_{{ $pago->id }}"
+                        placeholder="-- Seleccione una cuenta --"
+                    >
                         @foreach($cuentasContables as $cuenta)
                             <option value="{{ $cuenta->id }}" {{ $pago->accounting_account_id == $cuenta->id ? 'selected' : '' }}>
                                 {{ $cuenta->code }} - {{ $cuenta->name }}
                             </option>
                         @endforeach
-                    </select>
+                    </x-ui.forms.select>
                 </div>
             @endif
 
             {{-- BOTONES --}}
             <div class="mt-6 flex justify-end gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">
                     Cancelar
-                </x-secondary-button>
+                </x-ui.button>
 
-                <x-primary-button class="bg-green-600 hover:bg-green-700 self-start md:self-center">
+                <x-ui.button type="submit" variant="primary" class="self-start md:self-center">
                     Guardar cambios
-                </x-primary-button>
+                </x-ui.button>
             </div>
         </form>
     </x-modal>
@@ -361,17 +268,16 @@
 
                 {{-- Área de Botones del Modal --}}
                 <div class="mt-6 flex justify-end">
-                    
+
                     {{-- Botón Cancelar --}}
-                    <x-secondary-button x-on:click="$dispatch('close')">
+                    <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">
                         {{ __('Cancelar') }}
-                    </x-secondary-button>
+                    </x-ui.button>
 
                     {{-- Botón Eliminar (Rojo) --}}
-                    <x-danger-button class="ms-3">
-                        <x-heroicon-s-trash class="w-4 h-4 mr-2" />
+                    <x-ui.button type="submit" variant="error" iconLeft="heroicon-s-trash" class="ms-3">
                         {{ __('Eliminar Tipo de pago') }}
-                    </x-danger-button>
+                    </x-ui.button>
                 </div>
             </form>
         </x-modal>

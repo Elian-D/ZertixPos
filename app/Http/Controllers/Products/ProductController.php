@@ -2,16 +2,16 @@
 
 namespace App\Http\Controllers\Products;
 
-use App\Http\Controllers\Controller;
-use App\Models\Products\Product;
-use App\Traits\SoftDeletesTrait; // Para la papelera
 use App\Filters\Products\ProductsFilters;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Products\BulkProductRequest; // Para la papelera
+use App\Http\Requests\Products\StoreProductRequest;
+use App\Http\Requests\Products\UpdateProductRequest;
+use App\Models\Products\Product;
 use App\Services\Products\ProductCatalogService;
 use App\Services\Products\ProductService;
 use App\Tables\ProductTable;
-use App\Http\Requests\Products\BulkProductRequest;
-use App\Http\Requests\Products\StoreProductRequest;
-use App\Http\Requests\Products\UpdateProductRequest;
+use App\Traits\SoftDeletesTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -37,24 +37,24 @@ class ProductController extends Controller
         // 3. Respuesta para peticiones AJAX (DataTable)
         if ($request->ajax()) {
             return view('products.partials.table', [
-                'products'       => $products,
+                'products' => $products,
                 'visibleColumns' => $visibleColumns,
-                'allColumns'     => ProductTable::allColumns(),
+                'allColumns' => ProductTable::allColumns(),
                 'defaultDesktop' => ProductTable::defaultDesktop(),
-                'defaultMobile'  => ProductTable::defaultMobile(),
-                'bulkActions'    => true,
+                'defaultMobile' => ProductTable::defaultMobile(),
+                'bulkActions' => true,
             ])->render();
         }
 
         // 4. Carga de la vista completa
         return view('products.index', array_merge(
             [
-                'products'       => $products,
+                'products' => $products,
                 'visibleColumns' => $visibleColumns,
-                'allColumns'     => ProductTable::allColumns(),
+                'allColumns' => ProductTable::allColumns(),
                 'defaultDesktop' => ProductTable::defaultDesktop(),
-                'defaultMobile'  => ProductTable::defaultMobile(),
-                'bulkActions'    => true,
+                'defaultMobile' => ProductTable::defaultMobile(),
+                'bulkActions' => true,
             ],
             $catalogService->getForFilters() // Trae categories y units activos
         ));
@@ -67,8 +67,8 @@ class ProductController extends Controller
     {
         try {
             $count = $productService->performBulkAction(
-                $request->ids, 
-                $request->action, 
+                $request->ids,
+                $request->action,
                 $request->value
             );
 
@@ -79,15 +79,15 @@ class ProductController extends Controller
 
             return response()->json([
                 'success' => true,
-                'message' => $message
+                'message' => $message,
             ]);
 
         } catch (\Exception $e) {
-            Log::error("Error en acción masiva de productos: " . $e->getMessage());
+            Log::error('Error en acción masiva de productos: '.$e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'message' => 'No se pudo completar la operación masiva.'
+                'message' => 'No se pudo completar la operación masiva.',
             ], 422);
         }
     }
@@ -101,11 +101,11 @@ class ProductController extends Controller
     {
         // Enviamos los datos validados y el archivo de imagen por separado
         $product = $productService->createProduct(
-            $request->validated(), 
+            $request->validated(),
             $request->file('image')
         );
 
-        return redirect()->route('products.index')
+        return redirect()->route('inventory.products.index')
             ->with('success', "Producto {$product->name} ({$product->sku}) creado correctamente.");
     }
 
@@ -120,12 +120,12 @@ class ProductController extends Controller
     public function update(UpdateProductRequest $request, Product $product, ProductService $productService)
     {
         $productService->updateProduct(
-            $product, 
-            $request->validated(), 
+            $product,
+            $request->validated(),
             $request->file('image')
         );
 
-        return redirect()->route('products.index')
+        return redirect()->route('inventory.products.index')
             ->with('success', "Producto {$product->name} actualizado correctamente.");
     }
 
@@ -135,9 +135,28 @@ class ProductController extends Controller
     }
 
     /* Configuración del Trait para la papelera */
-    protected function getModelClass(): string { return Product::class; }
-    protected function getViewFolder(): string { return 'products'; }
-    protected function getRouteIndex(): string { return 'products.index'; }
-    protected function getRouteEliminadas(): string { return 'products.eliminados'; }
-    protected function getEntityName(): string { return 'Producto'; }
+    protected function getModelClass(): string
+    {
+        return Product::class;
+    }
+
+    protected function getViewFolder(): string
+    {
+        return 'products';
+    }
+
+    protected function getRouteIndex(): string
+    {
+        return 'inventory.products.index';
+    }
+
+    protected function getRouteEliminadas(): string
+    {
+        return 'inventory.products.eliminados';
+    }
+
+    protected function getEntityName(): string
+    {
+        return 'Producto';
+    }
 }

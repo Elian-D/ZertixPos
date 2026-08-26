@@ -12,33 +12,32 @@
 </script>
 
 <x-app-layout>
-    <div class="w-full max-w-7xl mx-auto py-4 px-2 sm:px-3 lg:px-4">
-        <div class="bg-white shadow-xl rounded-xl">
-            <x-ui.toasts />
+    <div class="p-4 md:p-6 flex flex-col gap-6">
+        <x-ui.page-header title="Gestión de Ventas" description="Consulta y administra el pipeline de ventas, desde la creación hasta el cobro." :count="$items->total()" countLabel="ventas">
+            <x-slot name="actions">
+                @can('create sales')
+                    <x-ui.button href="{{ route('sales.create') }}" variant="primary" iconLeft="heroicon-s-plus-circle">
+                        Nueva Venta
+                    </x-ui.button>
+                @endcan
+            </x-slot>
 
-            <div class="p-6">
-                <x-page-toolbar title="Gestión de Ventas">
-                    <x-slot name="actions">
-                        @can('create sales')
-                            <a href="{{ route('sales.create') }}"
-                               class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition ease-in-out duration-150">
-                                <x-heroicon-s-plus-circle class="w-4 h-4 mr-2" />
-                                Nueva Venta
-                            </a>
-                        @endcan
+            <x-slot:secondary>
+                <x-ui.button
+                    variant="secondary" appearance="ghost" class="w-full justify-start" iconLeft="heroicon-s-arrow-down-tray"
+                    x-on:click="const form = document.getElementById('sales-filters'); const params = form ? new URLSearchParams(new FormData(form)).toString() : ''; window.location.href = '{{ route('sales.export') }}' + (params ? '?' + params : '');"
+                >
+                    Exportar (Excel)
+                </x-ui.button>
+            </x-slot:secondary>
+        </x-ui.page-header>
 
-                        <x-data-table.export-button :route="route('sales.export')" formId="sales-filters" />
-                    </x-slot>
-                </x-page-toolbar>
+        {{-- Filtros del Pipeline --}}
+        @include('sales.partials.filters')
 
-                {{-- Filtros del Pipeline --}}
-                @include('sales.partials.filters')
-
-                {{-- Contenedor de Tabla AJAX --}}
-                <div id="sales-table" class="w-full overflow-hidden">
-                    @include('sales.partials.table')
-                </div>
-            </div>
+        {{-- Contenedor de Tabla AJAX --}}
+        <div id="sales-table" class="w-full overflow-hidden">
+            @include('sales.partials.table')
         </div>
     </div>
 </x-app-layout>

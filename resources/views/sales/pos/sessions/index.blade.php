@@ -28,34 +28,25 @@
 @endif
 
 <x-app-layout>
-    <div class="w-full max-w-7xl mx-auto py-4 px-2 sm:px-3 lg:px-4">
-        <div class="bg-white shadow-xl rounded-xl">
-            <x-ui.toasts />
+    <div class="p-4 md:p-6 flex flex-col gap-6">
+        <x-ui.page-header title="Historial de Turnos POS" description="Consulta los turnos de caja abiertos y cerrados en las terminales POS." :count="$sessions->total()" countLabel="turnos">
+            <x-slot name="actions">
+                {{-- Botón para abrir modal de apertura de caja --}}
+                @can('pos sessions manage')
+                    <x-ui.button x-data="" x-on:click="$dispatch('open-modal', 'open-session-modal')"
+                        variant="primary" iconLeft="heroicon-s-lock-open">
+                        Nuevo Turno (Apertura)
+                    </x-ui.button>
+                @endcan
+            </x-slot>
+        </x-ui.page-header>
 
-            <div class="p-6">
-                <x-page-toolbar title="Historial de Turnos POS">
-                    <x-slot name="actions">
-                        <div class="flex flex-wrap gap-2">
-                            {{-- Botón para abrir modal de apertura de caja --}}
-                            @can('pos sessions manage')
-                                <button x-data="" x-on:click="$dispatch('open-modal', 'open-session-modal')"
-                                    class="inline-flex items-center px-4 py-2 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 transition">
-                                    <x-heroicon-s-lock-open class="w-4 h-4 mr-2" />
-                                    Nuevo Turno (Apertura)
-                                </button>
-                            @endcan
-                        </div>
-                    </x-slot>
-                </x-page-toolbar>
+        {{-- Filtros (Pipeline) --}}
+        @include('sales.pos.sessions.partials.filters')
 
-                {{-- Filtros (Pipeline) --}}
-                @include('sales.pos.sessions.partials.filters')
-
-                {{-- Contenedor de Tabla AJAX --}}
-                <div id="pos-sessions-table" class="w-full overflow-hidden mt-4">
-                    @include('sales.pos.sessions.partials.table')
-                </div>
-            </div>
+        {{-- Contenedor de Tabla AJAX --}}
+        <div id="pos-sessions-table" class="w-full overflow-hidden">
+            @include('sales.pos.sessions.partials.table')
         </div>
     </div>
 

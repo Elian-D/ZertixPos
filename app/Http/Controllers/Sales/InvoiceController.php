@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers\Sales;
 
+use App\Exports\Sales\InvoicesExport;
+use App\Filters\Sales\InvoiceFilters\InvoiceFilters;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Sales\Invoices\ExportInvoiceRequest;
 use App\Models\Sales\Invoice;
 use App\Services\Sales\InvoicesServices\InvoiceCatalogService;
 use App\Services\Sales\InvoicesServices\InvoicePrintService;
 use App\Services\Sales\Pos\PosPrintService;
-use App\Filters\Sales\InvoiceFilters\InvoiceFilters;
 use App\Tables\SalesTables\InvoiceTable;
 use App\Traits\SoftDeletesTrait;
-use Illuminate\Http\Request;
 use Exception;
-use App\Http\Requests\Sales\Invoices\ExportInvoiceRequest;
-use App\Exports\Sales\InvoicesExport;
+use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
 
 class InvoiceController extends Controller
@@ -45,21 +45,21 @@ class InvoiceController extends Controller
 
         if ($request->ajax()) {
             return view('sales.invoices.partials.table', [
-                'items'          => $invoices,
+                'items' => $invoices,
                 'visibleColumns' => $visibleColumns,
-                'allColumns'     => InvoiceTable::allColumns(),
+                'allColumns' => InvoiceTable::allColumns(),
                 'defaultDesktop' => InvoiceTable::defaultDesktop(),
-                'defaultMobile'  => InvoiceTable::defaultMobile(),
+                'defaultMobile' => InvoiceTable::defaultMobile(),
             ])->render();
         }
 
         return view('sales.invoices.index', array_merge(
             [
-                'items'          => $invoices,
+                'items' => $invoices,
                 'visibleColumns' => $visibleColumns,
-                'allColumns'     => InvoiceTable::allColumns(),
+                'allColumns' => InvoiceTable::allColumns(),
                 'defaultDesktop' => InvoiceTable::defaultDesktop(),
-                'defaultMobile'  => InvoiceTable::defaultMobile(),
+                'defaultMobile' => InvoiceTable::defaultMobile(),
             ],
             $catalogs
         ));
@@ -69,14 +69,15 @@ class InvoiceController extends Controller
     {
         // CARGA PROFUNDA: Entramos hasta la secuencia para obtener la fecha de vencimiento
         $invoice->load([
-            'sale.items.product', 
-            'sale.client', 
+            'sale.items.product',
+            'sale.client',
             'sale.quote', // <--- Para mostrar descuentos de cotización
-            'sale.ncfLog.type', 
+            'sale.ncfLog.type',
             'sale.ncfLog.sequence', // <--- FUNDAMENTAL
         ]);
-        
+
         $formats = Invoice::getFormats();
+
         return view('sales.invoices.show', compact('invoice', 'formats'));
     }
 
@@ -98,7 +99,7 @@ class InvoiceController extends Controller
 
         $viewMap = [
             Invoice::FORMAT_TICKET => 'ticket',
-            Invoice::FORMAT_ROUTE  => 'ticket',
+            Invoice::FORMAT_ROUTE => 'ticket',
             Invoice::FORMAT_LETTER => 'full',
             'ticket' => 'ticket',
             'letter' => 'full',
@@ -111,8 +112,6 @@ class InvoiceController extends Controller
             'paperWidth' => $this->posPrintService->resolvePaperWidth($invoice->sale->posTerminal),
         ]);
     }
-
-
 
     public function print(Invoice $invoice, Request $request)
     {
@@ -138,6 +137,7 @@ class InvoiceController extends Controller
             // Renderizar la vista de ticket
             $paperWidth = $this->posPrintService->resolvePaperWidth($invoice->sale->posTerminal);
             $view = view('sales.invoices.formats.ticket', ['invoice' => $invoice, 'paperWidth' => $paperWidth])->render();
+
             return view('sales.invoices.print', compact('invoice', 'view'));
         }
 
@@ -145,14 +145,15 @@ class InvoiceController extends Controller
         // Si se solicita descarga, retornar PDF para descargar
         if ($download) {
             $pdf = $this->printService->generateLetterPDF($invoice);
+
             return $pdf->download($this->printService->getFileName($invoice));
         }
 
         // Si es visualización (no descarga), renderizar la vista de formato
         $view = view('sales.invoices.formats.full', ['invoice' => $invoice])->render();
+
         return view('sales.invoices.print', compact('invoice', 'view'));
     }
-
 
     /**
      * Exportación filtrada de facturas a Excel.
@@ -164,19 +165,38 @@ class InvoiceController extends Controller
             $query = (new InvoiceFilters($request))
                 ->apply(Invoice::query());
 
-            $fileName = 'historial-facturacion-' . now()->format('d-m-Y-H-i') . '.xlsx';
+            $fileName = 'historial-facturacion-'.now()->format('d-m-Y-H-i').'.xlsx';
 
             return Excel::download(new InvoicesExport($query), $fileName);
-            
+
         } catch (Exception $e) {
-            return back()->with('error', "No se pudo generar el reporte: " . $e->getMessage());
+            return back()->with('error', 'No se pudo generar el reporte: '.$e->getMessage());
         }
     }
 
     // Requerimientos para SoftDeletesTrait (Auditoría técnica)
-    protected function getModelClass(): string { return Invoice::class; }
-    protected function getViewFolder(): string { return 'sales.invoices'; }
-    protected function getRouteIndex(): string { return 'sales.invoices.index'; }
-    protected function getRouteEliminadas(): string { return 'sales.invoices.eliminadas'; }
-    protected function getEntityName(): string { return 'Factura'; }
+    protected function getModelClass(): string
+    {
+        return Invoice::class;
+    }
+
+    protected function getViewFolder(): string
+    {
+        return 'sales.invoices';
+    }
+
+    protected function getRouteIndex(): string
+    {
+        return 'finance.invoices.index';
+    }
+
+    protected function getRouteEliminadas(): string
+    {
+        return 'finance.invoices.eliminadas';
+    }
+
+    protected function getEntityName(): string
+    {
+        return 'Factura';
+    }
 }

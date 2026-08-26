@@ -5,29 +5,28 @@
             {{-- Header Principal --}}
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div class="flex-1">
-                    <a href="{{ route('sales.invoices.index') }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 text-sm font-semibold transition mb-3">
+                    <a href="{{ route('finance.invoices.index') }}" class="inline-flex items-center text-zertix-primary-600 hover:text-zertix-primary-800 text-sm font-semibold transition mb-3">
                         <x-heroicon-s-arrow-left class="w-4 h-4 mr-1.5" />
                         Regresar al Historial
                     </a>
                     <div class="flex items-center gap-3">
                         <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">
-                            Factura <span class="text-indigo-600">{{ $invoice->invoice_number }}</span>
+                            Factura <span class="text-zertix-primary-600">{{ $invoice->invoice_number }}</span>
                         </h2>
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider {{ $invoice->status === 'active' ? 'bg-emerald-100 text-emerald-700 ring-1 ring-emerald-600/20' : 'bg-red-100 text-red-700 ring-1 ring-red-600/20' }}">
+                        <x-ui.badge :variant="$invoice->status === 'active' ? 'success' : 'error'" :dot="false">
                             {{ $invoice->status === 'active' ? 'Vigente' : 'Anulada' }}
-                        </span>
+                        </x-ui.badge>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-3">
-                    <select id="formatSelector" 
-                            class="block px-4 py-2.5 bg-white border border-gray-300 rounded-lg font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-indigo-500">
-                            <option value="ticket">Ticket (Térmica)</option>
-                            <option value="letter">Carta (PDF)</option>
-                    </select>
+                    <x-ui.forms.select id="formatSelector" placeholder="">
+                        <option value="ticket">Ticket (Térmica)</option>
+                        <option value="letter">Carta (PDF)</option>
+                    </x-ui.forms.select>
 
                     <a id="printBtn" 
-                       href="{{ route('sales.invoices.print', $invoice) }}?format=ticket" 
+                       href="{{ route('finance.invoices.print', $invoice) }}?format=ticket" 
                        target="_blank" 
                        class="inline-flex items-center px-5 py-2.5 bg-gray-900 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-gray-800 shadow-lg active:scale-95 transition-all">
                         <x-heroicon-s-printer class="w-4 h-4 mr-2" />
@@ -35,7 +34,7 @@
                     </a>
                     
                     <a id="downloadBtn"
-                       href="{{ route('sales.invoices.print', $invoice) }}?format=letter&download=1" 
+                       href="{{ route('finance.invoices.print', $invoice) }}?format=letter&download=1" 
                        class="inline-flex items-center px-5 py-2.5 bg-white border border-gray-300 rounded-lg font-bold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 active:scale-95 transition-all"
                        target="blank">
                         <x-heroicon-s-arrow-down-tray class="w-4 h-4 mr-2" />
@@ -52,10 +51,10 @@
 
                     {{-- NUEVO: BLOQUE FISCAL RESALTADO --}}
                     @if($invoice->sale->ncf)
-                    <div class="bg-white rounded-2xl shadow-sm border-2 border-indigo-100 overflow-hidden">
-                        <div class="bg-indigo-50 px-5 py-3 border-b border-indigo-100 flex justify-between items-center">
-                            <h3 class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Datos Fiscales (DGII)</h3>
-                            <x-heroicon-s-check-badge class="w-4 h-4 text-indigo-500"/>
+                    <div class="bg-white rounded-2xl shadow-sm border-2 border-zertix-primary-100 overflow-hidden">
+                        <div class="bg-zertix-primary-50 px-5 py-3 border-b border-zertix-primary-100 flex justify-between items-center">
+                            <h3 class="text-[10px] font-black text-zertix-primary-600 uppercase tracking-widest">Datos Fiscales (DGII)</h3>
+                            <x-heroicon-s-check-badge class="w-4 h-4 text-zertix-primary-500"/>
                         </div>
                         <div class="p-5">
                             <div class="mb-4">
@@ -89,7 +88,7 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black text-gray-400 uppercase mb-1">Venta de Origen</label>
-                                <p class="text-sm font-bold text-indigo-600">#{{ $invoice->sale->number }}</p>
+                                <p class="text-sm font-bold text-zertix-primary-600">#{{ $invoice->sale->number }}</p>
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
@@ -104,7 +103,7 @@
                         </div>
                     </div>
 
-                    <div class="bg-indigo-600 rounded-2xl p-5 shadow-md text-white">
+                    <div class="bg-zertix-primary-600 rounded-2xl p-5 shadow-md text-white">
                         <h4 class="text-[10px] font-black uppercase tracking-widest mb-3 opacity-80">Auditoría del Sistema</h4>
                         <div class="space-y-3">
                             <div class="flex justify-between items-center">
@@ -144,7 +143,7 @@
                                 y forzamos un fondo blanco mientras carga 
                                 --}}
                                 <iframe 
-                                    src="{{ route('sales.invoices.preview', $invoice) }}" 
+                                    src="{{ route('finance.invoices.preview', $invoice) }}" 
                                     class="w-full h-full border-0 bg-white"
                                     loading="lazy"
                                     id="invoice-iframe"
@@ -229,8 +228,8 @@
 
     <script>
         const config = {
-            letter: "{{ route('sales.invoices.print', $invoice) }}?format=letter",
-            ticket: "{{ route('sales.invoices.print', $invoice) }}?format=ticket"
+            letter: "{{ route('finance.invoices.print', $invoice) }}?format=letter",
+            ticket: "{{ route('finance.invoices.print', $invoice) }}?format=ticket"
         };
 
         const formatSelector = document.getElementById('formatSelector');
@@ -250,7 +249,7 @@
             previewContainer.classList.remove('is-letter', 'is-ticket');
             previewContainer.classList.add(`is-${format}`);
             
-            invoiceIframe.src = "{{ route('sales.invoices.preview', $invoice) }}?format=" + format;
+            invoiceIframe.src = "{{ route('finance.invoices.preview', $invoice) }}?format=" + format;
         });
     </script>
 </x-app-layout>

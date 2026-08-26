@@ -42,6 +42,11 @@ De estas tres preguntas salen las **4 categorías** siguientes.
 ### Categoría A — Catálogo/maestro con papelera real (SoftDeletes + `SoftDeletesTrait` completo)
 Aplica cuando P1 = catálogo, y no hay estado de ciclo de vida propio que ya lo cubra. El usuario legítimamente puede querer recuperar el registro.
 
+**Aclaración (2026-08-14): papelera y `activo`/`is_active` no son lo mismo, y una entidad de Categoría A puede — y en varios casos ya debe — tener las dos cosas a la vez, sin que se pisen.** Son dos preguntas distintas sobre el mismo registro:
+- **Papelera (`deleted_at`)** responde "¿este registro debería seguir existiendo en el sistema?" — es la operación de *eliminar por error* o *ya no lo necesito*, siempre reversible desde la papelera.
+- **`activo`/`is_active`** responde "¿este registro sigue vigente para uso operativo del día a día?" — es una decisión de negocio (una unidad de medida que ya no se usa, un almacén cerrado temporalmente, un cliente con el que se dejó de trabajar) que **no implica borrarlo**: sigue existiendo, sigue apareciendo en reportes históricos, solo deja de ofrecerse como opción nueva (ej. no aparece en el selector de productos al crear una venta).
+Confirmado en el código real que ya conviven en varios modelos de Categoría A: `Warehouse`, `Category`, `Unit`, `BusinessType`, `EquipmentType` (todas con `toggleEstado()`/`is_active` **y** papelera funcional), y desde la Fase 11 de `v1.1.0.md` también `Client` (`Client::toggleActivo()`, `app/Models/Clients/Client.php:148-154` — aunque a la fecha de esta actualización todavía no tiene una ruta que lo exponga en `routes/admin/clients.php`, el método ya existe en el modelo). Ninguno de los dos mecanismos reemplaza al otro: se puede desactivar un registro sin borrarlo, y se puede tener un registro inactivo en la papelera igual que uno activo.
+
 ### Categoría B — Documento con ciclo de vida propio (estado de cancelación, NO trait genérico)
 Aplica cuando P2 = sí. La operación de "borrar" es `cancel()`/`anular()`, con su propia lógica de reversión (contabilidad, inventario, NCF). El soft-delete, si se mantiene, es solo un archivado posterior — y **debe exigir que el estado ya esté cancelado antes de permitirlo** (ver `ReceivableController::destroy()` más abajo, que sí lo hace bien).
 
@@ -66,10 +71,12 @@ Catálogos de configuración que casi no cambian y no se referencian desde el hi
 | `Warehouse` | `WarehouseController` | ✅ Igual |
 | `PosTerminal` | `PosTerminalController` | ✅ Igual, además con guard propio: no se puede eliminar con sesión de caja abierta ([PosTerminalController.php:126](app/Http/Controllers/Sales/Pos/PosTerminalController.php:126)) — este es el patrón correcto de guard antes de soft-delete, igual que Categoría B |
 | `Equipment`, `EquipmentType`, `PointOfSale`, `BusinessType` | Sus controladores en `Clients/` | ✅ Papelera completa (aunque estos 4 modelos son candidatos a salir del núcleo de Clientes hacia el módulo satélite "Activos en Campo" — ver `modulos-base-satelite.md`, no cambia su categoría de borrado) |
-| `EstadosCliente`, `TipoPago` | `EstadosClienteController`, `TipoPagoController` | ✅ Papelera completa |
-| `AccountingAccount`, `DocumentType` | Sus controladores en `Accounting/` | ✅ Papelera completa — correcto porque son catálogo (plan de cuentas, tipos de documento), no transacciones |
+| `TipoPago` | `TipoPagoController` | ✅ Papelera completa |
+| `AccountingAccount`, `DocumentType` | Sus controladores en `Accounting/` | ✅ Papelera completa — correcto porque son catálogo (plan de cuentas, tipos de documento), no transacciones. `DocumentType` pierde `create`/`destroy` en `v1.2.0.md` REQ-1.7 (el sistema solo sabe usar `FAC`/`PAG`) — sigue siendo Categoría A por la papelera que ya tenía, solo se angosta a "ver + editar correlativo" |
 
-Estos 14 modelos están bien como están — no tocar.
+Estos 13 modelos están bien como están — no tocar.
+
+> **Corrección (2026-08-14) — `EstadosCliente`/`ClientStateCategory` ya no existen.** Este documento (fecha original 2026-07-30) los listaba acá como Categoría A correcta. La Fase 11 de `v1.1.0.md` los eliminó por completo — confirmado en el código real, no queda ningún `EstadosClienteController` ni modelo `ClientStateCategory`/`EstadosCliente` en `app/`. Se reemplazaron por `Client.is_active` (toggle manual, ver la aclaración de arriba en esta misma sección) + `Client::esMoroso()` (calculado, nunca almacenado — ver Fase 11, §11.4 de `v1.1.0.md`). No es una corrección de categoría, es que la entidad dejó de existir — el borrado de "estados de cliente" ya no es una pregunta que este documento tenga que responder.
 
 ### 4.2 Categoría B — documentos con ciclo de vida propio, implementados de forma **inconsistente**
 
@@ -100,7 +107,11 @@ Confirmado con grep en todo `app/Services` y `app/Http/Controllers`: ningún lug
 
 ### 4.4 Categoría D — catálogo simple, correctamente sin `SoftDeletes`
 
-`Country`, `State`, `DiaSemana`, `TaxIdentifierType`, `ClientStateCategory`, `Impuesto`, `NcfType`, `InventoryStock`, `User`, `ConfiguracionGeneral`, `PosSetting` — ninguno tiene `SoftDeletes`, y para todos aplica el razonamiento de la Categoría D (configuración/catálogo de bajo movimiento, o singleton que nunca se borra como `ConfiguracionGeneral`/`PosSetting`).
+`Country`, `State`, `DiaSemana`, `TaxIdentifierType`, `Impuesto`, `NcfType`, `InventoryStock`, `User`, `ConfiguracionGeneral`, `PosSetting` — ninguno tiene `SoftDeletes`, y para todos aplica el razonamiento de la Categoría D (configuración/catálogo de bajo movimiento, o singleton que nunca se borra como `ConfiguracionGeneral`/`PosSetting`).
+
+**Nota sobre `DiaSemana`:** `v1.2.0.md` REQ-1.5 eliminó el modelo por completo (cero consumidores reales confirmados) — su definición fija se migró a `config/days.php`. Esta fila queda como referencia histórica de por qué nunca necesitó `SoftDeletes` mientras existió, igual que pasó con `Impuesto` más abajo.
+
+**Nota sobre `Impuesto`:** `v1.2.0.md` Fase 6 (REQ-6.1) propone reemplazarlo por `config/impuestos.php` (catálogo estático) + pivote `product_taxes` — cuando eso aterrice, esta fila deja de aplicar porque el modelo `Impuesto` deja de existir, igual que pasó con `EstadosCliente` arriba. Se deja la nota acá para que quien actualice este documento en ese momento no tenga que volver a investigarlo desde cero.
 
 **Única excepción a revisar:** `NcfType` (B01, B02, etc.) no tiene `SoftDeletes` pero sí se referencia desde `ncf_sequences` y desde ventas históricas (`sale.ncf_type_id` vía `NcfLog`). Si algún día se permite borrar un `NcfType` ya usado, un hard-delete rompería esa referencia histórica. Mientras no exista una ruta de borrado para `NcfType` esto es teórico — pero si se llega a construir un CRUD completo para tipos de NCF, debería nacer en Categoría A (con `SoftDeletes` + papelera), no en D.
 

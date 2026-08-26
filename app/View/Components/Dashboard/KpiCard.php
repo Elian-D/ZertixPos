@@ -10,7 +10,7 @@ class KpiCard extends Component
         public string $title,
         public string $value,
         public string $icon = 'cube',
-        public string $color = 'indigo',
+        public string $color = 'primary',
         public ?string $secondaryText = null,
         public ?string $trend = null,
         public ?bool $trendUp = true,
@@ -30,7 +30,7 @@ class KpiCard extends Component
             'red'    => 'border-red-500 text-red-600 bg-red-50',
             'green'  => 'border-green-500 text-green-600 bg-green-50',
             'yellow' => 'border-yellow-500 text-yellow-600 bg-yellow-50',
-            default  => 'border-indigo-500 text-indigo-600 bg-indigo-50',
+            default  => 'border-zertix-primary-500 text-zertix-primary-600 bg-zertix-primary-50',
         };
     }
 }

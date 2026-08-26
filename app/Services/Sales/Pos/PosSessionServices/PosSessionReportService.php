@@ -2,6 +2,7 @@
 
 namespace App\Services\Sales\Pos\PosSessionServices;
 
+use App\Models\Accounting\ClientCollection;
 use App\Models\Sales\Pos\PosSession;
 use App\Models\Sales\Sale;
 use App\Models\Sales\SalePayment;
@@ -45,7 +46,11 @@ class PosSessionReportService
                 'cajero'   => $sale->user->name ?? 'N/A',
                 'cantidad' => (float) $sale->items->sum('quantity'),
                 'metodo'   => $paymentLabel,
-                'total'    => (float) $sale->total_amount - (float) $sale->discount_total,
+                // grand_total (net_amount + tax_amount) — el efectivo que entra a la
+                // gaveta incluye el impuesto cobrado, sin excepción (Fase 5, REQ-5.10).
+                // Antes usaba total_amount - discount_total (bruto sin impuesto), lo
+                // que desalineaba esta fila contra "Ventas en Efectivo" del resumen.
+                'total'    => (float) $sale->grand_total,
             ];
         });
 
@@ -65,12 +70,11 @@ class PosSessionReportService
             ->groupBy(fn ($p) => $p->tipoPago->nombre ?? 'Sin método')
             ->map(fn ($group) => (float) $group->sum('amount'));
 
-        // Columnas de método de pago (solo dinero real cobrado, lo que ya usa el arqueo).
-        $columns = $methodTotals->keys()->values()->all();
-
         // Total de ventas a crédito: no viene de sale_payments (no aplica), viene del
-        // total facturado de las ventas marcadas payment_type = credit.
-        $creditTotal = (float) $creditSales->sum(fn (Sale $sale) => $sale->total_amount - $sale->discount_total);
+        // total facturado de las ventas marcadas payment_type = credit. Mismo fix que
+        // la línea de arriba (REQ-5.10): grand_total, no el bruto sin impuesto — es lo
+        // que el cliente realmente adeuda.
+        $creditTotal = (float) $creditSales->sum(fn (Sale $sale) => $sale->grand_total);
 
         $breakdownRows = [
             [
@@ -80,11 +84,40 @@ class PosSessionReportService
             ],
         ];
 
+        // Cobros de CxC hechos desde esta terminal/turno (Fase 6, REQ-6.7) — es dinero
+        // físico entrando a la gaveta, igual que una venta de contado, por eso SÍ suma
+        // a $grandTotal (a diferencia del crédito, que se excluye a propósito arriba).
+        // Fila nueva sin tocar la forma de $breakdownRows ni las vistas que lo pintan
+        // (ya iteran @foreach($breakdownRows as $row) de forma genérica desde que se
+        // escribieron) — solo se agrega si de verdad hubo cobros en el turno, para no
+        // ensuciar el ticket de una terminal que nunca cobra CxC.
+        $collections = ClientCollection::where('pos_session_id', $session->id)
+            ->where('status', ClientCollection::STATUS_ACTIVE)
+            ->with('tipoPago')
+            ->get();
+
+        $collectionTotals = $collections
+            ->groupBy(fn ($p) => $p->tipoPago->nombre ?? 'Sin método')
+            ->map(fn ($group) => (float) $group->sum('amount'));
+
+        if ($collectionTotals->isNotEmpty()) {
+            $breakdownRows[] = [
+                'concepto' => 'Cobros CxC',
+                'methods'  => $collectionTotals->all(),
+                'total'    => (float) $collectionTotals->sum(),
+            ];
+        }
+
+        // Columnas de método de pago (solo dinero real cobrado, lo que ya usa el
+        // arqueo) — unión de los métodos usados en ventas Y en cobros, para que un
+        // método usado solo en un cobro no quede invisible en $columnTotals.
+        $columns = $methodTotals->keys()->merge($collectionTotals->keys())->unique()->values()->all();
+
         $columnTotals = collect($columns)->mapWithKeys(fn ($col) => [
             $col => collect($breakdownRows)->sum(fn ($row) => $row['methods'][$col] ?? 0),
         ])->all();
 
-        $grandTotal = (float) $methodTotals->sum();
+        $grandTotal = (float) $methodTotals->sum() + (float) $collectionTotals->sum();
 
         return [
             'session'             => $session,

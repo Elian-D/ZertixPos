@@ -24,10 +24,6 @@ class TipoPagoSeeder extends Seeder
             // Cheque: desactivado por defecto. Muchos negocios ya no lo aceptan;
             // el admin lo activa desde Configuración > Tipos de Pago si lo necesita.
             ['nombre' => 'Cheque', 'account_id' => $cajaId, 'estado' => false],
-            // "Crédito" es un slug interno protegido (TipoPago::CREDITO, ver isSystemProtected()),
-            // usado solo para dejar rastro contable en ventas a CxC. Nunca debe ofrecerse
-            // como método de pago seleccionable, así que se mantiene siempre inactivo.
-            ['nombre' => 'Crédito', 'account_id' => null, 'estado' => false],
         ];
 
         foreach ($tiposPago as $tipo) {
@@ -40,10 +36,5 @@ class TipoPagoSeeder extends Seeder
                 ]
             );
         }
-
-        // "Nota de Crédito Aplicada" no es un método de pago real (nunca se usó en el
-        // código) y confundía al cajero en el selector. Se desactiva en vez de borrarse
-        // físicamente por si alguna venta histórica ya la referencia.
-        TipoPago::where('slug', 'nota-de-credito-aplicada')->update(['estado' => false]);
     }
 }

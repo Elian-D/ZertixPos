@@ -42,7 +42,6 @@ class PermissionSeeder extends Seeder
                 'view configuration',
                 'configure general data',
                 'configure payments',
-                'configure dias-semana',
                 'configure system modules',
             ],
 
@@ -106,9 +105,7 @@ class PermissionSeeder extends Seeder
                 'cancel journal entries',
                 'delete journal entries',
                 'view document types',
-                'create document types',
                 'edit document types',
-                'delete document types',
                 'view receivables',
                 'create receivables',
                 'edit receivables',

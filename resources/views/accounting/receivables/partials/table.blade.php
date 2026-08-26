@@ -17,7 +17,7 @@
 
             {{-- Documento y Cliente --}}
             @if(in_array('document_number', $visibleColumns))
-                <td class="px-6 py-4 text-sm font-mono font-bold text-indigo-700">
+                <td class="px-6 py-4 text-sm font-mono font-bold text-zertix-primary-700">
                     {{ $item->document_number }}
                 </td>
             @endif
@@ -64,7 +64,7 @@
                 <td class="px-6 py-4 text-xs text-gray-500">
                     @if($item->client->accounting_account_id)
                         {{-- Cuenta propia del cliente --}}
-                        <p class="text-xs font-mono text-indigo-600">
+                        <p class="text-xs font-mono text-zertix-primary-600">
                             {{ $item->client->accountingAccount->code }} <br>
                         </p>
                     @else
@@ -79,12 +79,15 @@
             {{-- Estado (Sincronizado con Modelo) --}}
             @if(in_array('status', $visibleColumns))
                 <td class="px-6 py-4 text-center">
-                    @php
-                        $currentStyle = \App\Models\Accounting\Receivable::getStatusStyles()[$item->status] ?? 'bg-gray-100 text-gray-800';
-                    @endphp
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm ring-1 ring-inset {{ $currentStyle }}">
+                    <x-ui.badge :variant="match($item->status) {
+                        \App\Models\Accounting\Receivable::STATUS_UNPAID => 'error',
+                        \App\Models\Accounting\Receivable::STATUS_PARTIAL => 'warning',
+                        \App\Models\Accounting\Receivable::STATUS_PAID => 'success',
+                        \App\Models\Accounting\Receivable::STATUS_CANCELLED => 'slate',
+                        default => 'info',
+                    }" size="sm" :dot="false">
                         {{ $item->status_label }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 
@@ -100,7 +103,7 @@
                 <div class="flex items-center justify-end gap-2">
                     {{-- Ver Detalle --}}
                     <button @click="$dispatch('open-modal', 'view-receivable-{{ $item->id }}')" 
-                            class="bg-white border border-gray-200 text-gray-500 hover:bg-indigo-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
+                            class="bg-white border border-gray-200 text-gray-500 hover:bg-zertix-primary-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
                             title="Ver Detalle">
                         <x-heroicon-s-eye class="w-4 h-4" />
                     </button>

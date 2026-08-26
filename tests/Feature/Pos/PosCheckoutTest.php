@@ -42,7 +42,6 @@ class PosCheckoutTest extends TestCase
             'tipo_pago_id' => $tipoPago->id,
             'total_amount' => $grossTotal,
             'discount_total' => $discountTotal,
-            'apply_tax' => 0,
             'cash_received' => $grossTotal - $discountTotal,
             'cash_change' => 0,
             'items' => $items,

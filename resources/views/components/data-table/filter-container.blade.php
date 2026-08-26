@@ -1,6 +1,6 @@
 @props(['formId'])
 
-<div class="mb-6 bg-white rounded-xl">
+<div>
     <form id="{{ $formId }}" method="GET" x-on:submit.prevent class="space-y-4">
         {{-- Layout dinámico: En móvil apilado, en tablet/pc en línea --}}
         <div class="flex flex-col lg:flex-row lg:items-center gap-3">

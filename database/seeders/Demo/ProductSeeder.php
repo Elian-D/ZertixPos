@@ -6,6 +6,7 @@ use App\Models\Products\Category;
 use App\Models\Products\Product;
 use App\Models\Products\Unit;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class ProductSeeder extends Seeder
@@ -296,10 +297,22 @@ class ProductSeeder extends Seeder
         ];
 
         foreach ($products as $product) {
-            Product::updateOrCreate(
+            $created = Product::updateOrCreate(
                 ['sku' => $product['sku']], // Buscamos por SKU para no duplicar
                 array_merge($product, ['slug' => Str::slug($product['name'])])
             );
+
+            // Este seeder inserta con Product::updateOrCreate() directo, sin pasar por
+            // ProductService::createProduct() — el catálogo demo se quedaba sin ningún
+            // impuesto asignado (product_taxes vacío), invisible para probar la Fase 5.
+            // Mismo criterio que ProductService: hereda config('impuestos.default') si
+            // no tiene ninguno asignado todavía.
+            if (DB::table('product_taxes')->where('product_id', $created->id)->doesntExist()) {
+                DB::table('product_taxes')->insert([
+                    'product_id' => $created->id,
+                    'tax_key' => 'itbis_18', // config('impuestos.itbis_18') es el array completo, no la clave
+                ]);
+            }
         }
     }
 }

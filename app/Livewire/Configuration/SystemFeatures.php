@@ -66,9 +66,30 @@ class SystemFeatures extends Component
     {
         $this->selections[$safeKey] = ! ($this->selections[$safeKey] ?? false);
 
-        // Cascada automática satélite→satélite: si se apaga el padre, se apaga el hijo
-        // en el mismo estado local (nunca al revés, encender el padre no reactiva nada).
-        if (! $this->selections[$safeKey]) {
+        $this->applyCascadeAndWarnings($safeKey);
+    }
+
+    /**
+     * Hook automático de Livewire: se dispara solo cuando un `wire:model` de ruta
+     * anidada (ej. "selections.sales__delivery_points", usado por x-ui.forms.toggle
+     * vía @entangle) escribe en $selections. Reemplaza la necesidad de wire:click +
+     * remount forzado del toggle — con @entangle el switch mantiene su animación y
+     * su estado de Alpine vivo entre renders, sin el bug de desincronización que
+     * causaba el patrón wire:click anterior (ver docs/ui/forms.md).
+     */
+    public function updatedSelections(bool $value, string $safeKey): void
+    {
+        $this->applyCascadeAndWarnings($safeKey);
+    }
+
+    /**
+     * Cascada automática satélite→satélite: si se apaga el padre, se apaga el hijo
+     * en el mismo estado local (nunca al revés, encender el padre no reactiva nada).
+     * Compartido entre toggle() (legacy) y updatedSelections() (wire:model).
+     */
+    protected function applyCascadeAndWarnings(string $safeKey): void
+    {
+        if (! ($this->selections[$safeKey] ?? false)) {
             foreach (self::CASCADE_DEPENDENCIES[$this->realKey($safeKey)] ?? [] as $dependent) {
                 $dependentSafeKey = $this->safeKey($dependent);
                 $this->selections[$dependentSafeKey] = false;

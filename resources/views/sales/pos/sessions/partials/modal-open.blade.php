@@ -73,17 +73,15 @@
         <div class="space-y-5">
             {{-- 1. Selección de Terminal --}}
             <div>
-                <x-input-label for="terminal_id" value="Seleccionar Terminal / Punto de Venta" />
-                <select name="terminal_id" id="terminal_id" x-model="terminalId"
-                    @change="handleTerminalChange()"
-                    class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-emerald-500 focus:border-emerald-500 text-sm" required>
-                    <option value="">Seleccione una terminal disponible...</option>
+                <x-ui.forms.select label="Seleccionar Terminal / Punto de Venta" name="terminal_id" id="terminal_id"
+                    x-model="terminalId" @change="handleTerminalChange()" required
+                    placeholder="Seleccione una terminal disponible...">
                     @foreach($available_terminals as $terminal)
                         <option value="{{ $terminal->id }}">
                             {{ $terminal->name }} ({{ $terminal->warehouse->name ?? 'Sin Almacén' }})
                         </option>
                     @endforeach
-                </select>
+                </x-ui.forms.select>
             </div>
 
             {{-- 2. Validación de PIN (REDISEÑADO) --}}
@@ -117,7 +115,7 @@
                             maxlength="4"
                             inputmode="numeric"
                             placeholder="••••"
-                            class="w-48 text-center text-4xl tracking-[0.8em] font-mono font-bold bg-white border-2 border-slate-300 rounded-xl shadow-inner focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all py-3"
+                            class="w-48 text-center text-4xl tracking-[0.8em] font-mono font-bold bg-white border-2 border-slate-300 rounded-xl shadow-inner focus:ring-2 focus:ring-zertix-primary-500 focus:border-zertix-primary-500 transition-all py-3"
                             :class="errorMessage ? 'border-red-300 shake' : ''"
                             :disabled="loading"
                             autocomplete="off"
@@ -127,7 +125,7 @@
                     {{-- Loading State --}}
                     <div x-show="loading" 
                          x-transition
-                         class="flex items-center justify-center gap-2 text-indigo-600">
+                         class="flex items-center justify-center gap-2 text-zertix-primary-600">
                         <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -184,20 +182,20 @@
 
             {{-- 4. Notas --}}
             <div x-show="terminalId && (!needsPin || isVerified)" x-transition>
-                <x-input-label for="notes" value="Observaciones de Apertura" />
-                <textarea name="notes" id="notes" rows="2" 
-                    class="mt-1 block w-full border-gray-300 rounded-lg shadow-sm focus:ring-emerald-500 focus:border-emerald-500 text-sm" 
-                    placeholder="Escriba aquí cualquier observación pertinente..."></textarea>
+                <x-ui.forms.textarea label="Observaciones de Apertura" name="notes" id="notes" :rows="2"
+                    placeholder="Escriba aquí cualquier observación pertinente..."></x-ui.forms.textarea>
             </div>
         </div>
 
         <div class="mt-6 flex justify-end gap-3 border-t pt-4">
-            <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-            <x-primary-button 
+            <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+            <x-ui.button
+                type="submit"
+                variant="primary"
                 class="bg-emerald-600 hover:bg-emerald-700 disabled:opacity-30 transition-all"
                 x-bind:disabled="!isReady">
                 Confirmar Apertura
-            </x-primary-button>
+            </x-ui.button>
         </div>
     </form>
 </x-modal>

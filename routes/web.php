@@ -23,13 +23,18 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
+// Ruta temporal — Fase 7, REQ-7.5: mockup de x-ui.forms.* en contexto real de la app
+// (sidebar, header, breadcrumbs, footer), sin lógica de guardado. Quitar cuando los
+// formularios reales ya usen estos componentes y este demo deje de hacer falta.
+Route::view('/demo/form', 'examples.form-components-demo')->middleware('auth')->name('demo.form');
+
 require __DIR__.'/auth.php';
 
 // Rutas administrativas (panel) — antes vivía en RouteServiceProvider::boot()
 Route::middleware(['web', 'auth'])
-    ->prefix('admin')
+    ->prefix('app')
     ->group(function () {
-        foreach (glob(base_path('routes/admin/*.php')) as $routeFile) {
+        foreach (glob(base_path('routes/app/*.php')) as $routeFile) {
             require $routeFile;
         }
     });

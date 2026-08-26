@@ -19,7 +19,7 @@
     <div class="flex justify-between items-start gap-2">
         <div class="min-w-0">
             <p class="text-sm font-bold text-gray-800 truncate" x-text="item.name"></p>
-            <p class="text-[11px] text-gray-400" x-text="formatMoney(item.price) + ' c/u'"></p>
+            <p class="text-[11px] text-gray-400" x-text="formatMoney(grossPrice(item)) + ' c/u'"></p>
         </div>
         <button type="button" @click="removeItem(index)" class="shrink-0 w-7 h-7 flex items-center justify-center rounded-lg bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-600 transition-colors">
             <x-heroicon-s-x-mark class="w-4 h-4" />
@@ -54,7 +54,7 @@
             </div>
         </template>
 
-        <span class="flex-1 text-right text-xs font-bold text-gray-700" x-text="formatMoney(item.price * item.quantity)"></span>
+        <span class="flex-1 text-right text-xs font-bold text-gray-700" x-text="formatMoney(grossPrice(item) * item.quantity)"></span>
     </div>
 
     <template x-if="inventoryTrackingEnabled && item.is_stockable && item.quantity > item.stock">

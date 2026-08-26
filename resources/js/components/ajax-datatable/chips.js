@@ -15,7 +15,7 @@ export const renderChips = (ctx, params) => {
         
         const chip = document.createElement('button');
         chip.type = 'button';
-        chip.className = 'inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 hover:bg-indigo-100 transition';
+        chip.className = 'inline-flex items-center gap-1.5 px-3 py-1 text-xs font-semibold rounded-full bg-zertix-primary-50 text-zertix-primary-700 border border-zertix-primary-100 hover:bg-zertix-primary-100 transition';
         chip.innerHTML = `${config.label ?? key}: ${label} ✕`;
 
         chip.onclick = () => {

@@ -11,7 +11,6 @@
                 }">
             @csrf
             
-            <x-ui.toasts />
             
             <x-form-header
             title="Nuevo Cliente"
@@ -23,52 +22,74 @@
                 {{-- Bloque 1: Datos de Identidad --}}
                 <section>
                     <div class="flex items-center gap-2 mb-4">
-                        <div class="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center font-bold text-sm">1</div>
+                        <div class="w-8 h-8 bg-zertix-primary-50 text-zertix-primary-600 rounded-full flex items-center justify-center font-bold text-sm">1</div>
                         <h3 class="font-bold text-gray-700 uppercase text-xs tracking-wider">Identidad Fiscal y Nombre</h3>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-6 gap-6">
                         {{-- 1. Nombre del cliente --}}
                         <div class="md:col-span-4">
-                            <x-input-label value="Nombre Completo / Razón Social" />
-                            <x-text-input name="name" class="w-full mt-1" :value="old('name', $client->name ?? '')" required />
-                            </div>
-                            
-                            {{-- 2. Tipo de cliente --}}
-                            @if(isset($client)) @method('PUT')          @endif
-                            <div class="md:col-span-2">
-                                <x-input-label value="Tipo de Cliente" />
-                                <select name="type" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
+                            <x-ui.forms.input
+                                label="Nombre Completo / Razón Social"
+                                name="name"
+                                value="{{ old('name', $client->name ?? '') }}"
+                                :error="$errors->first('name')"
+                                required
+                            />
+                        </div>
+
+                        {{-- 2. Tipo de cliente --}}
+                        @if(isset($client)) @method('PUT')          @endif
+                        <div class="md:col-span-2">
+                            <x-ui.forms.select
+                                label="Tipo de Cliente"
+                                name="type"
+                                :error="$errors->first('type')"
+                                required
+                            >
                                 <option value="individual" {{ (old('type', $client->type ?? '') == 'individual') ? 'selected' : '' }}>Persona Física</option>
                                 <option value="company" {{ (old('type', $client->type ?? '') == 'company') ? 'selected' : '' }}>Empresa / Corporativo</option>
-                            </select>
+                            </x-ui.forms.select>
                         </div>
 
                         {{-- 3. Tipo de identificador --}}
                         <div class="md:col-span-2">
-                            <x-input-label value="Tipo de ID Fiscal" />
-                            <select name="tax_identifier_type" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
+                            <x-ui.forms.select
+                                label="Tipo de ID Fiscal"
+                                name="tax_identifier_type"
+                                :error="$errors->first('tax_identifier_type')"
+                                required
+                            >
                                 @foreach($taxIdentifierTypes as $type)
                                     <option value="{{ $type['value'] }}" {{ (old('tax_identifier_type', $client->tax_identifier_type?->value ?? '') == $type['value']) ? 'selected' : '' }}>
                                         {{ $type['label'] }}
                                     </option>
                                 @endforeach
-                            </select>
+                            </x-ui.forms.select>
                         </div>
 
                         {{-- 4. Número Identificador --}}
                         <div class="md:col-span-2">
-                            <x-input-label value="Número de ID Fiscal" />
-                            <x-text-input name="tax_id" class="w-full mt-1" :value="old('tax_id', $client->tax_id ?? '')" />
+                            <x-ui.forms.input
+                                label="Número de ID Fiscal"
+                                name="tax_id"
+                                value="{{ old('tax_id', $client->tax_id ?? '') }}"
+                                hint="Cédula, RNC o Pasaporte según el tipo seleccionado"
+                                :error="$errors->first('tax_id')"
+                                required
+                            />
                         </div>
 
                         {{-- 5. Estado --}}
-                        <div class="md:col-span-2 flex items-center gap-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
-                            <x-input-label value="Cliente Activo" class="mb-0" />
+                        <div class="md:col-span-2 flex items-center bg-gray-50 p-4 rounded-lg border border-gray-100">
                             <input type="hidden" name="is_active" value="0">
-                            <input type="checkbox" name="is_active" value="1" {{ old('is_active', true) ? 'checked' : '' }}
-                                class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500 w-5 h-5 cursor-pointer">
-                            <span class="text-xs text-gray-500 italic">Un cliente inactivo no aparece en el POS ni puede facturarse.</span>
+                            <x-ui.forms.checkbox
+                                label="Cliente Activo"
+                                name="is_active"
+                                value="1"
+                                :checked="old('is_active', true)"
+                                description="Un cliente inactivo no aparece en el POS ni puede facturarse."
+                            />
                         </div>
                     </div>
                 </section>
@@ -82,33 +103,56 @@
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                            <x-input-label value="Correo Electrónico" />
-                            <x-text-input name="email" type="email" class="w-full mt-1" :value="old('email', $client->email ?? '')" />
+                            <x-ui.forms.input
+                                label="Correo Electrónico"
+                                name="email"
+                                type="email"
+                                value="{{ old('email', $client->email ?? '') }}"
+                                :error="$errors->first('email')"
+                            />
                         </div>
                         <div>
-                            <x-input-label value="Teléfono de Contacto" />
-                            <x-text-input name="phone" class="w-full mt-1" :value="old('phone', $client->phone ?? '')" />
+                            <x-ui.forms.input
+                                label="Teléfono de Contacto"
+                                name="phone"
+                                value="{{ old('phone', $client->phone ?? '') }}"
+                                :error="$errors->first('phone')"
+                            />
                         </div>
                         <div>
-                            <x-input-label value="Provincia" />
-                            <select name="provincia_id" x-model="selectedProvincia" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
+                            <x-ui.forms.select
+                                label="Provincia"
+                                name="provincia_id"
+                                x-model="selectedProvincia"
+                                :error="$errors->first('provincia_id')"
+                                required
+                            >
                                 @foreach($states as $s)
                                     <option value="{{ $s->id }}">{{ $s->name }}</option>
                                 @endforeach
-                            </select>
+                            </x-ui.forms.select>
                         </div>
                         <div>
-                            <x-input-label value="Municipio" />
-                            <select name="municipio_id" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500">
+                            <x-ui.forms.select
+                                label="Municipio"
+                                name="municipio_id"
+                                placeholder=""
+                                :error="$errors->first('municipio_id')"
+                            >
                                 <option value="">Sin especificar</option>
                                 <template x-for="m in municipiosDeProvincia" :key="m.id">
                                     <option :value="m.id" x-text="m.name" :selected="m.id == {{ old('municipio_id', $client->municipio_id ?? 'null') }}"></option>
                                 </template>
-                            </select>
+                            </x-ui.forms.select>
                         </div>
                         <div class="md:col-span-2">
-                            <x-input-label value="Dirección Exacta" />
-                            <textarea name="address" rows="2" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm p-2.5" placeholder="Calle, número, edificio...">{{ old('address', $client->address ?? '') }}</textarea>
+                            <x-ui.forms.textarea
+                                label="Dirección Exacta"
+                                name="address"
+                                :rows="2"
+                                placeholder="Calle, número, edificio..."
+                                :error="$errors->first('address')"
+                            >{{ old('address', $client->address ?? '') }}</x-ui.forms.textarea>
                         </div>
                     </div>
                 </section>
@@ -129,23 +173,36 @@
                         @php $creditDisabled = ! module_enabled('sales.receivables'); @endphp
                         {{-- Límite de Crédito --}}
                         <div class="md:col-span-2">
-                            <x-input-label value="Límite de Crédito ({{ config('regional.currency_symbol') }})" />
                             {{-- readonly, no disabled: ambos campos son 'required' en
                                  StoreClientRequest — un input disabled no se envía en el
                                  POST y el formulario fallaría con "campo requerido". --}}
-                            <x-text-input name="credit_limit" type="number" step="0.01"
-                                class="w-full mt-1 font-mono {{ $creditDisabled ? 'bg-gray-50 cursor-not-allowed text-gray-400' : '' }}"
-                                :value="old('credit_limit', '0.00')" placeholder="0.00"
-                                :readonly="$creditDisabled" />
+                            <x-ui.forms.input
+                                label="Límite de Crédito ({{ config('regional.currency_symbol') }})"
+                                name="credit_limit"
+                                type="number"
+                                step="0.01"
+                                class="font-mono {{ $creditDisabled ? 'bg-gray-50 cursor-not-allowed text-gray-400' : '' }}"
+                                value="{{ old('credit_limit', '0.00') }}"
+                                placeholder="0.00"
+                                :readonly="$creditDisabled"
+                                :error="$errors->first('credit_limit')"
+                                required
+                            />
                         </div>
 
                         {{-- Días de Crédito --}}
                         <div class="md:col-span-2">
-                            <x-input-label value="Días de Crédito (Vencimiento)" />
-                            <x-text-input name="payment_terms" type="number"
-                                class="w-full mt-1 {{ $creditDisabled ? 'bg-gray-50 cursor-not-allowed text-gray-400' : '' }}"
-                                :value="old('payment_terms', '0')" placeholder="Ej: 30"
-                                :readonly="$creditDisabled" />
+                            <x-ui.forms.input
+                                label="Días de Crédito (Vencimiento)"
+                                name="payment_terms"
+                                type="number"
+                                class="{{ $creditDisabled ? 'bg-gray-50 cursor-not-allowed text-gray-400' : '' }}"
+                                value="{{ old('payment_terms', '0') }}"
+                                placeholder="Ej: 30"
+                                :readonly="$creditDisabled"
+                                :error="$errors->first('payment_terms')"
+                                required
+                            />
                         </div>
                         @unless (module_enabled('sales.receivables'))
                             <p class="md:col-span-4 -mt-2 text-xs text-amber-600 italic">
@@ -156,25 +213,29 @@
                             
                         {{-- Cuenta Contable --}}
                         <div class="md:col-span-4" x-data="{ createAccount: false }">
-                            <x-input-label value="Cuenta Contable (CxC)" />
-                            
-                            <div class="mt-1 space-y-2"> {{-- Ajustado a mt-1 para alinear con los otros inputs --}}
+                            <div class="space-y-2">
                                 {{-- Selector: Solo muestra la General en Create --}}
-                                <select name="accounting_account_id" 
-                                x-show="!createAccount"
-                                class="w-full rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm">
-                                <option value="">Usar Cuenta General (1.1.02)</option>
-                                </select>
+                                <x-ui.forms.select
+                                    label="Cuenta Contable (CxC)"
+                                    name="accounting_account_id"
+                                    x-show="!createAccount"
+                                    placeholder=""
+                                    :error="$errors->first('accounting_account_id')"
+                                >
+                                    <option value="">Usar Cuenta General (1.1.02)</option>
+                                </x-ui.forms.select>
 
                                 {{-- Toggle para creación automática --}}
-                                <label class="flex items-center cursor-pointer gap-2 p-2 bg-indigo-50 rounded-lg border border-indigo-100">
-                                    <input type="checkbox" name="create_accounting_account" value="1" 
+                                <div class="p-2 bg-zertix-primary-50 rounded-lg border border-zertix-primary-100">
+                                    <x-ui.forms.checkbox
+                                        label="¿Crear cuenta específica?"
+                                        name="create_accounting_account"
+                                        value="1"
                                         x-model="createAccount"
-                                        class="rounded text-indigo-600 focus:ring-indigo-500 w-4 h-4">
-                                    <span class="text-[11px] font-bold text-indigo-700 uppercase tracking-tight">¿Crear cuenta específica?</span>
-                                </label>
-                                
-                                <p x-show="createAccount" class="text-[10px] text-indigo-500 italic leading-tight">
+                                    />
+                                </div>
+
+                                <p x-show="createAccount" class="text-[10px] text-zertix-primary-500 italic leading-tight">
                                     * Se creará automáticamente la cuenta "CxC - [Nombre]"
                                 </p>
                             </div>
@@ -186,9 +247,9 @@
 
             <div class="p-6 bg-gray-50 flex justify-end gap-3 border-t">
                 <a href="{{ route('clients.index') }}" class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-800">Cancelar</a>
-                <x-primary-button class="bg-indigo-600 hover:bg-indigo-700 shadow-lg px-8">
+                <x-ui.button type="submit" variant="primary" class="shadow-lg px-8">
                     Registrar Cliente
-                </x-primary-button>
+                </x-ui.button>
             </div>
         </form>
     </div>

@@ -133,13 +133,9 @@
             </div>
 
             <div class="mb-5">
-                <label for="notes" class="block text-xs font-bold text-gray-700 uppercase tracking-wider mb-2">Comentarios (Opcional)</label>
-                <textarea id="notes"
-                          wire:model="notes"
-                          rows="3"
-                          placeholder="Denominaciones o condiciones de entrega de la terminal..."
-                          class="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-sm text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#58c03f] focus:border-[#58c03f] transition-all resize-none"></textarea>
-                @error('notes') <span class="block text-xs font-semibold text-red-600 mt-1.5">{{ $message }}</span> @enderror
+                <x-ui.forms.textarea label="Comentarios (Opcional)" id="notes" wire:model="notes" :rows="3"
+                    placeholder="Denominaciones o condiciones de entrega de la terminal..."
+                    :error="$errors->first('notes')"></x-ui.forms.textarea>
             </div>
 
             <div class="flex gap-3 pt-2 border-t border-gray-100">

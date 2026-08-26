@@ -2,16 +2,19 @@
 
 namespace App\Livewire\Sales\Pos\Pages;
 
-use Livewire\Component;
-use App\Models\Sales\Pos\PosTerminal;
 use App\Models\Sales\Pos\PosSession;
+use App\Models\Sales\Pos\PosTerminal;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
 
 class PosTerminalLobby extends Component
 {
     public ?int $selectedTerminalId = null;
+
     public string $pin = '';
+
     public string $opening_balance = '0.00';
+
     public string $notes = '';
 
     protected $listeners = ['refreshLobby' => '$refresh'];
@@ -23,15 +26,16 @@ class PosTerminalLobby extends Component
         $this->selectedTerminalId = $terminalId;
 
         // El permiso de operar POS ya lo exige la ruta ('permission:pos sessions manage'
-        // en routes/admin/sales/pos.php) — quien llega aquí ya está autorizado. Este check
+        // en routes/app/sales.php) — quien llega aquí ya está autorizado. Este check
         // es solo defensa en profundidad para la llamada Livewire en sí (que no pasa por el
         // middleware de la ruta de página), por eso es un 403 silencioso, no un mensaje en
         // la vista: la vista ya no necesita saber nada de permisos.
         abort_unless(Auth::user()->can('pos sessions manage'), 403);
 
         $terminal = PosTerminal::find($terminalId);
-        if (!$terminal || !$terminal->is_active) {
+        if (! $terminal || ! $terminal->is_active) {
             $this->addError('terminal', 'La terminal seleccionada no está disponible.');
+
             return;
         }
 
@@ -40,8 +44,9 @@ class PosTerminalLobby extends Component
         // (ej. el que abrió la caja envía a un vendedor a atender).
 
         // Si la terminal no tiene PIN de acceso configurado, saltamos la verificación
-        if (!$terminal->requiresPinVerification()) {
+        if (! $terminal->requiresPinVerification()) {
             $this->markTerminalVerified($terminal->id);
+
             return $this->proceedToWorkspaceOrOpening($terminal);
         }
 
@@ -67,8 +72,9 @@ class PosTerminalLobby extends Component
 
         $terminal = PosTerminal::find($this->selectedTerminalId);
 
-        if (!$terminal || !$terminal->verifyPin($this->pin)) {
+        if (! $terminal || ! $terminal->verifyPin($this->pin)) {
             $this->addError('pin', 'El PIN de acceso de la terminal es incorrecto.');
+
             return;
         }
 
@@ -116,28 +122,29 @@ class PosTerminalLobby extends Component
 
         $this->validate([
             'opening_balance' => 'required|numeric|min:0',
-            'notes'           => 'nullable|string|max:500',
+            'notes' => 'nullable|string|max:500',
         ], [
             'opening_balance.required' => 'El fondo de apertura es obligatorio.',
-            'opening_balance.numeric'  => 'Debe ingresar un valor numérico válido.',
+            'opening_balance.numeric' => 'Debe ingresar un valor numérico válido.',
         ]);
 
         $terminal = PosTerminal::find($this->selectedTerminalId);
         $exists = $terminal->sessions()->where('status', PosSession::STATUS_OPEN)->exists();
-        
+
         if ($exists) {
             session()->flash('error', 'Esta terminal acaba de ser abierta por otro turno.');
+
             return redirect()->route('pos.index');
         }
 
         PosSession::create([
-            'terminal_id'       => $this->selectedTerminalId,
-            'user_id'           => Auth::id(),
+            'terminal_id' => $this->selectedTerminalId,
+            'user_id' => Auth::id(),
             'opened_by_user_id' => Auth::id(),
-            'status'            => PosSession::STATUS_OPEN,
-            'opened_at'         => now(),
-            'opening_balance'   => $this->opening_balance,
-            'notes'             => $this->notes,
+            'status' => PosSession::STATUS_OPEN,
+            'opened_at' => now(),
+            'opening_balance' => $this->opening_balance,
+            'notes' => $this->notes,
         ]);
 
         $this->dispatch('close-modal', 'pos-opening-modal');

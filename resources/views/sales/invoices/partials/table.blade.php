@@ -15,7 +15,7 @@
             {{-- Venta Origen --}}
             @if(in_array('sale_id', $visibleColumns))
                 <td class="px-6 py-4 text-sm">
-                    <span class="text-indigo-600 font-medium italic">#{{ $invoice->sale->number ?? 'N/A' }}</span>
+                    <span class="text-zertix-primary-600 font-medium italic">#{{ $invoice->sale->number ?? 'N/A' }}</span>
                 </td>
             @endif
 
@@ -31,12 +31,16 @@
             @if(in_array('type', $visibleColumns))
                 <td class="px-6 py-4">
                     @php
-                        $pStyles = \App\Models\Sales\Sale::getPaymentTypeStyles();
                         $pLabels = \App\Models\Sales\Sale::getPaymentTypes();
+                        $pVariant = match($invoice->type) {
+                            \App\Models\Sales\Sale::PAYMENT_CASH => 'info',
+                            \App\Models\Sales\Sale::PAYMENT_CREDIT => 'warning',
+                            default => 'slate',
+                        };
                     @endphp
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight ring-1 ring-inset {{ $pStyles[$invoice->type] ?? 'bg-gray-100 text-gray-700' }}">
+                    <x-ui.badge :variant="$pVariant" size="sm" :dot="false">
                         {{ $pLabels[$invoice->type] ?? $invoice->type }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 
@@ -54,10 +58,12 @@
                 </td>
             @endif
 
-            {{-- Monto Total --}}
+            {{-- Monto Total — grand_total (neto + impuesto), no total_amount (bruto sin
+                 impuesto; ni siquiera consistente entre sí según el origen de la venta,
+                 ver QuoteService::convertToSale()) — Fase 5, auditoría post-REQ-5.12. --}}
             @if(in_array('total_amount', $visibleColumns))
                 <td class="px-6 py-4 text-sm text-right font-bold text-gray-900">
-                    <span class="text-[10px] font-normal text-gray-400 mr-1">{{ config('regional.currency_symbol') }}</span>{{ number_format($invoice->sale->total_amount ?? 0, 2) }}
+                    <span class="text-[10px] font-normal text-gray-400 mr-1">{{ config('regional.currency_symbol') }}</span>{{ number_format($invoice->sale->grand_total ?? 0, 2) }}
                 </td>
             @endif
 
@@ -65,12 +71,16 @@
             @if(in_array('status', $visibleColumns))
                 <td class="px-6 py-4 text-center">
                     @php
-                        $sStyles = \App\Models\Sales\Invoice::getStatusStyles();
                         $sLabels = \App\Models\Sales\Invoice::getStatuses();
+                        $sVariant = match($invoice->status) {
+                            \App\Models\Sales\Invoice::STATUS_ACTIVE => 'success',
+                            \App\Models\Sales\Invoice::STATUS_CANCELLED => 'error',
+                            default => 'slate',
+                        };
                     @endphp
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm ring-1 ring-inset {{ $sStyles[$invoice->status] ?? 'bg-gray-100 text-gray-700' }}">
+                    <x-ui.badge :variant="$sVariant" size="sm" :dot="false">
                         {{ $sLabels[$invoice->status] ?? $invoice->status }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 
@@ -100,14 +110,14 @@
             <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-2">
                     {{-- Ver PDF/Vista Previa --}}
-                    <a href="{{ route('sales.invoices.show', $invoice) }}" 
-                       class="bg-white border border-gray-200 text-gray-500 hover:bg-indigo-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
+                    <a href="{{ route('finance.invoices.show', $invoice) }}" 
+                       class="bg-white border border-gray-200 text-gray-500 hover:bg-zertix-primary-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
                        title="Ver Factura">
                         <x-heroicon-s-eye class="w-4 h-4" />
                     </a>
 
                     {{-- Re-Imprimir --}}
-                    <a href="{{ route('sales.invoices.print', $invoice) }}" target="_blank" 
+                    <a href="{{ route('finance.invoices.print', $invoice) }}" target="_blank" 
                        class="bg-white border border-gray-200 text-gray-500 hover:bg-gray-800 hover:text-white p-2 rounded-lg transition-all shadow-sm" 
                        title="Imprimir Comprobante">
                         <x-heroicon-s-printer class="w-4 h-4" />

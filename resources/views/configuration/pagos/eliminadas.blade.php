@@ -22,15 +22,9 @@
 
             {{-- Toolbar --}}
             <div class="flex mb-6">
-                <a href="{{ route('configuration.pagos.index') }}"
-                class="inline-flex items-center px-4 py-2
-                        border border-gray-300 rounded-md
-                        text-sm font-medium text-gray-700
-                        bg-white hover:bg-gray-100
-                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400">
-                    <x-heroicon-s-arrow-left class="w-5 h-5 mr-2" />
+                <x-ui.button href="{{ route('configuration.pagos.index') }}" appearance="ghost" variant="secondary" iconLeft="heroicon-s-arrow-left">
                     Volver al listado
-                </a>
+                </x-ui.button>
             </div>
 
 
@@ -113,14 +107,13 @@
                 </p>
 
                 <div class="mt-6 flex justify-end">
-                    <x-secondary-button x-on:click="$dispatch('close')">
+                    <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">
                         Cancelar
-                    </x-secondary-button>
+                    </x-ui.button>
 
-                    <x-danger-button class="ms-3">
-                        <x-heroicon-s-trash class="w-4 h-4 mr-2" />
+                    <x-ui.button type="submit" variant="error" iconLeft="heroicon-s-trash" class="ms-3">
                         Eliminar
-                    </x-danger-button>
+                    </x-ui.button>
                 </div>
             </form>
         </x-modal>
