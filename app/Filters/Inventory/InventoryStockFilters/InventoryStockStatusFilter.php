@@ -4,19 +4,12 @@ namespace App\Filters\Inventory\InventoryStockFilters;
 
 use App\Filters\Contracts\FilterInterface;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
 
 class InventoryStockStatusFilter implements FilterInterface
 {
-    public function __construct(protected Request $request) {}
-
-    public function apply(Builder $query): Builder
+    public function apply(Builder $query, mixed $value): Builder
     {
-        $status = $this->request->input('status');
-
-        if (!$status) return $query;
-
-        return match ($status) {
+        return match ($value) {
             // Stock por debajo del mínimo (pero mayor a 0)
             'low' => $query->whereColumn('quantity', '<=', 'min_stock')
                            ->where('quantity', '>', 0),

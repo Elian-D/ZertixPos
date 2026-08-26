@@ -4,20 +4,11 @@ namespace App\Filters\EquipmentTypes;
 
 use App\Filters\Contracts\FilterInterface;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
 
 class EquipmentTypesActiveFilter implements FilterInterface
 {
-    public function __construct(protected Request $request) {}
-
-    public function apply(Builder $query): Builder
+    public function apply(Builder $query, mixed $value): Builder
     {
-        $active = $this->request->input('activo');
-
-        if ($active === null || $active === '') {
-            return $query;
-        }
-
-        return $query->where('activo', (bool) $active);
+        return $query->where('activo', (bool) $value);
     }
 }

@@ -14,7 +14,8 @@ class InvoiceFilters extends QueryFilter
             'type'        => InvoiceTypeFilter::class,
             'status'      => InvoiceStatusFilter::class,
             'format_type' => InvoiceFormatFilter::class,
-            'from_date'   => InvoiceDateFilter::class,
+            'from_date'   => InvoiceDateFromFilter::class,
+            'to_date'     => InvoiceDateToFilter::class,
         ];
     }
 }

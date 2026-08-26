@@ -4,23 +4,11 @@ namespace App\Filters\Client;
 
 use App\Filters\Contracts\FilterInterface;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
 
 class ClientBusinessStatusFilter implements FilterInterface
 {
-    protected Request $request;
-
-    public function __construct(Request $request)
+    public function apply(Builder $query, mixed $value): Builder
     {
-        $this->request = $request;
-    }
-
-    public function apply(Builder $query): Builder
-    {
-        if ($this->request->filled('is_active')) {
-            $query->where('is_active', $this->request->boolean('is_active'));
-        }
-
-        return $query;
+        return $query->where('is_active', filter_var($value, FILTER_VALIDATE_BOOLEAN));
     }
 }

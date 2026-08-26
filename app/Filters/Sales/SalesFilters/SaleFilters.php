@@ -15,8 +15,10 @@ class SaleFilters extends QueryFilter
             'payment_type' => SalePaymentTypeFilter::class,
             'tipo_pago_id' => SaleTipoPagoFilter::class,
             'status'       => SaleStatusFilter::class,
-            'from_date'    => SaleDateFilter::class,
-            'min_amount'   => SaleAmountRangeFilter::class,
+            'from_date'    => SaleDateFromFilter::class,
+            'to_date'      => SaleDateToFilter::class,
+            'min_amount'   => SaleAmountMinFilter::class,
+            'max_amount'   => SaleAmountMaxFilter::class,
             'pos_session_id'  => SalePosSessionFilter::class,
             'pos_terminal_id' => SalePosTerminalFilter::class,
         ];
