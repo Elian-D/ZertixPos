@@ -57,11 +57,11 @@
                 <section>
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="font-bold text-gray-800 uppercase text-xs tracking-wider flex items-center gap-2">
-                            <span class="w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-[10px]">2</span>
+                            <span class="w-6 h-6 bg-zertix-primary-600 text-white rounded-full flex items-center justify-center text-[10px]">2</span>
                             Movimientos del Asiento
                         </h3>
                         <button type="button" @click="addLine()" 
-                            class="text-xs bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg hover:bg-indigo-600 hover:text-white transition-all font-bold">
+                            class="text-xs bg-zertix-primary-50 text-zertix-primary-600 px-3 py-1.5 rounded-lg hover:bg-zertix-primary-600 hover:text-white transition-all font-bold">
                             + Añadir Línea
                         </button>
                     </div>
@@ -81,11 +81,11 @@
                                     <tr class="hover:bg-gray-50/50 transition">
                                         <td class="p-2">
                                             <select :name="`items[${index}][accounting_account_id]`" 
-                                                    class="w-full border-gray-200 rounded-lg text-sm focus:ring-indigo-500" 
+                                                    class="w-full border-gray-200 rounded-lg text-sm focus:ring-zertix-primary-500" 
                                                     @change="calculateTotals()"
                                                     x-model="line.accounting_account_id" 
                                                     required 
-                                                    class="w-full border-gray-200 rounded-lg text-sm focus:ring-indigo-500" required>
+                                                    class="w-full border-gray-200 rounded-lg text-sm focus:ring-zertix-primary-500" required>
                                                 <option value="">Seleccione cuenta...</option>
                                                 @foreach($accounts as $acc)
                                                     <option value="{{ $acc->id }}">{{ $acc->code }} - {{ $acc->name }}</option>
@@ -100,7 +100,7 @@
                                         <td class="p-2">
                                             <input type="number" :name="`items[${index}][credit]`" x-model.number="line.credit"
                                                 step="0.01" min="0" @input="calculateTotals()"
-                                                class="w-full border-gray-200 rounded-lg text-sm text-right font-mono focus:ring-indigo-500" placeholder="0.00">
+                                                class="w-full border-gray-200 rounded-lg text-sm text-right font-mono focus:ring-zertix-primary-500" placeholder="0.00">
                                         </td>
                                         <td class="p-2 text-center">
                                             <button type="button" @click="removeLine(index)" x-show="lines.length > 2"

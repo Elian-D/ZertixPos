@@ -17,7 +17,7 @@
 
             {{-- Documento y Cliente --}}
             @if(in_array('document_number', $visibleColumns))
-                <td class="px-6 py-4 text-sm font-mono font-bold text-indigo-700">
+                <td class="px-6 py-4 text-sm font-mono font-bold text-zertix-primary-700">
                     {{ $item->document_number }}
                 </td>
             @endif
@@ -64,7 +64,7 @@
                 <td class="px-6 py-4 text-xs text-gray-500">
                     @if($item->client->accounting_account_id)
                         {{-- Cuenta propia del cliente --}}
-                        <p class="text-xs font-mono text-indigo-600">
+                        <p class="text-xs font-mono text-zertix-primary-600">
                             {{ $item->client->accountingAccount->code }} <br>
                         </p>
                     @else
@@ -103,7 +103,7 @@
                 <div class="flex items-center justify-end gap-2">
                     {{-- Ver Detalle --}}
                     <button @click="$dispatch('open-modal', 'view-receivable-{{ $item->id }}')" 
-                            class="bg-white border border-gray-200 text-gray-500 hover:bg-indigo-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
+                            class="bg-white border border-gray-200 text-gray-500 hover:bg-zertix-primary-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
                             title="Ver Detalle">
                         <x-heroicon-s-eye class="w-4 h-4" />
                     </button>

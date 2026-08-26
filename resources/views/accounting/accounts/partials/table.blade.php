@@ -8,7 +8,7 @@
         <tr class="hover:bg-gray-50 transition border-b border-gray-100">
             {{-- Código --}}
             @if(in_array('code', $visibleColumns))
-                <td class="whitespace-nowrap px-6 py-4 text-sm font-mono font-bold text-indigo-600">
+                <td class="whitespace-nowrap px-6 py-4 text-sm font-mono font-bold text-zertix-primary-600">
                     {{ $item->code }}
                 </td>
             @endif
@@ -106,7 +106,7 @@
                         <x-heroicon-s-eye class="w-5 h-5" />
                     </button>
                     <button @click="$dispatch('open-modal', 'edit-account-{{ $item->id }}')" 
-                            class="text-indigo-600 hover:text-indigo-900 p-1 rounded hover:bg-indigo-50 transition-colors">
+                            class="text-zertix-primary-600 hover:text-zertix-primary-900 p-1 rounded hover:bg-zertix-primary-50 transition-colors">
                         <x-heroicon-s-pencil class="w-5 h-5" />
                     </button>
 

@@ -22,7 +22,7 @@
                 {{-- Bloque 1: Datos de Identidad --}}
                 <section>
                     <div class="flex items-center gap-2 mb-4">
-                        <div class="w-8 h-8 bg-indigo-50 text-indigo-600 rounded-full flex items-center justify-center font-bold text-sm">1</div>
+                        <div class="w-8 h-8 bg-zertix-primary-50 text-zertix-primary-600 rounded-full flex items-center justify-center font-bold text-sm">1</div>
                         <h3 class="font-bold text-gray-700 uppercase text-xs tracking-wider">Identidad Fiscal y Nombre</h3>
                     </div>
 
@@ -226,7 +226,7 @@
                                 </x-ui.forms.select>
 
                                 {{-- Toggle para creación automática --}}
-                                <div class="p-2 bg-indigo-50 rounded-lg border border-indigo-100">
+                                <div class="p-2 bg-zertix-primary-50 rounded-lg border border-zertix-primary-100">
                                     <x-ui.forms.checkbox
                                         label="¿Crear cuenta específica?"
                                         name="create_accounting_account"
@@ -235,7 +235,7 @@
                                     />
                                 </div>
 
-                                <p x-show="createAccount" class="text-[10px] text-indigo-500 italic leading-tight">
+                                <p x-show="createAccount" class="text-[10px] text-zertix-primary-500 italic leading-tight">
                                     * Se creará automáticamente la cuenta "CxC - [Nombre]"
                                 </p>
                             </div>

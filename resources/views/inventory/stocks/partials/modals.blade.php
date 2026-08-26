@@ -78,7 +78,7 @@
                     {{-- Columna Izquierda: Almacén y Producto --}}
                     <div class="space-y-6">
                         <section>
-                            <h4 class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <h4 class="text-xs font-bold text-zertix-primary-600 uppercase tracking-widest mb-4 flex items-center gap-2">
                                 <x-heroicon-s-building-office class="w-4 h-4"/> Ubicación de Red
                             </h4>
                             <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">

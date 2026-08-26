@@ -16,7 +16,7 @@
                         <th scope="col" class="px-4 py-3 text-center w-10">
                             <input type="checkbox" 
                                    id="select-all-main" 
-                                   class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                                   class="rounded border-gray-300 text-zertix-primary-600 focus:ring-zertix-primary-500 cursor-pointer">
                         </th>
                     @endif
                     

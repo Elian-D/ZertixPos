@@ -3,7 +3,7 @@
         <tr class="hover:bg-gray-50 transition border-b border-gray-100">
             @if($bulkActions)
                 <td class="px-4 py-4 text-center">
-                    <input type="checkbox" value="{{ $item->id }}" class="row-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                    <input type="checkbox" value="{{ $item->id }}" class="row-checkbox rounded border-gray-300 text-zertix-primary-600 focus:ring-zertix-primary-500 cursor-pointer">
                 </td>
             @endif
 
@@ -98,11 +98,11 @@
             <td class="px-6 py-4">
                 <div class="flex items-center gap-3">
                     <button @click="$dispatch('open-modal', 'view-product-{{ $item->id }}')" 
-                            class="bg-gray-100 text-gray-600 hover:bg-indigo-600 hover:text-white p-2 rounded-full transition-all shadow-sm">
+                            class="bg-gray-100 text-gray-600 hover:bg-zertix-primary-600 hover:text-white p-2 rounded-full transition-all shadow-sm">
                         <x-heroicon-s-eye class="w-5 h-5" />
                     </button>
 
-                    <a href="{{ route('inventory.products.edit', $item) }}" class="text-indigo-600 hover:text-indigo-900 p-2 rounded-full hover:bg-indigo-50">
+                    <a href="{{ route('inventory.products.edit', $item) }}" class="text-zertix-primary-600 hover:text-zertix-primary-900 p-2 rounded-full hover:bg-zertix-primary-50">
                         <x-heroicon-s-pencil class="w-5 h-5" />
                     </a>
                     

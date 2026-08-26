@@ -25,7 +25,7 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     
-    <body class="font-sans antialiased h-full bg-gray-50 text-gray-900 selection:bg-indigo-500 selection:text-white overflow-hidden">
+    <body class="font-sans antialiased h-full bg-gray-50 text-gray-900 selection:bg-zertix-primary-500 selection:text-white overflow-hidden">
         
         {{-- Contenedor Principal Inmersivo Full-Screen --}}
         <div class="min-h-screen h-screen flex flex-col overflow-hidden relative">

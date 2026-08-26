@@ -12,7 +12,7 @@
 
             {{-- No. Recibo --}}
             @if(in_array('receipt_number', $visibleColumns))
-                <td class="px-6 py-4 text-sm font-mono font-bold text-indigo-700">
+                <td class="px-6 py-4 text-sm font-mono font-bold text-zertix-primary-700">
                     {{ $payment->receipt_number }}
                 </td>
             @endif
@@ -100,7 +100,7 @@
                 <div class="flex items-center justify-end gap-2">
                     {{-- Ver Detalle del Cobro --}}
                     <button @click="$dispatch('open-modal', 'view-payment-{{ $payment->id }}')" 
-                            class="bg-white border border-gray-200 text-gray-500 hover:bg-indigo-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
+                            class="bg-white border border-gray-200 text-gray-500 hover:bg-zertix-primary-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
                             title="Ver Recibo">
                         <x-heroicon-s-eye class="w-4 h-4" />
                     </button>

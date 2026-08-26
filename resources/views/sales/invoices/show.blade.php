@@ -5,13 +5,13 @@
             {{-- Header Principal --}}
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div class="flex-1">
-                    <a href="{{ route('finance.invoices.index') }}" class="inline-flex items-center text-indigo-600 hover:text-indigo-800 text-sm font-semibold transition mb-3">
+                    <a href="{{ route('finance.invoices.index') }}" class="inline-flex items-center text-zertix-primary-600 hover:text-zertix-primary-800 text-sm font-semibold transition mb-3">
                         <x-heroicon-s-arrow-left class="w-4 h-4 mr-1.5" />
                         Regresar al Historial
                     </a>
                     <div class="flex items-center gap-3">
                         <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">
-                            Factura <span class="text-indigo-600">{{ $invoice->invoice_number }}</span>
+                            Factura <span class="text-zertix-primary-600">{{ $invoice->invoice_number }}</span>
                         </h2>
                         <x-ui.badge :variant="$invoice->status === 'active' ? 'success' : 'error'" :dot="false">
                             {{ $invoice->status === 'active' ? 'Vigente' : 'Anulada' }}
@@ -51,10 +51,10 @@
 
                     {{-- NUEVO: BLOQUE FISCAL RESALTADO --}}
                     @if($invoice->sale->ncf)
-                    <div class="bg-white rounded-2xl shadow-sm border-2 border-indigo-100 overflow-hidden">
-                        <div class="bg-indigo-50 px-5 py-3 border-b border-indigo-100 flex justify-between items-center">
-                            <h3 class="text-[10px] font-black text-indigo-600 uppercase tracking-widest">Datos Fiscales (DGII)</h3>
-                            <x-heroicon-s-check-badge class="w-4 h-4 text-indigo-500"/>
+                    <div class="bg-white rounded-2xl shadow-sm border-2 border-zertix-primary-100 overflow-hidden">
+                        <div class="bg-zertix-primary-50 px-5 py-3 border-b border-zertix-primary-100 flex justify-between items-center">
+                            <h3 class="text-[10px] font-black text-zertix-primary-600 uppercase tracking-widest">Datos Fiscales (DGII)</h3>
+                            <x-heroicon-s-check-badge class="w-4 h-4 text-zertix-primary-500"/>
                         </div>
                         <div class="p-5">
                             <div class="mb-4">
@@ -88,7 +88,7 @@
                             </div>
                             <div>
                                 <label class="block text-[10px] font-black text-gray-400 uppercase mb-1">Venta de Origen</label>
-                                <p class="text-sm font-bold text-indigo-600">#{{ $invoice->sale->number }}</p>
+                                <p class="text-sm font-bold text-zertix-primary-600">#{{ $invoice->sale->number }}</p>
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
@@ -103,7 +103,7 @@
                         </div>
                     </div>
 
-                    <div class="bg-indigo-600 rounded-2xl p-5 shadow-md text-white">
+                    <div class="bg-zertix-primary-600 rounded-2xl p-5 shadow-md text-white">
                         <h4 class="text-[10px] font-black uppercase tracking-widest mb-3 opacity-80">Auditoría del Sistema</h4>
                         <div class="space-y-3">
                             <div class="flex justify-between items-center">

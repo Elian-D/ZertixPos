@@ -2,7 +2,7 @@
 
 <div x-data="{ open: false }" class="relative w-full md:w-auto text-left">
     <button @click="open = !open" type="button"
-        class="inline-flex justify-center items-center w-full md:w-auto px-4 py-2 border rounded-lg bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 shadow-sm transition">
+        class="inline-flex justify-center items-center w-full md:w-auto px-4 py-2 border rounded-lg bg-white text-sm font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zertix-primary-500 shadow-sm transition">
         <x-heroicon-s-funnel class="mr-2 h-4 w-4 text-gray-400" />
         {{ $label }}
         <x-heroicon-s-chevron-down class="ml-2 -mr-1 h-4 w-4 text-gray-400 transition-transform" x-bind:class="open ? 'rotate-180' : ''" />

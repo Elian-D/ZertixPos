@@ -10,7 +10,7 @@
                             @if($item->image_path)
                                 <img src="{{ $item->image_url }}" alt="{{ $item->name }}" class="w-16 h-16 rounded-xl object-cover shadow-md border-2 border-white">
                             @else
-                                <div class="w-16 h-16 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-700 shadow-sm border-2 border-white">
+                                <div class="w-16 h-16 bg-zertix-primary-100 rounded-xl flex items-center justify-center text-zertix-primary-700 shadow-sm border-2 border-white">
                                     <x-heroicon-s-photo class="w-8 h-8"/>
                                 </div>
                             @endif
@@ -18,7 +18,7 @@
                         <div>
                             <h3 class="text-xl font-bold text-gray-900 leading-tight">{{ $item->name }}</h3>
                             <div class="flex items-center gap-2 mt-1">
-                                <span class="text-xs font-mono font-semibold px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded border border-indigo-100 uppercase tracking-wider">
+                                <span class="text-xs font-mono font-semibold px-2 py-0.5 bg-zertix-primary-50 text-zertix-primary-700 rounded border border-zertix-primary-100 uppercase tracking-wider">
                                     {{ $item->sku ?? 'SIN SKU' }}
                                 </span>
                                 <span class="text-gray-400 text-xs">•</span>
@@ -151,7 +151,7 @@
                         <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')" class="flex-1 sm:flex-none justify-center">
                             Cerrar
                         </x-ui.button>
-                        <a href="{{ route('inventory.products.edit', $item) }}" class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2 bg-indigo-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 transition duration-150 shadow-md shadow-indigo-100">
+                        <a href="{{ route('inventory.products.edit', $item) }}" class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2 bg-zertix-primary-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-zertix-primary-700 active:bg-zertix-primary-900 transition duration-150 shadow-md shadow-zertix-primary-100">
                             <x-heroicon-s-pencil class="w-4 h-4 mr-2" /> Editar Ficha
                         </a>
                     </div>

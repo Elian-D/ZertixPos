@@ -59,7 +59,7 @@
                                         required
                                         minlength="8"
                                         class="w-full border-gray-300 rounded-md shadow-sm text-base py-2.5 pl-4 pr-12
-                                                focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50
+                                                focus:border-zertix-primary-500 focus:ring focus:ring-zertix-primary-500 focus:ring-opacity-50
                                                 @error('password') border-red-500 focus:border-red-500 focus:ring-red-200 @enderror">
                                 
                                 {{-- Botón para mostrar/ocultar la contraseña (ÚNICO BOTÓN) --}}
@@ -98,7 +98,7 @@
                                         required
                                         minlength="8"
                                         class="w-full border-gray-300 rounded-md shadow-sm text-base py-2.5 pl-4 pr-12
-                                                focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50
+                                                focus:border-zertix-primary-500 focus:ring focus:ring-zertix-primary-500 focus:ring-opacity-50
                                                 @error('password') border-red-500 focus:border-red-500 focus:ring-red-200 @enderror">
                                 
                                 {{-- ELIMINAMOS EL BOTÓN Y EL @error('password_confirmation') DE AQUÍ --}}

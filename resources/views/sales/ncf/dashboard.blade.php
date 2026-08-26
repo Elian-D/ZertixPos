@@ -32,7 +32,7 @@
                     <div class="flex gap-1 min-w-max">
                         @foreach($ranges as $key => $label)
                             <a href="{{ route('reports.ncf', ['range' => $key, 'ncf_type' => $filters['ncf_type'], 'status' => $filters['status']]) }}" 
-                            class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap {{ $filters['current_range'] == $key ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50' }}">
+                            class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap {{ $filters['current_range'] == $key ? 'bg-white text-zertix-primary-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50' }}">
                                 {{ $label }}
                             </a>
                         @endforeach
@@ -46,7 +46,7 @@
                     <input type="hidden" name="end_date" value="{{ $filters['end'] }}">
                     
                     <select name="ncf_type" 
-                            class="text-xs border-gray-200 rounded-lg p-2 text-gray-600 bg-white shadow-sm focus:ring-2 focus:ring-indigo-500/20"
+                            class="text-xs border-gray-200 rounded-lg p-2 text-gray-600 bg-white shadow-sm focus:ring-2 focus:ring-zertix-primary-500/20"
                             onchange="this.form.submit()">
                         <option value="">Todos los tipos NCF</option>
                         @foreach($ncfTypes as $type)
@@ -57,7 +57,7 @@
                     </select>
 
                     <select name="status" 
-                            class="text-xs border-gray-200 rounded-lg p-2 text-gray-600 bg-white shadow-sm focus:ring-2 focus:ring-indigo-500/20"
+                            class="text-xs border-gray-200 rounded-lg p-2 text-gray-600 bg-white shadow-sm focus:ring-2 focus:ring-zertix-primary-500/20"
                             onchange="this.form.submit()">
                         <option value="">Todos los estados</option>
                         @foreach($availableStatuses as $key => $label)
@@ -70,7 +70,7 @@
 
                 {{-- Selector de Rango Manual --}}
                 <form action="{{ route('reports.ncf') }}" method="GET" 
-                    class="flex items-center bg-white border border-gray-200 rounded-xl p-1 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all min-w-max">
+                    class="flex items-center bg-white border border-gray-200 rounded-xl p-1 shadow-sm focus-within:ring-2 focus-within:ring-zertix-primary-500/20 transition-all min-w-max">
                     <input type="hidden" name="range" value="custom">
                     <input type="hidden" name="ncf_type" value="{{ $filters['ncf_type'] }}">
                     <input type="hidden" name="status" value="{{ $filters['status'] }}">
@@ -82,7 +82,7 @@
                             class="text-xs border-none focus:ring-0 p-1 text-gray-600 bg-transparent w-[110px]">
                     </div>
                     <button type="submit" 
-                            class="p-2 bg-gray-50 hover:bg-indigo-50 text-indigo-600 rounded-lg transition-colors border-l border-gray-100 flex-shrink-0">
+                            class="p-2 bg-gray-50 hover:bg-zertix-primary-50 text-zertix-primary-600 rounded-lg transition-colors border-l border-gray-100 flex-shrink-0">
                         <x-heroicon-s-magnifying-glass class="w-4 h-4"/>
                     </button>
                 </form>
@@ -123,7 +123,7 @@
                 title="NCF Disponibles" 
                 :value="number_format($stats['total_available'])" 
                 icon="document-text" 
-                color="indigo" 
+                color="primary" 
                 secondary-text="Correlativos totales activos"
             />
 
@@ -236,7 +236,7 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-8">
             <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                 <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Estado de Secuencias</h3>
-                <span class="px-2.5 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-800 rounded-full">
+                <span class="px-2.5 py-0.5 text-xs font-medium bg-zertix-primary-100 text-zertix-primary-800 rounded-full">
                     {{ count($activeSequences) }} secuencias
                 </span>
             </div>
@@ -262,7 +262,7 @@
                                 <div class="text-[11px] text-gray-500">{{ $seq->type_code }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="font-mono text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
+                                <span class="font-mono text-xs font-bold text-zertix-primary-600 bg-zertix-primary-50 px-2 py-1 rounded">
                                     {{ $seq->series }}
                                 </span>
                             </td>
@@ -320,7 +320,7 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                 <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Últimas Emisiones de NCF</h3>
-                <a href="{{ route('finance.ncf.logs.index') }}" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition">
+                <a href="{{ route('finance.ncf.logs.index') }}" class="text-xs font-semibold text-zertix-primary-600 hover:text-zertix-primary-800 transition">
                     Ver todos →
                 </a>
             </div>
@@ -340,7 +340,7 @@
                         @forelse($recentLogs as $log)
                         <tr class="hover:bg-gray-50 transition-colors">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="font-mono text-xs font-bold text-indigo-600 bg-indigo-50 px-2.5 py-1 rounded">
+                                <span class="font-mono text-xs font-bold text-zertix-primary-600 bg-zertix-primary-50 px-2.5 py-1 rounded">
                                     {{ $log->full_ncf }}
                                 </span>
                             </td>

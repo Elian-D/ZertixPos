@@ -7,7 +7,7 @@
                 
                 {{-- TÍTULO MINIMALISTA AÑADIDO AQUÍ --}}
                 <h2 class="text-xl font-medium text-gray-700 mb-6 border-b pb-3">
-                    {{ __('Editar Rol: ') }} <span class="text-indigo-600 font-semibold">{{ $role->name }}</span>
+                    {{ __('Editar Rol: ') }} <span class="text-zertix-primary-600 font-semibold">{{ $role->name }}</span>
                 </h2>
                 {{-- Se usa text-xl, font-medium y una línea sutil para el minimalismo. --}}
                 

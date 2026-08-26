@@ -5,7 +5,7 @@
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg p-8">
                 
                 <h2 class="text-xl font-medium text-gray-700 mb-6 border-b pb-3">
-                    {{ __('Asignar Permisos al rol: ') }} <span class="text-indigo-600 font-semibold">{{ $role->name }}</span>
+                    {{ __('Asignar Permisos al rol: ') }} <span class="text-zertix-primary-600 font-semibold">{{ $role->name }}</span>
                 </h2>
 
                 {{-- Mensaje de Sesión --}}
@@ -25,7 +25,7 @@
                             {{-- Botón Seleccionar Todos --}}
                             <button type="button" 
                                     @click="$nextTick(() => { document.querySelectorAll('input[type=checkbox]').forEach(el => el.checked = true) })"
-                                    class="text-indigo-600 hover:text-indigo-800 transition duration-150 flex items-center">
+                                    class="text-zertix-primary-600 hover:text-zertix-primary-800 transition duration-150 flex items-center">
                                 <x-heroicon-s-check-circle class="w-4 h-4 mr-1" />
                                 Seleccionar Todos
                             </button>
@@ -74,13 +74,13 @@
                         
                          {{-- Botón Cancelar (Minimalista) --}}
                         <a href="{{ route('config.roles.index') }}" 
-                           class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
+                           class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zertix-primary-500 transition duration-150">
                             Cancelar
                         </a>
                         
                         {{-- Botón de Guardar --}}
                         <button type="submit"
-                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
+                                class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-zertix-primary-600 hover:bg-zertix-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zertix-primary-500 transition duration-150">
                             <x-heroicon-s-check class="w-5 h-5 mr-2 -ml-1" />
                             Guardar Permisos
                         </button>

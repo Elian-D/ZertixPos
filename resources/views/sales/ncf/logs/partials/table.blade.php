@@ -4,7 +4,7 @@
             
             {{-- NCF Completo --}}
             @if(in_array('full_ncf', $visibleColumns))
-                <td class="px-6 py-4 font-mono font-bold text-indigo-700">
+                <td class="px-6 py-4 font-mono font-bold text-zertix-primary-700">
                     {{ $log->full_ncf }}
                 </td>
             @endif
@@ -20,7 +20,7 @@
             {{-- Venta Vinculada --}}
             @if(in_array('sale_number', $visibleColumns))
                 <td class="px-6 py-4 text-sm">
-                    <a href="{{ route('sales.index', $log->sale_id) }}" class="text-indigo-600 hover:underline font-medium">
+                    <a href="{{ route('sales.index', $log->sale_id) }}" class="text-zertix-primary-600 hover:underline font-medium">
                         #{{ $log->sale->number }}
                     </a>
                 </td>
@@ -82,7 +82,7 @@
             <td class="px-6 py-4 text-right">
                 <div class="flex items-center justify-end gap-2">
                     <button @click="$dispatch('open-modal', 'view-log-{{ $log->id }}')" 
-                            class="p-2 text-gray-400 hover:text-indigo-600 transition">
+                            class="p-2 text-gray-400 hover:text-zertix-primary-600 transition">
                         <x-heroicon-s-eye class="w-5 h-5" />
                     </button>
                 </div>

@@ -221,7 +221,7 @@
 
                             <div class="text-center">
                                 <span class="text-[10px] text-gray-400 uppercase font-bold block mb-1">Stock Resultante</span>
-                                <span class="text-2xl font-black text-indigo-700">{{ number_format($item->current_stock, 2) }}</span>
+                                <span class="text-2xl font-black text-zertix-primary-700">{{ number_format($item->current_stock, 2) }}</span>
                             </div>
                         </div>
                     </div>

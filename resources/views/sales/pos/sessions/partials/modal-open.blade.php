@@ -115,7 +115,7 @@
                             maxlength="4"
                             inputmode="numeric"
                             placeholder="••••"
-                            class="w-48 text-center text-4xl tracking-[0.8em] font-mono font-bold bg-white border-2 border-slate-300 rounded-xl shadow-inner focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all py-3"
+                            class="w-48 text-center text-4xl tracking-[0.8em] font-mono font-bold bg-white border-2 border-slate-300 rounded-xl shadow-inner focus:ring-2 focus:ring-zertix-primary-500 focus:border-zertix-primary-500 transition-all py-3"
                             :class="errorMessage ? 'border-red-300 shake' : ''"
                             :disabled="loading"
                             autocomplete="off"
@@ -125,7 +125,7 @@
                     {{-- Loading State --}}
                     <div x-show="loading" 
                          x-transition
-                         class="flex items-center justify-center gap-2 text-indigo-600">
+                         class="flex items-center justify-center gap-2 text-zertix-primary-600">
                         <svg class="animate-spin h-4 w-4" viewBox="0 0 24 24">
                             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
                             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>

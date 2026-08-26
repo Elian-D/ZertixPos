@@ -52,7 +52,7 @@ class AccountingAccount extends Model
         self::TYPE_ASSET     => 'bg-emerald-100 text-emerald-700 border-emerald-200 from-emerald-50',
         self::TYPE_LIABILITY => 'bg-red-100 text-red-700 border-red-200 from-red-50',
         self::TYPE_EQUITY    => 'bg-blue-100 text-blue-700 border-blue-200 from-blue-50',
-        self::TYPE_REVENUE   => 'bg-indigo-100 text-indigo-700 border-indigo-200 from-indigo-50',
+        self::TYPE_REVENUE   => 'bg-zertix-primary-100 text-zertix-primary-700 border-zertix-primary-200 from-zertix-primary-50',
         self::TYPE_COST      => 'bg-orange-100 text-orange-700 border-orange-200 from-orange-50',
         self::TYPE_EXPENSE   => 'bg-amber-100 text-amber-700 border-amber-200 from-amber-50',
     ];

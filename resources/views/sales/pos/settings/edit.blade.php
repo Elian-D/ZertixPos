@@ -10,7 +10,7 @@
                 {{-- SECCIÓN 1: CLIENTE Y FLUJO --}}
                 <section class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="p-4 sm:p-6 border-b border-slate-100 flex items-center gap-3 sm:gap-4">
-                        <span class="flex-none w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold">1</span>
+                        <span class="flex-none w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-zertix-primary-50 text-zertix-primary-600 flex items-center justify-center text-sm font-bold">1</span>
                         <h2 class="font-bold text-slate-800 text-base sm:text-lg">Cliente y Operación</h2>
                     </div>
                     <div class="p-4 sm:p-8 space-y-4 sm:space-y-6">
@@ -51,7 +51,7 @@
                 {{-- SECCIÓN 2: IMPRESIÓN --}}
                 <section class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
                     <div class="p-4 sm:p-6 border-b border-slate-100 flex items-center gap-3 sm:gap-4">
-                        <span class="flex-none w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center text-sm font-bold">2</span>
+                        <span class="flex-none w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-zertix-primary-50 text-zertix-primary-600 flex items-center justify-center text-sm font-bold">2</span>
                         <h2 class="font-bold text-slate-800 text-base sm:text-lg">Configuración de Ticket</h2>
                     </div>
                     <div class="p-4 sm:p-8 space-y-4 sm:space-y-6">
@@ -60,15 +60,15 @@
                             <div class="grid grid-cols-2 gap-3 sm:gap-4">
                                 <label class="cursor-pointer group">
                                     <input type="radio" name="receipt_size" value="58mm" class="sr-only peer" {{ $settings->receipt_size == '58mm' ? 'checked' : '' }}>
-                                    <div class="p-3 sm:p-4 border-2 border-slate-100 rounded-xl sm:rounded-2xl peer-checked:border-indigo-600 peer-checked:bg-indigo-50 transition-all text-center">
-                                        <p class="text-sm sm:text-base font-bold text-slate-700 group-hover:text-indigo-600">58mm</p>
+                                    <div class="p-3 sm:p-4 border-2 border-slate-100 rounded-xl sm:rounded-2xl peer-checked:border-zertix-primary-600 peer-checked:bg-zertix-primary-50 transition-all text-center">
+                                        <p class="text-sm sm:text-base font-bold text-slate-700 group-hover:text-zertix-primary-600">58mm</p>
                                         <p class="text-[9px] sm:text-[10px] text-slate-400 italic mt-0.5">Formato pequeño</p>
                                     </div>
                                 </label>
                                 <label class="cursor-pointer group">
                                     <input type="radio" name="receipt_size" value="80mm" class="sr-only peer" {{ $settings->receipt_size == '80mm' ? 'checked' : '' }}>
-                                    <div class="p-3 sm:p-4 border-2 border-slate-100 rounded-xl sm:rounded-2xl peer-checked:border-indigo-600 peer-checked:bg-indigo-50 transition-all text-center">
-                                        <p class="text-sm sm:text-base font-bold text-slate-700 group-hover:text-indigo-600">80mm</p>
+                                    <div class="p-3 sm:p-4 border-2 border-slate-100 rounded-xl sm:rounded-2xl peer-checked:border-zertix-primary-600 peer-checked:bg-zertix-primary-50 transition-all text-center">
+                                        <p class="text-sm sm:text-base font-bold text-slate-700 group-hover:text-zertix-primary-600">80mm</p>
                                         <p class="text-[9px] sm:text-[10px] text-slate-400 italic mt-0.5">Estándar POS</p>
                                     </div>
                                 </label>

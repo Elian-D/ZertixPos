@@ -17,7 +17,7 @@
             <div>
                 <h3 class="text-xl font-black text-gray-900 tracking-tight">Detalle de Venta</h3>
                 <div class="flex flex-wrap items-center gap-2 mt-1">
-                    <span class="text-xs font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                    <span class="text-xs font-mono text-zertix-primary-600 bg-zertix-primary-50 px-2 py-0.5 rounded border border-zertix-primary-100">
                         {{ $sale->number }}
                     </span>
                     @if($sale->pos_terminal_id)
@@ -48,7 +48,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
                 {{-- Cliente --}}
                 <div class="flex gap-3 items-start">
-                    <div class="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 shrink-0">
+                    <div class="w-8 h-8 bg-zertix-primary-50 rounded-lg flex items-center justify-center text-zertix-primary-600 shrink-0">
                         <x-heroicon-s-user class="w-4 h-4"/>
                     </div>
                     <div class="min-w-0">
@@ -192,9 +192,9 @@
                     @endforelse
 
                     {{-- Total Final --}}
-                    <div class="flex justify-between items-center bg-indigo-50 p-3 rounded-lg border border-indigo-100">
-                        <span class="text-xs font-black text-indigo-700 uppercase">Total Facturado</span>
-                        <span class="text-xl font-black text-indigo-700 font-mono">{{ config('regional.currency_symbol') }}{{ number_format($sale->grand_total, 2) }}</span>
+                    <div class="flex justify-between items-center bg-zertix-primary-50 p-3 rounded-lg border border-zertix-primary-100">
+                        <span class="text-xs font-black text-zertix-primary-700 uppercase">Total Facturado</span>
+                        <span class="text-xl font-black text-zertix-primary-700 font-mono">{{ config('regional.currency_symbol') }}{{ number_format($sale->grand_total, 2) }}</span>
                     </div>
 
                     {{-- Distribución de Métodos Usados --}}

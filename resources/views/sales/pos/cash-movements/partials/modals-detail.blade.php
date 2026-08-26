@@ -75,7 +75,7 @@
                                 <x-heroicon-s-document-check class="w-3 h-3"/> Estado Contable
                             </h4>
                             @if($movement->accounting_entry_id)
-                                <p class="text-xs font-bold text-indigo-600">Asiento #{{ $movement->accounting_entry_id }}</p>
+                                <p class="text-xs font-bold text-zertix-primary-600">Asiento #{{ $movement->accounting_entry_id }}</p>
                                 <p class="text-[10px] text-gray-400">Integrado automáticamente</p>
                             @else
                                 <p class="text-xs font-medium text-gray-400 italic">Sin asiento contable</p>
@@ -109,7 +109,7 @@
                         </h4>
                         @if($movement->account)
                             <p class="text-xs font-bold text-gray-700">{{ $movement->account->name }}</p>
-                            <p class="text-[10px] font-mono text-indigo-500">{{ $movement->account->code }}</p>
+                            <p class="text-[10px] font-mono text-zertix-primary-500">{{ $movement->account->code }}</p>
                         @else
                             <p class="text-xs text-gray-400 italic">Sin cuenta asignada</p>
                         @endif

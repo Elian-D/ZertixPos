@@ -110,7 +110,7 @@
                 'asset'     => 'from-emerald-50 to-white text-emerald-700 bg-emerald-100',
                 'liability' => 'from-red-50 to-white text-red-700 bg-red-100',
                 'equity'    => 'from-blue-50 to-white text-blue-700 bg-blue-100',
-                'revenue'   => 'from-indigo-50 to-white text-indigo-700 bg-indigo-100',
+                'revenue'   => 'from-zertix-primary-50 to-white text-zertix-primary-700 bg-zertix-primary-100',
                 'expense'   => 'from-amber-50 to-white text-amber-700 bg-amber-100',
             ];
             $style = $typeColors[$item->type] ?? 'from-gray-50 to-white text-gray-700 bg-gray-100';
@@ -127,7 +127,7 @@
                     <div>
                         <h3 class="text-xl font-bold text-gray-900 leading-tight">{{ $item->name }}</h3>
                         <div class="flex items-center gap-2 mt-1">
-                            <span class="text-xs font-mono font-bold px-2 py-0.5 bg-white border border-gray-200 text-indigo-600 rounded">
+                            <span class="text-xs font-mono font-bold px-2 py-0.5 bg-white border border-gray-200 text-zertix-primary-600 rounded">
                                 {{ $item->code }}
                             </span>
                             <span class="text-gray-400 text-xs">•</span>
@@ -150,19 +150,19 @@
                     {{-- Bloque de Cliente Vinculado (NUEVO) --}}
                         @if($item->client)
                         <section class="animate-in fade-in slide-in-from-left-4 duration-500">
-                            <h4 class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                            <h4 class="text-[10px] font-bold text-zertix-primary-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                                 <x-heroicon-s-user-circle class="w-4 h-4"/> Enlace Externo
                             </h4>
-                            <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 flex items-center gap-4">
-                                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-indigo-100">
-                                    <span class="text-indigo-600 font-black text-xs">{{ substr($item->client->name, 0, 2) }}</span>
+                            <div class="bg-zertix-primary-50/50 p-4 rounded-xl border border-zertix-primary-100 flex items-center gap-4">
+                                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-zertix-primary-100">
+                                    <span class="text-zertix-primary-600 font-black text-xs">{{ substr($item->client->name, 0, 2) }}</span>
                                 </div>
                                 <div>
-                                    <span class="text-[10px] text-indigo-400 uppercase font-bold block leading-none mb-1">Cliente Asociado</span>
+                                    <span class="text-[10px] text-zertix-primary-400 uppercase font-bold block leading-none mb-1">Cliente Asociado</span>
                                     <p class="text-sm font-bold text-gray-800">{{ $item->client->name }}</p>
                                     <div class="flex items-center gap-2 mt-0.5">
-                                        <span class="text-[9px] px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded font-mono">{{ $item->client->tax_label }}:  {{ $item->client->tax_id }}</span>
-                                        <a href="{{ route('clients.edit', $item->client->id) }}" class="text-[9px] text-indigo-600 hover:underline font-bold uppercase">Ver Perfil</a>
+                                        <span class="text-[9px] px-1.5 py-0.5 bg-zertix-primary-100 text-zertix-primary-700 rounded font-mono">{{ $item->client->tax_label }}:  {{ $item->client->tax_id }}</span>
+                                        <a href="{{ route('clients.edit', $item->client->id) }}" class="text-[9px] text-zertix-primary-600 hover:underline font-bold uppercase">Ver Perfil</a>
                                     </div>
                                 </div>
                             </div>
@@ -231,7 +231,7 @@
                     </x-ui.button>
                     
                     <button @click="$dispatch('close'); $dispatch('open-modal', 'edit-account-{{ $item->id }}')" 
-                            class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2 bg-indigo-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition shadow-md shadow-indigo-100">
+                            class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2 bg-zertix-primary-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-zertix-primary-700 transition shadow-md shadow-zertix-primary-100">
                         <x-heroicon-s-pencil class="w-4 h-4 mr-2" /> Editar Cuenta
                     </button>
                 </div>

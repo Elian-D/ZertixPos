@@ -28,7 +28,7 @@ class NcfLog extends Model
     public static function getStatusStyles(): array
     {
         return [
-            self::STATUS_USED   => 'bg-indigo-100 text-indigo-700 border-indigo-200 ring-indigo-500/10',
+            self::STATUS_USED   => 'bg-zertix-primary-100 text-zertix-primary-700 border-zertix-primary-200 ring-zertix-primary-500/10',
             self::STATUS_VOIDED => 'bg-gray-100 text-gray-700 border-gray-200 ring-gray-500/10',
         ];
     }

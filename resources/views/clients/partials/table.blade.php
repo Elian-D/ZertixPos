@@ -6,7 +6,7 @@
             @if($bulkActions)
                 <td class="px-4 py-4 text-center">
                     @unless($client->isConsumidorFinal())
-                        <input type="checkbox" value="{{ $client->id }}" class="row-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                        <input type="checkbox" value="{{ $client->id }}" class="row-checkbox rounded border-gray-300 text-zertix-primary-600 focus:ring-zertix-primary-500 cursor-pointer">
                     @endunless
                 </td>
             @endif
@@ -127,13 +127,13 @@
                 <div class="flex items-center gap-3 mt-2 md:mt-0">
                     {{-- BOTÓN RADICAL: VER TODO (MODAL) --}}
                     <button @click="$dispatch('open-modal', 'view-client-{{ $client->id }}')"
-                            class="bg-gray-100 text-gray-600 hover:bg-indigo-600 hover:text-white p-2 rounded-full transition-all shadow-sm"
+                            class="bg-gray-100 text-gray-600 hover:bg-zertix-primary-600 hover:text-white p-2 rounded-full transition-all shadow-sm"
                             title="Ver detalles completos">
                         <x-heroicon-s-eye class="w-5 h-5" />
                     </button>
 
                     @unless($client->isConsumidorFinal())
-                        <a href="{{ route('clients.edit', $client) }}" class="text-indigo-600 hover:text-indigo-900 p-2 rounded-full hover:bg-indigo-50">
+                        <a href="{{ route('clients.edit', $client) }}" class="text-zertix-primary-600 hover:text-zertix-primary-900 p-2 rounded-full hover:bg-zertix-primary-50">
                             <x-heroicon-s-pencil class="w-5 h-5" />
                         </a>
 

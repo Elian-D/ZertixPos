@@ -35,7 +35,7 @@
                 <td class="px-6 py-4">
                     @if($item->accountingAccount)
                         <div class="flex flex-col">
-                            <span class="text-xs font-mono font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded w-fit">
+                            <span class="text-xs font-mono font-bold text-zertix-primary-600 bg-zertix-primary-50 px-2 py-0.5 rounded w-fit">
                                 {{ $item->accountingAccount->code }}
                             </span>
                             <span class="text-[10px] text-gray-400 truncate max-w-[150px]" title="{{ $item->accountingAccount->name }}">
@@ -101,13 +101,13 @@
 
                     {{-- Ver Detalles --}}
                     <button @click="$dispatch('open-modal', 'view-warehouse-{{ $item->id }}')"
-                            class="text-gray-400 hover:text-indigo-600 p-1 rounded hover:bg-gray-100 transition-colors"
+                            class="text-gray-400 hover:text-zertix-primary-600 p-1 rounded hover:bg-gray-100 transition-colors"
                             title="Ver detalles completos">
                         <x-heroicon-s-eye class="w-5 h-5" />
                     </button>
 
                     <button @click="$dispatch('open-modal', 'edit-warehouse-{{ $item->id }}')"
-                            class="text-indigo-600 hover:text-indigo-900 p-1 rounded hover:bg-indigo-50 transition-colors">
+                            class="text-zertix-primary-600 hover:text-zertix-primary-900 p-1 rounded hover:bg-zertix-primary-50 transition-colors">
                         <x-heroicon-s-pencil class="w-5 h-5" />
                     </button>
 

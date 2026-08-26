@@ -50,12 +50,12 @@
                 <section>
                     <div class="max-w-xs">
                         @if($hasIssuedDocuments)
-                            <div class="bg-indigo-50/50 p-6 rounded-xl border border-indigo-100 flex flex-col items-center justify-center">
-                                <x-input-label value="Correlativo Actual" class="text-indigo-600 mb-1" />
-                                <span class="text-4xl font-mono font-black text-indigo-700">
+                            <div class="bg-zertix-primary-50/50 p-6 rounded-xl border border-zertix-primary-100 flex flex-col items-center justify-center">
+                                <x-input-label value="Correlativo Actual" class="text-zertix-primary-600 mb-1" />
+                                <span class="text-4xl font-mono font-black text-zertix-primary-700">
                                     {{ number_format($item->current_number, 0) }}
                                 </span>
-                                <div class="mt-2 flex items-center gap-1 text-indigo-400">
+                                <div class="mt-2 flex items-center gap-1 text-zertix-primary-400">
                                     <x-heroicon-s-lock-closed class="w-3 h-3" />
                                     <span class="text-[10px] font-bold uppercase">Bloqueado — ya hay documentos emitidos</span>
                                 </div>

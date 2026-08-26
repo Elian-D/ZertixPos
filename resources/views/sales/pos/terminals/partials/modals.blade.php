@@ -7,7 +7,7 @@
                 <div class="flex justify-between items-start">
                     <div class="flex gap-4 items-center">
                         <div class="relative">
-                            <div class="w-16 h-16 {{ $item->is_active ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500' }} rounded-xl flex items-center justify-center shadow-sm border-2 border-white">
+                            <div class="w-16 h-16 {{ $item->is_active ? 'bg-zertix-primary-100 text-zertix-primary-700' : 'bg-gray-100 text-gray-500' }} rounded-xl flex items-center justify-center shadow-sm border-2 border-white">
                                 @if($item->is_mobile)
                                     <x-heroicon-s-device-phone-mobile class="w-8 h-8"/>
                                 @else
@@ -18,7 +18,7 @@
                         <div>
                             <h3 class="text-xl font-bold text-gray-900 leading-tight">{{ $item->name }}</h3>
                             <div class="flex items-center gap-2 mt-1">
-                                <span class="text-xs font-mono font-semibold px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded border border-indigo-100 uppercase tracking-wider">
+                                <span class="text-xs font-mono font-semibold px-2 py-0.5 bg-zertix-primary-50 text-zertix-primary-700 rounded border border-zertix-primary-100 uppercase tracking-wider">
                                     ID: {{ str_pad($item->id, 4, '0', STR_PAD_LEFT) }}
                                 </span>
                                 <span class="text-gray-400 text-xs">•</span>
@@ -44,7 +44,7 @@
                     {{-- Columna Izquierda: Configuración Contable y Ventas --}}
                     <div class="space-y-6">
                         <section>
-                            <h4 class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-indigo-50 pb-2">
+                            <h4 class="text-xs font-bold text-zertix-primary-600 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-zertix-primary-50 pb-2">
                                 <x-heroicon-s-building-library class="w-4 h-4"/> Integración Contable
                             </h4>
                             <div class="space-y-3">

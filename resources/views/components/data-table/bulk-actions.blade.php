@@ -22,14 +22,14 @@
     style="display: none;"
 >
     {{-- Contenedor principal SIN overflow-hidden --}}
-    <div class="relative flex items-center shadow-sm border-2 border-indigo-600 rounded-lg w-full sm:w-auto bg-white">
+    <div class="relative flex items-center shadow-sm border-2 border-zertix-primary-600 rounded-lg w-full sm:w-auto bg-white">
         
         {{-- Botón Principal: Redondeado a la izquierda --}}
         <button @click="open = !open" type="button" 
-            class="flex-1 sm:flex-none flex items-center justify-center sm:justify-start px-3 py-1.5 bg-indigo-50 hover:bg-indigo-100 transition-colors border-r border-indigo-200 whitespace-nowrap rounded-l-[5px]">
-            <span x-text="selectedIds.length" class="flex items-center justify-center min-w-[20px] h-5 px-1 bg-indigo-700 text-white rounded-full text-[10px] font-bold mr-2"></span>
-            <span class="text-xs font-bold text-indigo-700">Acciones Masivas</span>
-            <x-heroicon-s-chevron-down class="ml-2 w-4 h-4 text-indigo-600" />
+            class="flex-1 sm:flex-none flex items-center justify-center sm:justify-start px-3 py-1.5 bg-zertix-primary-50 hover:bg-zertix-primary-100 transition-colors border-r border-zertix-primary-200 whitespace-nowrap rounded-l-[5px]">
+            <span x-text="selectedIds.length" class="flex items-center justify-center min-w-[20px] h-5 px-1 bg-zertix-primary-700 text-white rounded-full text-[10px] font-bold mr-2"></span>
+            <span class="text-xs font-bold text-zertix-primary-700">Acciones Masivas</span>
+            <x-heroicon-s-chevron-down class="ml-2 w-4 h-4 text-zertix-primary-600" />
         </button>
 
         {{-- Botón de Limpiar: Redondeado a la derecha --}}
@@ -64,9 +64,9 @@
                             requiresValue: {{ (isset($action['options']) || (isset($action['type']) && $action['type'] !== 'none')) ? 'true' : 'false' }},
                             options: @js($action['options'] ?? [])
                         })"
-                        class="flex items-center w-full px-3 py-2 text-sm text-gray-600 hover:bg-indigo-50 hover:text-indigo-700 rounded-lg transition group">
+                        class="flex items-center w-full px-3 py-2 text-sm text-gray-600 hover:bg-zertix-primary-50 hover:text-zertix-primary-700 rounded-lg transition group">
                         @if(isset($action['icon']))
-                            <x-dynamic-component :component="$action['icon']" class="w-4 h-4 mr-3 text-gray-400 group-hover:text-indigo-500" />
+                            <x-dynamic-component :component="$action['icon']" class="w-4 h-4 mr-3 text-gray-400 group-hover:text-zertix-primary-500" />
                         @endif
                         <span class="truncate">{{ $action['label'] }}</span>
                     </button>

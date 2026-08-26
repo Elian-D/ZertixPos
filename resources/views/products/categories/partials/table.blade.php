@@ -58,7 +58,7 @@
                         </button>
                     </form>
 
-                    <button @click="$dispatch('open-modal', 'edit-category-{{ $item->id }}')" class="text-indigo-600 hover:text-indigo-900 p-1 rounded hover:bg-indigo-50">
+                    <button @click="$dispatch('open-modal', 'edit-category-{{ $item->id }}')" class="text-zertix-primary-600 hover:text-zertix-primary-900 p-1 rounded hover:bg-zertix-primary-50">
                         <x-heroicon-s-pencil class="w-5 h-5" />
                     </button>
 

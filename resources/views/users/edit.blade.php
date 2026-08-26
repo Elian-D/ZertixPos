@@ -7,7 +7,7 @@
 
                 {{-- TÍTULO MINIMALISTA --}}
                 <h2 class="text-xl font-medium text-gray-700 mb-6 border-b pb-3">
-                    {{ __('Editar usuario: ') }} <span class="text-indigo-600 font-semibold">{{ $user->name }}</span>
+                    {{ __('Editar usuario: ') }} <span class="text-zertix-primary-600 font-semibold">{{ $user->name }}</span>
                 </h2>
                 
                 <form action="{{ route('config.users.update', $user) }}" method="POST">
@@ -59,7 +59,7 @@
                                         placeholder="Escribe una contraseña segura"
                                         minlength="8"
                                         class="w-full border-gray-300 rounded-md shadow-sm text-base py-2.5 pl-4 pr-12
-                                                focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50
+                                                focus:border-zertix-primary-500 focus:ring focus:ring-zertix-primary-500 focus:ring-opacity-50
                                                 @error('password') border-red-500 focus:border-red-500 focus:ring-red-200 @enderror">
                                 
                                 {{-- Botón para mostrar/ocultar la contraseña (ÚNICO BOTÓN) --}}
@@ -97,7 +97,7 @@
                                         placeholder="Repite la contraseña"
                                         minlength="8"
                                         class="w-full border-gray-300 rounded-md shadow-sm text-base py-2.5 pl-4 pr-12
-                                                focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50
+                                                focus:border-zertix-primary-500 focus:ring focus:ring-zertix-primary-500 focus:ring-opacity-50
                                                 @error('password') border-red-500 focus:border-red-500 focus:ring-red-200 @enderror">
                                 
                                 {{-- ELIMINAMOS EL BOTÓN Y EL @error('password_confirmation') DE AQUÍ --}}
