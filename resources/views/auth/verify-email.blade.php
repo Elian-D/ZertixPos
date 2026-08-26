@@ -1,31 +1,30 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('Thanks for signing up! Before getting started, could you verify your email address by clicking on the link we just emailed to you? If you didn\'t receive the email, we will gladly send you another.') }}
+    <div>
+        <h3 class="font-bold text-2xl text-slate-800 mb-2">Verifica tu correo</h3>
+        <p class="text-sm text-slate-500">
+            {{ __('¡Gracias por registrarte! Antes de comenzar, ¿podrías verificar tu correo electrónico haciendo clic en el enlace que acabamos de enviarte? Si no recibiste el correo, con gusto te enviaremos otro.') }}
+        </p>
     </div>
 
     @if (session('status') == 'verification-link-sent')
-        <div class="mb-4 font-medium text-sm text-green-600">
-            {{ __('A new verification link has been sent to the email address you provided during registration.') }}
+        <div class="text-sm font-medium text-state-success">
+            {{ __('Se ha enviado un nuevo enlace de verificación al correo electrónico que proporcionaste.') }}
         </div>
     @endif
 
-    <div class="mt-4 flex items-center justify-between">
+    <div class="flex items-center justify-between gap-4">
         <form method="POST" action="{{ route('verification.send') }}">
             @csrf
-
-            <div>
-                <x-primary-button>
-                    {{ __('Resend Verification Email') }}
-                </x-primary-button>
-            </div>
+            <x-ui.button type="submit" variant="primary">
+                {{ __('Reenviar correo de verificación') }}
+            </x-ui.button>
         </form>
 
         <form method="POST" action="{{ route('logout') }}">
             @csrf
-
-            <button type="submit" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zertix-primary-500">
-                {{ __('Log Out') }}
-            </button>
+            <x-ui.button type="submit" variant="secondary" appearance="ghost">
+                {{ __('Cerrar sesión') }}
+            </x-ui.button>
         </form>
     </div>
 </x-guest-layout>

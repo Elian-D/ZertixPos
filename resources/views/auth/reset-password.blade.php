@@ -1,39 +1,52 @@
 <x-guest-layout>
-    <form method="POST" action="{{ route('password.store') }}">
+    <div>
+        <h3 class="font-bold text-2xl text-slate-800 mb-2">Restablecer contraseña</h3>
+        <p class="text-sm text-slate-500">Elige una nueva contraseña para tu cuenta.</p>
+    </div>
+
+    <form method="POST" action="{{ route('password.store') }}" class="flex flex-col gap-5">
         @csrf
 
         <!-- Password Reset Token -->
         <input type="hidden" name="token" value="{{ $request->route('token') }}">
 
         <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email', $request->email)" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+        <x-ui.forms.input
+            type="email"
+            name="email"
+            label="Correo electrónico"
+            icon-left="heroicon-s-envelope"
+            value="{{ old('email', $request->email) }}"
+            :error="$errors->first('email')"
+            required
+            autofocus
+            autocomplete="username"
+        />
 
         <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-            <x-text-input id="password" class="block mt-1 w-full" type="password" name="password" required autocomplete="new-password" />
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+        <x-ui.forms.input
+            type="password"
+            name="password"
+            label="Contraseña"
+            icon-left="heroicon-s-lock-closed"
+            :error="$errors->first('password')"
+            required
+            autocomplete="new-password"
+        />
 
         <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+        <x-ui.forms.input
+            type="password"
+            name="password_confirmation"
+            label="Confirmar contraseña"
+            icon-left="heroicon-s-lock-closed"
+            :error="$errors->first('password_confirmation')"
+            required
+            autocomplete="new-password"
+        />
 
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                                type="password"
-                                name="password_confirmation" required autocomplete="new-password" />
-
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Reset Password') }}
-            </x-primary-button>
-        </div>
+        <x-ui.button type="submit" variant="primary" :fullWidth="true" icon-right="heroicon-s-arrow-right" size="lg">
+            Restablecer contraseña
+        </x-ui.button>
     </form>
 </x-guest-layout>

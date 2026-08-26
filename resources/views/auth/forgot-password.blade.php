@@ -1,25 +1,32 @@
 <x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600">
-        {{ __('¿Olvidaste tu contraseña? No hay problema. Simplemente indícanos tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña y podrás elegir una nueva.') }}
+    <div>
+        <h3 class="font-bold text-2xl text-slate-800 mb-2">Recuperar contraseña</h3>
+        <p class="text-sm text-slate-500">
+            {{ __('¿Olvidaste tu contraseña? No hay problema. Simplemente indícanos tu correo electrónico y te enviaremos un enlace para restablecer tu contraseña y podrás elegir una nueva.') }}
+        </p>
     </div>
 
     <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    <x-auth-session-status :status="session('status')" />
 
-    <form method="POST" action="{{ route('password.email') }}">
+    <form method="POST" action="{{ route('password.email') }}" class="flex flex-col gap-5">
         @csrf
 
         <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Correo')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus placeholder="tu-correo@gmail.com" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+        <x-ui.forms.input
+            type="email"
+            name="email"
+            label="Correo electrónico"
+            icon-left="heroicon-s-envelope"
+            placeholder="tu-correo@gmail.com"
+            value="{{ old('email') }}"
+            :error="$errors->first('email')"
+            required
+            autofocus
+        />
 
-        <div class="flex items-center justify-center mt-4">
-            <x-primary-button class=" justify-center bg-custom-gradient-2 ms-3 ml-0 w-full text-center ms-0 hover:text-blue-200">
-                {{ __('Restablecer contraseña') }}
-            </x-primary-button>
-        </div>
+        <x-ui.button type="submit" variant="primary" :fullWidth="true" icon-right="heroicon-s-arrow-right" size="lg">
+            Restablecer contraseña
+        </x-ui.button>
     </form>
 </x-guest-layout>

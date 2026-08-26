@@ -26,6 +26,18 @@ class Input extends Component
     }
 
     /**
+     * REQ-7.11: todo `type="password"` renderizado por este componente trae el
+     * toggle mostrar/ocultar de fábrica — no es un prop opt-in porque no hay
+     * ningún caso real en el sistema donde un campo de contraseña deba
+     * ocultar la opción de revelarla. El icono derecho estático (`iconRight`)
+     * se ignora en este caso: el slot derecho lo ocupa el botón del toggle.
+     */
+    public function isPassword(): bool
+    {
+        return $this->type === 'password';
+    }
+
+    /**
      * Clases del <input> según estado — estilo "caja" (border+rounded-lg, no
      * underline como el original de Orvian), mismo radio de 8px que
      * x-ui.button/x-ui.badge para consistencia de todo el sistema.
@@ -43,7 +55,7 @@ class Input extends Component
               . 'disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-100 disabled:cursor-not-allowed';
 
         $pl = $this->iconLeft ? 'pl-10' : '';
-        $pr = ($this->iconRight || $this->error) ? 'pr-10' : '';
+        $pr = ($this->iconRight || $this->error || $this->isPassword()) ? 'pr-10' : '';
 
         if ($this->error) {
             return trim("{$base} {$pl} {$pr} border-state-error bg-state-error/5 text-state-error focus:border-state-error focus:ring-state-error/20");

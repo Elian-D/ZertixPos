@@ -1,11 +1,13 @@
 @props([
     'type' => 'full', // 'full' (imagotipo, ícono + wordmark) o 'icon' (solo isotipo)
+    'dark' => false,  // true → variante "-dark" (sin el navy #0E253D, solo el verde) para fondos oscuros
 ])
 
 @php
     $isFull = $type === 'full';
-    $src = $isFull ? asset('img/logos/imagotipo.svg') : asset('img/logos/isotipo.svg');
-    $alt = $isFull ? 'ZertixPOS' : 'ZertixPOS';
+    $file = ($isFull ? 'imagotipo' : 'isotipo') . ($dark ? '-dark' : '');
+    $src = asset("img/logos/{$file}.svg");
+    $alt = 'ZertixPOS';
 @endphp
 
 {{--
@@ -14,8 +16,14 @@
       inventario inteligente"), viewBox 2074x644 (~3.22:1, ancho).
     - isotipo.svg   → solo el ícono "Z" con los pines de cobertura, viewBox
       497x644 (~0.77:1, más alto que ancho) — usado en el sidebar colapsado.
-    Ambos ya traen sus colores de marca embebidos en el propio SVG (verde
-    #7AC943 / navy #0E253D), no dependen de las clases de Tailwind.
+    Ambos traen sus colores de marca embebidos en el propio SVG (verde
+    #7AC943 / navy #0E253D), no dependen de las clases de Tailwind. Las
+    variantes "-dark" (creadas para el favicon en prefers-color-scheme:
+    dark, ver app-layout.blade.php) quitan el fill navy y dejan solo el
+    verde — por eso REQ-7.11 las reutiliza acá con `:dark="true"` para el
+    panel navy del login/guest layout, donde el navy del logo original se
+    perdería contra el fondo (mismo archivo, uso distinto: "contexto de
+    fondo oscuro", no "tema oscuro del navegador").
 --}}
 <img
     src="{{ $src }}"
