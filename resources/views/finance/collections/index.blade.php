@@ -7,33 +7,32 @@
 </script>
 
 <x-app-layout>
-    <div class="w-full max-w-7xl mx-auto py-4 px-2 sm:px-3 lg:px-4">
-        <div class="bg-white shadow-xl rounded-xl">
-            <x-ui.toasts />
+    <div class="p-4 md:p-6 flex flex-col gap-6">
+        <x-ui.page-header title="Recibos de Cobro" description="Registra y consulta los cobros realizados por los clientes sobre facturas y cuentas por cobrar." :count="$items->total()" countLabel="cobros">
+            <x-slot name="actions">
+                @can('create payments')
+                    <x-ui.button href="{{ route('finance.collections.create') }}" variant="primary" iconLeft="heroicon-s-plus">
+                        Nuevo Cobro
+                    </x-ui.button>
+                @endcan
+            </x-slot>
 
-            <div class="p-6">
-                <x-page-toolbar title="Recibos de Cobro">
-                    <x-slot name="actions">
-                        @can('create payments')
-                            <a href="{{ route('finance.collections.create') }}"
-                               class="inline-flex items-center px-4 py-2 bg-indigo-600 rounded-md text-xs font-semibold text-white uppercase hover:bg-indigo-700 transition">
-                                <x-heroicon-s-plus class="w-4 h-4 mr-2" />
-                                Nuevo Cobro
-                            </a>
-                        @endcan
+            <x-slot:secondary>
+                <x-ui.button
+                    variant="secondary" appearance="ghost" class="w-full justify-start" iconLeft="heroicon-s-arrow-down-tray"
+                    x-on:click="const form = document.getElementById('payments-filters'); const params = form ? new URLSearchParams(new FormData(form)).toString() : ''; window.location.href = '{{ route('finance.collections.export') }}' + (params ? '?' + params : '');"
+                >
+                    Exportar (Excel)
+                </x-ui.button>
+            </x-slot:secondary>
+        </x-ui.page-header>
 
-                        <x-data-table.export-button :route="route('finance.collections.export')" formId="payments-filters" />
-                    </x-slot>
-                </x-page-toolbar>
+        {{-- Contenedor de Filtros --}}
+        @include('finance.collections.partials.filters')
 
-                {{-- Contenedor de Filtros --}}
-                @include('finance.collections.partials.filters')
-
-                {{-- Tabla AJAX --}}
-                <div id="payments-table" class="w-full overflow-hidden mt-4">
-                    @include('finance.collections.partials.table')
-                </div>
-            </div>
+        {{-- Tabla AJAX --}}
+        <div id="payments-table" class="w-full overflow-hidden">
+            @include('finance.collections.partials.table')
         </div>
     </div>
 </x-app-layout>

@@ -2,14 +2,12 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         {{-- Cliente --}}
         <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Cliente</label>
-            <select wire:model="clientId" class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500">
-                <option value="">Seleccione un cliente...</option>
+            <x-ui.forms.select label="Cliente" wire:model="clientId" placeholder="Seleccione un cliente..."
+                :error="$errors->first('clientId')">
                 @foreach($clients as $client)
                     <option value="{{ $client->id }}">{{ $client->name }}</option>
                 @endforeach
-            </select>
-            @error('clientId') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+            </x-ui.forms.select>
         </div>
 
         {{-- Buscador de Productos (Inyectamos el otro componente aquí) --}}
@@ -93,8 +91,8 @@
     {{-- Resumen y Acción --}}
     <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
         <div class="w-full md:w-1/2">
-            <label class="block text-sm font-medium text-gray-700 mb-1">Notas (Opcional)</label>
-            <textarea wire:model="notes" rows="3" class="w-full border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"></textarea>
+            <x-ui.forms.textarea label="Notas (Opcional)" wire:model="notes" :rows="3"
+                :error="$errors->first('notes')"></x-ui.forms.textarea>
         </div>
 
         <div class="w-full md:w-1/3 bg-gray-50 p-4 rounded-lg">

@@ -20,7 +20,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             @foreach ($this->satelliteModules() as $module)
                 @php $on = $selections[$module['key']] ?? false; @endphp
-                <div class="bg-white rounded-2xl border p-5 transition-colors {{ $on ? 'border-zertix-primary/40 ring-1 ring-zertix-primary/20' : 'border-gray-100' }}">
+                <div wire:key="satellite-{{ $module['key'] }}" class="bg-white rounded-2xl border p-5 transition-colors {{ $on ? 'border-zertix-primary/40 ring-1 ring-zertix-primary/20' : 'border-gray-100' }}">
                     <div class="flex items-start justify-between gap-4">
                         <div class="flex items-start gap-3 min-w-0">
                             <span class="shrink-0 w-10 h-10 rounded-xl bg-zertix-primary/10 text-zertix-primary flex items-center justify-center">
@@ -37,10 +37,18 @@
                         @if (! $module['includedInPlan'])
                             <a href="#" class="text-[11px] font-bold text-amber-600 uppercase tracking-wide shrink-0 mt-1">Mejorar Plan</a>
                         @else
-                            <button type="button" wire:click="toggle('{{ $module['key'] }}')"
-                                class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 {{ $on ? 'bg-zertix-primary' : 'bg-gray-200' }}">
-                                <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform {{ $on ? 'translate-x-6' : 'translate-x-1' }}"></span>
-                            </button>
+                            {{-- wire:model de ruta anidada + @entangle (patrón documentado en
+                                 docs/ui/forms.md): mantiene el mismo nodo Alpine vivo entre
+                                 renders, así que la animación del switch no se pierde. La
+                                 cascada/advertencias de toggle() ahora vive en el hook
+                                 updatedSelections() de SystemFeatures.php, que Livewire llama
+                                 automáticamente en cada escritura a "selections.*". --}}
+                            <x-ui.forms.toggle
+                                name="module_{{ $module['key'] }}"
+                                :checked="$on"
+                                wire:model="selections.{{ $module['key'] }}"
+                                class="shrink-0"
+                            />
                         @endif
                     </div>
 
@@ -68,7 +76,7 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             @foreach ($this->flexibleModules() as $module)
                 @php $on = $selections[$module['key']] ?? true; @endphp
-                <div class="bg-white rounded-2xl border p-5 transition-colors {{ $on ? 'border-zertix-primary/40 ring-1 ring-zertix-primary/20' : 'border-gray-100' }}">
+                <div wire:key="flexible-{{ $module['key'] }}" class="bg-white rounded-2xl border p-5 transition-colors {{ $on ? 'border-zertix-primary/40 ring-1 ring-zertix-primary/20' : 'border-gray-100' }}">
                     <div class="flex items-start justify-between gap-4">
                         <div class="flex items-start gap-3 min-w-0">
                             <span class="shrink-0 w-10 h-10 rounded-xl bg-zertix-primary/10 text-zertix-primary flex items-center justify-center">
@@ -82,10 +90,12 @@
                             </div>
                         </div>
 
-                        <button type="button" wire:click="toggle('{{ $module['key'] }}')"
-                            class="relative inline-flex h-6 w-11 items-center rounded-full transition-colors shrink-0 {{ $on ? 'bg-zertix-primary' : 'bg-gray-200' }}">
-                            <span class="inline-block h-4 w-4 transform rounded-full bg-white transition-transform {{ $on ? 'translate-x-6' : 'translate-x-1' }}"></span>
-                        </button>
+                        <x-ui.forms.toggle
+                            name="module_{{ $module['key'] }}"
+                            :checked="$on"
+                            wire:model="selections.{{ $module['key'] }}"
+                            class="shrink-0"
+                        />
                     </div>
 
                     @if ($warnings[$module['key']] ?? null)

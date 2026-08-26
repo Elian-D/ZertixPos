@@ -28,16 +28,14 @@
             {{-- 1. Selección de Sesión --}}
             @if(!$sessionId)
                 <div>
-                    <x-input-label for="pos_session_id" value="Sesión de Caja Activa" />
-                    <select name="pos_session_id" id="pos_session_id" 
-                        class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm" required>
-                        <option value="">Seleccione una sesión...</option>
+                    <x-ui.forms.select label="Sesión de Caja Activa" name="pos_session_id" id="pos_session_id"
+                        required placeholder="Seleccione una sesión...">
                         @foreach($sessions as $s)
                             <option value="{{ $s->id }}">
                                 {{ $s->terminal?->name ?? 'Sin Terminal' }} - {{ $s->user?->name }} (#{{ $s->id }})
                             </option>
                         @endforeach
-                    </select>
+                    </x-ui.forms.select>
                 </div>
             @endif
 
@@ -65,14 +63,12 @@
 
             {{-- NUEVO: 3. Selección de Cuenta Contable (Dinámica) --}}
             <div>
-                <x-input-label for="accounting_account_id" value="Cuenta Contable (Contrapartida)" />
-                <select name="accounting_account_id" id="accounting_account_id" 
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm" required>
-                    <option value="">Seleccione cuenta...</option>
+                <x-ui.forms.select label="Cuenta Contable (Contrapartida)" name="accounting_account_id"
+                    id="accounting_account_id" required placeholder="Seleccione cuenta...">
                     <template x-for="account in currentAccounts" :key="account.id">
                         <option :value="account.id" x-text="account.code + ' - ' + account.name"></option>
                     </template>
-                </select>
+                </x-ui.forms.select>
                 <p class="mt-1 text-[10px] text-gray-500 italic">
                     Seleccione el destino o procedencia contable del dinero.
                 </p>
@@ -97,23 +93,21 @@
 
             {{-- 5. Motivo --}}
             <div>
-                <x-input-label for="reason" value="Motivo / Razón" />
-                <textarea 
-                    id="reason" name="reason" rows="2"
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm" 
-                    placeholder="Ej: Pago a proveedor de limpieza, ingreso por cambio..." 
-                    required></textarea>
-                <x-input-error :messages="$errors->get('reason')" class="mt-2" />
+                <x-ui.forms.textarea label="Motivo / Razón" id="reason" name="reason" :rows="2"
+                    placeholder="Ej: Pago a proveedor de limpieza, ingreso por cambio..."
+                    required :error="$errors->first('reason')"></x-ui.forms.textarea>
             </div>
         </div>
 
         <div class="mt-8 flex justify-end gap-3">
-            <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-            <x-primary-button 
+            <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+            <x-ui.button
+                type="submit"
+                variant="primary"
                 ::class="isOut ? 'bg-amber-600 hover:bg-amber-700' : 'bg-green-600 hover:bg-green-700'"
                 class="transition-colors duration-200">
                 <span x-text="isOut ? 'Registrar Salida' : 'Registrar Entrada'"></span>
-            </x-primary-button>
+            </x-ui.button>
         </div>
     </form>
 </x-modal>

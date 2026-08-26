@@ -77,7 +77,7 @@
         </h2>
 
         <p class="mt-2 text-sm text-gray-500 text-center">
-            Vas a aplicar la acción <span class="font-bold text-indigo-600" x-text="label"></span> a 
+            Vas a aplicar la acción <span class="font-bold text-zertix-primary-600" x-text="label"></span> a 
             <span class="font-bold text-gray-900" x-text="ids.length"></span> registros.
         </p>
 
@@ -87,34 +87,30 @@
                 <label class="block text-xs font-bold text-gray-600 uppercase mb-2" x-text="'Nuevo valor para ' + label"></label>
                 
                 <template x-if="inputType === 'select'">
-                    <select x-model="selectedValue" class="w-full border-gray-300 rounded-lg text-sm">
-                        <option value="">Seleccionar...</option>
+                    <x-ui.forms.select x-model="selectedValue" placeholder="Seleccionar...">
                         <template x-for="opt in options" :key="opt.id">
                             <option :value="opt.id" x-text="opt.label"></option>
                         </template>
-                    </select>
+                    </x-ui.forms.select>
                 </template>
 
                 <template x-if="inputType === 'text'">
-                    <input type="text" x-model="selectedValue" 
-                        class="w-full border-gray-300 rounded-lg text-sm" 
-                        placeholder="Escriba el nuevo valor...">
+                    <x-ui.forms.input type="text" x-model="selectedValue"
+                        placeholder="Escriba el nuevo valor..." />
                 </template>
 
                 <template x-if="inputType === 'number'">
-                    <input type="number" x-model="selectedValue" 
-                        class="w-full border-gray-300 rounded-lg text-sm">
+                    <x-ui.forms.input type="number" x-model="selectedValue" />
                 </template>
             </div>
 
             <label class="block text-xs font-bold text-gray-600 uppercase mb-2">
-                Escribe <span class="text-indigo-600 font-black" x-text="label.toLowerCase()"></span> para confirmar:
+                Escribe <span class="text-zertix-primary-600 font-black" x-text="label.toLowerCase()"></span> para confirmar:
             </label>
-            <input type="text" 
+            <x-ui.forms.input type="text"
                 x-model="confirmText"
                 @keydown.enter="submit"
-                class="w-full border-gray-300 rounded-lg shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                :placeholder="'Escribe ' + label.toLowerCase() + '...'">
+                x-bind:placeholder="'Escribe ' + label.toLowerCase() + '...'" />
         </div>
 
         <div class="mt-6 flex justify-end gap-3">
@@ -127,7 +123,7 @@
             <button type="button" 
                 @click="submit"
                 :disabled="confirmText.toLowerCase() !== label.toLowerCase() || loading"
-                class="inline-flex items-center px-4 py-2 text-sm font-bold text-white bg-indigo-600 rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition">
+                class="inline-flex items-center px-4 py-2 text-sm font-bold text-white bg-zertix-primary-600 rounded-lg hover:bg-zertix-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition">
                 <template x-if="loading">
                     <x-heroicon-s-arrow-path class="w-4 h-4 mr-2 animate-spin" />
                 </template>

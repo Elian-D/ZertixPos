@@ -13,7 +13,7 @@
             @if(in_array('terminal_id', $visibleColumns))
                 <td class="px-6 py-4 text-sm">
                     <div class="flex items-center font-medium text-gray-900">
-                        <x-heroicon-s-computer-desktop class="w-4 h-4 mr-2 text-indigo-500" />
+                        <x-heroicon-s-computer-desktop class="w-4 h-4 mr-2 text-zertix-primary-500" />
                         {{ $session->terminal->name ?? 'N/A' }}
                     </div>
                 </td>
@@ -43,12 +43,16 @@
             @if(in_array('status', $visibleColumns))
                 <td class="px-6 py-4 text-center">
                     @php
-                        $sStyles = \App\Models\Sales\Pos\PosSession::getStatusStyles();
                         $sLabels = \App\Models\Sales\Pos\PosSession::getStatuses();
+                        $sVariant = match($session->status) {
+                            \App\Models\Sales\Pos\PosSession::STATUS_OPEN => 'success',
+                            \App\Models\Sales\Pos\PosSession::STATUS_CLOSED => 'slate',
+                            default => 'slate',
+                        };
                     @endphp
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm ring-1 ring-inset {{ $sStyles[$session->status] ?? 'bg-gray-100 text-gray-700' }}">
+                    <x-ui.badge :variant="$sVariant" size="sm" :dot="false">
                         {{ $sLabels[$session->status] ?? $session->status }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 
@@ -134,7 +138,7 @@
                 <div class="flex items-center justify-end gap-2">
                     {{-- Ver Reporte de Sesión (X/Z) --}}
                     <a href="{{ route('sales.pos.sessions.show', $session) }}" 
-                       class="bg-white border border-gray-200 text-gray-500 hover:bg-indigo-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
+                       class="bg-white border border-gray-200 text-gray-500 hover:bg-zertix-primary-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
                        title="Ver Reporte Detallado">
                         <x-heroicon-s-document-chart-bar class="w-4 h-4" />
                     </a>

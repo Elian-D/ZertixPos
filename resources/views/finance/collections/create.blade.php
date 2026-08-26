@@ -41,7 +41,6 @@
             class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
             @csrf
 
-            <x-ui.toasts />
             
             <x-form-header
                 title="Nuevo Recibo de Cobro"
@@ -58,31 +57,31 @@
                     </h3>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="w-full">
-                            <x-input-label value="Cliente" class="text-xs" />
-                            <select name="client_id" 
-                                    x-model="selectedClientId" 
-                                    @change="selectedReceivableId = ''; paymentAmount = 0"
-                                    class="w-full mt-1 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded-xl shadow-sm text-sm">
-                                <option value="">Seleccione un cliente...</option>
-                                <template x-for="client in clients" :key="client.id">
-                                    <option :value="client.id" x-text="`${client.name} (Saldo: {{ config('regional.currency_symbol') }}${client.balance})`"></option>
-                                </template>
-                            </select>
-                        </div>
+                        <x-ui.forms.select
+                            label="Cliente"
+                            name="client_id"
+                            x-model="selectedClientId"
+                            @change="selectedReceivableId = ''; paymentAmount = 0"
+                            placeholder="Seleccione un cliente..."
+                        >
+                            <template x-for="client in clients" :key="client.id">
+                                <option :value="client.id" x-text="`${client.name} (Saldo: {{ config('regional.currency_symbol') }}${client.balance})`"></option>
+                            </template>
+                        </x-ui.forms.select>
 
-                        <div class="w-full">
-                            <x-input-label value="Documento / Factura" class="text-xs" />
-                            <select name="receivable_id" 
-                                    x-model="selectedReceivableId"
-                                    :disabled="!selectedClientId"
-                                    class="w-full mt-1 border-gray-200 focus:border-emerald-500 focus:ring-emerald-500 rounded-xl shadow-sm text-sm disabled:bg-gray-50">
-                                <option value="">Seleccione factura...</option>
-                                <template x-for="receivable in filteredReceivables" :key="receivable.id">
-                                    <option :value="receivable.id" x-text="`${receivable.document_number} — Saldo: {{ config('regional.currency_symbol') }}${receivable.current_balance}`"></option>
-                                </template>
-                            </select>
-                        </div>
+                        <x-ui.forms.select
+                            label="Documento / Factura"
+                            name="receivable_id"
+                            x-model="selectedReceivableId"
+                            x-bind:disabled="!selectedClientId"
+                            placeholder="Seleccione factura..."
+                            :error="$errors->first('receivable_id')"
+                            required
+                        >
+                            <template x-for="receivable in filteredReceivables" :key="receivable.id">
+                                <option :value="receivable.id" x-text="`${receivable.document_number} — Saldo: {{ config('regional.currency_symbol') }}${receivable.current_balance}`"></option>
+                            </template>
+                        </x-ui.forms.select>
                     </div>
                 </section>
 
@@ -113,19 +112,26 @@
 
                             {{-- Otros campos --}}
                             <div class="md:col-span-2 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <div>
-                                    <x-input-label value="Método" />
-                                    <select name="tipo_pago_id" x-model="selectedTipoPagoId" class="w-full mt-1 border-gray-200 rounded-xl text-sm shadow-sm" required>
-                                        <option value="">Seleccione...</option>
-                                        @foreach($paymentMethods as $method)
-                                            <option value="{{ $method->id }}">{{ $method->nombre }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div>
-                                    <x-input-label value="Fecha" />
-                                    <input type="date" name="payment_date" class="w-full mt-1 border-gray-200 rounded-xl text-sm shadow-sm" value="{{ date('Y-m-d') }}" required />
-                                </div>
+                                <x-ui.forms.select
+                                    label="Método"
+                                    name="tipo_pago_id"
+                                    x-model="selectedTipoPagoId"
+                                    placeholder="Seleccione..."
+                                    :error="$errors->first('tipo_pago_id')"
+                                    required
+                                >
+                                    @foreach($paymentMethods as $method)
+                                        <option value="{{ $method->id }}">{{ $method->nombre }}</option>
+                                    @endforeach
+                                </x-ui.forms.select>
+                                <x-ui.forms.input
+                                    label="Fecha"
+                                    type="date"
+                                    name="payment_date"
+                                    value="{{ date('Y-m-d') }}"
+                                    :error="$errors->first('payment_date')"
+                                    required
+                                />
                             </div>
                         </div>
 
@@ -133,19 +139,26 @@
                             {{-- Oculta para Efectivo/Tarjeta — no hay nada que referenciar
                                  (Fase 6, REQ-6.9). --}}
                             <div class="md:col-span-1" x-show="!isCashOrCardMethod" x-cloak>
-                                <x-input-label for="reference" value="Referencia Bancaria / Cheque" />
-                                <x-text-input id="reference" name="reference" type="text"
-                                    class="w-full mt-1 rounded-xl bg-gray-50"
-                                    placeholder="Opcional (Ej: Trans-9928)" />
-                                <x-input-error :messages="$errors->get('reference')" class="mt-2" />
+                                <x-ui.forms.input
+                                    label="Referencia Bancaria / Cheque"
+                                    id="reference"
+                                    name="reference"
+                                    type="text"
+                                    class="bg-gray-50"
+                                    placeholder="Opcional (Ej: Trans-9928)"
+                                    :error="$errors->first('reference')"
+                                />
                             </div>
 
                             <div class="md:col-span-2">
-                                <x-input-label for="note" value="Observaciones del Cobro" />
-                                <textarea id="note" name="note" rows="2"
-                                    class="w-full mt-1 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-xl shadow-sm"
-                                    placeholder="Detalles adicionales sobre este cobro..."></textarea>
-                                <x-input-error :messages="$errors->get('note')" class="mt-2" />
+                                <x-ui.forms.textarea
+                                    label="Observaciones del Cobro"
+                                    id="note"
+                                    name="note"
+                                    :rows="2"
+                                    placeholder="Detalles adicionales sobre este cobro..."
+                                    :error="$errors->first('note')"
+                                ></x-ui.forms.textarea>
                             </div>
                         </div>
                     </div>
@@ -183,11 +196,11 @@
 
             <div class="p-4 md:p-6 bg-gray-50 flex flex-col-reverse md:flex-row justify-end items-center gap-3 border-t">
                 <a href="{{ route('finance.collections.index') }}" class="w-full md:w-auto text-center px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700">Cancelar</a>
-                <x-primary-button 
-                    class="w-full md:w-auto bg-emerald-600 hover:bg-emerald-700 justify-center shadow-lg px-8 py-3"
+                <x-ui.button type="submit" variant="primary"
+                    class="w-full md:w-auto justify-center shadow-lg px-8 py-3"
                     x-bind:disabled="!isValidAmount || !selectedReceivableId">
                     <span x-text="paymentAmount >= (selectedReceivable?.current_balance || 0) ? 'Liquidar Factura' : 'Registrar Abono'"></span>
-                </x-primary-button>
+                </x-ui.button>
             </div>
         </form>
     </div>

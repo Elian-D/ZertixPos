@@ -6,7 +6,7 @@
             @if($bulkActions)
                 <td class="px-4 py-4 text-center">
                     @unless($client->isConsumidorFinal())
-                        <input type="checkbox" value="{{ $client->id }}" class="row-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer">
+                        <input type="checkbox" value="{{ $client->id }}" class="row-checkbox rounded border-gray-300 text-zertix-primary-600 focus:ring-zertix-primary-500 cursor-pointer">
                     @endunless
                 </td>
             @endif
@@ -57,15 +57,15 @@
                             <span class="text-gray-700 font-medium">{{ config('regional.currency_symbol') }}{{ number_format($client->credit_limit, 2) }}</span>
                             
                             @if($client->balance > $client->credit_limit)
-                                <span class="whitespace-nowrap inline-flex items-center px-2 py-0.5 rounded text-xs font-bold bg-red-100 text-red-700 animate-pulse ring-1 ring-red-400">
+                                <x-ui.badge variant="error" size="sm" :dot="false" class="whitespace-nowrap">
                                     EXCEDIDO
-                                </span>
+                                </x-ui.badge>
                             @endif
                         </div>
                     @else
-                        <span class="whitespace-nowrap text-[10px] font-bold text-gray-400 uppercase tracking-tighter bg-gray-100 px-2 py-1 rounded">
+                        <x-ui.badge variant="slate" size="sm" :dot="false" class="whitespace-nowrap">
                             Solo Contado
-                        </span>
+                        </x-ui.badge>
                     @endif
                 </td>
             @endif
@@ -98,13 +98,13 @@
             @if(in_array('is_active', $visibleColumns))
                 <td class="px-6 py-4">
                     <div class="flex items-center gap-1.5">
-                        <span class="px-2 py-1 text-xs rounded font-bold {{ $client->is_active ? 'bg-emerald-100 text-emerald-700' : 'bg-gray-100 text-gray-500' }}">
+                        <x-ui.badge :variant="$client->is_active ? 'success' : 'slate'" size="sm" :dot="false">
                             {{ $client->is_active ? 'Activo' : 'Inactivo' }}
-                        </span>
+                        </x-ui.badge>
                         @if($client->esMoroso())
-                            <span class="px-2 py-1 text-xs rounded font-bold bg-red-50 text-red-600 ring-1 ring-red-200">
+                            <x-ui.badge variant="error" icon="heroicon-s-exclamation-triangle" size="sm">
                                 Moroso
-                            </span>
+                            </x-ui.badge>
                         @endif
                     </div>
                 </td>
@@ -127,13 +127,13 @@
                 <div class="flex items-center gap-3 mt-2 md:mt-0">
                     {{-- BOTÓN RADICAL: VER TODO (MODAL) --}}
                     <button @click="$dispatch('open-modal', 'view-client-{{ $client->id }}')"
-                            class="bg-gray-100 text-gray-600 hover:bg-indigo-600 hover:text-white p-2 rounded-full transition-all shadow-sm"
+                            class="bg-gray-100 text-gray-600 hover:bg-zertix-primary-600 hover:text-white p-2 rounded-full transition-all shadow-sm"
                             title="Ver detalles completos">
                         <x-heroicon-s-eye class="w-5 h-5" />
                     </button>
 
                     @unless($client->isConsumidorFinal())
-                        <a href="{{ route('clients.edit', $client) }}" class="text-indigo-600 hover:text-indigo-900 p-2 rounded-full hover:bg-indigo-50">
+                        <a href="{{ route('clients.edit', $client) }}" class="text-zertix-primary-600 hover:text-zertix-primary-900 p-2 rounded-full hover:bg-zertix-primary-50">
                             <x-heroicon-s-pencil class="w-5 h-5" />
                         </a>
 

@@ -31,14 +31,12 @@
         <div class="space-y-4">
             {{-- Tipo de NCF --}}
             <div>
-                <x-input-label for="ncf_type_id" value="Tipo de Comprobante" />
-                <select name="ncf_type_id" id="ncf_type_id" x-model="typeId" required
-                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm text-sm focus:ring-indigo-500">
-                    <option value="">Seleccione tipo...</option>
+                <x-ui.forms.select label="Tipo de Comprobante" name="ncf_type_id" id="ncf_type_id" x-model="typeId"
+                    required placeholder="Seleccione tipo..." :error="$errors->first('ncf_type_id')">
                     @foreach($ncf_types as $id => $name)
                         <option value="{{ $id }}">{{ $name }}</option>
                     @endforeach
-                </select>
+                </x-ui.forms.select>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
@@ -50,59 +48,54 @@
                 </div>
                 {{-- Vencimiento (Default 31 Dic) --}}
                 <div>
-                    <x-input-label for="expiry_date" value="Vencimiento (Automático)" />
-                    <div class="relative">
-                        <x-text-input 
-                            type="date" 
-                            name="expiry_date" 
-                            value="{{ now()->addYear()->endOfYear()->format('Y-m-d') }}" 
-                            class="mt-1 block w-full bg-gray-50 text-gray-500 cursor-not-allowed" 
-                            readonly 
-                        />
-                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                            <x-heroicon-s-lock-closed class="h-4 w-4 text-gray-400" />
-                        </div>
-                    </div>
-                    <p class="text-[10px] text-indigo-500 mt-1 italic">Vence el último día del año siguente.</p>
+                    <x-ui.forms.input
+                        type="date"
+                        label="Vencimiento (Automático)"
+                        name="expiry_date"
+                        value="{{ now()->addYear()->endOfYear()->format('Y-m-d') }}"
+                        icon-right="heroicon-s-lock-closed"
+                        readonly
+                        :error="$errors->first('expiry_date')"
+                        hint="Vence el último día del año siguiente."
+                    />
                 </div>
             </div>
 
             <div class="grid grid-cols-2 gap-4">
                 <div>
-                    <x-input-label for="from" value="Desde (Inicio)" />
-                    <x-text-input type="number" name="from" x-model.number="startNum" min="1" class="mt-1 block w-full font-mono" required />
+                    <x-ui.forms.input type="number" label="Desde (Inicio)" name="from" x-model.number="startNum"
+                        min="1" class="font-mono" required :error="$errors->first('from')" />
                 </div>
                 <div>
-                    <x-input-label for="to" value="Hasta (Fin)" />
-                    <x-text-input type="number" name="to" x-model.number="endNum" @bind:min="startNum" class="mt-1 block w-full font-mono" required />
+                    <x-ui.forms.input type="number" label="Hasta (Fin)" name="to" x-model.number="endNum"
+                        @bind:min="startNum" class="font-mono" required :error="$errors->first('to')" />
                 </div>
             </div>
 
             {{-- Alerta de Agotamiento --}}
             <div>
-                <x-input-label for="alert_threshold" value="Alerta de Agotamiento (Quedando:)" />
-                <x-text-input type="number" name="alert_threshold" value="50" min="1"
-                    class="mt-1 block w-full" placeholder="Ej. 50" required />
-                <p class="text-[10px] text-gray-500 mt-1">Se notificará cuando queden estos números disponibles.</p>
+                <x-ui.forms.input type="number" label="Alerta de Agotamiento (Quedando:)" name="alert_threshold"
+                    value="50" min="1" placeholder="Ej. 50" required :error="$errors->first('alert_threshold')"
+                    hint="Se notificará cuando queden estos números disponibles." />
             </div>
 
             {{-- Preview --}}
-            <div class="bg-indigo-50 border border-indigo-100 rounded-lg p-3">
-                <span class="text-[10px] text-indigo-400 uppercase font-bold block mb-1">Vista Previa del NCF:</span>
-                <div class="flex items-baseline gap-1 font-mono text-lg font-bold text-indigo-700">
-                    <span x-text="currentPrefix" class="text-indigo-400"></span>
+            <div class="bg-zertix-primary-50 border border-zertix-primary-100 rounded-lg p-3">
+                <span class="text-[10px] text-zertix-primary-400 uppercase font-bold block mb-1">Vista Previa del NCF:</span>
+                <div class="flex items-baseline gap-1 font-mono text-lg font-bold text-zertix-primary-700">
+                    <span x-text="currentPrefix" class="text-zertix-primary-400"></span>
                     <span x-text="typeCode"></span>
                     <span x-text="formatNcf(startNum)"></span>
                 </div>
-                <p class="text-[10px] text-indigo-400 mt-1" x-show="isElectronic">
+                <p class="text-[10px] text-zertix-primary-400 mt-1" x-show="isElectronic">
                     * Estructura e-NCF detectada (10 dígitos de secuencia).
                 </p>
             </div>
         </div>
 
         <div class="mt-6 flex justify-end gap-3">
-            <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-            <x-primary-button class="bg-indigo-600">Guardar Secuencia</x-primary-button>
+            <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+            <x-ui.button type="submit" variant="primary">Guardar Secuencia</x-ui.button>
         </div>
     </form>
 </x-modal>
@@ -130,34 +123,33 @@
                 </div>
 
                 <div>
-                    <x-input-label for="new_to" value="Nuevo Límite (Hasta)" />
-                    <x-text-input 
-                        type="number" 
-                        name="new_to" 
+                    <x-ui.forms.input
+                        type="number"
+                        label="Nuevo Límite (Hasta)"
+                        name="new_to"
                         id="new_to"
-                        value="{{ $item->to + 100 }}" 
-                        min="{{ $item->to + 1 }}" 
-                        required 
-                        class="mt-1 block w-full font-mono text-lg"
+                        value="{{ $item->to + 100 }}"
+                        min="{{ $item->to + 1 }}"
+                        required
+                        class="font-mono text-lg"
+                        :error="$errors->first('new_to')"
+                        hint="Debe ser mayor al límite actual."
                     />
-                    <p class="text-[10px] text-indigo-500 mt-1 italic">
-                        * Debe ser mayor al límite actual.
-                    </p>
                 </div>
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-                <x-primary-button class="bg-green-600 hover:bg-green-700">
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+                <x-ui.button type="submit" variant="primary">
                     Confirmar Ampliación
-                </x-primary-button>
+                </x-ui.button>
             </div>
         </form>
     </x-modal>
 
 <x-modal name="view-sequence-{{ $item->id }}" maxWidth="lg">
     <div class="overflow-hidden rounded-xl bg-white">
-        <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 px-6 py-4 text-white">
+        <div class="bg-gradient-to-r from-zertix-primary-600 to-zertix-primary-800 px-6 py-4 text-white">
             <div class="flex justify-between items-center">
                 <div>
                     <h3 class="text-lg font-bold italic">{{ $item->type->name }}</h3>
@@ -167,9 +159,14 @@
                     </p>
                 </div>
                 <div class="text-right">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ring-1 ring-inset {{ $item->status_styles }}">
+                    <x-ui.badge :variant="match($item->calculated_status) {
+                            \App\Models\Sales\Ncf\NcfSequence::STATUS_ACTIVE => 'success',
+                            \App\Models\Sales\Ncf\NcfSequence::STATUS_EXHAUSTED => 'warning',
+                            \App\Models\Sales\Ncf\NcfSequence::STATUS_EXPIRED => 'error',
+                            default => 'slate',
+                        }" size="sm" :dot="false">
                         {{ $item->status_label }}
-                    </span>
+                    </x-ui.badge>
                 </div>
             </div>
         </div>
@@ -181,9 +178,9 @@
                     <span class="text-[10px] text-gray-400 uppercase font-bold block">Total</span>
                     <span class="text-lg font-bold">{{ number_format($item->to - $item->from + 1) }}</span>
                 </div>
-                <div class="text-center p-3 bg-indigo-50 rounded-lg border border-indigo-100">
-                    <span class="text-[10px] text-indigo-400 uppercase font-bold block">Usados</span>
-                    <span class="text-lg font-bold text-indigo-700">{{ number_format($item->current - $item->from + 1) }}</span>
+                <div class="text-center p-3 bg-zertix-primary-50 rounded-lg border border-zertix-primary-100">
+                    <span class="text-[10px] text-zertix-primary-400 uppercase font-bold block">Usados</span>
+                    <span class="text-lg font-bold text-zertix-primary-700">{{ number_format($item->current - $item->from + 1) }}</span>
                 </div>
                 <div class="text-center p-3 {{ ($item->to - $item->current) <= 0 ? 'bg-red-50' : 'bg-green-50' }} rounded-lg">
                     <span class="text-[10px] {{ ($item->to - $item->current) <= 0 ? 'text-red-400' : 'text-green-400' }} uppercase font-bold block">Disponibles</span>
@@ -220,22 +217,20 @@
                     @method('PATCH')
                     <div class="flex items-end gap-2">
                         <div class="flex-1">
-                            <x-input-label for="alert_threshold" value="Cambiar Umbral de Alerta" class="text-[10px]" />
-                            <x-text-input type="number" name="alert_threshold" 
-                                value="{{ $item->alert_threshold }}" 
-                                class="block w-full text-xs" />
+                            <x-ui.forms.input type="number" label="Cambiar Umbral de Alerta" name="alert_threshold"
+                                value="{{ $item->alert_threshold }}" />
                         </div>
-                        <x-primary-button class="py-2 px-3 text-[10px]">
+                        <x-ui.button type="submit" variant="primary" class="py-2 px-3 text-[10px]">
                             Actualizar
-                        </x-primary-button>
+                        </x-ui.button>
                     </div>
                 </form>
             </div>
 
             <div class="mt-8 flex justify-end">
-                <x-secondary-button x-on:click="$dispatch('close')" class="w-full sm:w-auto">
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')" class="w-full sm:w-auto">
                     Cerrar Detalle
-                </x-secondary-button>
+                </x-ui.button>
             </div>
         </div>
     </div>

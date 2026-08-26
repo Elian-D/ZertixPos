@@ -7,7 +7,7 @@
                 <div class="flex justify-between items-start">
                     <div class="flex gap-4 items-center">
                         <div class="relative">
-                            <div class="w-16 h-16 {{ $item->is_active ? 'bg-indigo-100 text-indigo-700' : 'bg-gray-100 text-gray-500' }} rounded-xl flex items-center justify-center shadow-sm border-2 border-white">
+                            <div class="w-16 h-16 {{ $item->is_active ? 'bg-zertix-primary-100 text-zertix-primary-700' : 'bg-gray-100 text-gray-500' }} rounded-xl flex items-center justify-center shadow-sm border-2 border-white">
                                 @if($item->is_mobile)
                                     <x-heroicon-s-device-phone-mobile class="w-8 h-8"/>
                                 @else
@@ -18,7 +18,7 @@
                         <div>
                             <h3 class="text-xl font-bold text-gray-900 leading-tight">{{ $item->name }}</h3>
                             <div class="flex items-center gap-2 mt-1">
-                                <span class="text-xs font-mono font-semibold px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded border border-indigo-100 uppercase tracking-wider">
+                                <span class="text-xs font-mono font-semibold px-2 py-0.5 bg-zertix-primary-50 text-zertix-primary-700 rounded border border-zertix-primary-100 uppercase tracking-wider">
                                     ID: {{ str_pad($item->id, 4, '0', STR_PAD_LEFT) }}
                                 </span>
                                 <span class="text-gray-400 text-xs">•</span>
@@ -31,17 +31,9 @@
 
                     {{-- Badge de Estado --}}
                     <div class="flex flex-col gap-2 items-end">
-                        @if($item->is_active)
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ring-1 ring-inset shadow-sm bg-emerald-100 text-emerald-700 ring-emerald-600/20">
-                                <span class="w-1.5 h-1.5 rounded-full mr-2 bg-emerald-500 animate-pulse"></span>
-                                Operativa
-                            </span>
-                        @else
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ring-1 ring-inset shadow-sm bg-red-100 text-red-700 ring-red-600/20">
-                                <span class="w-1.5 h-1.5 rounded-full mr-2 bg-red-500"></span>
-                                Fuera de Servicio
-                            </span>
-                        @endif
+                        <x-ui.badge :variant="$item->is_active ? 'success' : 'error'">
+                            {{ $item->is_active ? 'Operativa' : 'Fuera de Servicio' }}
+                        </x-ui.badge>
                     </div>
                 </div>
             </div>
@@ -52,7 +44,7 @@
                     {{-- Columna Izquierda: Configuración Contable y Ventas --}}
                     <div class="space-y-6">
                         <section>
-                            <h4 class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-indigo-50 pb-2">
+                            <h4 class="text-xs font-bold text-zertix-primary-600 uppercase tracking-widest mb-4 flex items-center gap-2 border-b border-zertix-primary-50 pb-2">
                                 <x-heroicon-s-building-library class="w-4 h-4"/> Integración Contable
                             </h4>
                             <div class="space-y-3">
@@ -162,13 +154,14 @@
                 {{-- Footer --}}
                 <div class="mt-10 pt-6 border-t flex flex-col sm:flex-row justify-end items-center gap-4">
                     <div class="flex gap-3 w-full sm:w-auto">
-                        <x-secondary-button x-on:click="$dispatch('close')" class="flex-1 sm:flex-none justify-center">
+                        <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')" class="flex-1 sm:flex-none justify-center">
                             Cerrar
-                        </x-secondary-button>
+                        </x-ui.button>
                         @can('edit pos terminals')
-                            <a href="{{ route('sales.pos.terminals.edit', $item) }}" class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2 bg-indigo-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition duration-150 shadow-md">
-                                <x-heroicon-s-pencil class="w-4 h-4 mr-2" /> Configurar
-                            </a>
+                            <x-ui.button href="{{ route('sales.pos.terminals.edit', $item) }}"
+                                variant="primary" iconLeft="heroicon-s-pencil" class="flex-1 sm:flex-none justify-center">
+                                Configurar
+                            </x-ui.button>
                         @endcan
                     </div>
                 </div>

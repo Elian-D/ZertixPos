@@ -11,11 +11,9 @@
                     <p class="text-sm text-gray-500 mt-1">Monitoreo de salud financiera y rentabilidad</p>
                 </div>
                 
-                <a href="{{ route('finance.journal_entries.create') }}" 
-                   class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-200 hover:bg-indigo-700 hover:-translate-y-0.5 active:translate-y-0 transition-all whitespace-nowrap">
-                    <x-heroicon-s-document-plus class="w-4 h-4"/>
-                    <span>Nuevo Asiento Manual</span>
-                </a>
+                <x-ui.button href="{{ route('finance.journal_entries.create') }}" variant="primary" :hoverEffect="true" iconLeft="heroicon-s-document-plus" class="whitespace-nowrap">
+                    Nuevo Asiento Manual
+                </x-ui.button>
             </div>
 
             {{-- Fila 2: Filtros --}}
@@ -26,8 +24,8 @@
                     @php $ranges = ['today' => 'Hoy', '7days' => '7D', 'this_month' => 'Este Mes', '30days' => '30D', 'this_year' => 'Este Año']; @endphp
                     <div class="flex gap-1 min-w-max">
                         @foreach($ranges as $key => $label)
-                            <a href="{{ route('finance.dashboard.index', ['range' => $key]) }}" 
-                            class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap {{ $filters['current_range'] == $key ? 'bg-white text-indigo-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50' }}">
+                            <a href="{{ route('reports.finance', ['range' => $key]) }}" 
+                            class="px-4 py-1.5 text-xs font-bold rounded-lg transition-all whitespace-nowrap {{ $filters['current_range'] == $key ? 'bg-white text-zertix-primary-600 shadow-sm ring-1 ring-black/5' : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200/50' }}">
                                 {{ $label }}
                             </a>
                         @endforeach
@@ -35,8 +33,8 @@
                 </div>
 
                 {{-- Selector de Rango Manual --}}
-                <form action="{{ route('finance.dashboard.index') }}" method="GET" 
-                    class="flex items-center bg-white border border-gray-200 rounded-xl p-1 shadow-sm focus-within:ring-2 focus-within:ring-indigo-500/20 transition-all min-w-max">
+                <form action="{{ route('reports.finance') }}" method="GET" 
+                    class="flex items-center bg-white border border-gray-200 rounded-xl p-1 shadow-sm focus-within:ring-2 focus-within:ring-zertix-primary-500/20 transition-all min-w-max">
                     <input type="hidden" name="range" value="custom">
                     <div class="flex items-center px-2 gap-1">
                         <input type="date" name="start_date" value="{{ $filters['start'] }}" 
@@ -46,7 +44,7 @@
                             class="text-xs border-none focus:ring-0 p-1 text-gray-600 bg-transparent w-[110px]">
                     </div>
                     <button type="submit" 
-                            class="p-2 bg-gray-50 hover:bg-indigo-50 text-indigo-600 rounded-lg transition-colors border-l border-gray-100 flex-shrink-0">
+                            class="p-2 bg-gray-50 hover:bg-zertix-primary-50 text-zertix-primary-600 rounded-lg transition-colors border-l border-gray-100 flex-shrink-0">
                         <x-heroicon-s-magnifying-glass class="w-4 h-4"/>
                     </button>
                 </form>
@@ -93,7 +91,7 @@
             <x-dashboard.kpi-card 
                 title="Patrimonio en Productos" 
                 :value="config('regional.currency_symbol') . number_format($stats['inventory_value'], 2)" 
-                icon="square-3-stack-3d" color="indigo" secondary-text="Valor en almacenes"
+                icon="square-3-stack-3d" color="primary" secondary-text="Valor en almacenes"
             />
 
             <x-dashboard.kpi-card 
@@ -140,10 +138,9 @@
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Flujo de Caja</h3>
-                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold {{ $stats['cash_flow'] >= 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700' }}">
-                        <span class="w-1.5 h-1.5 rounded-full {{ $stats['cash_flow'] >= 0 ? 'bg-green-500' : 'bg-red-500' }}"></span>
+                    <x-ui.badge :variant="$stats['cash_flow'] >= 0 ? 'success' : 'error'" size="sm">
                         {{ $stats['cash_flow'] >= 0 ? 'Positivo' : 'Negativo' }}
-                    </span>
+                    </x-ui.badge>
                 </div>
                 <div id="chart-cashflow" class="min-h-[300px] w-full"></div>
             </div>
@@ -159,7 +156,7 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                 <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider">Últimos Movimientos Contables</h3>
-                <span class="px-2.5 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-800 rounded-full">{{ $filters['current_range'] === 'custom' ? 'Personalizado' : 'Global' }}</span>
+                <x-ui.badge variant="info" size="sm" :dot="false">{{ $filters['current_range'] === 'custom' ? 'Personalizado' : 'Global' }}</x-ui.badge>
             </div>
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm">
@@ -180,7 +177,7 @@
                                 <div class="text-[11px] text-gray-400">{{ $entry->created_at->format('H:i A') }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="font-mono text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded">
+                                <span class="font-mono text-xs font-bold text-zertix-primary-600 bg-zertix-primary-50 px-2 py-1 rounded">
                                     {{ $entry->reference }}
                                 </span>
                             </td>
@@ -192,9 +189,9 @@
                                 <span class="font-bold text-gray-900">{{ config('regional.currency_symbol') }}{{ number_format($entry->total_debit ?? 0, 2) }}</span>
                             </td>
                             <td class="px-6 py-4 text-right">
-                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-bold {{ $entry->status === 'posted' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700' }}">
+                                <x-ui.badge :variant="$entry->status === 'posted' ? 'success' : 'warning'" size="sm" :dot="false">
                                     {{ strtoupper($entry->status) }}
-                                </span>
+                                </x-ui.badge>
                             </td>
                         </tr>
                         @endforeach

@@ -112,7 +112,7 @@
                         }));
 
                         // Toast sin recargar la página (el toast de sesión solo pinta en el HTML inicial).
-                        window.dispatchEvent(new CustomEvent('toast', {
+                        window.dispatchEvent(new CustomEvent('notify', {
                             detail: {
                                 type: 'success',
                                 title: 'Cliente creado',
@@ -157,13 +157,12 @@
 
             {{-- 1. Nombre Completo --}}
             <div>
-                <x-input-label for="q-name" value="Nombre del Cliente / Razón Social" />
-                <x-text-input 
-                    id="q-name" 
-                    x-model="name" 
-                    class="mt-1 block w-full bg-gray-50 focus:bg-white" 
-                    placeholder="Ej: Juan Pérez o Empresa S.A.S" 
-                    required 
+                <x-ui.forms.input
+                    id="q-name"
+                    label="Nombre del Cliente / Razón Social"
+                    x-model="name"
+                    placeholder="Ej: Juan Pérez o Empresa S.A.S"
+                    required
                     autofocus />
             </div>
 
@@ -171,7 +170,7 @@
             <div>
                 <div class="flex justify-between items-center">
                     <x-input-label for="q-tax" x-text="docTypeLabel" />
-                    <span class="text-[10px] font-bold text-indigo-600"
+                    <span class="text-[10px] font-bold text-zertix-primary-600"
                           x-show="tax_identifier_type"
                           x-transition.opacity.duration.300ms
                           x-cloak>
@@ -186,7 +185,7 @@
                         class="mt-1 block w-full pr-9"
                         placeholder="00100000000"
                         maxlength="11" />
-                    <svg x-show="rncLookup.loading" x-cloak class="animate-spin h-4 w-4 text-indigo-500 absolute right-3 top-1/2 -translate-y-1/2" viewBox="0 0 24 24">
+                    <svg x-show="rncLookup.loading" x-cloak class="animate-spin h-4 w-4 text-zertix-primary-500 absolute right-3 top-1/2 -translate-y-1/2" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
@@ -207,11 +206,10 @@
             <div class="grid grid-cols-2 gap-4">
                 {{-- 3. Teléfono --}}
                 <div>
-                    <x-input-label for="q-phone" value="Teléfono" />
-                    <x-text-input 
-                        id="q-phone" 
-                        x-model="phone" 
-                        class="mt-1 block w-full" 
+                    <x-ui.forms.input
+                        id="q-phone"
+                        label="Teléfono"
+                        x-model="phone"
                         placeholder="809-000-0000"
                         type="tel" />
                 </div>
@@ -230,27 +228,28 @@
 
             {{-- 5. Dirección --}}
             <div>
-                <x-input-label for="q-address" value="Dirección Corta" />
-                <x-text-input 
-                    id="q-address" 
-                    x-model="address" 
-                    class="mt-1 block w-full text-sm" 
+                <x-ui.forms.input
+                    id="q-address"
+                    label="Dirección Corta"
+                    x-model="address"
                     placeholder="Calle, No., Sector..." />
             </div>
 
             {{-- Botones --}}
             <div class="mt-6 flex justify-end gap-3">
-                <x-secondary-button 
+                <x-ui.button
+                    appearance="ghost"
+                    variant="secondary"
                     type="button"
-                    @click="$dispatch('close')" 
+                    @click="$dispatch('close')"
                     x-bind:disabled="loading">
                     Cancelar
-                </x-secondary-button>
+                </x-ui.button>
                 
                 <button
                     type="submit"
                     x-bind:disabled="loading || !name"
-                    class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 focus:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50 disabled:cursor-not-allowed">
+                    class="inline-flex items-center px-4 py-2 bg-zertix-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-zertix-primary-700 focus:bg-zertix-primary-700 active:bg-zertix-primary-900 focus:outline-none focus:ring-2 focus:ring-zertix-primary-500 focus:ring-offset-2 transition ease-in-out duration-150 disabled:opacity-50 disabled:cursor-not-allowed">
                     
                     <span x-show="!loading">Registrar y Seleccionar</span>
                     

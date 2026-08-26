@@ -66,12 +66,12 @@ class InventoryMovementController extends Controller
         $previousUrl = url()->previous();
         
         // Definimos la ruta del dashboard (ajusta el nombre si es distinto)
-        $dashboardRoute = route('inventory.dashboard.index');
+        $dashboardRoute = route('reports.inventory');
 
         // Si la URL anterior contiene la ruta del dashboard, redirigimos allá
         if (str_contains($previousUrl, $dashboardRoute)) {
             return redirect()
-                ->route('inventory.dashboard.index')
+                ->route('reports.inventory')
                 ->with('success', "Movimiento registrado: El stock de {$movement->product->name} ha sido actualizado.");
         }
 

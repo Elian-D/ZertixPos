@@ -30,8 +30,8 @@
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-                <x-primary-button class="bg-indigo-600 hover:bg-indigo-700">Actualizar Alerta</x-primary-button>
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+                <x-ui.button type="submit" variant="primary">Actualizar Alerta</x-ui.button>
             </div>
         </form>
     </x-modal>
@@ -66,19 +66,9 @@
                     </div>
                     
                     {{-- Badge de Estado Dinámico --}}
-                    @if($isOut)
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ring-1 ring-inset shadow-sm bg-red-100 text-red-700 ring-red-600/20">
-                            Agotado
-                        </span>
-                    @elseif($isLow)
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ring-1 ring-inset shadow-sm bg-amber-100 text-amber-700 ring-amber-600/20">
-                            Stock Bajo
-                        </span>
-                    @else
-                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ring-1 ring-inset shadow-sm bg-emerald-100 text-emerald-700 ring-emerald-600/20">
-                            Suficiente
-                        </span>
-                    @endif
+                    <x-ui.badge :variant="$isOut ? 'error' : ($isLow ? 'warning' : 'success')" class="shadow-sm">
+                        {{ $isOut ? 'Agotado' : ($isLow ? 'Stock Bajo' : 'Suficiente') }}
+                    </x-ui.badge>
                 </div>
             </div>
 
@@ -88,7 +78,7 @@
                     {{-- Columna Izquierda: Almacén y Producto --}}
                     <div class="space-y-6">
                         <section>
-                            <h4 class="text-xs font-bold text-indigo-600 uppercase tracking-widest mb-4 flex items-center gap-2">
+                            <h4 class="text-xs font-bold text-zertix-primary-600 uppercase tracking-widest mb-4 flex items-center gap-2">
                                 <x-heroicon-s-building-office class="w-4 h-4"/> Ubicación de Red
                             </h4>
                             <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
@@ -178,9 +168,9 @@
                 <div class="mt-10 pt-6 border-t flex flex-col sm:flex-row justify-between items-center gap-4">
                     <div class="text-[10px] text-gray-300 uppercase tracking-tighter font-mono">STOCK_ID: {{ $item->id }}</div>
                     <div class="flex gap-3 w-full sm:w-auto">
-                        <x-secondary-button x-on:click="$dispatch('close')" class="flex-1 sm:flex-none justify-center">
+                        <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')" class="flex-1 sm:flex-none justify-center">
                             Cerrar Vista
-                        </x-secondary-button>
+                        </x-ui.button>
                         <button @click="$dispatch('close'); $dispatch('open-modal', 'edit-min-stock-{{ $item->id }}')" 
                                 class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2 bg-amber-500 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-amber-600 transition shadow-md shadow-amber-100">
                             <x-heroicon-s-bell-alert class="w-4 h-4 mr-2" /> Ajustar Alerta

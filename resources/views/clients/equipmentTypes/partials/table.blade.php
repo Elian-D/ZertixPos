@@ -31,10 +31,9 @@
             {{-- Estado --}}
             @if(in_array('activo', $visibleColumns))
                 <td class="px-6 py-4">
-                    <span class="px-2 py-1 text-xs rounded-full font-bold
-                        {{ $item->activo ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' }}">
+                    <x-ui.badge :variant="$item->activo ? 'success' : 'error'" size="sm">
                         {{ $item->activo ? 'Activo' : 'Inactivo' }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 
@@ -62,7 +61,7 @@
                         </button>
                     </form>
 
-                    <button @click="$dispatch('open-modal', 'edit-tipoEquipo-{{ $item->id }}')" class="text-indigo-600 hover:text-indigo-900 p-1 rounded hover:bg-indigo-50">
+                    <button @click="$dispatch('open-modal', 'edit-tipoEquipo-{{ $item->id }}')" class="text-zertix-primary-600 hover:text-zertix-primary-900 p-1 rounded hover:bg-zertix-primary-50">
                         <x-heroicon-s-pencil class="w-5 h-5" />
                     </button>
 

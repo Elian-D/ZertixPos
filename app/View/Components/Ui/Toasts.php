@@ -9,16 +9,14 @@ use Illuminate\View\Component;
 class Toasts extends Component
 {
     /**
-     * Create a new component instance.
+     * @param bool $suppressValidationToast Omite el toast automático de $errors->any() —
+     *   úsalo en vistas donde x-ui.forms.* ya muestra el error inline bajo cada campo
+     *   (Fase 7.5), para no duplicar el mismo mensaje en dos lugares.
      */
-    public function __construct()
-    {
-        //
-    }
+    public function __construct(
+        public bool $suppressValidationToast = false,
+    ) {}
 
-    /**
-     * Get the view / contents that represent the component.
-     */
     public function render(): View|Closure|string
     {
         return view('components.ui.toasts');

@@ -11,32 +11,47 @@
 
             <div class="space-y-4">
                 {{-- Nombre --}}
-                <div>
-                    <x-input-label for="name" value="Nombre del almacén" />
-                    <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" placeholder="Ej: Bodega Central o Camión #01" required />
-                </div>
+                <x-ui.forms.input
+                    label="Nombre del almacén"
+                    id="name"
+                    name="name"
+                    type="text"
+                    placeholder="Ej: Bodega Central o Camión #01"
+                    :error="$errors->first('name')"
+                    required
+                />
 
                 {{-- Tipo de Almacén --}}
-                <div>
-                    <x-input-label for="type" value="Tipo de ubicación" />
-                    <select name="type" id="type" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
-                        @foreach($types as $value => $label)
-                            <option value="{{ $value }}" {{ old('type') == $value ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                <x-ui.forms.select
+                    label="Tipo de ubicación"
+                    name="type"
+                    id="type"
+                    :error="$errors->first('type')"
+                    required
+                >
+                    @foreach($types as $value => $label)
+                        <option value="{{ $value }}" {{ old('type') == $value ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </x-ui.forms.select>
 
                 {{-- Dirección/Ubicación --}}
-                <div>
-                    <x-input-label for="address" value="Dirección o Referencia" />
-                    <x-text-input id="address" name="address" type="text" class="mt-1 block w-full" placeholder="Dirección física o placa del vehículo" />
-                </div>
+                <x-ui.forms.input
+                    label="Dirección o Referencia"
+                    id="address"
+                    name="address"
+                    type="text"
+                    placeholder="Dirección física o placa del vehículo"
+                    :error="$errors->first('address')"
+                />
 
                 {{-- Descripción --}}
-                <div>
-                    <x-input-label for="description" value="Descripción (Opcional)" />
-                    <textarea name="description" id="description" rows="2" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">{{ old('description') }}</textarea>
-                </div>
+                <x-ui.forms.textarea
+                    label="Descripción (Opcional)"
+                    name="description"
+                    id="description"
+                    :rows="2"
+                    :error="$errors->first('description')"
+                >{{ old('description') }}</x-ui.forms.textarea>
 
                 {{-- Estado Operativo (Mantenemos tu diseño de radios) --}}
                 <div>
@@ -59,8 +74,8 @@
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-                <x-primary-button class="bg-green-600">Guardar Almacén</x-primary-button>
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+                <x-ui.button type="submit" variant="primary">Guardar Almacén</x-ui.button>
             </div>
         </form>
     </x-modal>
@@ -80,10 +95,9 @@
             </div>
 
             {{-- Badge de Estado --}}
-            <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1 ring-inset shadow-sm {{ $item->is_active ? 'bg-emerald-50 text-emerald-700 ring-emerald-600/20' : 'bg-red-50 text-red-700 ring-red-600/20' }}">
-                <span class="w-1.5 h-1.5 rounded-full mr-2 bg-current {{ $item->is_active ? 'animate-pulse' : '' }}"></span>
+            <x-ui.badge :variant="$item->is_active ? 'success' : 'error'">
                 {{ $item->is_active ? 'OPERATIVO' : 'INACTIVO' }}
-            </span>
+            </x-ui.badge>
         </div>
 
         <div class="p-8">
@@ -92,7 +106,7 @@
                 {{-- Columna Izquierda: Información General --}}
                 <div class="space-y-6">
                     <div class="flex gap-3">
-                        <div class="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 shrink-0">
+                        <div class="w-10 h-10 bg-zertix-primary-50 rounded-lg flex items-center justify-center text-zertix-primary-600 shrink-0">
                             <x-heroicon-s-building-office-2 class="w-5 h-5"/>
                         </div>
                         <div>
@@ -130,9 +144,9 @@
                          (REQ-02.12), un almacén no depende de Contabilidad para nada más. --}}
                     @if (module_enabled('accounting.advanced'))
                         <div class="p-5 bg-slate-900 rounded-2xl shadow-lg relative overflow-hidden">
-                            <div class="absolute -right-4 -top-4 w-24 h-24 bg-indigo-500/10 rounded-full blur-2xl"></div>
+                            <div class="absolute -right-4 -top-4 w-24 h-24 bg-zertix-primary-500/10 rounded-full blur-2xl"></div>
 
-                            <span class="text-[10px] font-bold text-indigo-300 uppercase tracking-widest block mb-4">Enlace Contable (Kardex)</span>
+                            <span class="text-[10px] font-bold text-zertix-primary-300 uppercase tracking-widest block mb-4">Enlace Contable (Kardex)</span>
 
                             <div class="flex items-start gap-3">
                                 <div class="p-2 bg-white/10 rounded-lg">
@@ -143,7 +157,7 @@
                                         <p class="text-sm font-mono font-bold text-white tracking-wider">
                                             {{ $item->accountingAccount->code }}
                                         </p>
-                                        <p class="text-[11px] text-indigo-200 font-medium leading-tight mt-1">
+                                        <p class="text-[11px] text-zertix-primary-200 font-medium leading-tight mt-1">
                                             {{ $item->accountingAccount->name }}
                                         </p>
                                     @else
@@ -156,7 +170,7 @@
 
                             <div class="flex justify-between items-center">
                                 <span class="text-[9px] text-white/50 uppercase font-bold">Uso de Cuenta:</span>
-                                <span class="px-2 py-0.5 bg-indigo-500/20 text-[9px] text-indigo-200 rounded border border-indigo-500/30 font-black">ACTIVO CIRCULANTE</span>
+                                <span class="px-2 py-0.5 bg-zertix-primary-500/20 text-[9px] text-zertix-primary-200 rounded border border-zertix-primary-500/30 font-black">ACTIVO CIRCULANTE</span>
                             </div>
                         </div>
                     @endif
@@ -191,9 +205,9 @@
 
         {{-- Acciones del Modal --}}
         <div class="px-8 py-5 bg-gray-50 border-t flex justify-end gap-3">
-            <x-secondary-button x-on:click="$dispatch('close')">Cerrar</x-secondary-button>
+            <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cerrar</x-ui.button>
             <button @click="$dispatch('close'); $dispatch('open-modal', 'edit-warehouse-{{ $item->id }}')" 
-                    class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition shadow-sm">
+                    class="inline-flex items-center px-4 py-2 bg-zertix-primary-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-zertix-primary-700 transition shadow-sm">
                 <x-heroicon-s-pencil class="w-3 h-3 mr-2"/> Modificar Datos
             </button>
         </div>
@@ -210,29 +224,40 @@
             @csrf @method('PUT')
 
             <div class="space-y-4">
-                <div>
-                    <x-input-label value="Nombre del almacén" />
-                    <x-text-input name="name" type="text" class="mt-1 block w-full" value="{{ $item->name }}" required />
-                </div>
+                <x-ui.forms.input
+                    label="Nombre del almacén"
+                    name="name"
+                    type="text"
+                    value="{{ $item->name }}"
+                    :error="$errors->first('name')"
+                    required
+                />
 
-                <div>
-                    <x-input-label value="Tipo de ubicación" />
-                    <select name="type" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
-                        @foreach($types as $value => $label)
-                            <option value="{{ $value }}" {{ (old('type', $item->type) == $value) ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                <x-ui.forms.select
+                    label="Tipo de ubicación"
+                    name="type"
+                    :error="$errors->first('type')"
+                    required
+                >
+                    @foreach($types as $value => $label)
+                        <option value="{{ $value }}" {{ (old('type', $item->type) == $value) ? 'selected' : '' }}>{{ $label }}</option>
+                    @endforeach
+                </x-ui.forms.select>
 
-                <div>
-                    <x-input-label value="Dirección o Referencia" />
-                    <x-text-input name="address" type="text" class="mt-1 block w-full" value="{{ $item->address }}" />
-                </div>
+                <x-ui.forms.input
+                    label="Dirección o Referencia"
+                    name="address"
+                    type="text"
+                    value="{{ $item->address }}"
+                    :error="$errors->first('address')"
+                />
 
-                <div>
-                    <x-input-label value="Descripción" />
-                    <textarea name="description" rows="2" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">{{ old('description', $item->description) }}</textarea>
-                </div>
+                <x-ui.forms.textarea
+                    label="Descripción"
+                    name="description"
+                    :rows="2"
+                    :error="$errors->first('description')"
+                >{{ old('description', $item->description) }}</x-ui.forms.textarea>
 
                 <div>
                     <x-input-label value="Estado Operativo" />
@@ -254,8 +279,8 @@
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-                <x-primary-button class="bg-green-600">Actualizar Almacén</x-primary-button>
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+                <x-ui.button type="submit" variant="primary">Actualizar Almacén</x-ui.button>
             </div>
         </form>
     </x-modal>

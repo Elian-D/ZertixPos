@@ -8,7 +8,7 @@
 
     @if($backRoute)
         <a href="{{ $backRoute }}"
-           class="p-2 bg-white border rounded-lg text-gray-400 hover:text-indigo-600 transition shadow-sm">
+           class="p-2 bg-white border rounded-lg text-gray-400 hover:text-zertix-primary-600 transition shadow-sm">
             <x-heroicon-s-x-mark class="w-6 h-6"/>
         </a>
     @endif

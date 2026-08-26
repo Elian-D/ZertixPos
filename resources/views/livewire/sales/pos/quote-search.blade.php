@@ -1,15 +1,12 @@
 <div class="relative w-full">
     {{-- .live.debounce.300ms le dice a Livewire: "Espera 300ms después de que el usuario deje de escribir para enviar la petición al servidor" --}}
     <div class="relative">
-        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-            <x-icon name="heroicon-o-magnifying-glass" class="w-5 h-5 text-gray-400"/>
-        </div>
-        <input 
-            type="text" 
-            wire:model.live.debounce.300ms="search" 
-            placeholder="Buscar por código o nombre..." 
-            class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500"
-        >
+        <x-ui.forms.input
+            type="text"
+            icon-left="heroicon-o-magnifying-glass"
+            wire:model.live.debounce.300ms="search"
+            placeholder="Buscar por código o nombre..."
+        />
     </div>
 
     {{-- Resultados de búsqueda --}}

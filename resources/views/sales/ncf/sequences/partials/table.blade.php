@@ -5,7 +5,7 @@
             {{-- Tipo de Comprobante --}}
             @if(in_array('type_id', $visibleColumns))
                 <td class="px-6 py-4 text-sm">
-                    <div class="font-bold text-indigo-700">{{ $sequence->type->code }}</div>
+                    <div class="font-bold text-zertix-primary-700">{{ $sequence->type->code }}</div>
                     <div class="text-[10px] text-gray-500 uppercase leading-tight">{{ $sequence->type->name }}</div>
                 </td>
             @endif
@@ -30,7 +30,7 @@
             @if(in_array('current', $visibleColumns))
                 <td class="px-6 py-4 text-sm font-mono font-bold">
                     @if($sequence->current >= $sequence->from)
-                        <span class="text-indigo-600">{{ $sequence->series }}{{ $sequence->type->code }}{{ str_pad($sequence->current, 8, '0', STR_PAD_LEFT) }}</span>
+                        <span class="text-zertix-primary-600">{{ $sequence->series }}{{ $sequence->type->code }}{{ str_pad($sequence->current, 8, '0', STR_PAD_LEFT) }}</span>
                     @else
                         <span class="text-gray-300 italic text-[10px]">Sin uso</span>
                     @endif
@@ -97,10 +97,14 @@
             {{-- Estado de la Secuencia (Lote) --}}
             @if(in_array('status', $visibleColumns))
                 <td class="px-6 py-4 text-center">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider border ring-1 ring-inset shadow-sm {{ $sequence->status_styles }}">
-                        <span class="w-1 h-1 rounded-full mr-1.5 bg-current"></span>
+                    <x-ui.badge :variant="match($sequence->calculated_status) {
+                            \App\Models\Sales\Ncf\NcfSequence::STATUS_ACTIVE => 'success',
+                            \App\Models\Sales\Ncf\NcfSequence::STATUS_EXHAUSTED => 'warning',
+                            \App\Models\Sales\Ncf\NcfSequence::STATUS_EXPIRED => 'error',
+                            default => 'slate',
+                        }" size="sm" class="shadow-sm">
                         {{ $sequence->status_label }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 
@@ -123,7 +127,7 @@
 
                     {{-- Ver Detalle del Lote --}}
                     <button @click="$dispatch('open-modal', 'view-sequence-{{ $sequence->id }}')" 
-                            class="bg-white border border-gray-200 text-gray-500 hover:bg-indigo-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
+                            class="bg-white border border-gray-200 text-gray-500 hover:bg-zertix-primary-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
                             title="Ver Detalle y Estadísticas">
                         <x-heroicon-s-eye class="w-4 h-4" />
                     </button>
@@ -148,8 +152,8 @@
                                     Esta acción no se puede deshacer. Se eliminará la secuencia <strong>{{ $sequence->series }}{{ $sequence->type->code }}</strong> desde el {{ $sequence->from }} hasta el {{ $sequence->to }}.
                                 </p>
                                 <div class="mt-6 flex justify-end">
-                                    <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-                                    <x-danger-button class="ml-3">Eliminar Lote</x-danger-button>
+                                    <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+                                    <x-ui.button type="submit" variant="error" class="ml-3">Eliminar Lote</x-ui.button>
                                 </div>
                             </form>
                         </x-modal>

@@ -7,51 +7,45 @@
 
                 {{-- TÍTULO MINIMALISTA --}}
                 <h2 class="text-xl font-medium text-gray-700 mb-6 border-b pb-3">
-                    {{ __('Editar usuario: ') }} <span class="text-indigo-600 font-semibold">{{ $user->name }}</span>
+                    {{ __('Editar usuario: ') }} <span class="text-zertix-primary-600 font-semibold">{{ $user->name }}</span>
                 </h2>
                 
-                <form action="{{ route('users.update', $user) }}" method="POST">
+                <form action="{{ route('config.users.update', $user) }}" method="POST">
                     @csrf
                     @method('PUT')
 
-                    {{-- 1. CAMPO: Nombre (Sin cambios) --}}
+                    {{-- 1. CAMPO: Nombre --}}
                     <div class="mb-6">
-                        <label for="name" class="block text-sm font-medium text-gray-700 mb-2">Nombre del Usuario:</label>
-                        
-                        <input type="text" 
-                                name="name" 
-                                id="name" 
-                                value="{{ $user->name }}"
-                                placeholder="Ej: Juan Pérez"
-                                class="w-full border-gray-300 rounded-md shadow-sm text-base py-2.5 px-4 
-                                        focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50
-                                        @error('name') border-red-500 focus:border-red-500 focus:ring-red-200 @enderror">
-
-                        @error('name') 
-                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p> 
-                        @enderror
+                        <x-ui.forms.input
+                            label="Nombre del Usuario:"
+                            type="text"
+                            name="name"
+                            id="name"
+                            value="{{ $user->name }}"
+                            placeholder="Ej: Juan Pérez"
+                            :error="$errors->first('name')"
+                        />
                     </div>
 
-                    {{-- 2. CAMPO: Email (Sin cambios) --}}
+                    {{-- 2. CAMPO: Email --}}
                     <div class="mb-6">
-                        <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Correo Electrónico:</label>
-                        
-                        <input type="email" 
-                                name="email" 
-                                id="email" 
-                                value="{{ $user->email }}"
-                                placeholder="ejemplo@dominio.com"
-                                class="w-full border-gray-300 rounded-md shadow-sm text-base py-2.5 px-4 
-                                        focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50
-                                        @error('email') border-red-500 focus:border-red-500 focus:ring-red-200 @enderror">
-
-                        @error('email') 
-                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p> 
-                        @enderror
+                        <x-ui.forms.input
+                            label="Correo Electrónico:"
+                            type="email"
+                            name="email"
+                            id="email"
+                            value="{{ $user->email }}"
+                            placeholder="ejemplo@dominio.com"
+                            :error="$errors->first('email')"
+                        />
                     </div>
 
                 {{-- CONTENEDOR PRINCIPAL para el estado 'show' compartido --}}
-                    <div x-data="{ show: false }"> 
+                    {{-- Password y Password Confirmation se dejan con <input> nativo: el botón
+                         de mostrar/ocultar contraseña (ícono clickeable superpuesto que cambia
+                         `:type`) no encaja en x-ui.forms.input — iconRight solo acepta un
+                         heroicon estático sin @click, no un botón interactivo. --}}
+                    <div x-data="{ show: false }">
                         
                         {{-- 3. CAMPO: Contraseña (Con el botón de control) --}}
                         <div class="mb-6"> 
@@ -65,7 +59,7 @@
                                         placeholder="Escribe una contraseña segura"
                                         minlength="8"
                                         class="w-full border-gray-300 rounded-md shadow-sm text-base py-2.5 pl-4 pr-12
-                                                focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50
+                                                focus:border-zertix-primary-500 focus:ring focus:ring-zertix-primary-500 focus:ring-opacity-50
                                                 @error('password') border-red-500 focus:border-red-500 focus:ring-red-200 @enderror">
                                 
                                 {{-- Botón para mostrar/ocultar la contraseña (ÚNICO BOTÓN) --}}
@@ -103,7 +97,7 @@
                                         placeholder="Repite la contraseña"
                                         minlength="8"
                                         class="w-full border-gray-300 rounded-md shadow-sm text-base py-2.5 pl-4 pr-12
-                                                focus:border-indigo-500 focus:ring focus:ring-indigo-500 focus:ring-opacity-50
+                                                focus:border-zertix-primary-500 focus:ring focus:ring-zertix-primary-500 focus:ring-opacity-50
                                                 @error('password') border-red-500 focus:border-red-500 focus:ring-red-200 @enderror">
                                 
                                 {{-- ELIMINAMOS EL BOTÓN Y EL @error('password_confirmation') DE AQUÍ --}}
@@ -121,17 +115,14 @@
                     <div class="flex justify-end space-x-4 pt-4 border-t border-gray-100">
                         
                         {{-- Botón Cancelar (Regresar a la lista) --}}
-                        <a href="{{ route('users.index') }}" 
-                           class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
+                        <x-ui.button href="{{ route('config.users.index') }}" appearance="ghost" variant="secondary">
                             Cancelar
-                        </a>
-                        
+                        </x-ui.button>
+
                         {{-- Botón de Guardar --}}
-                        <button type="submit"
-                                 class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
-                            <x-heroicon-s-user-plus class="w-5 h-5 mr-2 -ml-1" />
+                        <x-ui.button type="submit" variant="primary" iconLeft="heroicon-s-user-plus">
                             Actualizar Usuario
-                        </button>
+                        </x-ui.button>
                     </div>
                 </form>
             </div>

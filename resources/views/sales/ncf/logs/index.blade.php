@@ -8,39 +8,29 @@
 </script>
 
 <x-app-layout>
-    <div class="w-full max-w-7xl mx-auto py-4 px-2 sm:px-3 lg:px-4">
-        <div class="bg-white shadow-xl rounded-xl">
-            <x-ui.toasts />
+    <div class="p-4 md:p-6 flex flex-col gap-6">
+        <x-ui.page-header title="Auditoría y Reportes NCF" description="Audita los comprobantes fiscales emitidos y genera los reportes exigidos por la DGII." :count="$items->total()" countLabel="registros">
+            <x-slot:secondary>
+                {{-- Exportar Excel (Revisión interna) --}}
+                <x-ui.button href="{{ route('finance.ncf.logs.export.excel', request()->all()) }}"
+                    appearance="ghost" variant="secondary" class="w-full justify-start" iconLeft="heroicon-s-document-arrow-down">
+                    Excel
+                </x-ui.button>
 
-            <div class="p-6">
-                <x-page-toolbar title="Auditoría y Reportes NCF">
-                    <x-slot name="actions">
-                        <div class="flex flex-wrap gap-2">
-                            {{-- Exportar Excel (Revisión interna) --}}
-                            <a href="{{ route('finance.ncf.logs.export.excel', request()->all()) }}" 
-                               class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 transition">
-                                <x-heroicon-s-document-arrow-down class="w-4 h-4 mr-2" />
-                                Excel
-                            </a>
+                {{-- Botón para abrir modal de periodo TXT --}}
+                <x-ui.button x-data="" x-on:click="$dispatch('open-modal', 'export-607-modal')"
+                    appearance="ghost" variant="secondary" class="w-full justify-start" iconLeft="heroicon-s-arrow-down-tray">
+                    Generar 607 (TXT)
+                </x-ui.button>
+            </x-slot:secondary>
+        </x-ui.page-header>
 
-                            {{-- Botón para abrir modal de periodo TXT --}}
-                            <button x-data="" x-on:click="$dispatch('open-modal', 'export-607-modal')"
-                               class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-black transition">
-                                <x-heroicon-s-arrow-down-tray class="w-4 h-4 mr-2" />
-                                Generar 607 (TXT)
-                            </button>
-                        </div>
-                    </x-slot>
-                </x-page-toolbar>
+        {{-- Filtros del Monitor --}}
+        @include('sales.ncf.logs.partials.filters')
 
-                {{-- Filtros del Monitor --}}
-                @include('sales.ncf.logs.partials.filters')
-
-                {{-- Contenedor de Tabla AJAX --}}
-                <div id="ncf-logs-table" class="w-full overflow-hidden mt-4">
-                    @include('sales.ncf.logs.partials.table')
-                </div>
-            </div>
+        {{-- Contenedor de Tabla AJAX --}}
+        <div id="ncf-logs-table" class="w-full overflow-hidden">
+            @include('sales.ncf.logs.partials.table')
         </div>
     </div>
 
@@ -51,16 +41,16 @@
             <p class="text-sm text-gray-600 mb-4">Seleccione el periodo fiscal para generar el archivo de texto.</p>
             
             <div>
-                <x-input-label for="periodo" value="Periodo (Año/Mes)" />
-                <x-text-input type="month" name="periodo" id="periodo" 
-                              value="{{ now()->format('Y-m') }}" 
-                              required class="w-full mt-1" />
+                <x-ui.forms.input type="month" label="Periodo (Año/Mes)" name="periodo" id="periodo"
+                              value="{{ now()->format('Y-m') }}"
+                              required
+                              hint="Genera el reporte 607 exigido por la DGII para el periodo seleccionado" />
                 {{-- Convertimos YYYY-MM a YYYYMM para el controlador en el backend si es necesario --}}
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-                <x-primary-button>Descargar TXT</x-primary-button>
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+                <x-ui.button type="submit" variant="primary">Descargar TXT</x-ui.button>
             </div>
         </form>
     </x-modal>

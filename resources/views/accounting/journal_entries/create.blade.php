@@ -7,7 +7,6 @@
             class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
             @csrf
 
-            <x-ui.toasts />
             
             <x-form-header
                 title="Nuevo Asiento Contable"
@@ -19,13 +18,22 @@
                 {{-- SECCIÓN 1: CABECERA --}}
                 <section class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-gray-50/50 p-6 rounded-xl border border-gray-100">
                     <div class="md:col-span-1">
-                        <x-input-label value="Fecha Contable" />
-                        <x-text-input type="date" name="entry_date" class="w-full mt-1" 
-                            value="{{ date('Y-m-d') }}" required />
+                        <x-ui.forms.input
+                            label="Fecha Contable"
+                            type="date"
+                            name="entry_date"
+                            value="{{ date('Y-m-d') }}"
+                            :error="$errors->first('entry_date')"
+                            required
+                        />
                     </div>
                     <div class="md:col-span-1">
-                        <x-input-label value="Referencia / Documento" />
-                        <x-text-input name="reference" class="w-full mt-1" placeholder="Ej: CH-001 o FAC-502" />
+                        <x-ui.forms.input
+                            label="Referencia / Documento"
+                            name="reference"
+                            placeholder="Ej: CH-001 o FAC-502"
+                            :error="$errors->first('reference')"
+                        />
                     </div>
                     <div class="md:col-span-1">
                         <x-input-label value="Estado Inicial" />
@@ -34,9 +42,14 @@
                         </div>
                     </div>
                     <div class="md:col-span-3">
-                        <x-input-label value="Concepto o Glosa" />
-                        <textarea name="description" rows="2" class="w-full mt-1 rounded-md border-gray-300 shadow-sm focus:ring-indigo-500 text-sm" 
-                            placeholder="Describa el motivo de la transacción..." required></textarea>
+                        <x-ui.forms.textarea
+                            label="Concepto o Glosa"
+                            name="description"
+                            :rows="2"
+                            placeholder="Describa el motivo de la transacción..."
+                            :error="$errors->first('description')"
+                            required
+                        ></x-ui.forms.textarea>
                     </div>
                 </section>
 
@@ -44,11 +57,11 @@
                 <section>
                     <div class="flex justify-between items-center mb-4">
                         <h3 class="font-bold text-gray-800 uppercase text-xs tracking-wider flex items-center gap-2">
-                            <span class="w-6 h-6 bg-indigo-600 text-white rounded-full flex items-center justify-center text-[10px]">2</span>
+                            <span class="w-6 h-6 bg-zertix-primary-600 text-white rounded-full flex items-center justify-center text-[10px]">2</span>
                             Movimientos del Asiento
                         </h3>
                         <button type="button" @click="addLine()" 
-                            class="text-xs bg-indigo-50 text-indigo-600 px-3 py-1.5 rounded-lg hover:bg-indigo-600 hover:text-white transition-all font-bold">
+                            class="text-xs bg-zertix-primary-50 text-zertix-primary-600 px-3 py-1.5 rounded-lg hover:bg-zertix-primary-600 hover:text-white transition-all font-bold">
                             + Añadir Línea
                         </button>
                     </div>
@@ -68,11 +81,11 @@
                                     <tr class="hover:bg-gray-50/50 transition">
                                         <td class="p-2">
                                             <select :name="`items[${index}][accounting_account_id]`" 
-                                                    class="w-full border-gray-200 rounded-lg text-sm focus:ring-indigo-500" 
+                                                    class="w-full border-gray-200 rounded-lg text-sm focus:ring-zertix-primary-500" 
                                                     @change="calculateTotals()"
                                                     x-model="line.accounting_account_id" 
                                                     required 
-                                                    class="w-full border-gray-200 rounded-lg text-sm focus:ring-indigo-500" required>
+                                                    class="w-full border-gray-200 rounded-lg text-sm focus:ring-zertix-primary-500" required>
                                                 <option value="">Seleccione cuenta...</option>
                                                 @foreach($accounts as $acc)
                                                     <option value="{{ $acc->id }}">{{ $acc->code }} - {{ $acc->name }}</option>
@@ -87,7 +100,7 @@
                                         <td class="p-2">
                                             <input type="number" :name="`items[${index}][credit]`" x-model.number="line.credit"
                                                 step="0.01" min="0" @input="calculateTotals()"
-                                                class="w-full border-gray-200 rounded-lg text-sm text-right font-mono focus:ring-indigo-500" placeholder="0.00">
+                                                class="w-full border-gray-200 rounded-lg text-sm text-right font-mono focus:ring-zertix-primary-500" placeholder="0.00">
                                         </td>
                                         <td class="p-2 text-center">
                                             <button type="button" @click="removeLine(index)" x-show="lines.length > 2"
@@ -126,9 +139,9 @@
                 <p class="text-xs text-gray-400 italic">Recuerde que los asientos en 'Borrador' pueden editarse antes de ser asentados definitivamente.</p>
                 <div class="flex gap-3">
                     <a href="{{ route('finance.journal_entries.index') }}" class="px-4 py-2 text-sm font-medium text-gray-500 hover:text-gray-700 transition">Cancelar</a>
-                    <x-primary-button class="bg-indigo-600 shadow-lg px-8" ::disabled="!isBalanced || totalDebit <= 0 || hasDuplicates">
+                    <x-ui.button type="submit" variant="primary" class="shadow-lg px-8" ::disabled="!isBalanced || totalDebit <= 0 || hasDuplicates">
                         Guardar Asiento
-                    </x-primary-button>
+                    </x-ui.button>
                 </div>
             </div>
         </form>

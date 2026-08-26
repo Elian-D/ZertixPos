@@ -22,17 +22,14 @@
 
             @if(in_array('type', $visibleColumns))
                 <td class="px-6 py-4">
-                    @php
-                        $color = match($movement->type) {
-                            'input' => 'bg-green-100 text-green-800',
-                            'output' => 'bg-red-100 text-red-800',
-                            'transfer' => 'bg-blue-100 text-blue-800',
-                            default => 'bg-gray-100 text-gray-800',
-                        };
-                    @endphp
-                    <span class="px-2 py-0.5 text-[10px] rounded-full font-bold uppercase {{ $color }}">
+                    <x-ui.badge :variant="match($movement->type) {
+                        'input' => 'success',
+                        'output' => 'error',
+                        'transfer' => 'info',
+                        default => 'slate',
+                    }" size="sm" :dot="false">
                         {{ $types[$movement->type] ?? $movement->type }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 
@@ -86,7 +83,7 @@
                 <div class="flex items-center justify-end gap-3">
                     {{-- BOTÓN VER DETALLES --}}
                     <button @click="$dispatch('open-modal', 'view-movement-{{ $movement->id }}')" 
-                            class="bg-gray-50 text-gray-500 hover:bg-indigo-600 hover:text-white p-2 rounded-full transition-all shadow-sm"
+                            class="bg-gray-50 text-gray-500 hover:bg-zertix-primary-600 hover:text-white p-2 rounded-full transition-all shadow-sm"
                             title="Ver auditoría completa">
                         <x-heroicon-s-eye class="w-4 h-4" />
                     </button>

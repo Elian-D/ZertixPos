@@ -31,7 +31,6 @@
         }">
 
         <div class="max-w-4xl mx-auto">
-            <x-ui.toasts />
 
             {{-- Banner de Plan — visible siempre, fuera de los tabs, para que el dueño
                  sepa qué Plan tiene activo sin tener que navegar a Funcionalidades del
@@ -89,43 +88,56 @@
                         <div class="p-8 space-y-6">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
-                                    <label class="text-xs font-bold text-slate-400 uppercase mb-2 block tracking-wider">Provincia</label>
                                     {{-- Select nativo (antes era un dropdown Alpine con buscador propio,
                                          pero se cortaba dentro del panel de tabs por el overflow del
                                          contenedor — un <select> nativo no tiene ese problema). --}}
-                                    <select name="provincia_id" x-model="selectedProvincia"
-                                        @change="selectedMunicipio = ''" required
-                                        class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-semibold text-slate-700 focus:border-zertix-primary">
-                                        <option value="" disabled>Seleccionar...</option>
+                                    <x-ui.forms.select
+                                        label="Provincia"
+                                        name="provincia_id"
+                                        x-model="selectedProvincia"
+                                        @change="selectedMunicipio = ''"
+                                        required
+                                        placeholder="Seleccionar..."
+                                        :error="$errors->first('provincia_id')"
+                                    >
                                         <template x-for="provincia in provinces" :key="provincia.id">
                                             <option :value="provincia.id" x-text="provincia.name"></option>
                                         </template>
-                                    </select>
+                                    </x-ui.forms.select>
                                 </div>
 
                                 <div>
-                                    <label class="text-xs font-bold text-slate-400 uppercase mb-2 block tracking-wider">Municipio</label>
                                     {{-- x-init + $nextTick: las <option> las genera x-for dentro del propio
                                          <select>, y Alpine aplica x-model ANTES de que ese x-for termine de
                                          renderizarlas en el primer render — el municipio guardado en BD
                                          nunca quedaba seleccionado visualmente (aunque sí estaba guardado,
                                          bug reportado y confirmado por consulta directa a la BD). Forzamos
                                          la sincronización una vez el DOM ya tiene las opciones montadas. --}}
-                                    <select name="municipio_id" x-model="selectedMunicipio"
+                                    <x-ui.forms.select
+                                        label="Municipio"
+                                        name="municipio_id"
+                                        x-model="selectedMunicipio"
                                         x-init="$nextTick(() => { $el.value = selectedMunicipio })"
-                                        class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-4 text-sm font-semibold text-slate-700 focus:border-zertix-primary">
-                                        <option value="">Sin especificar</option>
+                                        placeholder="Sin especificar"
+                                        :error="$errors->first('municipio_id')"
+                                    >
                                         <template x-for="municipio in municipiosDeProvincia" :key="municipio.id">
                                             <option :value="municipio.id" x-text="municipio.name"></option>
                                         </template>
-                                    </select>
+                                    </x-ui.forms.select>
                                 </div>
                             </div>
 
                             <div class="grid grid-cols-1 gap-6">
                                 <div>
-                                    <label class="text-xs font-bold text-slate-400 uppercase mb-2 block">Dirección</label>
-                                    <x-text-input name="direccion" type="text" class="w-full" placeholder="Calle, edificio, apto..." value="{{ $config->direccion ?? '' }}" />
+                                    <x-ui.forms.input
+                                        label="Dirección"
+                                        name="direccion"
+                                        type="text"
+                                        placeholder="Calle, edificio, apto..."
+                                        value="{{ $config->direccion ?? '' }}"
+                                        :error="$errors->first('direccion')"
+                                    />
                                 </div>
                             </div>
 
@@ -165,20 +177,26 @@
                     <div x-show="activeTab === 'contacto'" x-cloak>
                         <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label class="text-xs font-bold text-slate-400 uppercase mb-2 block tracking-wider">Email Corporativo</label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <x-heroicon-s-envelope class="w-5 h-5 text-slate-400" />
-                                    </div>
-                                    <x-text-input name="email" type="email" class="w-full pl-11" placeholder="admin@empresa.com" value="{{ $config->email ?? '' }}" />
-                                </div>
+                                <x-ui.forms.input
+                                    label="Email Corporativo"
+                                    name="email"
+                                    type="email"
+                                    placeholder="admin@empresa.com"
+                                    value="{{ $config->email ?? '' }}"
+                                    icon-left="heroicon-s-envelope"
+                                    :error="$errors->first('email')"
+                                />
                             </div>
                             <div>
-                                <label class="text-xs font-bold text-slate-400 uppercase mb-2 block tracking-wider">Teléfono</label>
-                                <div class="flex">
-                                    <span class="inline-flex items-center px-4 rounded-l-2xl border border-r-0 border-slate-200 bg-slate-50 text-slate-500 font-bold text-xs">+1</span>
-                                    <x-text-input name="telefono" type="text" class="flex-1 rounded-l-none" placeholder="809 000 0000" value="{{ $config->telefono ?? '' }}" />
-                                </div>
+                                <x-ui.forms.input
+                                    label="Teléfono"
+                                    name="telefono"
+                                    type="text"
+                                    placeholder="809 000 0000"
+                                    value="{{ $config->telefono ?? '' }}"
+                                    hint="No incluyas el +1, solo el número local"
+                                    :error="$errors->first('telefono')"
+                                />
                             </div>
                         </div>
                     </div>
@@ -208,21 +226,36 @@
                                 <div class="md:col-span-8 space-y-8">
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div class="sm:col-span-2">
-                                            <label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Nombre Comercial</label>
-                                            <x-text-input name="nombre_empresa" class="w-full" value="{{ $config->nombre_empresa ?? '' }}" />
+                                            <x-ui.forms.input
+                                                label="Nombre Comercial"
+                                                name="nombre_empresa"
+                                                value="{{ $config->nombre_empresa ?? '' }}"
+                                                :error="$errors->first('nombre_empresa')"
+                                            />
                                         </div>
                                         <div class="sm:col-span-2">
                                             <label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Identificación Fiscal</label>
                                             <div class="flex flex-col sm:flex-row gap-2">
-                                                <select name="tax_identifier_type"
-                                                    class="w-full sm:w-32 border-slate-200 rounded-2xl text-[11px] bg-slate-50 font-bold text-slate-700"
-                                                    x-model="selectedTaxType">
-                                                    <option value="" disabled x-show="!selectedTaxType">Tipo</option>
-                                                    <template x-for="type in taxTypes" :key="type.value">
-                                                        <option :value="type.value" x-text="type.label" :selected="type.value == selectedTaxType"></option>
-                                                    </template>
-                                                </select>
-                                                <x-text-input name="tax_id" class="flex-1" placeholder="Número de identificación" value="{{ $config->tax_id ?? '' }}" />
+                                                <div class="w-full sm:w-32">
+                                                    <x-ui.forms.select
+                                                        name="tax_identifier_type"
+                                                        x-model="selectedTaxType"
+                                                        placeholder="Tipo"
+                                                        :error="$errors->first('tax_identifier_type')"
+                                                    >
+                                                        <template x-for="type in taxTypes" :key="type.value">
+                                                            <option :value="type.value" x-text="type.label" :selected="type.value == selectedTaxType"></option>
+                                                        </template>
+                                                    </x-ui.forms.select>
+                                                </div>
+                                                <div class="flex-1">
+                                                    <x-ui.forms.input
+                                                        name="tax_id"
+                                                        placeholder="Número de identificación"
+                                                        value="{{ $config->tax_id ?? '' }}"
+                                                        :error="$errors->first('tax_id')"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -250,12 +283,12 @@
                         Descartar cambios
                     </button>
 
-                    <x-primary-button class="w-full sm:w-auto bg-zertix-primary hover:bg-zertix-primary-dark px-10 py-4 rounded-2xl shadow-lg shadow-zertix-primary/20 transition-all">
+                    <x-ui.button type="submit" variant="primary" :hoverEffect="true" class="w-full sm:w-auto px-10 py-4 rounded-2xl shadow-lg">
                         <span class="flex items-center gap-2">
                             <x-heroicon-s-cloud-arrow-up class="w-5 h-5" />
                             Guardar Configuración
                         </span>
-                    </x-primary-button>
+                    </x-ui.button>
                 </div>
             </form>
         </div>
@@ -272,12 +305,12 @@
                     </p>
                 </div>
                 <div class="mt-8 flex flex-col sm:flex-row justify-center gap-3">
-                    <x-secondary-button x-on:click="$dispatch('close')" class="w-full sm:w-auto justify-center py-3">
+                    <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')" class="w-full sm:w-auto justify-center py-3">
                         Continuar editando
-                    </x-secondary-button>
-                    <x-danger-button @click="window.location.reload()" class="w-full sm:w-auto justify-center py-3">
+                    </x-ui.button>
+                    <x-ui.button type="submit" variant="error" @click="window.location.reload()" class="w-full sm:w-auto justify-center py-3">
                         Sí, descartar todo
-                    </x-danger-button>
+                    </x-ui.button>
                 </div>
             </div>
         </x-modal>

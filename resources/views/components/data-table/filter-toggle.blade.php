@@ -11,7 +11,7 @@
                     class="peer hidden" form="{{ $formId }}"
                     @checked( (string)request($name, '') === (string)$value )>
                 <span class="block text-center px-2 py-1.5 text-xs font-medium rounded-md cursor-pointer transition-all
-                    peer-checked:bg-white peer-checked:text-indigo-600 peer-checked:shadow-sm
+                    peer-checked:bg-white peer-checked:text-zertix-primary-600 peer-checked:shadow-sm
                     text-gray-500 hover:text-gray-700">
                     {{ $text }}
                 </span>

@@ -7,7 +7,7 @@
                 <div>
                     <h3 class="text-xl font-black text-gray-900 tracking-tight">Comprobante de Cobro</h3>
                     <div class="flex items-center gap-2 mt-1">
-                        <span class="text-xs font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                        <span class="text-xs font-mono text-zertix-primary-600 bg-zertix-primary-50 px-2 py-0.5 rounded border border-zertix-primary-100">
                             Recibo No. {{ $payment->receipt_number }}
                         </span>
                         <span class="text-gray-300 text-xs">•</span>
@@ -16,10 +16,13 @@
                 </div>
 
                 {{-- Estado Dinámico --}}
-                <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-bold ring-1 ring-inset shadow-sm {{ $payment->status_style }}">
-                    <span class="w-1.5 h-1.5 rounded-full mr-2 bg-current {{ $payment->status === 'active' ? 'animate-pulse' : '' }}"></span>
+                <x-ui.badge :variant="match($payment->status) {
+                        \App\Models\Accounting\ClientCollection::STATUS_ACTIVE => 'success',
+                        \App\Models\Accounting\ClientCollection::STATUS_CANCELLED => 'error',
+                        default => 'slate',
+                    }" class="shadow-sm">
                     {{ strtoupper($payment->status_label) }}
-                </span>
+                </x-ui.badge>
             </div>
 
             <div class="p-8">
@@ -28,7 +31,7 @@
                     {{-- Columna Izquierda: Datos del Cliente y Método --}}
                     <div class="space-y-6">
                         <div class="flex gap-3">
-                            <div class="w-10 h-10 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 shrink-0">
+                            <div class="w-10 h-10 bg-zertix-primary-50 rounded-lg flex items-center justify-center text-zertix-primary-600 shrink-0">
                                 <x-heroicon-s-user class="w-5 h-5"/>
                             </div>
                             <div>
@@ -95,7 +98,7 @@
                                 <div>
                                     <span class="text-[10px] font-bold text-gray-400 uppercase tracking-widest block">Asiento Contable</span>
                                     @if($payment->journal_entry_id)
-                                        <p class="text-xs font-mono text-indigo-600">
+                                        <p class="text-xs font-mono text-zertix-primary-600">
                                             #{{ str_pad($payment->journal_entry_id, 6, '0', STR_PAD_LEFT) }} <br>
                                             <span class="font-sans font-bold text-gray-800">Transacción Contabilizada</span>
                                         </p>
@@ -125,7 +128,7 @@
             </div>
 
             <div class="px-8 py-5 bg-gray-50 border-t flex justify-end gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">Cerrar</x-secondary-button>
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cerrar</x-ui.button>
                 <a href="{{ route('finance.collections.print', $payment->id) }}"
                 target="_blank"
                 class="inline-flex items-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700 transition shadow-sm">
@@ -153,7 +156,7 @@
             </p>
 
             <div class="mt-8 flex justify-center gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">No, mantener</x-secondary-button>
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">No, mantener</x-ui.button>
                 <button type="submit" class="px-6 py-2 bg-red-600 text-white text-xs font-bold uppercase rounded-lg hover:bg-red-700 shadow-lg shadow-red-200">
                     Sí, Anular Cobro
                 </button>

@@ -1,3 +1,4 @@
-<div class="space-y-1.5 pt-4 first:pt-0 border-t border-gray-100 first:border-t-0">
+{{-- Agrupa varios <x-sidebar.dropdown>/<x-sidebar.item> bajo un mismo <x-sidebar.title>. Sin uso actual en app-layout.blade.php (los 6 grupos de módulos ya tienen sus propios <x-sidebar.dropdown>), disponible para cuando se quiera introducir secciones visuales. --}}
+<div class="space-y-1">
     {{ $slot }}
 </div>

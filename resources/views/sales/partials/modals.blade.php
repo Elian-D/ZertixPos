@@ -4,16 +4,20 @@
     <div class="overflow-hidden rounded-xl bg-white shadow-2xl">
         {{-- Header Dinámico --}}
         @php
-            $statusStyles = \App\Models\Sales\Sale::getStatusStyles();
             $statusLabels = \App\Models\Sales\Sale::getStatuses();
             $paymentLabels = \App\Models\Sales\Sale::getPaymentTypes();
+            $statusVariant = match($sale->status) {
+                \App\Models\Sales\Sale::STATUS_COMPLETED => 'success',
+                \App\Models\Sales\Sale::STATUS_CANCELED => 'error',
+                default => 'slate',
+            };
         @endphp
 
         <div class="bg-gray-50 px-6 md:px-8 py-6 border-b flex justify-between items-start">
             <div>
                 <h3 class="text-xl font-black text-gray-900 tracking-tight">Detalle de Venta</h3>
                 <div class="flex flex-wrap items-center gap-2 mt-1">
-                    <span class="text-xs font-mono text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                    <span class="text-xs font-mono text-zertix-primary-600 bg-zertix-primary-50 px-2 py-0.5 rounded border border-zertix-primary-100">
                         {{ $sale->number }}
                     </span>
                     @if($sale->pos_terminal_id)
@@ -24,9 +28,9 @@
                 </div>
             </div>
 
-            <span class="inline-flex items-center rounded-full px-3 py-1 text-[10px] font-bold ring-1 ring-inset shadow-sm {{ $statusStyles[$sale->status] ?? '' }}">
+            <x-ui.badge :variant="$statusVariant" :dot="false">
                 {{ strtoupper($statusLabels[$sale->status] ?? $sale->status) }}
-            </span>
+            </x-ui.badge>
         </div>
 
         {{-- Alerta de Anulación --}}
@@ -44,7 +48,7 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
                 {{-- Cliente --}}
                 <div class="flex gap-3 items-start">
-                    <div class="w-8 h-8 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-600 shrink-0">
+                    <div class="w-8 h-8 bg-zertix-primary-50 rounded-lg flex items-center justify-center text-zertix-primary-600 shrink-0">
                         <x-heroicon-s-user class="w-4 h-4"/>
                     </div>
                     <div class="min-w-0">
@@ -188,9 +192,9 @@
                     @endforelse
 
                     {{-- Total Final --}}
-                    <div class="flex justify-between items-center bg-indigo-50 p-3 rounded-lg border border-indigo-100">
-                        <span class="text-xs font-black text-indigo-700 uppercase">Total Facturado</span>
-                        <span class="text-xl font-black text-indigo-700 font-mono">{{ config('regional.currency_symbol') }}{{ number_format($sale->grand_total, 2) }}</span>
+                    <div class="flex justify-between items-center bg-zertix-primary-50 p-3 rounded-lg border border-zertix-primary-100">
+                        <span class="text-xs font-black text-zertix-primary-700 uppercase">Total Facturado</span>
+                        <span class="text-xl font-black text-zertix-primary-700 font-mono">{{ config('regional.currency_symbol') }}{{ number_format($sale->grand_total, 2) }}</span>
                     </div>
 
                     {{-- Distribución de Métodos Usados --}}
@@ -221,7 +225,7 @@
         <div class="px-8 py-5 bg-gray-50 border-t flex flex-col md:flex-row justify-between items-center gap-4">
             <span class="text-[10px] text-gray-400 italic">Creado el {{ $sale->created_at->format('d/m/Y H:i') }}</span>
             <div class="flex gap-3 w-full md:w-auto">
-                <x-secondary-button class="flex-1 md:flex-none justify-center" x-on:click="$dispatch('close')">Cerrar</x-secondary-button>
+                <x-ui.button appearance="ghost" variant="secondary" class="flex-1 md:flex-none justify-center" x-on:click="$dispatch('close')">Cerrar</x-ui.button>
                 <a href="{{ route('sales.print-invoice', $sale) }}" target="_blank" 
                    class="flex-1 md:flex-none inline-flex items-center justify-center px-4 py-2 bg-gray-800 hover:bg-black border border-transparent rounded-md font-bold text-[10px] text-white uppercase tracking-widest transition shadow-md">
                     <x-heroicon-s-printer class="w-3.5 h-3.5 mr-2"/> Reimprimir Ticket
@@ -250,18 +254,18 @@
 
         {{-- Campo de Motivo --}}
         <div class="mt-4 text-left">
-            <label class="block text-xs font-bold text-gray-700 uppercase mb-1">Motivo de Anulación (DGII)</label>
-            <select name="cancellation_reason" required class="w-full text-sm border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <x-ui.forms.select label="Motivo de Anulación (DGII)" name="cancellation_reason" required
+                hint="Requerido por la DGII para el reporte de anulación del NCF">
                 <option value="01 - ERRORES DE DIGITACION">01 - Errores de digitación</option>
                 <option value="02 - ERRORES DE IMPRESION">02 - Errores de impresión</option>
                 <option value="03 - PRODUCTO DEFECTUOSO">03 - Producto defectuoso</option>
                 <option value="04 - DEVOLUCION">04 - Devolución</option>
                 <option value="05 - OTROS">05 - Otros</option>
-            </select>
+            </x-ui.forms.select>
         </div>
 
         <div class="mt-8 flex justify-center gap-3">
-            <x-secondary-button x-on:click="$dispatch('close')">Volver</x-secondary-button>
+            <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Volver</x-ui.button>
             <button type="submit" class="px-6 py-2 bg-red-600 text-white text-xs font-bold uppercase rounded-lg hover:bg-red-700 transition-colors shadow-lg shadow-red-200">
                 Confirmar Anulación
             </button>

@@ -5,7 +5,7 @@
             <nav class="flex mb-4" aria-label="Breadcrumb">
                 <ol class="inline-flex items-center space-x-1 md:space-x-2 text-[10px] uppercase tracking-wider font-bold">
                     <li class="inline-flex items-center text-gray-400">
-                        <a href="{{ route('sales.pos.sessions.index') }}" class="hover:text-indigo-600 transition">Turnos POS</a>
+                        <a href="{{ route('sales.pos.sessions.index') }}" class="hover:text-zertix-primary-600 transition">Turnos POS</a>
                     </li>
                     <x-heroicon-s-chevron-right class="w-3 h-3 text-gray-300" />
                     <li class="text-gray-500">Cierre de Turno #{{ $session->id }}</li>
@@ -69,8 +69,8 @@
                             @endif
 
                             <div class="pt-3 border-t-2 border-dashed border-gray-300 flex justify-between items-center">
-                                <span class="text-sm font-black text-indigo-900 uppercase tracking-wide">Esperado en Caja:</span>
-                                <span class="font-mono text-2xl font-black text-indigo-600" x-text="'{{ config('regional.currency_symbol') }}' + expected.toLocaleString('en-US', {minimumFractionDigits: 2})"></span>
+                                <span class="text-sm font-black text-zertix-primary-900 uppercase tracking-wide">Esperado en Caja:</span>
+                                <span class="font-mono text-2xl font-black text-zertix-primary-600" x-text="'{{ config('regional.currency_symbol') }}' + expected.toLocaleString('en-US', {minimumFractionDigits: 2})"></span>
                             </div>
                         </div>
                     </div>
@@ -89,7 +89,7 @@
                                     type="number"
                                     step="0.01"
                                     x-model="real"
-                                    class="pl-16 block w-full text-2xl font-black text-gray-800 bg-white focus:ring-indigo-500 rounded-xl border-2"
+                                    class="pl-16 block w-full text-2xl font-black text-gray-800 bg-white focus:ring-zertix-primary-500 rounded-xl border-2"
                                     placeholder="0.00"
                                     required
                                     autofocus
@@ -138,42 +138,35 @@
                             </p>
 
                             <div>
-                                <select name="difference_reason" x-model="reason"
-                                    class="block w-full border-gray-300 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                                    <option value="">Selecciona un motivo...</option>
+                                <x-ui.forms.select name="difference_reason" x-model="reason"
+                                    placeholder="Selecciona un motivo..." :error="$errors->first('difference_reason')">
                                     @foreach($reasons as $value => $label)
                                         <option value="{{ $value }}">{{ $label }}</option>
                                     @endforeach
-                                </select>
-                                @error('difference_reason')
-                                    <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                                @enderror
+                                </x-ui.forms.select>
                             </div>
 
                             <div x-show="reason === 'otro'" x-transition>
-                                <textarea name="difference_notes" x-model="differenceNotes" rows="2"
-                                    class="block w-full border-gray-300 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                                    placeholder="Explica qué pasó con el efectivo..."></textarea>
-                                @error('difference_notes')
-                                    <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
-                                @enderror
+                                <x-ui.forms.textarea name="difference_notes" x-model="differenceNotes" :rows="2"
+                                    placeholder="Explica qué pasó con el efectivo..."
+                                    :error="$errors->first('difference_notes')"></x-ui.forms.textarea>
                             </div>
                         </div>
 
                         <div>
-                            <x-input-label for="notes" value="Observaciones Generales (Opcional)" />
-                            <textarea name="notes" id="notes" rows="2"
-                                class="mt-1 block w-full border-gray-300 rounded-xl shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm"
-                                placeholder="Cualquier otra novedad del turno, aparte del descuadre..."></textarea>
+                            <x-ui.forms.textarea label="Observaciones Generales (Opcional)" name="notes" id="notes" :rows="2"
+                                placeholder="Cualquier otra novedad del turno, aparte del descuadre..."></x-ui.forms.textarea>
                         </div>
                     </div>
 
                     <div class="mt-6 flex flex-col gap-3">
-                        <x-primary-button
-                            class="w-full justify-center py-3 bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all disabled:opacity-50"
+                        <x-ui.button
+                            type="submit"
+                            variant="primary"
+                            class="w-full justify-center py-3 bg-zertix-primary-600 hover:bg-zertix-primary-700 shadow-lg shadow-zertix-primary-100 transition-all disabled:opacity-50"
                             x-bind:disabled="!isReady">
                             Finalizar Turno y Registrar Arqueo
-                        </x-primary-button>
+                        </x-ui.button>
                         <a href="{{ route('sales.pos.sessions.index') }}"
                            class="w-full text-center py-2.5 rounded-xl border border-gray-200 text-gray-600 text-sm font-bold hover:bg-gray-50 transition">
                             Volver sin cerrar
@@ -187,7 +180,7 @@
                  monedas (denominaciones) — esa es una idea a futuro, no está construida. --}}
             <div class="lg:col-span-1 bg-white shadow-sm rounded-3xl border border-gray-100 p-5 lg:sticky lg:top-6">
                 <h3 class="text-xs font-black text-gray-800 mb-4 flex items-center gap-2 uppercase tracking-wide">
-                    <x-heroicon-s-shopping-cart class="w-4 h-4 text-indigo-500" />
+                    <x-heroicon-s-shopping-cart class="w-4 h-4 text-zertix-primary-500" />
                     Ventas del Turno
                 </h3>
 

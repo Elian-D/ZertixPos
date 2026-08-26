@@ -47,13 +47,14 @@
             {{-- Estado (Usando estilos del Modelo) --}}
             @if(in_array('status', $visibleColumns))
                 <td class="px-6 py-4">
-                    @php
-                        $statusStyles = \App\Models\Accounting\JournalEntry::getStatusStyles();
-                        $currentStyle = $statusStyles[$entry->status] ?? 'bg-gray-100 text-gray-800';
-                    @endphp
-                    <span class="px-2.5 py-1 text-[10px] rounded-md font-bold uppercase border shadow-sm {{ $currentStyle }}">
+                    <x-ui.badge :variant="match($entry->status) {
+                        \App\Models\Accounting\JournalEntry::STATUS_DRAFT => 'slate',
+                        \App\Models\Accounting\JournalEntry::STATUS_POSTED => 'success',
+                        \App\Models\Accounting\JournalEntry::STATUS_CANCELLED => 'error',
+                        default => 'info',
+                    }" size="sm" :dot="false">
                         {{ $statuses[$entry->status] ?? $entry->status }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 
@@ -96,7 +97,7 @@
                     @endif
 
                     <button @click="$dispatch('open-modal', 'view-entry-{{ $entry->id }}')" 
-                            class="bg-white border border-gray-200 text-gray-500 hover:bg-indigo-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
+                            class="bg-white border border-gray-200 text-gray-500 hover:bg-zertix-primary-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
                             title="Ver Detalle Contable">
                         <x-heroicon-s-eye class="w-4 h-4" />
                     </button>
@@ -181,8 +182,8 @@
                         <tfoot class="bg-gray-50 font-bold border-t-2">
                             <tr>
                                 <td class="px-4 py-2 text-gray-500">TOTALES</td>
-                                <td class="px-4 py-2 text-right text-indigo-600">{{ number_format($entry->total_debit, 2) }}</td>
-                                <td class="px-4 py-2 text-right text-indigo-600">{{ number_format($entry->total_credit, 2) }}</td>
+                                <td class="px-4 py-2 text-right text-zertix-primary-600">{{ number_format($entry->total_debit, 2) }}</td>
+                                <td class="px-4 py-2 text-right text-zertix-primary-600">{{ number_format($entry->total_credit, 2) }}</td>
                             </tr>
                         </tfoot>
                     </table>
@@ -194,7 +195,7 @@
                         <span class="block"><strong>Creado por:</strong> {{ $entry->creator->name ?? 'Sistema' }}</span>
                         <span><strong>Fecha:</strong> {{ $entry->created_at->format('d/m/Y h:i A') }}</span>
                     </div>
-                    <x-secondary-button x-on:click="$dispatch('close')">Cerrar</x-secondary-button>
+                    <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cerrar</x-ui.button>
                 </div>
             </div>
         </div>
@@ -223,9 +224,9 @@
             </div>
 
             <div class="mt-6 flex justify-end gap-3">
-                <x-secondary-button x-on:click="$dispatch('close')">
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">
                     Cancelar
-                </x-secondary-button>
+                </x-ui.button>
 
                 <button type="submit" class="inline-flex items-center px-4 py-2 bg-emerald-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-emerald-700 focus:bg-emerald-700 active:bg-emerald-900 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition ease-in-out duration-150">
                     Asentar Ahora

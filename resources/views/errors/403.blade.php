@@ -32,7 +32,7 @@
 
         {{-- BOTÓN PARA REGRESAR A LA URL ANTERIOR --}}
         <button onclick="history.back()"
-                class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-full shadow-sm text-white bg-zertix-primary-600 hover:bg-zertix-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-zertix-primary-500 transition duration-150 ease-in-out">
             
             {{-- Ícono de flecha (Opcional) --}}
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -43,7 +43,7 @@
         </button>
 
         {{-- Enlace opcional a la página principal --}}
-        <a href="/" class="block mt-4 text-sm text-indigo-500 hover:text-indigo-700">Ir a la página principal</a>
+        <a href="/" class="block mt-4 text-sm text-zertix-primary-500 hover:text-zertix-primary-700">Ir a la página principal</a>
     </div>
 
 </body>

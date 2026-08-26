@@ -10,45 +10,66 @@
 
         <div class="space-y-4">
             {{-- Código --}}
-            <div>
-                <x-input-label for="code" value="Código Contable" />
-                <x-text-input id="code" name="code" type="text" class="mt-1 block w-full font-mono" placeholder="Ej: 1.1.01" required />
-            </div>
+            <x-ui.forms.input
+                label="Código Contable"
+                id="code"
+                name="code"
+                type="text"
+                class="font-mono"
+                placeholder="Ej: 1.1.01"
+                :error="$errors->first('code')"
+                required
+            />
 
             {{-- Nombre --}}
-            <div>
-                <x-input-label for="name" value="Nombre de la Cuenta" />
-                <x-text-input id="name" name="name" type="text" class="mt-1 block w-full" placeholder="Ej: Caja General" required />
-            </div>
+            <x-ui.forms.input
+                label="Nombre de la Cuenta"
+                id="name"
+                name="name"
+                type="text"
+                placeholder="Ej: Caja General"
+                :error="$errors->first('name')"
+                required
+            />
 
             {{-- Cuenta Padre --}}
-            <div>
-                <x-input-label for="parent_id" value="Cuenta Superior (Padre)" />
-                <select name="parent_id" id="parent_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
-                    <option value="">-- Ninguna (Cuenta Raíz) --</option>
-                    @foreach($parentAccounts as $parent)
-                        <option value="{{ $parent->id }}" {{ old('parent_id') == $parent->id ? 'selected' : '' }}>
-                            {{ $parent->code }} - {{ $parent->name }}
-                        </option>
-                    @endforeach
-                </select>
-            </div>
+            <x-ui.forms.select
+                label="Cuenta Superior (Padre)"
+                name="parent_id"
+                id="parent_id"
+                placeholder="-- Ninguna (Cuenta Raíz) --"
+                :error="$errors->first('parent_id')"
+            >
+                @foreach($parentAccounts as $parent)
+                    <option value="{{ $parent->id }}" {{ old('parent_id') == $parent->id ? 'selected' : '' }}>
+                        {{ $parent->code }} - {{ $parent->name }}
+                    </option>
+                @endforeach
+            </x-ui.forms.select>
 
             {{-- Tipo de Cuenta --}}
-            <div>
-                <x-input-label for="type" value="Tipo de Cuenta" />
-                <select name="type" id="type" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
-                    @foreach($accountTypes as $value => $label)
-                        <option value="{{ $value }}" {{ old('type') == $value ? 'selected' : '' }}>{{ $label }}</option>
-                    @endforeach
-                </select>
-            </div>
+            <x-ui.forms.select
+                label="Tipo de Cuenta"
+                name="type"
+                id="type"
+                hint="Determina el comportamiento contable de la cuenta (activo, pasivo, capital, ingreso o gasto)."
+                :error="$errors->first('type')"
+                required
+            >
+                @foreach($accountTypes as $value => $label)
+                    <option value="{{ $value }}" {{ old('type') == $value ? 'selected' : '' }}>{{ $label }}</option>
+                @endforeach
+            </x-ui.forms.select>
 
             {{-- Es Posteable (Recibe Asientos) --}}
-            <div class="flex items-center gap-2 py-2">
-                <input type="checkbox" name="is_selectable" id="is_selectable" value="1" {{ old('is_selectable', '1') == '1' ? 'checked' : '' }} class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500">
-                <x-input-label for="is_selectable" value="¿Esta cuenta recibe asientos contables?" class="inline" />
-            </div>
+            <x-ui.forms.checkbox
+                label="¿Esta cuenta recibe asientos contables?"
+                name="is_selectable"
+                id="is_selectable"
+                value="1"
+                :checked="old('is_selectable', '1') == '1'"
+                description="Las cuentas no posteables solo agrupan totales de sus subcuentas."
+            />
 
             {{-- Estado --}}
             <div>
@@ -71,8 +92,8 @@
         </div>
 
         <div class="mt-6 flex justify-end gap-3">
-            <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-            <x-primary-button class="bg-blue-600">Guardar Cuenta</x-primary-button>
+            <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+            <x-ui.button type="submit" variant="primary">Guardar Cuenta</x-ui.button>
         </div>
     </form>
 </x-modal>
@@ -89,7 +110,7 @@
                 'asset'     => 'from-emerald-50 to-white text-emerald-700 bg-emerald-100',
                 'liability' => 'from-red-50 to-white text-red-700 bg-red-100',
                 'equity'    => 'from-blue-50 to-white text-blue-700 bg-blue-100',
-                'revenue'   => 'from-indigo-50 to-white text-indigo-700 bg-indigo-100',
+                'revenue'   => 'from-zertix-primary-50 to-white text-zertix-primary-700 bg-zertix-primary-100',
                 'expense'   => 'from-amber-50 to-white text-amber-700 bg-amber-100',
             ];
             $style = $typeColors[$item->type] ?? 'from-gray-50 to-white text-gray-700 bg-gray-100';
@@ -106,7 +127,7 @@
                     <div>
                         <h3 class="text-xl font-bold text-gray-900 leading-tight">{{ $item->name }}</h3>
                         <div class="flex items-center gap-2 mt-1">
-                            <span class="text-xs font-mono font-bold px-2 py-0.5 bg-white border border-gray-200 text-indigo-600 rounded">
+                            <span class="text-xs font-mono font-bold px-2 py-0.5 bg-white border border-gray-200 text-zertix-primary-600 rounded">
                                 {{ $item->code }}
                             </span>
                             <span class="text-gray-400 text-xs">•</span>
@@ -129,19 +150,19 @@
                     {{-- Bloque de Cliente Vinculado (NUEVO) --}}
                         @if($item->client)
                         <section class="animate-in fade-in slide-in-from-left-4 duration-500">
-                            <h4 class="text-[10px] font-bold text-indigo-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                            <h4 class="text-[10px] font-bold text-zertix-primary-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                                 <x-heroicon-s-user-circle class="w-4 h-4"/> Enlace Externo
                             </h4>
-                            <div class="bg-indigo-50/50 p-4 rounded-xl border border-indigo-100 flex items-center gap-4">
-                                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-indigo-100">
-                                    <span class="text-indigo-600 font-black text-xs">{{ substr($item->client->name, 0, 2) }}</span>
+                            <div class="bg-zertix-primary-50/50 p-4 rounded-xl border border-zertix-primary-100 flex items-center gap-4">
+                                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm border border-zertix-primary-100">
+                                    <span class="text-zertix-primary-600 font-black text-xs">{{ substr($item->client->name, 0, 2) }}</span>
                                 </div>
                                 <div>
-                                    <span class="text-[10px] text-indigo-400 uppercase font-bold block leading-none mb-1">Cliente Asociado</span>
+                                    <span class="text-[10px] text-zertix-primary-400 uppercase font-bold block leading-none mb-1">Cliente Asociado</span>
                                     <p class="text-sm font-bold text-gray-800">{{ $item->client->name }}</p>
                                     <div class="flex items-center gap-2 mt-0.5">
-                                        <span class="text-[9px] px-1.5 py-0.5 bg-indigo-100 text-indigo-700 rounded font-mono">{{ $item->client->tax_label }}:  {{ $item->client->tax_id }}</span>
-                                        <a href="{{ route('clients.edit', $item->client->id) }}" class="text-[9px] text-indigo-600 hover:underline font-bold uppercase">Ver Perfil</a>
+                                        <span class="text-[9px] px-1.5 py-0.5 bg-zertix-primary-100 text-zertix-primary-700 rounded font-mono">{{ $item->client->tax_label }}:  {{ $item->client->tax_id }}</span>
+                                        <a href="{{ route('clients.edit', $item->client->id) }}" class="text-[9px] text-zertix-primary-600 hover:underline font-bold uppercase">Ver Perfil</a>
                                     </div>
                                 </div>
                             </div>
@@ -205,12 +226,12 @@
             <div class="mt-10 pt-6 border-t flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div class="text-[10px] text-gray-300 uppercase tracking-tighter font-mono">UUID: {{ $item->id }}</div>
                 <div class="flex gap-3 w-full sm:w-auto">
-                    <x-secondary-button x-on:click="$dispatch('close')" class="flex-1 sm:flex-none justify-center">
+                    <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')" class="flex-1 sm:flex-none justify-center">
                         Cerrar Detalle
-                    </x-secondary-button>
+                    </x-ui.button>
                     
                     <button @click="$dispatch('close'); $dispatch('open-modal', 'edit-account-{{ $item->id }}')" 
-                            class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2 bg-indigo-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 transition shadow-md shadow-indigo-100">
+                            class="flex-1 sm:flex-none inline-flex items-center justify-center px-6 py-2 bg-zertix-primary-600 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-zertix-primary-700 transition shadow-md shadow-zertix-primary-100">
                         <x-heroicon-s-pencil class="w-4 h-4 mr-2" /> Editar Cuenta
                     </button>
                 </div>
@@ -231,42 +252,57 @@
 
         <div class="space-y-4">
             <div class="grid grid-cols-2 gap-4">
-                <div>
-                    <x-input-label value="Código" />
-                    <x-text-input name="code" type="text" class="mt-1 block w-full font-mono bg-gray-50" value="{{ $item->code }}" required />
-                </div>
-                <div>
-                    <x-input-label value="Tipo" />
-                    <select name="type" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
-                        @foreach($accountTypes as $value => $label)
-                            <option value="{{ $value }}" {{ old('type', $item->type) == $value ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-
-            <div>
-                <x-input-label value="Nombre de la Cuenta" />
-                <x-text-input name="name" type="text" class="mt-1 block w-full" value="{{ $item->name }}" required />
-            </div>
-
-            <div>
-                <x-input-label value="Cuenta Superior (Padre)" />
-                <select name="parent_id" class="mt-1 block w-full border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm text-sm">
-                    <option value="">-- Ninguna (Cuenta Raíz) --</option>
-                    @foreach($parentAccounts as $parent)
-                        @continue($parent->id == $item->id) {{-- No puede ser su propio padre --}}
-                        <option value="{{ $parent->id }}" {{ old('parent_id', $item->parent_id) == $parent->id ? 'selected' : '' }}>
-                            {{ $parent->code }} - {{ $parent->name }}
-                        </option>
+                <x-ui.forms.input
+                    label="Código"
+                    name="code"
+                    type="text"
+                    class="font-mono bg-gray-50"
+                    value="{{ $item->code }}"
+                    :error="$errors->first('code')"
+                    required
+                />
+                <x-ui.forms.select
+                    label="Tipo"
+                    name="type"
+                    :error="$errors->first('type')"
+                    required
+                >
+                    @foreach($accountTypes as $value => $label)
+                        <option value="{{ $value }}" {{ old('type', $item->type) == $value ? 'selected' : '' }}>{{ $label }}</option>
                     @endforeach
-                </select>
+                </x-ui.forms.select>
             </div>
 
-            <div class="flex items-center gap-2 py-2 border-t border-b border-gray-50">
-                <input type="checkbox" name="is_selectable" id="edit_selectable_{{ $item->id }}" value="1" {{ old('is_selectable', $item->is_selectable) ? 'checked' : '' }} class="rounded border-gray-300 text-indigo-600">
-                <x-input-label for="edit_selectable_{{ $item->id }}" value="¿Recibe asientos contables?" class="inline" />
-            </div>
+            <x-ui.forms.input
+                label="Nombre de la Cuenta"
+                name="name"
+                type="text"
+                value="{{ $item->name }}"
+                :error="$errors->first('name')"
+                required
+            />
+
+            <x-ui.forms.select
+                label="Cuenta Superior (Padre)"
+                name="parent_id"
+                placeholder="-- Ninguna (Cuenta Raíz) --"
+                :error="$errors->first('parent_id')"
+            >
+                @foreach($parentAccounts as $parent)
+                    @continue($parent->id == $item->id) {{-- No puede ser su propio padre --}}
+                    <option value="{{ $parent->id }}" {{ old('parent_id', $item->parent_id) == $parent->id ? 'selected' : '' }}>
+                        {{ $parent->code }} - {{ $parent->name }}
+                    </option>
+                @endforeach
+            </x-ui.forms.select>
+
+            <x-ui.forms.checkbox
+                label="¿Recibe asientos contables?"
+                name="is_selectable"
+                id="edit_selectable_{{ $item->id }}"
+                value="1"
+                :checked="old('is_selectable', $item->is_selectable) ? true : false"
+            />
 
             <div>
                 <x-input-label value="Estado" />
@@ -288,8 +324,8 @@
         </div>
 
         <div class="mt-6 flex justify-end gap-3">
-            <x-secondary-button x-on:click="$dispatch('close')">Cancelar</x-secondary-button>
-            <x-primary-button class="bg-indigo-600">Actualizar Cuenta</x-primary-button>
+            <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+            <x-ui.button type="submit" variant="primary">Actualizar Cuenta</x-ui.button>
         </div>
     </form>
 </x-modal>

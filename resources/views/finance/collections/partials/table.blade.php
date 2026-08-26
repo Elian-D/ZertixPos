@@ -12,7 +12,7 @@
 
             {{-- No. Recibo --}}
             @if(in_array('receipt_number', $visibleColumns))
-                <td class="px-6 py-4 text-sm font-mono font-bold text-indigo-700">
+                <td class="px-6 py-4 text-sm font-mono font-bold text-zertix-primary-700">
                     {{ $payment->receipt_number }}
                 </td>
             @endif
@@ -39,9 +39,15 @@
             {{-- Método de Pago --}}
             @if(in_array('tipo_pago', $visibleColumns))
                 <td class="px-6 py-4 text-sm text-gray-600">
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                    @php
+                        $tpHex = \App\Models\Configuration\TipoPago::getBadgeHexColors()[$payment->tipoPago->slug ?? null]
+                            ?? \App\Models\Configuration\TipoPago::getDefaultBadgeHex();
+                        $tpIcon = \App\Models\Configuration\TipoPago::getBadgeIcons()[$payment->tipoPago->slug ?? null]
+                            ?? \App\Models\Configuration\TipoPago::getDefaultBadgeIcon();
+                    @endphp
+                    <x-ui.badge :hex="$tpHex" :icon="$tpIcon" size="sm">
                         {{ $payment->tipoPago->nombre ?? 'N/A' }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 
@@ -62,9 +68,16 @@
             {{-- Estado --}}
             @if(in_array('status', $visibleColumns))
                 <td class="px-6 py-4 text-center">
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm ring-1 ring-inset {{ $payment->status_style }}">
+                    @php
+                        $statusVariant = match($payment->status) {
+                            \App\Models\Accounting\ClientCollection::STATUS_ACTIVE => 'success',
+                            \App\Models\Accounting\ClientCollection::STATUS_CANCELLED => 'error',
+                            default => 'slate',
+                        };
+                    @endphp
+                    <x-ui.badge :variant="$statusVariant" size="sm" :dot="false">
                         {{ $payment->status_label }}
-                    </span>
+                    </x-ui.badge>
                 </td>
             @endif
 
@@ -87,7 +100,7 @@
                 <div class="flex items-center justify-end gap-2">
                     {{-- Ver Detalle del Cobro --}}
                     <button @click="$dispatch('open-modal', 'view-payment-{{ $payment->id }}')" 
-                            class="bg-white border border-gray-200 text-gray-500 hover:bg-indigo-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
+                            class="bg-white border border-gray-200 text-gray-500 hover:bg-zertix-primary-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
                             title="Ver Recibo">
                         <x-heroicon-s-eye class="w-4 h-4" />
                     </button>
