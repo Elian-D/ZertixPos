@@ -90,7 +90,7 @@ class QuoteController extends Controller
             $quote = $this->service->store($request->validated());
 
             return redirect()
-                ->route('sales.quotes.show', $quote)
+                ->route('clients.quotes.show', $quote)
                 ->with('success', "Cotización #{$quote->id} generada con éxito.");
         } catch (Exception $e) {
             Log::error('Error creando cotización: '.$e->getMessage());
@@ -106,7 +106,7 @@ class QuoteController extends Controller
     {
         // Solo permitir editar si es borrador y no ha expirado
         if ($quote->status !== Quote::STATUS_DRAFT || ($quote->expires_at && $quote->expires_at->isPast())) {
-            return redirect()->route('sales.quotes.index')
+            return redirect()->route('clients.quotes.index')
                 ->with('error', "Esta cotización no puede ser editada (Estado: {$quote->status}).");
         }
 
@@ -126,7 +126,7 @@ class QuoteController extends Controller
             $this->service->update($quote, $request->validated());
 
             return redirect()
-                ->route('sales.quotes.show', $quote)
+                ->route('clients.quotes.show', $quote)
                 ->with('success', "Cotización #{$quote->id} actualizada correctamente.");
         } catch (Exception $e) {
             Log::error("Error actualizando cotización {$quote->id}: ".$e->getMessage());

@@ -1,13 +1,11 @@
 <?php
 
 use App\Http\Controllers\Accounting\AccountingAccountController;
-use App\Http\Controllers\Accounting\AccountingDashboardController;
 use App\Http\Controllers\Accounting\CollectionController;
 use App\Http\Controllers\Accounting\FinancialOverviewController;
 use App\Http\Controllers\Accounting\JournalEntryController;
 use App\Http\Controllers\Accounting\ReceivableController;
 use App\Http\Controllers\Sales\InvoiceController;
-use App\Http\Controllers\Sales\Ncf\NcfDashboardController;
 use App\Http\Controllers\Sales\Ncf\NcfLogController;
 use App\Http\Controllers\Sales\Ncf\NcfSequenceController;
 use App\Http\Controllers\Sales\Ncf\NcfTypeController;
@@ -136,14 +134,12 @@ Route::prefix('finance')->as('finance.')->group(function () {
             ->name('collections.cancel');
     });
 
-    // Dashboard financiero — hoy solo reporta balances de partida doble (JournalItem por
-    // rol de cuenta), sin sentido si accounting.advanced está apagado (ver REQ-03.4/03.7:
-    // el reporte simple de Ingresos/Gastos, sin JournalEntry, es lo que lo reemplaza).
-    Route::middleware('module:accounting.advanced')->group(function () {
-        Route::get('/dashboard', AccountingDashboardController::class)
-            ->middleware('can:view accounting dashboard')
-            ->name('dashboard.index');
-    });
+    // Dashboard Finanzas movido a routes/app/reports.php como reports.finance
+    // (Fase 7.9, sidebar) — vivía bajo app/finance/dashboard, mismo prefijo
+    // que el resto de este grupo (Ingresos y Gastos, CxC, Cobros, Facturas,
+    // NCF operativo), así que el sidebar resaltaba "Finanzas" Y "Reportes" a
+    // la vez al visitarlo. "Ingresos y Gastos" (overview.index, abajo) se
+    // queda acá — no es un dashboard de Reportes, es la vista financiera base.
 
     // Ingresos y Gastos (REQ-03.7) — base, sin gate de módulo: arma sus cifras
     // solo con Sale/InventoryMovement/ClientCollection/Receivable, nunca con JournalEntry.
@@ -190,9 +186,16 @@ Route::prefix('finance')->as('finance.')->group(function () {
 
             Route::prefix('ncf')->name('ncf.')->group(function () {
 
-                // Dashboard y otras rutas
-                Route::get('/dashboard', function () { /* tu controller */
-                })->name('dashboard');
+                // Dashboard NCF: movido a routes/app/reports.php como reports.ncf
+                // (Fase 7.9, sidebar). De paso se elimina un bug real encontrado acá:
+                // este stub (`function () { /* tu controller */ }`) y la ruta real de
+                // más abajo (`Route::get('/ncf/dashboard', NcfDashboardController::class)`)
+                // definían el MISMO método+URI+nombre — Laravel despacha peticiones
+                // entrantes por orden de REGISTRO cuando dos rutas coinciden exacto,
+                // así que "Dashboard NCF" respondía con este stub vacío, nunca con el
+                // controlador real. El controlador real (movido a reports.php) conserva
+                // el permiso que efectivamente protegía la URL (manage ncf sequences,
+                // heredado del grupo de este stub).
 
                 Route::prefix('sequences')->name('sequences.')->group(function () {
                     Route::get('/', [NcfSequenceController::class, 'index'])->name('index');
@@ -222,6 +225,4 @@ Route::prefix('finance')->as('finance.')->group(function () {
             })->where('any', '.*');
         }
     });
-
-    Route::get('/ncf/dashboard', NcfDashboardController::class)->name('ncf.dashboard');
 });

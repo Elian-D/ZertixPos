@@ -3,8 +3,13 @@
 use App\Http\Controllers\Sales\QuoteController;
 use Illuminate\Support\Facades\Route;
 
-// Extraído de sales.php (REQ-3.3) — mantiene el nombre de ruta sales.quotes.*,
-// solo cambia el archivo que lo define.
+// Extraído de sales.php (REQ-3.3), luego movido de sales.quotes.*→clients.quotes.*
+// (Fase 7.9, sidebar) — Cotizaciones vive bajo el dropdown "CRM" en el sidebar,
+// pero su URL/nombre de ruta seguía bajo "sales", lo que hacía que el comodín
+// app/sales* del dropdown "Ventas" también la atrapara (dos grupos resaltados
+// a la vez). El flag del módulo (module:sales.quotes) NO cambia de nombre — es
+// un feature flag de config/modules.php, un namespace totalmente distinto al
+// de rutas/sidebar, coincide de nombre por casualidad.
 //
 // Cotizaciones es núcleo flexible (REQ-10.4/10.8) — encendido por defecto, pero un
 // negocio de venta directa que nunca cotiza puede apagarlo. Con el flag apagado,
@@ -12,7 +17,7 @@ use Illuminate\Support\Facades\Route;
 // ya existentes, no solo la creación de nuevas (mismo criterio "se congela" de
 // REQ-10.5: si el módulo está pausado, tampoco se debería seguir operando sobre
 // lo que ya existe).
-Route::middleware(['auth', 'module:sales.quotes'])->prefix('sales/quotes')->as('sales.quotes.')->group(function () {
+Route::middleware(['auth', 'module:sales.quotes'])->prefix('clients/quotes')->as('clients.quotes.')->group(function () {
 
     // Listado principal (DataTables / AJAX)
     Route::get('/', [QuoteController::class, 'index'])

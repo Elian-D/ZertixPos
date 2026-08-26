@@ -8,7 +8,7 @@
                 {{-- TÍTULO MINIMALISTA --}}
                 <h2 class="text-xl font-medium text-gray-700 mb-6 border-b pb-3">{{ __('Crear Nuevo Usuario') }}</h2>
                 
-                <form action="{{ route('users.store') }}" method="POST">
+                <form action="{{ route('config.users.store') }}" method="POST">
                     @csrf
                     
                     {{-- 1. CAMPO: Nombre --}}
@@ -116,7 +116,7 @@
                     <div class="flex justify-end space-x-4 pt-4 border-t border-gray-100">
                         
                         {{-- Botón Cancelar (Regresar a la lista) --}}
-                        <x-ui.button href="{{ route('users.index') }}" appearance="ghost" variant="secondary">
+                        <x-ui.button href="{{ route('config.users.index') }}" appearance="ghost" variant="secondary">
                             Cancelar
                         </x-ui.button>
 

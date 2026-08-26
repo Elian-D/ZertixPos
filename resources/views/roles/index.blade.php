@@ -17,7 +17,7 @@
                 <div class="flex flex-col md:flex-row justify-between items-center mb-6 space-y-4 md:space-y-0">
                     
                     {{-- Formulario de Búsqueda Estilizado --}}
-                    <form action="{{ route('roles.index') }}" method="GET" class="w-full md:w-1/3">
+                    <form action="{{ route('config.roles.index') }}" method="GET" class="w-full md:w-1/3">
                         <x-ui.forms.input
                             type="text"
                             name="search"
@@ -28,7 +28,7 @@
                     </form>
 
                     {{-- Botón Estilizado para Crear Rol --}}
-                    <x-ui.button href="{{ route('roles.create') }}" variant="primary" iconLeft="heroicon-s-plus">
+                    <x-ui.button href="{{ route('config.roles.create') }}" variant="primary" iconLeft="heroicon-s-plus">
                         {{ __('Crear Nuevo Rol') }}
                     </x-ui.button>
                 </div>
@@ -54,13 +54,13 @@
                             <td class="block md:table-cell px-6 py-4 whitespace-nowrap text-sm font-medium w-full md:w-auto">
                                 <div class="flex items-center space-x-2">
                                     {{-- Botón Editar --}}
-                                    <a href="{{ route('roles.edit', $role) }}" title="Editar Rol" class="text-indigo-600 hover:text-indigo-900 p-1 rounded-md hover:bg-indigo-100"><x-heroicon-s-pencil class="w-5 h-5" /></a>
+                                    <a href="{{ route('config.roles.edit', $role) }}" title="Editar Rol" class="text-indigo-600 hover:text-indigo-900 p-1 rounded-md hover:bg-indigo-100"><x-heroicon-s-pencil class="w-5 h-5" /></a>
                                     
                                     {{-- Botón Permisos --}}
-                                    <a href="{{ route('roles.permissions.edit', $role) }}" title="Asignar Permisos" class="text-teal-600 hover:text-teal-900 p-1 rounded-md hover:bg-teal-100"><x-heroicon-s-key class="w-5 h-5" /></a>
+                                    <a href="{{ route('config.roles.permissions.edit', $role) }}" title="Asignar Permisos" class="text-teal-600 hover:text-teal-900 p-1 rounded-md hover:bg-teal-100"><x-heroicon-s-key class="w-5 h-5" /></a>
 
                                     {{-- Botón Eliminar (Disparador del Modal) --}}
-                                    <form action="{{ route('roles.destroy', $role) }}" method="POST" class="inline-block" x-data>
+                                    <form action="{{ route('config.roles.destroy', $role) }}" method="POST" class="inline-block" x-data>
                                         @csrf @method('DELETE')
                                         <button type="button" @click="$dispatch('open-modal', 'confirm-role-deletion-{{ $role->id }}')" 
                                             title="Eliminar Rol"
@@ -85,7 +85,7 @@
 {{-- MODALES --}}
 @foreach($roles as $role)
     <x-modal name="confirm-role-deletion-{{ $role->id }}" :show="$errors->roleDeletion->isNotEmpty()" maxWidth="md">
-        <form method="post" action="{{ route('roles.destroy', $role) }}" class="p-6">
+        <form method="post" action="{{ route('config.roles.destroy', $role) }}" class="p-6">
             @csrf
             @method('delete')
 

@@ -6,7 +6,7 @@
             <x-form-header 
                 :title="'Editar Cotización #' . $quote->id" 
                 :subtitle="'Cliente: ' . $quote->customer->name"
-                :back-route="route('sales.quotes.index')" />
+                :back-route="route('clients.quotes.index')" />
 
             {{-- Alerta de estado si la cotización ya no es borrador --}}
             @if($quote->status !== 'draft')
@@ -30,7 +30,7 @@
                 </span>
                 
                 <div class="flex gap-3">
-                    <x-ui.button href="{{ route('sales.quotes.index') }}" appearance="ghost" variant="secondary">
+                    <x-ui.button href="{{ route('clients.quotes.index') }}" appearance="ghost" variant="secondary">
                         Volver al listado
                     </x-ui.button>
                 </div>

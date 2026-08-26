@@ -13,7 +13,7 @@
                 </h2>
                 
                 {{-- FORMULARIO --}}
-                <form action="{{ route('users.roles.update', $user) }}" method="POST">
+                <form action="{{ route('config.users.roles.update', $user) }}" method="POST">
                     @csrf
                     @method('PUT')
 
@@ -58,7 +58,7 @@
                     <div class="flex justify-end space-x-4 pt-4 border-t border-gray-100 mt-8">
                         
                         {{-- Botón Cancelar (Regresar a la lista) --}}
-                        <a href="{{ route('users.index') }}" 
+                        <a href="{{ route('config.users.index') }}" 
                         class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
                             Cancelar
                         </a>

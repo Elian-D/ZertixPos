@@ -1,7 +1,7 @@
 @foreach($items as $quote)
     {{-- MODAL: CANCELAR --}}
     <x-modal name="confirm-cancel-quote-{{ $quote->id }}" maxWidth="sm">
-        <form action="{{ route('sales.quotes.cancel', $quote) }}" method="POST" class="p-6 text-center">
+        <form action="{{ route('clients.quotes.cancel', $quote) }}" method="POST" class="p-6 text-center">
             @csrf @method('PATCH')
             <div class="w-12 h-12 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <x-heroicon-s-x-mark class="w-8 h-8"/>
@@ -23,7 +23,7 @@
 
     {{-- MODAL: APROBAR --}}
     <x-modal name="confirm-approve-quote-{{ $quote->id }}" maxWidth="sm">
-        <form action="{{ route('sales.quotes.approve', $quote) }}" method="POST" class="p-6 text-center">
+        <form action="{{ route('clients.quotes.approve', $quote) }}" method="POST" class="p-6 text-center">
             @csrf @method('PATCH')
             <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
                 <x-heroicon-s-check class="w-8 h-8"/>
@@ -42,7 +42,7 @@
 
     {{-- MODAL: CONVERTIR A VENTA --}}
     <x-modal name="confirm-convert-quote-{{ $quote->id }}" maxWidth="md">
-        <form action="{{ route('sales.quotes.convert', $quote) }}" method="POST" class="p-6 text-left"
+        <form action="{{ route('clients.quotes.convert', $quote) }}" method="POST" class="p-6 text-left"
               x-data="{
                   paymentType: 'cash',
                   selectedTipoPagoId: {{ optional($tipo_pagos->first())->id ?? 'null' }},

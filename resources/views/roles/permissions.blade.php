@@ -15,7 +15,7 @@
                     </div>
                 @endif
 
-                <form action="{{ route('roles.permissions.update', $role) }}" method="POST" x-data="{}">
+                <form action="{{ route('config.roles.permissions.update', $role) }}" method="POST" x-data="{}">
                     @csrf
                     
                     {{-- 2. BARRA DE ACCIONES MINIMALISTA --}}
@@ -73,7 +73,7 @@
                     <div class="flex justify-end space-x-4 pt-6 mt-6 border-t border-gray-100">
                         
                          {{-- Botón Cancelar (Minimalista) --}}
-                        <a href="{{ route('roles.index') }}" 
+                        <a href="{{ route('config.roles.index') }}" 
                            class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150">
                             Cancelar
                         </a>

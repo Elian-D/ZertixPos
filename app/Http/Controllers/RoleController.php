@@ -35,7 +35,7 @@ class RoleController extends Controller
 
         Role::create(['name' => $request->name]);
 
-        return redirect()->route('roles.index')->with('success', 'Rol creado correctamente.');
+        return redirect()->route('config.roles.index')->with('success', 'Rol creado correctamente.');
     }
 
     public function edit(Role $role)
@@ -51,14 +51,14 @@ class RoleController extends Controller
 
         $role->update(['name' => $request->name]);
 
-        return redirect()->route('roles.index')->with('success', 'Rol actualizado correctamente.');
+        return redirect()->route('config.roles.index')->with('success', 'Rol actualizado correctamente.');
     }
 
     public function destroy(Role $role)
     {
         $role->delete();
 
-        return redirect()->route('roles.index')->with('success', 'Rol eliminado correctamente.');
+        return redirect()->route('config.roles.index')->with('success', 'Rol eliminado correctamente.');
     }
 
         // Mostrar formulario de permisos
@@ -94,6 +94,6 @@ class RoleController extends Controller
 
         $role->syncPermissions($request->permissions ?? []);
 
-        return redirect()->route('roles.index')->with('success', 'Permisos actualizados correctamente.');
+        return redirect()->route('config.roles.index')->with('success', 'Permisos actualizados correctamente.');
     }
 }
