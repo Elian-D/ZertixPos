@@ -1,35 +1,38 @@
 @props([
     'placeholder' => 'Buscar...',
-    'name' => 'search',
-    'formId' => ''
+    'filterKey'   => 'search',
 ])
 
-{{--
-    Botón de lupa clickeable: como iconLeft de x-ui.forms.input solo renderiza un ícono
-    estático (pointer-events-none, ver Input::iconWrapClasses()), superponemos un botón
-    real en las mismas coordenadas (left-3/top-1/2, z-10) que dispara el submit del form
-    vía x-ref apuntando al <input> real que el componente renderiza — más robusto que el
-    querySelector anterior, que dependía de la estructura DOM plana que este componente
-    ya no tiene. NO se pasa `icon-left` al input: el componente pintaría su propio ícono
-    estático encima de este botón (misma posición) duplicando la lupa visualmente — la
-    clase `pl-10` se pasa a mano para conservar el espacio que ese prop reservaría.
---}}
-<div class="relative w-full md:w-72" x-data>
-    <button
-        type="button"
-        class="absolute left-3 top-1/2 -translate-y-1/2 z-10 flex items-center cursor-pointer hover:text-zertix-primary-600 transition-colors"
-        @click="$refs.dtSearchInput.form.dispatchEvent(new Event('submit'))"
-        title="Buscar"
-    >
-        <x-heroicon-s-magnifying-glass class="w-4 h-4 text-gray-400" />
-    </button>
-    <x-ui.forms.input
+<div class="relative group flex-1 min-w-0 max-w-sm">
+    <span class="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none
+                 text-slate-400
+                 group-focus-within:text-zertix-primary transition-colors duration-200">
+        <x-heroicon-o-magnifying-glass class="w-4 h-4" />
+    </span>
+
+    <input
         type="text"
-        name="{{ $name }}"
-        x-ref="dtSearchInput"
-        :form="$formId ?: null"
-        value="{{ request($name) }}"
+        wire:model.live.debounce.300ms="filters.{{ $filterKey }}"
         placeholder="{{ $placeholder }}"
-        class="pl-10"
+        autocomplete="off"
+        class="w-full pl-9 pr-8 py-2 text-sm rounded-xl border
+               transition-all duration-200 focus:outline-none focus:ring-0
+               bg-white
+               border-slate-200
+               text-slate-700
+               placeholder:text-slate-400
+               focus:border-zertix-primary/50"
     />
+
+    <button
+        x-show="$wire.filters?.{{ $filterKey }} !== '' && $wire.filters?.{{ $filterKey }} != null"
+        x-cloak
+        wire:click="$set('filters.{{ $filterKey }}', '')"
+        class="absolute right-2.5 top-1/2 -translate-y-1/2 p-0.5 rounded
+               text-slate-300
+               hover:text-zertix-primary
+               transition-colors duration-200"
+        title="Limpiar búsqueda">
+        <x-heroicon-s-x-mark class="w-3.5 h-3.5" />
+    </button>
 </div>

@@ -15,7 +15,8 @@ class PosSessionFilters extends QueryFilter
             'closed_by_user_id' => PosSessionClosedByFilter::class,
             'status'            => PosSessionStatusFilter::class,
             'difference_reason' => PosSessionDifferenceReasonFilter::class,
-            'from_date'         => PosSessionDateFilter::class,
+            'from_date'         => PosSessionDateFromFilter::class,
+            'to_date'           => PosSessionDateToFilter::class,
         ];
     }
 }

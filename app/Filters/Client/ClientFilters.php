@@ -14,8 +14,8 @@ class ClientFilters extends QueryFilter
             'state' => ClientStateFilter::class,
             'type' => ClientTypeFilter::class,
             'tax_type' => ClientTaxIdentifierFilter::class,
-            'from_date' => ClientDateFilter::class,
-            'to_date' => ClientDateFilter::class,
+            'from_date' => ClientDateFromFilter::class,
+            'to_date' => ClientDateToFilter::class,
             'has_debt' => ClientHasDebtFilter::class,
             'over_limit' => ClientOverLimitFilter::class,
         ];

@@ -12,7 +12,8 @@ class PosCashMovementFilters extends QueryFilter
             'session_id' => CashMovementSessionFilter::class,
             'type'       => CashMovementTypeFilter::class,
             'user_id'    => CashMovementUserFilter::class,
-            'from_date'  => CashMovementDateFilter::class,
+            'from_date'  => CashMovementDateFromFilter::class,
+            'to_date'    => CashMovementDateToFilter::class,
         ];
     }
 }

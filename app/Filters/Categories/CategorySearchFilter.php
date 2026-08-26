@@ -4,23 +4,14 @@ namespace App\Filters\Categories;
 
 use App\Filters\Contracts\FilterInterface;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
 
 class CategorySearchFilter implements FilterInterface
 {
-    public function __construct(protected Request $request) {}
-
-    public function apply(Builder $query): Builder
+    public function apply(Builder $query, mixed $value): Builder
     {
-        $search = $this->request->input('search');
-
-        if (! $search) {
-            return $query;
-        }
-
-        return $query->where(function ($q) use ($search) {
-            $q->where('name', 'like', "%{$search}%")
-              ->orWhere('id', 'like', "%{$search}%");
+        return $query->where(function ($q) use ($value) {
+            $q->where('name', 'like', "%{$value}%")
+              ->orWhere('id', 'like', "%{$value}%");
         });
     }
 }

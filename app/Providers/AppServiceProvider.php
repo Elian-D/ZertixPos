@@ -22,7 +22,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        Paginator::useTailwind();
+        // Sistema de paginación propio (REQ-0.1) — reemplaza el Tailwind
+        // por defecto de Laravel. Usado tanto por Livewire (DataTable::paginationView())
+        // como por paginación de controladores normales fuera de Livewire.
+        Paginator::defaultView('pagination.zertix-compact');
+        Paginator::defaultSimpleView('pagination.zertix-compact');
+
         \App\Models\Accounting\Receivable::observe(\App\Observers\ReceivableObserver::class);
 
         

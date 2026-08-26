@@ -14,7 +14,8 @@ class QuoteFilters extends QueryFilter
             'status'      => QuoteStatusFilter::class,
             'origin'      => QuoteOriginFilter::class,
             'user_id'     => QuoteUserFilter::class,
-            'from_date'   => QuoteDateFilter::class,
+            'from_date'   => QuoteDateFromFilter::class,
+            'to_date'     => QuoteDateToFilter::class,
         ];
     }
 }

@@ -13,8 +13,8 @@ class ReceivableFilters extends QueryFilter
             'status'    => ReceivableStatusFilter::class,
             'client_id' => ReceivableClientFilter::class,
             'overdue'   => ReceivableOverdueFilter::class, // El de días vencidos
-            'min_balance' => ReceivableBalanceRangeFilter::class, // Rango desde
-            'max_balance' => ReceivableBalanceRangeFilter::class, // Rango hasta
+            'min_balance' => ReceivableBalanceMinFilter::class,
+            'max_balance' => ReceivableBalanceMaxFilter::class,
         ];
     }
 }
