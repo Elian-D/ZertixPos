@@ -59,6 +59,12 @@ export default {
                 linear-gradient(135deg,#5661ff,#7b8cff)
                 `,
             },
+
+            height: {
+                '11': '3rem', // 48px
+                '12': '4rem',    // 48px
+                '13': '5.5rem', // 88px
+            },
         },
     },
 

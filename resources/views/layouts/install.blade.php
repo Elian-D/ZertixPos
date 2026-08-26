@@ -7,6 +7,9 @@
 
         <title>{{ config('app.name', 'ZertixPOS') }} — Instalación</title>
 
+        <link rel="icon" href="{{ asset('img/logos/isotipo.svg') }}" type="image/svg+xml" media="(prefers-color-scheme: light)">
+        <link rel="icon" href="{{ asset('img/logos/isotipo-dark.svg') }}" type="image/svg+xml" media="(prefers-color-scheme: dark)">
+
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -19,6 +22,7 @@
     <body class="font-sans antialiased h-full bg-gray-50 text-gray-900">
         {{ $slot }}
 
-        @livewireScriptConfig
+        {{-- Directiva estándar de Livewire (ver resources/js/app.js, Fase 7.9) --}}
+        @livewireScripts
     </body>
 </html>
