@@ -1,8 +1,19 @@
 {{-- resources/views/components/ui/confirm-deletion-modal.blade.php --}}
+@php
+    // Si viene $route: <form method="POST"> clásico. Si viene $wireConfirm:
+    // el botón de confirmar dispara wire:click en el componente Livewire
+    // padre en vez de un submit — mismo modal, dos formas de ejecutar.
+    $tag = $wireConfirm ? 'div' : 'form';
+@endphp
 <x-modal name="confirm-deletion-{{ $id }}" maxWidth="md">
-    <form method="POST" action="{{ $route }}" class="p-6">
-        @csrf
-        @method($method)
+    <{{ $tag }}
+        @if($tag === 'form') method="POST" action="{{ $route }}" @endif
+        class="p-6"
+    >
+        @if($tag === 'form')
+            @csrf
+            @method($method)
+        @endif
 
         <div class="flex items-center gap-4 mb-4 text-red-600">
             <div class="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
@@ -21,10 +32,10 @@
                     {!! $description !!}
                 @else
                     {{-- Comportamiento por defecto --}}
-                    {{ $getFormattedType() }} 
+                    {{ $getFormattedType() }}
                     <span class="font-bold text-gray-900 px-1 bg-gray-100 rounded border border-gray-200">
                         {{ $itemName }}
-                    </span> 
+                    </span>
                     será movido a la <span class="text-amber-600 font-semibold italic">papelera de reciclaje</span>.
                 @endif
             </p>
@@ -46,9 +57,18 @@
                 {{ __('Cancelar') }}
             </x-ui.button>
 
-            <x-ui.button type="submit" variant="error" iconLeft="heroicon-s-trash" class="px-5 shadow-lg shadow-red-100">
-                {{ __('Confirmar') }}
-            </x-ui.button>
+            @if($wireConfirm)
+                <x-ui.button
+                    variant="error" iconLeft="heroicon-s-trash" class="px-5 shadow-lg shadow-red-100"
+                    wire:click="{{ $wireConfirm }}"
+                    x-on:click="$dispatch('close')">
+                    {{ __('Confirmar') }}
+                </x-ui.button>
+            @else
+                <x-ui.button type="submit" variant="error" iconLeft="heroicon-s-trash" class="px-5 shadow-lg shadow-red-100">
+                    {{ __('Confirmar') }}
+                </x-ui.button>
+            @endif
         </div>
-    </form>
+    </{{ $tag }}>
 </x-modal>

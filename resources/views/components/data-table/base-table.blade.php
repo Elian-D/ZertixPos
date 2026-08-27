@@ -9,12 +9,22 @@
 ])
 
 @php
-    $resolvedColumns = collect($columns)
+    $columnsCollection = collect($columns);
+
+    $resolvedColumns = $columnsCollection
         ->mapWithKeys(fn ($def, $key) => [$key => $def['label']])
         ->all();
 
-    $desktopDefaults = collect($columns)->keys()->all();
-    $mobileDefaults  = collect($columns)
+    // 'default' es un subconjunto curado (igual que el viejo TableConfig::defaultDesktop()
+    // vs allColumns()) — si el hijo no marca ninguna, todas cuentan como default.
+    $hasCuratedDefaults = $columnsCollection->contains(fn ($def) => array_key_exists('default', $def));
+
+    $desktopDefaults = $columnsCollection
+        ->filter(fn ($def) => $hasCuratedDefaults ? ($def['default'] ?? false) === true : true)
+        ->keys()
+        ->all();
+
+    $mobileDefaults = $columnsCollection
         ->filter(fn ($def) => ($def['mobile'] ?? false) === true)
         ->keys()
         ->all();

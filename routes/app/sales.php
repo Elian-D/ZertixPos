@@ -35,10 +35,8 @@ Route::prefix('sales')->as('sales.')->group(function () {
             ->middleware('permission:cancel sales')
             ->name('cancel');
 
-        // Exportación de Reportes
-        Route::get('/export', [SaleController::class, 'export'])
-            ->middleware('permission:view sales')
-            ->name('export');
+        // sales.export reemplazado por SaleTable::export() (wire:click) — ver
+        // App\Livewire\App\Sales\SaleTable.
 
         Route::get('sales/{sale}/print-invoice', [SaleController::class, 'printInvoice'])
             ->name('print-invoice')
@@ -87,10 +85,9 @@ Route::prefix('sales')->as('sales.')->group(function () {
 
                 Route::delete('/{pos_terminal}', 'destroy')->name('destroy');
 
-                // Soft Deletes
-                Route::get('/eliminados', 'eliminadas')->name('eliminadas');
-                Route::post('/{id}/restore', 'restaurar')->name('restore');
-                Route::delete('/{id}/force-delete', 'borrarDefinitivo')->name('force-delete');
+                // terminals.eliminados/restore/force-delete reemplazadas por el tab
+                // "Papelera" del mismo índice — ver App\Livewire\App\Sales\PosTerminalTable
+                // ::restore()/forceDelete() y docs/analisis/politica-soft-deletes.md §6.
             });
 
         /*

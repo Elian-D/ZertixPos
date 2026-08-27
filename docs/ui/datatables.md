@@ -1,5 +1,7 @@
 # Sistema de Tablas Adaptativas (DataTable Pattern)
 
+> **Antes de migrar un módulo:** seguir [`docs/ui/datatable-migration-checklist.md`](./datatable-migration-checklist.md) — checklist de errores reales cometidos (N+1, permisos de Docker, selección masiva a medias, etc.), a repasar en cada sub-fase (0.7-0.10).
+
 Motor de tablas de ZertixPOS (Fase 0, `docs/features/v1.3.0.md`, REQ-0). Porte del patrón de tablas de Orvian Kit — **sin instalar el paquete** (`Opción C`, decisión 2026-08-26): el código vive directo en `app/` de ZertixPOS, con los namespaces y tokens de color reales del proyecto, no `Orvian\Kit\*`. Combina el **Pipeline Pattern** (filtros), el motor reactivo de **Livewire 4**, y componentes Blade especializados para tablas con búsqueda, filtros, paginación propia, columnas configurables por dispositivo, selección masiva y carga asíncrona — sin repetir código entre módulos.
 
 ---

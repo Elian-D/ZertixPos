@@ -216,7 +216,7 @@ class SystemFeatures extends Component
                 // de guardar nada), así que no sirve session()->flash(): se dispara un
                 // evento de navegador que <x-ui.toasts /> escucha en vivo sin recargar.
                 $this->dispatch(
-                    'toast',
+                    'notify',
                     type: 'error',
                     title: 'No se pudo guardar',
                     message: "No podés apagar \"{$flexibleLabel}\" mientras \"{$satelliteLabel}\" esté activo."
