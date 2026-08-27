@@ -75,11 +75,26 @@
         </form>
     </x-modal>
 
-    <x-ui.confirm-deletion-modal 
-    :id="$item->id"
-    :title="'¿Eliminar Tipo de Negocio?'"
-    :itemName="$item->nombre"
-    :type="'el tipo de negocio'"
-    :route="route('clients.businessTypes.destroy', $item)"
-    />
+    @if($item->trashed())
+        {{-- Papelera (docs/analisis/politica-soft-deletes.md §6) — borrado
+             definitivo vía wireConfirm, dispara BusinessTypeTable::forceDelete(). --}}
+        <x-ui.confirm-deletion-modal
+        :id="$item->id"
+        :title="'¿Eliminar Permanentemente?'"
+        :itemName="$item->nombre"
+        :type="'el tipo de negocio'"
+        :wireConfirm="'forceDelete(' . $item->id . ')'"
+        :description="'Estás a punto de borrar definitivamente el tipo de negocio <strong>' . e($item->nombre) . '</strong>.'"
+        >
+        <strong>Aviso Crítico:</strong> Esta operación borrará todos los datos asociados y no se puede deshacer.
+        </x-ui.confirm-deletion-modal>
+    @else
+        <x-ui.confirm-deletion-modal
+        :id="$item->id"
+        :title="'¿Eliminar Tipo de Negocio?'"
+        :itemName="$item->nombre"
+        :type="'el tipo de negocio'"
+        :route="route('clients.businessTypes.destroy', $item)"
+        />
+    @endif
     @endforeach

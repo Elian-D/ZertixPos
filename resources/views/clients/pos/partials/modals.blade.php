@@ -118,7 +118,21 @@
         </div>
     </x-modal>
 
-    <x-ui.confirm-deletion-modal 
+    @if($item->trashed())
+        {{-- Papelera (docs/analisis/politica-soft-deletes.md §6) — borrado
+             definitivo vía wireConfirm, dispara PointOfSaleTable::forceDelete(). --}}
+        <x-ui.confirm-deletion-modal
+        :id="$item->id"
+        :title="'¿Eliminar Permanentemente?'"
+        :itemName="$item->name"
+        :type="'el punto de venta'"
+        :wireConfirm="'forceDelete(' . $item->id . ')'"
+        :description="'Estás a punto de borrar definitivamente el punto de venta <strong>' . e($item->name) . '</strong>.'"
+        >
+        <strong>Aviso Crítico:</strong> Esta operación borrará todos los datos asociados y no se puede deshacer.
+        </x-ui.confirm-deletion-modal>
+    @else
+        <x-ui.confirm-deletion-modal
         :id="$item->id"
         :title="'¿Eliminar Punto de Venta?'"
         :itemName="$item->name"
@@ -126,5 +140,6 @@
         :route="route('clients.delivery_points.destroy', $item)"
         >
         <strong>Aviso:</strong> Esta operación se puede deshacer desde la papelera.
-    </x-ui.confirm-deletion-modal>
+        </x-ui.confirm-deletion-modal>
+    @endif
 @endforeach

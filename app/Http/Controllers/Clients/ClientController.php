@@ -2,22 +2,17 @@
 
 namespace App\Http\Controllers\Clients;
 
-use App\Exports\Clients\ClientsExport;
 use App\Exports\Clients\ClientsTemplateExport;
-use App\Filters\Client\ClientFilters;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Clients\BulkClientRequest;
 use App\Http\Requests\Clients\StoreClientRequest;
 use App\Http\Requests\Clients\UpdateClientRequest;
 use App\Imports\ClientsImport;
 use App\Models\Clients\Client;
 use App\Services\Client\ClientCatalogService;
 use App\Services\Client\ClientService;
-use App\Tables\ClientTable;
 use App\Traits\SoftDeletesTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 use Maatwebsite\Excel\Validators\ValidationException;
 
@@ -25,88 +20,11 @@ class ClientController extends Controller
 {
     use SoftDeletesTrait;
 
-    public function index(Request $request, ClientCatalogService $catalogService)
+    public function index()
     {
-        // 1. Parámetros de UI
-        $visibleColumns = $request->input('columns', ClientTable::defaultDesktop());
-        $perPage = $request->input('per_page', 10);
-
-        // 2. Ejecución del Pipeline de Filtros
-        $clients = (new ClientFilters($request))
-            ->apply(Client::query()->withIndexRelations())
-            ->paginate($perPage)
-            ->withQueryString();
-
-        // 3. Respuesta AJAX (Solo la tabla)
-        if ($request->ajax()) {
-            return view('clients.partials.table', [
-                'clients' => $clients,
-                'visibleColumns' => $visibleColumns,
-                'allColumns' => ClientTable::allColumns(),
-                'defaultDesktop' => ClientTable::defaultDesktop(),
-                'defaultMobile' => ClientTable::defaultMobile(),
-                'bulkActions' => true,
-            ])->render();
-        }
-
-        // 4. Respuesta Vista Completa
-        return view('clients.index', array_merge(
-            [
-                'clients' => $clients,
-                'visibleColumns' => $visibleColumns,
-                'allColumns' => ClientTable::allColumns(),
-                'defaultDesktop' => ClientTable::defaultDesktop(),
-                'defaultMobile' => ClientTable::defaultMobile(),
-                'bulkActions' => true,
-            ],
-            $catalogService->getForFilters() // Inyecta states, taxIdentifierTypes, etc.
-        ));
-    }
-
-    /**
-     * Acciones masivas
-     */
-    public function bulk(BulkClientRequest $request, ClientService $clientService)
-    {
-        try {
-            $count = $clientService->performBulkAction(
-                $request->ids,
-                $request->action,
-                $request->value
-            );
-
-            $label = $clientService->getActionLabel($request->action);
-            $message = "Se han {$label} correctamente {$count} registros.";
-
-            session()->flash('success', $message);
-
-            return response()->json([
-                'success' => true,
-                'message' => $message,
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Error en acción masiva de clientes: '.$e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'No se pudo completar la operación masiva.',
-            ], 422);
-        }
-    }
-
-    // Exportar clientes a Excel
-    public function export(Request $request)
-    {
-        // 1. Aplicamos tus filtros existentes
-        $query = (new ClientFilters($request))
-            ->apply(Client::query()->withIndexRelations());
-
-        // 2. IMPORTANTE: Ignoramos las columnas seleccionadas de la vista
-        return Excel::download(
-            new ClientsExport($query),
-            'respaldo-clientes-'.now()->format('d-m-Y-h:ia').'.xlsx'
-        );
+        // REQ-0.7: la tabla vive ahora en App\Livewire\App\Clients\ClientTable
+        // (motor Livewire, Fase 0) — este método solo renderiza el layout.
+        return view('clients.index');
     }
 
     /**
@@ -212,6 +130,13 @@ class ClientController extends Controller
 
     /* ===========================
      |  CONFIGURACIÓN DEL TRAIT
+     |  Solo destroyTrait() (usado por destroy() arriba) sigue alcanzable
+     |  por HTTP. eliminadas()/restaurar()/borrarDefinitivo() del trait ya
+     |  no tienen ruta — el tab "Papelera" del ClientTable Livewire las
+     |  reemplazó (docs/analisis/politica-soft-deletes.md §6). Quedan como
+     |  boilerplate inalcanzable, igual que SaleController con SoftDeletesTrait
+     |  (ver mismo documento §4.2) — getRouteEliminadas() ya no resuelve a
+     |  ninguna ruta real, pero nada la invoca.
      =========================== */
     protected function getModelClass(): string
     {

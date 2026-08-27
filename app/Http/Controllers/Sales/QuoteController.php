@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Sales;
 
-use App\Filters\Sales\Quotes\QuoteFilters;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Sales\Quotes\StoreQuoteRequest;
 use App\Http\Requests\Sales\Quotes\UpdateQuoteRequest;
@@ -11,7 +10,6 @@ use App\Services\Sales\Quotes\QuoteCatalogService;
 use App\Services\Sales\Quotes\QuotePrintService;
 use App\Services\Sales\Quotes\QuoteService;
 use App\Services\Sales\SalesServices\SaleCatalogService;
-use App\Tables\SalesTables\QuoteTable;
 use Exception;
 use Illuminate\Http\Request;
 // App\Http\Controllers\Sales\QuoteController.php
@@ -27,50 +25,11 @@ class QuoteController extends Controller
         protected QuotePrintService $printService
     ) {}
 
-    public function index(Request $request)
+    public function index()
     {
-        $visibleColumns = $request->input('columns', QuoteTable::defaultDesktop());
-        $perPage = $request->input('per_page', 10);
-
-        $quotes = (new QuoteFilters($request))
-            ->apply(Quote::query()->with(['customer', 'user', 'sale', 'terminal']))
-            ->latest()
-            ->paginate($perPage)
-            ->withQueryString();
-
-        // 1. Catálogos para los Filtros (QuoteCatalog)
-        $quoteCatalogs = $this->catalogService->getForFilters();
-
-        // 2. Catálogos para el Modal de Conversión (SaleCatalog)
-        $saleCatalogs = $this->saleCatalogService->getForForm();
-
-        if ($request->ajax()) {
-            return view('sales.quotes.partials.table', [
-                'items' => $quotes,
-                'visibleColumns' => $visibleColumns,
-                'allColumns' => QuoteTable::allColumns(),
-                'tipo_pagos' => $saleCatalogs['tipo_pagos'],
-                'ncf_types' => $saleCatalogs['ncf_types'],
-                'warehouses' => $saleCatalogs['warehouses'], // Agregar aquí
-            ])->render();
-        }
-
-        // Combinamos todo para la vista inicial
-        return view('sales.quotes.index', array_merge(
-            [
-                'items' => $quotes,
-                'visibleColumns' => $visibleColumns,
-                'allColumns' => QuoteTable::allColumns(),
-                'defaultDesktop' => QuoteTable::defaultDesktop(),
-                'defaultMobile' => QuoteTable::defaultMobile(),
-            ],
-            $quoteCatalogs, // customers, users, statuses, origins
-            [
-                'tipo_pagos' => $saleCatalogs['tipo_pagos'],
-                'ncf_types' => $saleCatalogs['ncf_types'],
-                'warehouses' => $saleCatalogs['warehouses'], // Agregar aquí también
-            ]
-        ));
+        // REQ-0.7: la tabla vive ahora en App\Livewire\App\Clients\QuoteTable
+        // (motor Livewire, Fase 0) — este método solo renderiza el layout.
+        return view('sales.quotes.index');
     }
 
     /**

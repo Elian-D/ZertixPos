@@ -9,9 +9,7 @@ use App\Http\Requests\Sales\Pos\PosTerminals\StorePosTerminalRequest;
 use App\Http\Requests\Sales\Pos\PosTerminals\UpdatePosTerminalRequest;
 use App\Services\Sales\Pos\PosTerminals\PosTerminalService;
 use App\Services\Sales\Pos\PosTerminals\PosTerminalCatalogService;
-use App\Tables\SalesTables\Pos\PosTerminalTable;
 use App\Traits\SoftDeletesTrait;
-use Illuminate\Http\Request;
 use Exception;
 
 class PosTerminalController extends Controller
@@ -24,42 +22,11 @@ class PosTerminalController extends Controller
     ) {}
 
     /**
-     * Vista principal con tabla AJAX y listado de terminales.
+     * Listado migrado a Livewire — ver App\Livewire\App\Sales\PosTerminalTable.
      */
-    public function index(Request $request)
+    public function index()
     {
-        // 1. Parámetros de UI (Basado en tu clase Table)
-        $visibleColumns = $request->input('columns', PosTerminalTable::defaultDesktop());
-        $perPage = $request->input('per_page', 10);
-
-        // 2. Consulta con relaciones necesarias para evitar N+1
-        $terminals = PosTerminal::with(['warehouse', 'cashAccount', 'defaultNcfType', 'defaultClient'])
-            ->latest()
-            ->paginate($perPage)
-            ->withQueryString();
-
-        // 3. Respuesta AJAX para recarga parcial de la tabla
-        if ($request->ajax()) {
-            return view('sales.pos.terminals.partials.table', [
-                'items'          => $terminals,
-                'visibleColumns' => $visibleColumns,
-                'allColumns'     => PosTerminalTable::allColumns(),
-                'defaultDesktop' => PosTerminalTable::defaultDesktop(),
-                'defaultMobile'  => PosTerminalTable::defaultMobile(),
-            ])->render();
-        }
-
-        // 4. Vista completa con catálogos para filtros/modales si fuera necesario
-        return view('sales.pos.terminals.index', array_merge(
-            [
-                'items'          => $terminals,
-                'visibleColumns' => $visibleColumns,
-                'allColumns'     => PosTerminalTable::allColumns(),
-                'defaultDesktop' => PosTerminalTable::defaultDesktop(),
-                'defaultMobile'  => PosTerminalTable::defaultMobile(),
-            ],
-            $this->catalogService->getForForm()
-        ));
+        return view('sales.pos.terminals.index');
     }
 
     /**
@@ -138,7 +105,10 @@ class PosTerminalController extends Controller
                 ->with('error', "No se puede eliminar la terminal '{$posTerminal->name}': tiene una sesión de caja abierta. Cierra la caja primero.");
         }
 
-        // El trait manejará la lógica de borrado suave y redirección
+        // El trait maneja la lógica de borrado suave y redirección. eliminadas/restaurar/
+        // borrarDefinitivo del trait ya no se usan (reemplazados por el tab "Papelera" +
+        // PosTerminalTable::restore()/forceDelete()), pero destroy() sigue siendo un POST
+        // real con redirect, así que destroyTrait() sigue siendo el mejor ajuste acá.
         return $this->destroyTrait($posTerminal, null);
     }
 

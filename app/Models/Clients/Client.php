@@ -171,6 +171,13 @@ class Client extends Model
      */
     public function esMoroso(): bool
     {
+        // Si scopeWithIndexRelations() ya precalculó is_moroso (REQ-0 DataTable,
+        // withExists en una sola subquery correlacionada por fila, sin N+1),
+        // lo reusamos en vez de disparar una query nueva por cliente en la tabla.
+        if (array_key_exists('is_moroso', $this->attributes)) {
+            return (bool) $this->attributes['is_moroso'];
+        }
+
         $diasGracia = general_config()->dias_gracia_mora ?? 0;
 
         // whereNotIn, no solo "!= PAID" (Fase 8, REQ-8.1): una Receivable ANULADA
@@ -198,10 +205,20 @@ class Client extends Model
 
     public function scopeWithIndexRelations($query)
     {
-        return $query->with([
-            'provincia:id,name',
-            'municipio:id,name',
-            'accountingAccount:id,code,name', // Añadido a la carga por defecto
-        ]);
+        $diasGracia = general_config()->dias_gracia_mora ?? 0;
+
+        return $query
+            ->with([
+                'provincia:id,name',
+                'municipio:id,name',
+                'accountingAccount:id,code,name', // Añadido a la carga por defecto
+            ])
+            // Precalcula esMoroso() en la misma consulta (subquery correlacionada
+            // EXISTS por fila) — evita el N+1 de una query por cliente en la tabla.
+            // Ver esMoroso(), que reusa este valor si ya viene cargado.
+            ->withExists(['receivables as is_moroso' => function ($q) use ($diasGracia) {
+                $q->whereNotIn('status', [Receivable::STATUS_PAID, Receivable::STATUS_CANCELLED])
+                    ->where('due_date', '<', now()->subDays($diasGracia));
+            }]);
     }
 }

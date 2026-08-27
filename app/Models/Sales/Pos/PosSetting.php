@@ -25,12 +25,23 @@ class PosSetting extends Model
     /**
      * Singleton Pattern con Cache
      * Acceso: PosSetting::getSettings()
+     *
+     * Memo estático además del Cache::rememberForever(): con CACHE_STORE=database,
+     * cada llamada sin memo dispara un `select * from cache` real — visible cuando
+     * algo llama pos_config() por fila de una tabla (ej. PosTerminalTable). Mismo
+     * patrón ya usado por general_config() (app/Helpers/general.php).
      */
     public static function getSettings()
     {
-        return Cache::rememberForever('pos_settings_global', function () {
-            return self::first() ?? self::createDefault();
-        });
+        static $settings = null;
+
+        if ($settings === null) {
+            $settings = Cache::rememberForever('pos_settings_global', function () {
+                return self::first() ?? self::createDefault();
+            });
+        }
+
+        return $settings;
     }
 
     /**

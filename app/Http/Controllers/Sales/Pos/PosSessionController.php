@@ -6,10 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Models\Sales\Pos\PosSession;
 use App\Services\Sales\Pos\PosSessionServices\{PosSessionService, PosSessionCatalogService, PosSessionReportService};
-use App\Filters\Sales\Pos\SessionFilters\PosSessionFilters;
 use App\Http\Requests\Sales\Pos\PosSessions\{OpenSessionRequest, CloseSessionRequest, UpdatePosSessionRequest};
 use Illuminate\Http\Request;
-use App\Tables\SalesTables\Pos\PosSessionTable;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class PosSessionController extends Controller
@@ -23,51 +21,13 @@ class PosSessionController extends Controller
     ) {}
 
     /**
-     * Listado histórico de sesiones con Pipeline de Filtros.
+     * Listado migrado a Livewire — ver App\Livewire\App\Sales\PosSessionTable.
      */
-    public function index(Request $request, PosSessionFilters $filters)
+    public function index()
     {
         $this->authorize('pos sessions history');
 
-        // 1. Parámetros de Columnas (UI)
-        $visibleColumns = $request->input('columns', PosSessionTable::defaultDesktop());
-        $perPage = $request->input('per_page', 15);
-
-        // 2. Aplicar Filtros y Query
-        $sessions = $filters->apply(
-            PosSession::with(['terminal', 'user', 'openedBy', 'closedBy'])
-        )
-        ->orderBy('opened_at', 'desc')
-        ->paginate($perPage)
-        ->withQueryString();
-
-        // 3. Respuesta AJAX para recarga de tabla
-        if ($request->ajax()) {
-            return view('sales.pos.sessions.partials.table', [
-                'sessions'       => $sessions,
-                'visibleColumns' => $visibleColumns,
-                'allColumns'     => PosSessionTable::allColumns(),
-                'defaultDesktop' => PosSessionTable::defaultDesktop(),
-                'defaultMobile'  => PosSessionTable::defaultMobile(),
-            ])->render();
-        }
-
-        // 4. Carga de Catálogos para los Filtros (Selects de Terminales y Usuarios)
-        $catalog = $this->catalogService->getForFilters();
-        $catalogForms = $this->catalogService->getForForm(); // Para el modal de apertura (terminales disponibles)
-
-        // 5. Retorno de vista con todas las variables necesarias
-        return view('sales.pos.sessions.index', array_merge(
-            [
-                'sessions'       => $sessions,
-                'visibleColumns' => $visibleColumns,
-                'allColumns'     => PosSessionTable::allColumns(),
-                'defaultDesktop' => PosSessionTable::defaultDesktop(),
-                'defaultMobile'  => PosSessionTable::defaultMobile(),
-                'available_terminals' => $catalogForms['available_terminals'],
-            ],
-            $catalog // Esto ya trae 'terminals' y 'users'
-        ));
+        return view('sales.pos.sessions.index');
     }
 
     /**

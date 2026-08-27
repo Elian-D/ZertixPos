@@ -169,14 +169,29 @@
         </div>
     </x-modal>
 
-    {{-- Modal de Confirmación de Eliminación --}}
-    <x-ui.confirm-deletion-modal 
-        :id="$item->id"
-        :title="'¿Desactivar Terminal?'"
-        :itemName="$item->name"
-        :type="'la terminal'"
-        :route="route('sales.pos.terminals.destroy', $item)"
+    {{-- Modal de Confirmación --}}
+    @if($item->trashed())
+        {{-- Papelera (docs/analisis/politica-soft-deletes.md §6) — borrado
+             definitivo vía wireConfirm, dispara PosTerminalTable::forceDelete(). --}}
+        <x-ui.confirm-deletion-modal
+            :id="$item->id"
+            :title="'¿Eliminar Permanentemente?'"
+            :itemName="$item->name"
+            :type="'la terminal'"
+            :wireConfirm="'forceDelete(' . $item->id . ')'"
+            :description="'Estás a punto de borrar definitivamente la terminal <strong>' . e($item->name) . '</strong>.'"
         >
-        <strong>Advertencia:</strong> Si esta terminal tiene sesiones abiertas, no podrá ser eliminada. Al desactivarla, los cajeros ya no podrán iniciar sesión en este punto de venta.
-    </x-ui.confirm-deletion-modal>
+            <strong>Aviso Crítico:</strong> Esta operación borrará todos los datos asociados y no se puede deshacer.
+        </x-ui.confirm-deletion-modal>
+    @else
+        <x-ui.confirm-deletion-modal
+            :id="$item->id"
+            :title="'¿Desactivar Terminal?'"
+            :itemName="$item->name"
+            :type="'la terminal'"
+            :route="route('sales.pos.terminals.destroy', $item)"
+        >
+            <strong>Advertencia:</strong> Si esta terminal tiene sesiones abiertas, no podrá ser eliminada. Al desactivarla, los cajeros ya no podrán iniciar sesión en este punto de venta.
+        </x-ui.confirm-deletion-modal>
+    @endif
 @endforeach
