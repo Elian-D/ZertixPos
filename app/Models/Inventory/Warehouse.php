@@ -127,6 +127,16 @@ class Warehouse extends Model
      |  SCOPES
      =========================== */
 
+    /**
+     * Centraliza el Eager Loading del índice — sin esto, la vista de detalle
+     * llamaba $item->stocks()->count() por fila (N+1 real, ver migración a
+     * Livewire de REQ-0.8).
+     */
+    public function scopeWithIndexRelations($query)
+    {
+        return $query->with('accountingAccount')->withCount('stocks');
+    }
+
     public function scopeActivos($query)
     {
         return $query->where('is_active', true);

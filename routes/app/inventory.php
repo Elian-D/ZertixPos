@@ -15,21 +15,15 @@ Route::middleware('module:inventory.tracking')->prefix('inventory')->as('invento
 
     Route::middleware('permission:configure warehouses')->group(function () {
 
-        Route::get('warehouses/eliminados', [WarehouseController::class, 'eliminadas'])
-            ->name('warehouses.eliminados');
-
+        // warehouses.eliminados/restaurar/borrarDefinitivo/estado reemplazadas por
+        // el tab "Papelera" + WarehouseTable::restore()/forceDelete()/toggleActivo()
+        // del mismo índice — ver App\Livewire\App\Inventory\WarehouseTable y
+        // docs/analisis/politica-soft-deletes.md §6. Sin create/edit/show reales
+        // (CRUD por modal) — solo index/store/update/destroy.
         Route::resource('warehouses', WarehouseController::class)
             ->parameters(['warehouses' => 'warehouse'])
+            ->only(['index', 'store', 'update', 'destroy'])
             ->names('warehouses');
-
-        Route::patch('warehouses/{warehouse}/estado', [WarehouseController::class, 'toggleEstado'])
-            ->name('warehouses.toggle');
-
-        Route::patch('warehouses/{id}/restaurar', [WarehouseController::class, 'restaurar'])
-            ->name('warehouses.restaurar');
-
-        Route::delete('warehouses/{id}/borrar', [WarehouseController::class, 'borrarDefinitivo'])
-            ->name('warehouses.borrarDefinitivo');
     });
 
     Route::get('stocks/', [InventoryStockController::class, 'index'])
@@ -40,9 +34,9 @@ Route::middleware('module:inventory.tracking')->prefix('inventory')->as('invento
         ->middleware('permission:inventory stocks update')
         ->name('stocks.update-min-stock');
 
-    Route::get('stocks/export', [InventoryStockController::class, 'export'])
-        ->middleware('permission:inventory stocks export')
-        ->name('stocks.export');
+    // stocks.export reemplazada por InventoryStockTable::export() del mismo
+    // índice (Excel::download() puede devolverse directo desde una acción
+    // Livewire) — ver ARCHITECTURE.md §7.
 
     Route::middleware('auth')->group(function () {
 
@@ -54,9 +48,9 @@ Route::middleware('module:inventory.tracking')->prefix('inventory')->as('invento
             ->middleware('permission:create inventory adjustments')
             ->name('movements.store');
 
-        Route::get('movements/export', [InventoryMovementController::class, 'export'])
-            ->middleware('permission:view inventory movements')
-            ->name('movements.export');
+        // movements.export reemplazada por InventoryMovementTable::export() del
+        // mismo índice (Excel::download() puede devolverse directo desde una
+        // acción Livewire) — ver ARCHITECTURE.md §7.
     });
 
     // Dashboard Inventario movido a routes/app/reports.php como reports.inventory
@@ -70,40 +64,27 @@ Route::middleware('module:inventory.tracking')->prefix('inventory')->as('invento
 
         Route::middleware('permission:configure categories')->group(function () {
 
-            Route::get('categories/eliminados', [CategoryController::class, 'eliminadas'])
-                ->name('categories.eliminados');
-
+            // categories.eliminados/restaurar/borrarDefinitivo/estado reemplazadas
+            // por el tab "Papelera" + CategoryTable::restore()/forceDelete()/
+            // toggleActivo() del mismo índice — ver
+            // App\Livewire\App\Inventory\CategoryTable. Sin create/edit/show
+            // reales (CRUD por modal) — solo index/store/update/destroy.
             Route::resource('categories', CategoryController::class)
                 ->parameters(['categories' => 'category'])
+                ->only(['index', 'store', 'update', 'destroy'])
                 ->names('categories');
-
-            Route::patch('categories/{category}/estado', [CategoryController::class, 'toggleEstado'])
-                ->name('categories.toggle');
-
-            Route::patch('categories/{id}/restaurar', [CategoryController::class, 'restaurar'])
-                ->name('categories.restaurar');
-
-            Route::delete('categories/{id}/borrar', [CategoryController::class, 'borrarDefinitivo'])
-                ->name('categories.borrarDefinitivo');
         });
 
         Route::middleware('permission:configure units')->group(function () {
 
-            Route::get('units/eliminados', [UnitController::class, 'eliminadas'])
-                ->name('units.eliminados');
-
+            // units.eliminados/restaurar/borrarDefinitivo/estado reemplazadas por
+            // el tab "Papelera" + UnitTable::restore()/forceDelete()/toggleActivo()
+            // del mismo índice — ver App\Livewire\App\Inventory\UnitTable. Sin
+            // create/edit/show reales (CRUD por modal) — solo index/store/update/destroy.
             Route::resource('units', UnitController::class)
                 ->parameters(['units' => 'unit'])
+                ->only(['index', 'store', 'update', 'destroy'])
                 ->names('units');
-
-            Route::patch('units/{unit}/estado', [UnitController::class, 'toggleEstado'])
-                ->name('units.toggle');
-
-            Route::patch('units/{id}/restaurar', [UnitController::class, 'restaurar'])
-                ->name('units.restaurar');
-
-            Route::delete('units/{id}/borrar', [UnitController::class, 'borrarDefinitivo'])
-                ->name('units.borrarDefinitivo');
         });
 
         Route::group([], function () {
@@ -128,25 +109,15 @@ Route::middleware('module:inventory.tracking')->prefix('inventory')->as('invento
                 ->middleware('permission:edit products')
                 ->name('update');
 
-            Route::post('/bulk-action', [ProductController::class, 'bulk'])
-                ->middleware('permission:edit products')
-                ->name('bulk');
-
             Route::delete('/{product}', [ProductController::class, 'destroy'])
                 ->middleware('permission:delete products')
                 ->name('destroy');
 
-            Route::get('/eliminados', [ProductController::class, 'eliminadas'])
-                ->middleware('permission:restore products')
-                ->name('eliminados');
-
-            Route::patch('/{id}/restaurar', [ProductController::class, 'restaurar'])
-                ->middleware('permission:restore products')
-                ->name('restore');
-
-            Route::delete('/{id}/forzar-eliminacion', [ProductController::class, 'borrarDefinitivo'])
-                ->middleware('permission:delete products')
-                ->name('borrarDefinitivo');
+            // products.bulk/eliminados/restore/borrarDefinitivo reemplazadas por el
+            // tab "Papelera" del mismo índice — sin selección masiva (decisión
+            // explícita del usuario, aplica a todos los módulos migrados) — ver
+            // App\Livewire\App\Inventory\ProductTable::restore()/forceDelete() y
+            // docs/analisis/politica-soft-deletes.md §6.
         });
     });
 });

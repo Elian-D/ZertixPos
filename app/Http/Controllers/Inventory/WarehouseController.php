@@ -2,51 +2,28 @@
 
 namespace App\Http\Controllers\Inventory;
 
-use App\Filters\Warehouses\WarehousesFilters;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Inventory\StoreWarehouseRequest;
 use App\Http\Requests\Inventory\UpdateWarehouseRequest;
 use App\Models\Inventory\Warehouse;
-use App\Services\Inventory\WarehouseService\WarehouseCatalogService;
 use App\Services\Inventory\WarehouseService\WarehouseService;
-use App\Tables\WarehouseTable;
 use App\Traits\SoftDeletesTrait;
 use Exception;
-use Illuminate\Http\Request;
 
 class WarehouseController extends Controller
 {
     use SoftDeletesTrait;
 
     public function __construct(
-        protected WarehouseService $service,
-        protected WarehouseCatalogService $catalogService
+        protected WarehouseService $service
     ) {}
 
-    public function index(Request $request)
+    /**
+     * Listado migrado a Livewire — ver App\Livewire\App\Inventory\WarehouseTable.
+     */
+    public function index()
     {
-        $visibleColumns = $request->input('columns', WarehouseTable::defaultDesktop());
-        $perPage = $request->input('per_page', 10);
-
-        // Cargamos la relación contable para la tabla
-        $warehouses = (new WarehousesFilters($request))
-            ->apply(Warehouse::query()->with('accountingAccount'))
-            ->paginate($perPage)
-            ->withQueryString();
-
-        $viewData = array_merge([
-            'warehouses' => $warehouses,
-            'visibleColumns' => $visibleColumns,
-            'allColumns' => WarehouseTable::allColumns(),
-            'defaultDesktop' => WarehouseTable::defaultDesktop(),
-            'defaultMobile' => WarehouseTable::defaultMobile(),
-        ], $this->catalogService->getForIndex());
-
-        if ($request->ajax()) {
-            return view('inventory.warehouses.partials.table', $viewData)->render();
-        }
-
-        return view('inventory.warehouses.index', $viewData);
+        return view('inventory.warehouses.index');
     }
 
     public function store(StoreWarehouseRequest $request)
@@ -74,17 +51,6 @@ class WarehouseController extends Controller
         }
     }
 
-    public function toggleEstado(Warehouse $warehouse)
-    {
-        try {
-            $this->service->toggle($warehouse);
-
-            return back()->with('success', 'Estado del almacén actualizado con éxito.');
-        } catch (Exception $e) {
-            return back()->with('error', $e->getMessage());
-        }
-    }
-
     public function destroy($id)
     {
         $warehouse = Warehouse::findOrFail($id);
@@ -97,6 +63,10 @@ class WarehouseController extends Controller
         return $this->destroyTrait($warehouse);
     }
 
+    /* Configuración del Trait para destroy() (eliminados/restaurar/borrarDefinitivo
+     * del trait ya no se usan — reemplazados por el tab "Papelera" + WarehouseTable
+     * ::restore()/forceDelete(); toggleEstado() reemplazado por WarehouseTable
+     * ::toggleActivo(), ver docs/analisis/politica-soft-deletes.md §6). */
     protected function getModelClass(): string
     {
         return Warehouse::class;
