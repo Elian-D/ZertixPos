@@ -18,7 +18,7 @@ Checklist interno a seguir **cada vez** que se migra un módulo del sistema AJAX
 - [ ] Leer el modelo: `scopeWithIndexRelations()` actual y **cualquier método que se llame por fila en la vista** (`$model->algoQueHagaQuery()`). Ver punto 4.
 - [ ] Leer la Table class vieja (`app/Tables/XxxTable.php` si existe): `allColumns()` vs `defaultDesktop()` — casi siempre `defaultDesktop()` es un **subconjunto curado**, no todas las columnas. Ver punto 3.
 - [ ] Leer el `XxxFilters.php` orquestador y cada filtro hoja que referencia — decidir cuáles colapsan a closures (REQ-0.4) y cuáles se quedan como clase (joins/lógica real). Si es el caso como clientes que todos son closures se puede borrar el directorio.
-- [ ] Confirmar con el usuario el alcance real si el documento de la fase es ambiguo (ej. "grupo del sidebar" vs "3 módulos literales") — no asumir el alcance más grande ni el más chico sin preguntar.
+- [ ] Confirmar con el usuario el alcance real si el documento de la fase es ambiguo (ej. "grupo del sidebar" vs "3 módulos literales") — no asumir el alcance más grande ni el más chico sin preguntar. **Pasó dos veces (CRM/Ventas y de nuevo en Inventario, REQ-0.7/0.8): el texto del REQ listaba menos módulos de los que el sidebar real tiene.** Antes de dar una sub-fase por cerrada, releer `resources/views/layouts/sidebar.blade.php` para el grupo completo (`<x-sidebar.subitem>` dentro de ese `<x-sidebar.group>`), no solo el texto de `docs/features/v1.3.0.md` — ese documento puede quedar desactualizado, el sidebar no.
 
 ## 2. Selección masiva — todo o nada
 
@@ -83,7 +83,15 @@ Estándar fijado en Clientes (REQ-0.7), aplica a toda entidad **Categoría A** d
 - [ ] Borrar el archivo JS del módulo en `resources/js/pages/` (ej. `clients.js`) — es el `AjaxDataTable({tableId, formId, chips: {...}})` del sistema viejo, apunta a IDs de `<table>`/`<form>` que ya no existen. Quitar también su `import './pages/xxx'` en `resources/js/app.js`. Confirmar primero que el archivo es *solo* del index viejo (a veces un módulo comparte JS con su página de importación u otra vista que sigue viva).
 - [ ] La papelera **ya no es una página aparte** — ver punto 6. Si el módulo es Categoría A, la vista/ruta de papelera se borra como parte de este mismo cierre, no queda "fuera del alcance".
 
-## 8. Verificación final
+## 8. Casos reales encontrados en Inventario (REQ-0.8)
+
+- [ ] **`<x-data-table.search>` siempre se renderiza en el toolbar de `base-table`, tenga o no el módulo viejo un buscador real.** Terminales POS, Turnos POS, Almacenes y Categorías/Unidades no tenían campo de búsqueda en el AJAX viejo — dejar `filters.search` fuera del componente deja el buscador visible pero sin efecto (silenciosamente roto). Agregar un `search` mínimo y razonable (por `name` u otro campo obvio) aunque el módulo viejo no lo tuviera, y anotarlo como desviación intencional al reportar el módulo.
+- [ ] **`Route::resource()` sin `->only([...])` registra `create`/`edit`/`show` aunque el controlador no tenga esos métodos** (patrón CRUD-por-modal: Categorías, Unidades, Almacenes, Tipos de Negocio/Equipo). Antes de tocar la ruta, confirmar qué métodos existen realmente en el controlador — si `create()`/`edit()`/`show()` no están, recortar a `->only(['index', 'store', 'update', 'destroy'])`.
+- [ ] **No asumir que un catálogo de opciones (`CatalogService::getForFilters()`) está sincronizado con el filtro real.** `InventoryStockCatalogService::getForFilters()['statuses']` traía la clave `'low_stock'`, pero `InventoryStockStatusFilter`/el `match()` del filtro siempre esperó `'low'` — la vista AJAX vieja nunca lo notó porque hardcodeaba las opciones del `<select>` a mano en vez de usar ese array. Al migrar, si vas a usar `$options` del catálogo directo en `x-data-table.filter-select`, verificar que sus claves calzan con `filterMap()`; si no calzan y el catálogo se comparte con otra pantalla (ej. un dashboard), no "corregir" el catálogo compartido — hardcodear las opciones correctas en la vista Livewire, igual que hacía el AJAX viejo, y dejar un comentario explicando por qué no se tocó el catálogo.
+- [ ] **Un toggle activar/desactivar que en el AJAX viejo era un `<form>`/botón suelto (no dentro de un `action-menu`) igual se convierte** al moverlo a Livewire — la regla del punto 5 (`toggleActivo` dentro de `x-ui.action-menu`) no depende de cómo estaba antes, aplica siempre que el módulo tenga ese patrón.
+- [ ] Un módulo Categoría B/C sin rutas de papelera (`InventoryMovement`, `InventoryStock`) no necesita nada del punto 6 — confirmarlo en `docs/analisis/politica-soft-deletes.md` antes de asumir que "todo módulo de catálogo tiene papelera".
+
+## 9. Verificación final
 
 - [ ] `php -l` en cada archivo PHP tocado.
 - [ ] `php artisan view:cache` (como `sail`, ver punto 0) compila sin errores — detecta blade roto sin necesidad de abrir el navegador.

@@ -72,11 +72,25 @@ class Product extends Model
      =========================== */
 
     /**
-     * Claves de config('impuestos') asignadas a este producto. No es una relación
-     * Eloquent real (no hay modelo Tax en BD) — solo resuelve claves del pivote.
+     * Relación real con el pivote product_taxes — permite eager-load vía
+     * scopeWithIndexRelations() para que taxes()/taxRate() no disparen una
+     * query por fila en listados (ver ProductTable, N+1 detectado en la
+     * migración a Livewire de REQ-0.8).
+     */
+    public function productTaxes()
+    {
+        return $this->hasMany(ProductTax::class);
+    }
+
+    /**
+     * Claves de config('impuestos') asignadas a este producto.
      */
     public function taxes(): array
     {
+        if ($this->relationLoaded('productTaxes')) {
+            return $this->productTaxes->pluck('tax_key')->all();
+        }
+
         return \Illuminate\Support\Facades\DB::table('product_taxes')
             ->where('product_id', $this->id)
             ->pluck('tax_key')
@@ -102,6 +116,7 @@ class Product extends Model
         $query->with([
             'category:id,name',
             'unit:id,name,abbreviation',
+            'productTaxes',
         ]); // Solo traemos lo necesario
     }
 

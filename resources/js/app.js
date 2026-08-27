@@ -15,12 +15,6 @@ import './bootstrap';
 // definido por ese mismo script para cualquier código que lo necesite.
 
 // Loader de páginas
-import './pages/category'
-import './pages/units'
-import './pages/products'
-import './pages/warehouses'
-import './pages/stock'
-import './pages/movements'
 import './pages/accounts'
 import './pages/journals'
 import './pages/documentTypes'

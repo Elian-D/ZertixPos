@@ -106,11 +106,26 @@
         </form>
     </x-modal>
 
-    <x-ui.confirm-deletion-modal 
-    :id="$item->id"
-    :title="'¿Eliminar Unidad de medida?'"
-    :itemName="$item->name"
-    :type="'la unidad de medida'"
-    :route="route('inventory.products.units.destroy', $item)"
-    />
+    @if($item->trashed())
+        {{-- Papelera (docs/analisis/politica-soft-deletes.md §6) — borrado
+             definitivo vía wireConfirm, dispara UnitTable::forceDelete(). --}}
+        <x-ui.confirm-deletion-modal
+            :id="$item->id"
+            :title="'¿Eliminar Permanentemente?'"
+            :itemName="$item->name"
+            :type="'la unidad de medida'"
+            :wireConfirm="'forceDelete(' . $item->id . ')'"
+            :description="'Estás a punto de borrar definitivamente la unidad de medida <strong>' . e($item->name) . '</strong>.'"
+        >
+            <strong>Aviso Crítico:</strong> Esta operación borrará todos los datos asociados y no se puede deshacer.
+        </x-ui.confirm-deletion-modal>
+    @else
+        <x-ui.confirm-deletion-modal
+            :id="$item->id"
+            :title="'¿Eliminar Unidad de medida?'"
+            :itemName="$item->name"
+            :type="'la unidad de medida'"
+            :route="route('inventory.products.units.destroy', $item)"
+        />
+    @endif
     @endforeach
