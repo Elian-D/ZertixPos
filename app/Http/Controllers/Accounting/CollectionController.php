@@ -2,62 +2,34 @@
 
 namespace App\Http\Controllers\Accounting;
 
-use App\Exports\Accounting\CollectionsExport;
-use App\Filters\Accounting\CollectionsFilters\CollectionFilters;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Accounting\Collection\StoreCollectionRequest;
 use App\Models\Accounting\ClientCollection;
 use App\Services\Accounting\Collection\CollectionCatalogService;
 use App\Services\Accounting\Collection\CollectionPrintService;
 use App\Services\Accounting\Collection\CollectionService;
-use App\Tables\AccountingTables\CollectionTable;
-use App\Traits\SoftDeletesTrait;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 
+/**
+ * Categoría C (docs/analisis/politica-soft-deletes.md) — un Cobro es la
+ * bitácora de dinero recibido de un cliente: nunca se borra ni se archiva.
+ * `cancel()` (revierte el saldo de la CxC y su asiento contable) es toda la
+ * "eliminación" que existe. Sin SoftDeletesTrait, sin destroy().
+ */
 class CollectionController extends Controller
 {
-    use SoftDeletesTrait;
-
     public function __construct(
         protected CollectionService $service,
         protected CollectionCatalogService $catalogService,
         protected CollectionPrintService $printService
     ) {}
 
-    public function index(Request $request)
+    /**
+     * Listado migrado a Livewire — ver App\Livewire\App\Finance\CollectionTable.
+     */
+    public function index()
     {
-        $visibleColumns = $request->input('columns', CollectionTable::defaultDesktop());
-        $perPage = $request->input('per_page', 15);
-
-        $collections = (new CollectionFilters($request))
-            ->apply(ClientCollection::query()->with(['client', 'receivable', 'tipoPago', 'creator']))
-            ->latest()
-            ->paginate($perPage)
-            ->withQueryString();
-
-        $catalogs = $this->catalogService->getForFilters();
-
-        if ($request->ajax()) {
-            return view('finance.collections.partials.table', [
-                'items' => $collections,
-                'visibleColumns' => $visibleColumns,
-                'allColumns' => CollectionTable::allColumns(),
-                'defaultDesktop' => CollectionTable::defaultDesktop(),
-                'defaultMobile' => CollectionTable::defaultMobile(),
-            ])->render();
-        }
-
-        return view('finance.collections.index', array_merge(
-            [
-                'items' => $collections,
-                'visibleColumns' => $visibleColumns,
-                'allColumns' => CollectionTable::allColumns(),
-                'defaultDesktop' => CollectionTable::defaultDesktop(),
-                'defaultMobile' => CollectionTable::defaultMobile(),
-            ],
-            $catalogs
-        ));
+        return view('finance.collections.index');
     }
 
     /**
@@ -90,24 +62,6 @@ class CollectionController extends Controller
         }
     }
 
-    /**
-     * Exportar los datos filtrados a Excel
-     */
-    public function export(Request $request)
-    {
-        try {
-            // Aplicamos los mismos filtros que en la tabla principal
-            $query = (new CollectionFilters($request))
-                ->apply(ClientCollection::query());
-
-            $fileName = 'reporte-cobros-'.now()->format('d-m-Y-H-i').'.xlsx';
-
-            return Excel::download(new CollectionsExport($query), $fileName);
-        } catch (\Exception $e) {
-            return back()->with('error', 'Error al generar el reporte: '.$e->getMessage());
-        }
-    }
-
     public function create()
     {
         return view('finance.collections.create', $this->catalogService->getForForm());
@@ -135,42 +89,5 @@ class CollectionController extends Controller
         } catch (\Exception $e) {
             return back()->with('error', $e->getMessage());
         }
-    }
-
-    public function destroy($id)
-    {
-        $payment = ClientCollection::findOrFail($id);
-
-        if ($payment->status === ClientCollection::STATUS_ACTIVE) {
-            return back()->with('error', 'No se puede eliminar un cobro activo. Debe anularlo primero para revertir la contabilidad.');
-        }
-
-        return $this->destroyTrait($payment);
-    }
-
-    // Métodos requeridos por SoftDeletesTrait
-    protected function getModelClass(): string
-    {
-        return ClientCollection::class;
-    }
-
-    protected function getViewFolder(): string
-    {
-        return 'finance.collections';
-    }
-
-    protected function getRouteIndex(): string
-    {
-        return 'finance.collections.index';
-    }
-
-    protected function getRouteEliminadas(): string
-    {
-        return 'finance.collections.eliminados';
-    }
-
-    protected function getEntityName(): string
-    {
-        return 'Cobro / Recibo';
     }
 }

@@ -99,7 +99,11 @@ class Receivable extends Model
     }
 
     // Relaciones estándar
-    public function client(): BelongsTo { return $this->belongsTo(Client::class); }
+    // withTrashed(): una CxC histórica debe seguir mostrando su cliente aunque
+    // ese Client se haya desactivado/borrado después (mismo criterio que
+    // Sale::tipoPago(), REQ-2.5) — sin esto, $receivable->client es null y
+    // cualquier ->name explota la vista.
+    public function client(): BelongsTo { return $this->belongsTo(Client::class)->withTrashed(); }
     public function journalEntry(): BelongsTo { return $this->belongsTo(JournalEntry::class); }
     public function accountingAccount(): BelongsTo { return $this->belongsTo(AccountingAccount::class); }
 

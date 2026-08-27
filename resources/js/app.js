@@ -18,11 +18,6 @@ import './bootstrap';
 import './pages/accounts'
 import './pages/journals'
 import './pages/documentTypes'
-import './pages/receivable'
-import './pages/payment'
-import './pages/invoices'
-import './pages/sequences'
-import './pages/ncf-logs'
 import './pages/nfc-types'
 import './pages/pos-cash-movements'
 

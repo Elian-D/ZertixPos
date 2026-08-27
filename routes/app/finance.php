@@ -85,14 +85,12 @@ Route::prefix('finance')->as('finance.')->group(function () {
                 ->middleware('permission:view receivables')
                 ->name('index');
 
-            Route::get('/eliminados', [ReceivableController::class, 'eliminadas'])
-                ->name('eliminados');
-
-            Route::delete('/{receivable}', [ReceivableController::class, 'destroy'])
-                ->middleware('permission:cancel receivables')
-                ->name('destroy');
-
-            Route::patch('/{id}/restaurar', [ReceivableController::class, 'restaurar'])->name('restaurar');
+            // Sin destroy/eliminados/restaurar/borrarDefinitivo — Receivable es
+            // Categoría C (docs/analisis/politica-soft-deletes.md): bitácora de
+            // deuda del cliente, nunca se borra ni se archiva. El `status` de la
+            // fila (incl. `cancelled`, reflejo de la venta anulada) es toda la
+            // "eliminación" que existe. Corrección 2026-08-27 sobre el intento
+            // inicial de esta migración, que la había tratado como Categoría B.
         });
     });
 
@@ -105,13 +103,10 @@ Route::prefix('finance')->as('finance.')->group(function () {
     // aparte de la reestructuración de rutas/clases de esta fase.
     Route::middleware(['auth', 'module:sales.receivables'])->group(function () {
 
-        Route::get('collections/export', [CollectionController::class, 'export'])
-            ->middleware('permission:export payments')
-            ->name('collections.export');
-
-        Route::get('collections/eliminados', [CollectionController::class, 'eliminadas'])
-            ->middleware('permission:view payments')
-            ->name('collections.eliminados');
+        // collections.export/eliminados reemplazadas por CollectionTable::export()
+        // (Excel::download() devuelto directo desde la acción Livewire) del mismo
+        // índice — ver App\Livewire\App\Finance\CollectionTable. Sin destroy ni
+        // papelera: Categoría C, ver docs/analisis/politica-soft-deletes.md.
 
         Route::get('collections', [CollectionController::class, 'index'])
             ->middleware('permission:view payments')
@@ -152,10 +147,9 @@ Route::prefix('finance')->as('finance.')->group(function () {
     // routes/app/sales.php (antes) — Facturas, movidas junto con el resto de Finanzas.
     Route::middleware('auth')->group(function () {
 
-        // Exportación de historial
-        Route::get('invoices/export', [InvoiceController::class, 'export'])
-            ->middleware('permission:export invoices')
-            ->name('invoices.export');
+        // invoices.export reemplazada por InvoiceTable::export() del mismo índice
+        // (Excel::download() devuelto directo desde la acción Livewire) — ver
+        // App\Livewire\App\Finance\InvoiceTable.
 
         Route::get('invoices/{invoice}/preview', [InvoiceController::class, 'preview'])
             ->name('invoices.preview')
@@ -207,7 +201,8 @@ Route::prefix('finance')->as('finance.')->group(function () {
 
                 Route::group(['prefix' => 'logs', 'as' => 'logs.'], function () {
                     Route::get('/', [NcfLogController::class, 'index'])->name('index');
-                    Route::get('/export/excel', [NcfLogController::class, 'exportExcel'])->name('export.excel');
+                    // logs.export.excel reemplazada por NcfLogTable::exportExcel() del
+                    // mismo índice — ver App\Livewire\App\Finance\NcfLogTable.
                     Route::get('/export/txt', [NcfLogController::class, 'exportTxt'])->name('export.txt');
                 });
 
