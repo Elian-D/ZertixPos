@@ -120,14 +120,26 @@ abstract class DataTable extends Component
     // COLUMNAS
     // =========================================================================
 
+    /**
+     * Desktop-default es un subconjunto curado de columns() (marcado con
+     * 'default' => true), no "todas las columnas que existen" — igual que
+     * el viejo TableConfig::defaultDesktop() distinguía de allColumns().
+     * Si el hijo no marca 'default' en ninguna columna, todas cuentan como
+     * visibles por defecto (comportamiento simple para tablas chicas).
+     */
     private function resolveDefaultColumns(bool $isMobile): array
     {
-        return collect($this->columns())
-            ->when(
-                $isMobile,
-                fn ($c) => $c->filter(fn ($def) => ($def['mobile'] ?? false) === true),
-                fn ($c) => $c
-            )
+        $columns = collect($this->columns());
+        $hasCuratedDefaults = $columns->contains(fn ($def) => array_key_exists('default', $def));
+
+        return $columns
+            ->filter(function ($def) use ($isMobile, $hasCuratedDefaults) {
+                if ($isMobile) {
+                    return ($def['mobile'] ?? false) === true;
+                }
+
+                return $hasCuratedDefaults ? ($def['default'] ?? false) === true : true;
+            })
             ->keys()
             ->all();
     }
@@ -163,6 +175,9 @@ abstract class DataTable extends Component
 
         $chips = [];
         foreach ($this->filters as $key => $value) {
+            if (in_array($key, $this->nonChipFilterKeys(), true)) {
+                continue;
+            }
             if ($value === '' || $value === null || $value === false || $value === 0) {
                 continue;
             }
@@ -174,6 +189,31 @@ abstract class DataTable extends Component
         }
 
         return $chips;
+    }
+
+    /**
+     * Claves de $filters que controlan el estado de la tabla (tabs, etc.)
+     * pero no son "un filtro" desde la perspectiva del usuario — no deben
+     * contarse como filtro activo ni aparecer como chip removible. Caso de
+     * uso principal: 'trashed' del patrón Papelera (docs/analisis/politica
+     * -soft-deletes.md §6) — cambia el scope global de la query, no agrega
+     * una condición, y ya tiene su propia UI de tabs.
+     */
+    protected function nonChipFilterKeys(): array
+    {
+        return [];
+    }
+
+    /**
+     * Número de filtros "reales" activos, excluyendo nonChipFilterKeys().
+     * Las vistas lo usan para :hasFilters y :activeCount en vez de repetir
+     * count(array_filter($filters)) con un array_diff_key manual.
+     */
+    public function activeFilterCount(): int
+    {
+        return count(array_filter(
+            array_diff_key($this->filters, array_flip($this->nonChipFilterKeys()))
+        ));
     }
 
     /**
@@ -240,22 +280,53 @@ abstract class DataTable extends Component
         $this->selectAll = false;
     }
 
-    public function runBulkAction(string $action): void
+    /**
+     * $value es opcional — solo lo usan las acciones declaradas con
+     * 'type' => 'select' en bulkActions() (ej. "cambiar a esta provincia").
+     */
+    public function runBulkAction(string $action, mixed $value = null): void
     {
         if (empty($this->selected)) {
             return;
         }
 
-        $this->performBulkAction($action, $this->selected);
+        $this->performBulkAction($action, $this->selected, $value);
         $this->clearSelection();
     }
 
     /**
      * El hijo delega en su Service (performBulkAction() ya existente).
      */
-    protected function performBulkAction(string $action, array $ids): void
+    protected function performBulkAction(string $action, array $ids, mixed $value = null): void
     {
         // No-op por defecto — el hijo lo sobreescribe.
+    }
+
+    // =========================================================================
+    // FEEDBACK (toasts)
+    // =========================================================================
+
+    /**
+     * Toast de feedback tras una acción del componente (restore(), forceDelete(),
+     * toggleActivo(), performBulkAction(), etc.).
+     *
+     * OJO: `session()->flash('success', ...)` NO alcanza acá — x-ui.toasts lee
+     * session('success') con Blade dentro de app-layout.blade.php, que solo se
+     * evalúa en la carga completa de la página. Un wire:click no navega, así que
+     * ese flash nunca llega a mostrarse. El toast real de una acción Livewire se
+     * dispara como evento de navegador (que x-ui.toasts sí escucha en
+     * @notify.window), no por sesión.
+     */
+    protected function notify(string $type, string $message, ?string $title = null): void
+    {
+        $titles = [
+            'success' => '¡Éxito!',
+            'error'   => 'Error',
+            'info'    => 'Información',
+            'warning' => 'Advertencia',
+        ];
+
+        $this->dispatch('notify', type: $type, title: $title ?? ($titles[$type] ?? 'Aviso'), message: $message);
     }
 
     // =========================================================================
