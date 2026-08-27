@@ -112,10 +112,14 @@
 
         <div class="px-8 py-4 bg-gray-50 border-t flex justify-end gap-3">
             <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cerrar</x-ui.button>
-            @if($log->sale_id)
-                <a href="{{ route('finance.invoices.print', $log->sale_id) }}" class="inline-flex items-center px-4 py-2 bg-zertix-primary-600 text-white rounded-md text-[10px] font-black uppercase hover:bg-zertix-primary-700 transition shadow-sm"  target="_blank>
-                    <x-heroicon-s-eye class="w-3 h-3 mr-2"/> Ver Factura
-                </a>
+            {{-- $log->sale->invoice (no sale_id): la ruta espera el id de la Invoice,
+                 no el de la Sale — son modelos distintos con ids independientes. Pasar
+                 sale_id ahí buscaba una factura equivocada (404 real, corregido). --}}
+            @if($log->sale?->invoice)
+                <x-ui.button href="{{ route('finance.invoices.print', $log->sale->invoice) }}" target="_blank"
+                    variant="primary" size="sm" iconLeft="heroicon-s-eye">
+                    Ver Factura
+                </x-ui.button>
             @endif
         </div>
     </div>
