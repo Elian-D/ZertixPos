@@ -172,52 +172,54 @@ Route::prefix('finance')->as('finance.')->group(function () {
     });
 
     // routes/app/sales.php (antes) — NCF, movido junto con el resto de Finanzas.
-    Route::middleware(['auth', 'permission:manage ncf sequences'])->group(function () {
+    //
+    // REQ-1.15 (v1.3.0 Fase 1) — corrección real: antes este bloque gateaba con
+    // `if (module_enabled('sales.ncf')) { ... } else { fallback }` directo en el
+    // archivo de rutas. Ese `if` corre UNA VEZ, al registrar las rutas (cuando
+    // TenancyServiceProvider::mapRoutes() carga routes/tenant.php en el callback
+    // `booted()`) — y eso pasa SIEMPRE antes de que InitializeTenancyByDomain
+    // inicialice la tenencia para esa misma petición (el registro de rutas
+    // precede al despacho de middleware). Así que module_enabled() ahí consultaba
+    // siempre la conexión central (sin `installation_modules`, solo por tenant
+    // desde REQ-1.7) y caía en `false` el 100% de las veces — las rutas reales de
+    // NCF nunca llegaban a registrarse bajo tenencia, sin importar lo que dijera
+    // el tenant real. Se corrige usando `module:sales.ncf` como MIDDLEWARE (igual
+    // que `accounting.advanced`/`sales.receivables` arriba en este mismo archivo)
+    // — ese chequeo corre en tiempo de request, después de que la tenencia ya
+    // está inicializada.
+    Route::middleware(['auth', 'permission:manage ncf sequences', 'module:sales.ncf'])
+        ->prefix('ncf')->name('ncf.')->group(function () {
 
-        // En lugar de un middleware Closure, validamos antes de definir el grupo.
-        // Si la configuración fiscal está apagada, estas rutas ni siquiera se registran.
-        if (module_enabled('sales.ncf')) {
+            // Dashboard NCF: movido a routes/app/reports.php como reports.ncf
+            // (Fase 7.9, sidebar). De paso se elimina un bug real encontrado acá:
+            // este stub (`function () { /* tu controller */ }`) y la ruta real de
+            // más abajo (`Route::get('/ncf/dashboard', NcfDashboardController::class)`)
+            // definían el MISMO método+URI+nombre — Laravel despacha peticiones
+            // entrantes por orden de REGISTRO cuando dos rutas coinciden exacto,
+            // así que "Dashboard NCF" respondía con este stub vacío, nunca con el
+            // controlador real. El controlador real (movido a reports.php) conserva
+            // el permiso que efectivamente protegía la URL (manage ncf sequences,
+            // heredado del grupo de este stub).
 
-            Route::prefix('ncf')->name('ncf.')->group(function () {
-
-                // Dashboard NCF: movido a routes/app/reports.php como reports.ncf
-                // (Fase 7.9, sidebar). De paso se elimina un bug real encontrado acá:
-                // este stub (`function () { /* tu controller */ }`) y la ruta real de
-                // más abajo (`Route::get('/ncf/dashboard', NcfDashboardController::class)`)
-                // definían el MISMO método+URI+nombre — Laravel despacha peticiones
-                // entrantes por orden de REGISTRO cuando dos rutas coinciden exacto,
-                // así que "Dashboard NCF" respondía con este stub vacío, nunca con el
-                // controlador real. El controlador real (movido a reports.php) conserva
-                // el permiso que efectivamente protegía la URL (manage ncf sequences,
-                // heredado del grupo de este stub).
-
-                Route::prefix('sequences')->name('sequences.')->group(function () {
-                    Route::get('/', [NcfSequenceController::class, 'index'])->name('index');
-                    Route::post('/', [NcfSequenceController::class, 'store'])->name('store');
-                    Route::delete('/{sequence}', [NcfSequenceController::class, 'destroy'])->name('destroy');
-                    Route::patch('/{sequence}/threshold', [NcfSequenceController::class, 'updateThreshold'])->name('update-threshold');
-                    Route::patch('/{sequence}/extend', [NcfSequenceController::class, 'extend'])->name('extend');
-                });
-
-                Route::group(['prefix' => 'logs', 'as' => 'logs.'], function () {
-                    Route::get('/', [NcfLogController::class, 'index'])->name('index');
-                    // logs.export.excel reemplazada por NcfLogTable::exportExcel() del
-                    // mismo índice — ver App\Livewire\App\Finance\NcfLogTable.
-                    Route::get('/export/txt', [NcfLogController::class, 'exportTxt'])->name('export.txt');
-                });
-
-                Route::group(['prefix' => 'types', 'as' => 'types.'], function () {
-                    Route::get('/', [NcfTypeController::class, 'index'])->name('index');
-                    Route::post('/', [NcfTypeController::class, 'store'])->name('store');
-                    Route::put('/{ncfType}', [NcfTypeController::class, 'update'])->name('update');
-                });
+            Route::prefix('sequences')->name('sequences.')->group(function () {
+                Route::get('/', [NcfSequenceController::class, 'index'])->name('index');
+                Route::post('/', [NcfSequenceController::class, 'store'])->name('store');
+                Route::delete('/{sequence}', [NcfSequenceController::class, 'destroy'])->name('destroy');
+                Route::patch('/{sequence}/threshold', [NcfSequenceController::class, 'updateThreshold'])->name('update-threshold');
+                Route::patch('/{sequence}/extend', [NcfSequenceController::class, 'extend'])->name('extend');
             });
-        } else {
-            // Opcional: Ruta fallback si intentan entrar y está desactivado
-            Route::any('ncf/{any?}', function () {
-                return redirect()->route('configuration.general.edit')
-                    ->with('error', 'La gestión fiscal está desactivada en la configuración general.');
-            })->where('any', '.*');
-        }
-    });
+
+            Route::group(['prefix' => 'logs', 'as' => 'logs.'], function () {
+                Route::get('/', [NcfLogController::class, 'index'])->name('index');
+                // logs.export.excel reemplazada por NcfLogTable::exportExcel() del
+                // mismo índice — ver App\Livewire\App\Finance\NcfLogTable.
+                Route::get('/export/txt', [NcfLogController::class, 'exportTxt'])->name('export.txt');
+            });
+
+            Route::group(['prefix' => 'types', 'as' => 'types.'], function () {
+                Route::get('/', [NcfTypeController::class, 'index'])->name('index');
+                Route::post('/', [NcfTypeController::class, 'store'])->name('store');
+                Route::put('/{ncfType}', [NcfTypeController::class, 'update'])->name('update');
+            });
+        });
 });

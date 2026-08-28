@@ -23,29 +23,19 @@
         <header class="w-full lg:max-w-4xl max-w-[335px] text-sm mb-6 not-has-[nav]:hidden">
             @if (Route::has('login'))
                 <nav class="flex items-center justify-end gap-4">
-                    @auth
-                        <a
-                            href="{{ url('/dashboard') }}"
-                            class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal"
-                        >
-                            Dashboard
-                        </a>
-                    @else
-                        <a
-                            href="{{ route('login') }}"
-                            class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] text-[#1b1b18] border border-transparent hover:border-[#19140035] dark:hover:border-[#3E3E3A] rounded-sm text-sm leading-normal"
-                        >
-                            Log in
-                        </a>
-
-                        @if (Route::has('register'))
-                            <a
-                                href="{{ route('register') }}"
-                                class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] border-[#19140035] hover:border-[#1915014a] border text-[#1b1b18] dark:border-[#3E3E3A] dark:hover:border-[#62605b] rounded-sm text-sm leading-normal">
-                                Register
-                            </a>
-                        @endif
-                    @endauth
+                    {{-- Sin @auth (v1.3.0 Fase 1, REQ-1.16): esta ruta es central, y el guard
+                         `web` solo existe por tenant desde REQ-1.7 — Auth::check() acá siempre
+                         revienta si el navegador trae una cookie "recordarme" de un tenant,
+                         intentando resolver `users` contra una conexión que no tiene esa tabla.
+                         Esta página no puede saber si "alguien está logueado" en el sentido de
+                         negocio; siempre se asume invitado hasta que Fase 4/5 construyan el
+                         landing real del dominio central. --}}
+                    <a
+                        href="{{ route('login') }}"
+                        class="inline-block px-5 py-1.5 dark:text-[#EDEDEC] text-[#1b1b18] border border-transparent hover:border-[#19140035] dark:hover:border-[#3E3E3A] rounded-sm text-sm leading-normal"
+                    >
+                        Log in
+                    </a>
                 </nav>
             @endif
         </header>

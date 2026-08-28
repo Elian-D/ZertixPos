@@ -10,7 +10,7 @@
             selectedMunicipio: '{{ old('municipio_id', $config->municipio_id ?? '') }}',
             selectedTaxType: '{{ old('tax_identifier_type', $config->tax_identifier_type?->value ?? '') }}',
 
-            logoPreview: '{{ $config?->logo ? asset('storage/'.$config->logo) : '' }}',
+            logoPreview: '{{ $config?->logo ? tenant_asset($config->logo) : '' }}',
             currency: '{{ config('regional.currency') }}',
             timezone: '{{ config('regional.timezone') }}',
 

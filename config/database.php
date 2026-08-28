@@ -65,6 +65,35 @@ return [
             ]) : [],
         ],
 
+        // Plantilla para la conexión dinámica de tenant (REQ-1.5, v1.3.0 Fase 1)
+        // — stancl/tenancy clona esta config y le inyecta `database` en tiempo de
+        // ejecución según el tenant activo. No se llama `tenant` a propósito: ese
+        // nombre está reservado por el paquete para la conexión que arma él mismo
+        // (ver config/tenancy.php, `database.template_tenant_connection`). Mismas
+        // credenciales que `mysql` (DB_HOST/DB_USERNAME/DB_PASSWORD) — un tenant
+        // que algún día viva en un servidor físico distinto guarda esa excepción
+        // como campos en su propia fila de `Tenant`, nunca acá.
+        'tenant_template' => [
+            'driver' => 'mysql',
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
+            'database' => null,
+            'username' => env('DB_USERNAME', 'root'),
+            'password' => env('DB_PASSWORD', ''),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => env('DB_CHARSET', 'utf8mb4'),
+            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                PDO::ATTR_EMULATE_PREPARES => true,
+                PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
+            ]) : [],
+        ],
+
         'mariadb' => [
             'driver' => 'mariadb',
             'url' => env('DB_URL'),

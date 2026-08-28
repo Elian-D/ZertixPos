@@ -40,6 +40,14 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+
+        // Staff del landlord (Súper Admin) — REQ-1.3, v1.3.0 Fase 1. Separado de
+        // `web` a propósito: `admins` vive en la conexión central, `users` solo
+        // existe por tenant desde REQ-1.7.
+        'landlord' => [
+            'driver' => 'session',
+            'provider' => 'admins',
+        ],
     ],
 
     /*
@@ -69,6 +77,11 @@ return [
         //     'driver' => 'database',
         //     'table' => 'users',
         // ],
+
+        'admins' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Landlord\Admin::class,
+        ],
     ],
 
     /*
