@@ -9,17 +9,12 @@ use Spatie\Permission\Models\Permission;
 
 class RoleController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * Listado migrado a Livewire — ver App\Livewire\App\Config\RoleTable.
+     */
+    public function index()
     {
-        $search = $request->query('search');
-        $roles = Role::when($search, function($query, $search) {
-                        return $query->where('name', 'like', "%{$search}%");
-                    })
-                    ->orderBy('id')
-                    ->paginate(10)
-                    ->withQueryString();
-
-        return view('roles.index', compact('roles', 'search'));
+        return view('roles.index');
     }
 
     public function create()

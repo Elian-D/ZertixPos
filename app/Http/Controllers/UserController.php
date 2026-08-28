@@ -8,29 +8,12 @@ use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * Listado migrado a Livewire — ver App\Livewire\App\Config\UserTable.
+     */
+    public function index()
     {
-        $search = $request->query('search');
-        // Trae todos los usuarios, ordenados por id
-        $users = User::with('roles')   // Carga los roles en la misma consulta
-            ->when($search, function ($query, $search) {
-                return $query->where('name', 'like', "%{$search}%");
-            })
-            ->orderBy('id')
-            ->paginate(10)
-            ->withQueryString();
-
-        // Límite de usuarios por plan (REQ-05.6) — la validación ya existía en
-        // store(), pero solo se enteraba quien llegaba al final del formulario.
-        // Acá se calcula para deshabilitar el botón "Crear Nuevo Usuario" con el
-        // motivo visible, en vez de dejar que el usuario llene todo para recién
-        // ahí rechazarlo.
-        $plan = current_plan();
-        $totalUsersCount = User::count(); // sin filtrar por búsqueda — es el conteo real contra el límite
-        $usersLimit = $plan?->users_limit; // null = sin techo (PyME/Pro/Corporativo)
-        $canCreateMoreUsers = ! $plan || $plan->canCreateMoreUsers();
-
-        return view('users.index', compact('users', 'search', 'canCreateMoreUsers', 'usersLimit', 'totalUsersCount'));
+        return view('users.index');
     }
 
     public function create()
