@@ -14,8 +14,14 @@ class InvoicePrintService
     public function generateLetterPDF(Invoice $invoice)
     {
         $invoice->load(['sale.items.product', 'sale.client', 'sale.user', 'sale.quote', 'sale.ncfLog.type']);
-        
-        return Pdf::loadView('sales.invoices.formats.full', compact('invoice'))
+
+        // DomPDF no sigue URLs remotas (enable_remote=false por defecto) — el
+        // logo necesita una ruta de archivo local, no la URL que usa la vista
+        // previa en navegador (ver comentario en full.blade.php, REQ-1.14).
+        $config = general_config();
+        $logoSrc = $config->logo ? storage_path('app/public/'.$config->logo) : null;
+
+        return Pdf::loadView('sales.invoices.formats.full', compact('invoice', 'logoSrc'))
             ->setPaper('letter', 'portrait');
     }
 

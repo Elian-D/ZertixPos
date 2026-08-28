@@ -1,40 +1,19 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use App\Livewire\Install\InstallWizard;
 use Illuminate\Support\Facades\Route;
 
 // Sin middleware 'auth' — nadie puede loguearse todavía en una instalación
 // sin terminar (Fase 8). EnsureInstallationWizardCompleted (bootstrap/app.php)
 // es lo único que la protege: bloquea reingresar una vez ya instalado.
+// Queda en el dominio central a propósito — Fase 4 (REQ-4.1) envuelve este
+// wizard para el flujo multi-tenant, no se toca antes de esa fase.
 Route::get('/install', InstallWizard::class)->name('install.wizard');
 
 Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified', 'permission:view dashboard'])->name('dashboard');
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-// Ruta temporal — Fase 7, REQ-7.5: mockup de x-ui.forms.* en contexto real de la app
-// (sidebar, header, breadcrumbs, footer), sin lógica de guardado. Quitar cuando los
-// formularios reales ya usen estos componentes y este demo deje de hacer falta.
-Route::view('/demo/form', 'examples.form-components-demo')->middleware('auth')->name('demo.form');
-
-require __DIR__.'/auth.php';
-
-// Rutas administrativas (panel) — antes vivía en RouteServiceProvider::boot()
-Route::middleware(['web', 'auth'])
-    ->prefix('app')
-    ->group(function () {
-        foreach (glob(base_path('routes/app/*.php')) as $routeFile) {
-            require $routeFile;
-        }
-    });
+// Todo lo que depende del guard `web` (usuarios de negocio) vive en
+// routes/tenant.php, no acá — la tabla `users` ahora solo existe por tenant
+// (database/migrations/tenant/), ver v1.3.0.md Fase 1, REQ-1.1/REQ-1.7.

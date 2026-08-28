@@ -1,5 +1,12 @@
 @php
     $config = general_config();
+    // Esta misma vista se renderiza en 2 contextos distintos (REQ-1.14, v1.3.0
+    // Fase 1): DomPDF (InvoicePrintService::pdf(), necesita una ruta de archivo
+    // local — DomPDF no sigue URLs remotas, enable_remote=false por defecto) y
+    // vista previa en navegador (InvoiceController, necesita una URL real). El
+    // caller pasa $logoSrc explícito cuando renderiza para DomPDF; si no lo pasa
+    // (vista previa), se usa tenant_asset() — una URL válida en el navegador.
+    $logoSrc ??= $config->logo ? tenant_asset($config->logo) : null;
     $sale = $invoice->sale;
     $client = $sale->client;
     $currency = config('regional.currency_symbol');
@@ -104,7 +111,7 @@
             </td>
             <td class="text-right" style="width: 40%;">
                 @if($config->logo)
-                    <img src="{{ public_path('storage/'.$config->logo) }}" style="max-height: 70px;">
+                    <img src="{{ $logoSrc }}" style="max-height: 70px;">
                 @else
                     <div style="height: 70px;"></div>
                 @endif

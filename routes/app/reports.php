@@ -37,9 +37,11 @@ Route::prefix('reports')->as('reports.')->group(function () {
             ->name('finance');
     });
 
-    if (module_enabled('sales.ncf')) {
-        Route::get('/ncf', NcfDashboardController::class)
-            ->middleware(['auth', 'permission:manage ncf sequences'])
-            ->name('ncf');
-    }
+    // REQ-1.15 (v1.3.0 Fase 1): igual que en routes/app/finance.php — `module:sales.ncf`
+    // como middleware, no un `if (module_enabled(...))` en el archivo de rutas (ese
+    // corre al registrar rutas, antes de que la tenencia se inicialice para la
+    // petición, y siempre evaluaba `false` contra la conexión central).
+    Route::get('/ncf', NcfDashboardController::class)
+        ->middleware(['auth', 'permission:manage ncf sequences', 'module:sales.ncf'])
+        ->name('ncf');
 });
