@@ -104,3 +104,16 @@ Estándar fijado en Clientes (REQ-0.7), aplica a toda entidad **Categoría A** d
 - [ ] `php artisan view:cache` (como `sail`, ver punto 0) compila sin errores — detecta blade roto sin necesidad de abrir el navegador.
 - [ ] Probar en el navegador (o dejárselo al usuario): búsqueda, cada filtro, orden de columnas, selector de columnas, paginación, y — si aplica — selección masiva.
 - [ ] Revisar Debugbar: conteo de queries razonable, sin duplicados que escalen con filas.
+
+## 11. Tablas que quedan pendientes (fuera de Fase 0, motor AJAX viejo)
+
+**Purga de `resources/js/pages/` + `resources/js/components/ajax-datatable/` (2026-08-27, cierre de REQ-0.10).** Se borró todo el directorio de wiring `AjaxDataTable({tableId, formId, chips})` — el motor Livewire ya cubre todos los módulos que van a migrar. Estas 4 tablas se quedan en el patrón AJAX viejo **a propósito**, sin su JS (su UI de filtros ya estaba rota desde que `x-data-table.*` se reclamó para Livewire, ver `CLAUDE.md`) — no se migran en Fase 0 por decisiones ya tomadas, documentadas cada una en su lugar real:
+
+| Módulo | Vista | Por qué no migra ahora | Documentado en |
+|---|---|---|---|
+| Cuentas Contables (`AccountingAccount`) | `resources/views/accounting/accounts/` | Vive detrás de `module:accounting.advanced` — decisión de producto de no competir contra software de contabilidad dedicado (Alegra), nadie la pide hoy | `docs/features/v1.3.0.md`, REQ-0.9 |
+| Asientos Contables (`JournalEntry`) | `resources/views/accounting/journal_entries/` | Mismo motivo que Cuentas Contables — mismo flag `accounting.advanced` | `docs/features/v1.3.0.md`, REQ-0.9 |
+| Tipos NCF (`NcfType`) | `resources/views/sales/ncf/types/` | Va a dejar de ser CRUD (catálogo fijo sembrado por seeder + toggle `is_active`) — migrarla ahora con create/edit sería el mismo trabajo dos veces | `docs/features/v1.3.0.md`, Fase 7 (REQ-7.1-7.3) |
+| Movimientos de Caja (`PosCashMovement`) | `resources/views/sales/pos/cash-movements/` | Función deshabilitada en el sidebar desde Fase 9.1 — exige `accounting_account_id` (acoplamiento a Contabilidad) y permite salidas de efectivo genéricas que no reflejan la operación real; se reintroducirá simplificada | `routes/app/sales.php` (rutas comentadas), `docs/features/POS-Interfaz.md` |
+
+Cuando a alguna de estas le toque su turno: seguir este mismo checklist desde el punto 1, no asumir que por no tener JS ya está a medio migrar.
