@@ -14,10 +14,12 @@ import './bootstrap';
 // @livewireScripts en vez de @livewireScriptConfig; window.Alpine queda
 // definido por ese mismo script para cualquier código que lo necesite.
 
-// Loader de páginas
-import './pages/accounts'
-import './pages/journals'
-import './pages/documentTypes'
-import './pages/nfc-types'
-import './pages/pos-cash-movements'
-
+// resources/js/pages/ (el wiring AjaxDataTable{tableId,formId,chips} del motor
+// AJAX viejo) y resources/js/components/ajax-datatable/ se purgaron completos
+// (2026-08-27, cierre de REQ-0.10) — el último módulo que los usaba de verdad
+// ya migró al motor Livewire. Las tablas que siguen pendientes (Asientos
+// Contables, Plan de Cuentas, Tipos NCF, Movimientos de Caja) ya tenían su UI
+// de filtros rota desde que `x-data-table.*` se reclamó para Livewire (ver
+// CLAUDE.md, "Antes de tocar cualquier tabla/listado") — no dependían de este
+// JS para nada funcional. Ver docs/ui/datatable-migration-checklist.md §11
+// para el detalle de qué falta migrar y dónde vive cada una.
