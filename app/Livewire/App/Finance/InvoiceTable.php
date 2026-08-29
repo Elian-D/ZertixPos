@@ -84,7 +84,7 @@ class InvoiceTable extends DataTable
 
     public function export()
     {
-        abort_unless(auth()->user()->can('export invoices'), 403);
+        abort_unless(auth()->user()->can('invoices.export'), 403);
 
         return Excel::download(
             new InvoicesExport($this->baseQuery()),

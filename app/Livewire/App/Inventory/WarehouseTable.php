@@ -73,7 +73,7 @@ class WarehouseTable extends DataTable
 
     public function toggleActivo(int $id): void
     {
-        abort_unless(auth()->user()->can('configure warehouses'), 403);
+        abort_unless(auth()->user()->can('warehouses.manage'), 403);
 
         $warehouse = Warehouse::findOrFail($id);
         $activo = $warehouse->toggleActivo();
@@ -83,7 +83,7 @@ class WarehouseTable extends DataTable
 
     public function restore(int $id): void
     {
-        abort_unless(auth()->user()->can('configure warehouses'), 403);
+        abort_unless(auth()->user()->can('warehouses.manage'), 403);
 
         $warehouse = Warehouse::onlyTrashed()->findOrFail($id);
         $warehouse->restore();
@@ -93,7 +93,7 @@ class WarehouseTable extends DataTable
 
     public function forceDelete(int $id): void
     {
-        abort_unless(auth()->user()->can('configure warehouses'), 403);
+        abort_unless(auth()->user()->can('warehouses.manage'), 403);
 
         $warehouse = Warehouse::onlyTrashed()->findOrFail($id);
         $name = $warehouse->name;

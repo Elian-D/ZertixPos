@@ -7,7 +7,7 @@
         countLabel="unidades"
     >
         <x-slot:actions>
-            @can('configure units')
+            @can('units.manage')
                 <x-ui.button variant="primary" iconLeft="heroicon-s-plus" x-data x-on:click="$dispatch('open-modal', 'crear-unit')">
                     Nueva Unidad de Medida
                 </x-ui.button>
@@ -15,7 +15,7 @@
         </x-slot:actions>
     </x-ui.page-header>
 
-    @can('configure units')
+    @can('units.manage')
         <div class="flex gap-1 mb-4">
             <x-ui.button
                 size="sm"

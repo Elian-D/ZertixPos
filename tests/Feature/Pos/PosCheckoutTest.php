@@ -5,6 +5,7 @@ namespace Tests\Feature\Pos;
 use App\Models\Configuration\TipoPago;
 use App\Models\Inventory\InventoryStock;
 use App\Models\Sales\Sale;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Feature\Pos\Concerns\SetsUpPosWorkspace;
 use Tests\TestCase;
@@ -13,6 +14,15 @@ class PosCheckoutTest extends TestCase
 {
     use RefreshDatabase;
     use SetsUpPosWorkspace;
+
+    protected function migrateFreshUsing()
+    {
+        return [
+            '--path' => ['database/migrations/tenant'],
+            '--realpath' => false,
+            '--seed' => $this->shouldSeed(),
+        ];
+    }
 
     private function baseItems(float $quantity = 2, float $discountPercentage = 0, float $discountAmount = 0): array
     {
@@ -121,5 +131,39 @@ class PosCheckoutTest extends TestCase
         $response->assertRedirect();
         $response->assertSessionHas('error');
         $this->assertDatabaseCount('sales', 0);
+    }
+
+    /**
+     * Regresión REQ-2.4 (v1.3.0 Fase 2). `$this->cashier` (fixture de
+     * SetsUpPosWorkspace) es el usuario demo con rol `admin` — tiene TODOS los
+     * permisos, así que nunca hubiera detectado este bug. Acá se prueba con un
+     * usuario real, restringido a solo `pos_sessions.manage` — exactamente el
+     * caso de un cajero real, sin `sales.create` (permiso de backoffice). Antes
+     * del fix, StoreSaleRequest exigía `sales.create` además, y este checkout
+     * devolvía 403 aunque PosCheckoutController ya intentaba permitirlo.
+     */
+    public function test_cashier_with_only_pos_sessions_permission_can_checkout(): void
+    {
+        $this->setUpPosWorkspace(stock: 50);
+        $session = $this->openPosSession();
+
+        $restrictedCashier = User::factory()->create();
+        $restrictedCashier->givePermissionTo('pos_sessions.manage');
+
+        $this->assertFalse($restrictedCashier->can('sales.create'));
+
+        $payload = $this->checkoutPayload(['pos_session_id' => $session->id]);
+
+        $response = $this->actingAs($restrictedCashier)
+            ->post(route('sales.pos.checkout.store', $this->terminal), $payload);
+
+        $response->assertRedirect(route('sales.pos.workspace', $this->terminal));
+        $response->assertSessionHas('success');
+
+        $this->assertDatabaseHas('sales', [
+            'pos_session_id' => $session->id,
+            'pos_terminal_id' => $this->terminal->id,
+            'status' => Sale::STATUS_COMPLETED,
+        ]);
     }
 }

@@ -10,7 +10,7 @@ class StoreJournalEntryRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('create journal entries');
+        return $this->user()->can('journal_entries.create');
     }
 
     public function rules(): array

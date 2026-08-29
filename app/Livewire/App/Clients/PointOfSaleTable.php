@@ -23,8 +23,7 @@ class PointOfSaleTable extends DataTable
     protected function columns(): array
     {
         return [
-            'code'              => ['label' => 'Código', 'default' => true, 'mobile' => true],
-            'name'              => ['label' => 'Nombre PDV', 'default' => true, 'mobile' => true],
+            'name'              => ['label' => 'Nombre', 'default' => true, 'mobile' => true],
             'client_id'         => ['label' => 'Cliente', 'default' => true],
             'business_type_id'  => ['label' => 'Tipo Negocio', 'default' => true],
             'provincia_id'      => ['label' => 'Provincia'],
@@ -42,7 +41,6 @@ class PointOfSaleTable extends DataTable
         return [
             'search' => fn (Builder $q, $v) => $q->where(fn (Builder $qq) => $qq
                 ->where('name', 'like', "%{$v}%")
-                ->orWhere('code', 'like', "%{$v}%")
                 ->orWhere('contact_name', 'like', "%{$v}%")),
             'client'        => fn (Builder $q, $v) => $q->where('client_id', $v),
             'business_type' => fn (Builder $q, $v) => $q->where('business_type_id', $v),
@@ -93,7 +91,7 @@ class PointOfSaleTable extends DataTable
 
     public function restore(int $id): void
     {
-        abort_unless(auth()->user()->can('pos restore'), 403);
+        abort_unless(auth()->user()->can('delivery_points.restore'), 403);
 
         $pos = PointOfSale::onlyTrashed()->findOrFail($id);
         $pos->restore();
@@ -103,7 +101,7 @@ class PointOfSaleTable extends DataTable
 
     public function forceDelete(int $id): void
     {
-        abort_unless(auth()->user()->can('pos delete'), 403);
+        abort_unless(auth()->user()->can('delivery_points.delete'), 403);
 
         $pos = PointOfSale::onlyTrashed()->findOrFail($id);
         $name = $pos->name;

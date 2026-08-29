@@ -20,6 +20,7 @@
     "require-dev": {
         "barryvdh/laravel-debugbar": "^3.16",
         "fakerphp/faker": "^1.23",
+        "laravel-lang/lang": "^15.34",
         "laravel/breeze": "^2.3",
         "laravel/pail": "^1.2.2",
         "laravel/pint": "^1.24",
@@ -37,7 +38,8 @@
         "files": [
             "app/Helpers/general.php",
             "app/Helpers/pos_helper.php",
-            "app/Helpers/module_helper.php"
+            "app/Helpers/module_helper.php",
+            "app/Helpers/permission_helper.php"
         ]
     },
     "autoload-dev": {

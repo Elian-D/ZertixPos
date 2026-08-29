@@ -13,7 +13,7 @@ class StoreInventoryMovementRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->can('create inventory adjustments');
+        return $this->user()->can('inventory_movements.create_adjustment');
     }
 
     public function rules(): array

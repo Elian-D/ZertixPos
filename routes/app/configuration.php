@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::prefix('config')->as('configuration.')->group(function () {
 
-    Route::middleware('permission:configure general data')->group(function () {
+    Route::middleware('permission:config.general')->group(function () {
 
         Route::get('general', [ConfiguracionGeneralController::class, 'edit'])
             ->name('general.edit');
@@ -25,19 +25,19 @@ Route::prefix('config')->as('configuration.')->group(function () {
     Route::middleware(['auth'])->group(function () {
 
         Route::get('document-types', [DocumentTypeController::class, 'index'])
-            ->middleware('permission:view document types')
+            ->middleware('permission:document_types.view')
             ->name('document_types.index');
 
         Route::get('document-types/{document_type}/edit', [DocumentTypeController::class, 'edit'])
-            ->middleware('permission:edit document types')
+            ->middleware('permission:document_types.edit')
             ->name('document_types.edit');
 
         Route::put('document-types/{document_type}', [DocumentTypeController::class, 'update'])
-            ->middleware('permission:edit document types')
+            ->middleware('permission:document_types.edit')
             ->name('document_types.update');
     });
 
-    Route::middleware('permission:configure payments')->group(function () {
+    Route::middleware('permission:config.payment_types')->group(function () {
 
         Route::get('tipo-pagos/eliminados', [TipoPagoController::class, 'eliminadas'])
             ->name('pagos.eliminados');
@@ -59,7 +59,7 @@ Route::prefix('config')->as('configuration.')->group(function () {
     // Quinta pantalla de Configuración (REQ-10.6) — activar/desactivar módulos
     // satélite/flexibles. Vista delgada + componente Livewire, mismo patrón que
     // sales.quotes.create (resources/views/sales/quotes/create.blade.php).
-    Route::middleware('permission:configure system modules')
+    Route::middleware('permission:config.modules')
         ->get('features', fn () => view('configuration.features'))
         ->name('features');
 });

@@ -22,7 +22,6 @@ class EquipmentTable extends DataTable
     protected function columns(): array
     {
         return [
-            'code'              => ['label' => 'Código', 'default' => true, 'mobile' => true],
             'name'              => ['label' => 'Nombre', 'default' => true, 'mobile' => true],
             'equipment_type_id' => ['label' => 'Tipo de Equipo', 'default' => true],
             'point_of_sale_id'  => ['label' => 'Punto de Venta', 'default' => true],
@@ -38,8 +37,7 @@ class EquipmentTable extends DataTable
     {
         return [
             'search' => fn (Builder $q, $v) => $q->where(fn (Builder $qq) => $qq
-                ->where('code', 'like', "%{$v}%")
-                ->orWhere('name', 'like', "%{$v}%")
+                ->where('name', 'like', "%{$v}%")
                 ->orWhere('serial_number', 'like', "%{$v}%")
                 ->orWhere('model', 'like', "%{$v}%")),
             'equipment_type_id' => fn (Builder $q, $v) => $q->where('equipment_type_id', $v),
@@ -89,23 +87,23 @@ class EquipmentTable extends DataTable
 
     public function restore(int $id): void
     {
-        abort_unless(auth()->user()->can('equipment restore'), 403);
+        abort_unless(auth()->user()->can('equipment.restore'), 403);
 
         $equipment = Equipment::onlyTrashed()->findOrFail($id);
         $equipment->restore();
 
-        $this->notify('success', "Equipo \"{$equipment->code}\" restaurado correctamente.");
+        $this->notify('success', "Equipo \"{$equipment->name}\" restaurado correctamente.");
     }
 
     public function forceDelete(int $id): void
     {
-        abort_unless(auth()->user()->can('equipment delete'), 403);
+        abort_unless(auth()->user()->can('equipment.delete'), 403);
 
         $equipment = Equipment::onlyTrashed()->findOrFail($id);
-        $code = $equipment->code;
+        $name = $equipment->name;
         $equipment->forceDelete();
 
-        $this->notify('success', "Equipo \"{$code}\" eliminado definitivamente.");
+        $this->notify('success', "Equipo \"{$name}\" eliminado definitivamente.");
     }
 
     public function render()

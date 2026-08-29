@@ -26,7 +26,6 @@ return new class extends Migration
 
             // Identificación del PDV
             $table->string('name', 150); // Nombre comercial del PDV
-            $table->string('code', 50)->nullable()->unique(); // Código interno opcional
 
             // Ubicación (RD-only, ver docs/features/v1.1.0.md Fase 6)
             $table->foreignId('provincia_id')->constrained('provinces')->restrictOnDelete();

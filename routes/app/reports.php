@@ -27,13 +27,13 @@ Route::prefix('reports')->as('reports.')->group(function () {
 
     Route::middleware('module:inventory.tracking')->group(function () {
         Route::get('/inventory', InventoryDashboardController::class)
-            ->middleware('permission:view inventory dashboard')
+            ->middleware('permission:inventory.dashboard')
             ->name('inventory');
     });
 
     Route::middleware('module:accounting.advanced')->group(function () {
         Route::get('/finance', AccountingDashboardController::class)
-            ->middleware('can:view accounting dashboard')
+            ->middleware('can:accounting.dashboard')
             ->name('finance');
     });
 
@@ -42,6 +42,6 @@ Route::prefix('reports')->as('reports.')->group(function () {
     // corre al registrar rutas, antes de que la tenencia se inicialice para la
     // petición, y siempre evaluaba `false` contra la conexión central).
     Route::get('/ncf', NcfDashboardController::class)
-        ->middleware(['auth', 'permission:manage ncf sequences', 'module:sales.ncf'])
+        ->middleware(['auth', 'permission:ncf_sequences.manage', 'module:sales.ncf'])
         ->name('ncf');
 });

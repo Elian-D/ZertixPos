@@ -81,7 +81,7 @@ class NcfLogTable extends DataTable
 
     public function exportExcel()
     {
-        abort_unless(auth()->user()->can('manage ncf sequences'), 403);
+        abort_unless(auth()->user()->can('ncf_sequences.manage'), 403);
 
         return Excel::download(
             new NcfLogsExport($this->baseQuery()),

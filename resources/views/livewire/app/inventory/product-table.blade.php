@@ -7,7 +7,7 @@
         countLabel="productos"
     >
         <x-slot:actions>
-            @can('create products')
+            @can('products.create')
                 <x-ui.button href="{{ route('inventory.products.create') }}" variant="primary" iconLeft="heroicon-s-plus">
                     Nuevo Producto/Servicio
                 </x-ui.button>
@@ -15,7 +15,7 @@
         </x-slot:actions>
     </x-ui.page-header>
 
-    @can('restore products')
+    @can('products.restore')
         <div class="flex gap-1 mb-4">
             <x-ui.button
                 size="sm"
@@ -149,12 +149,12 @@
                                 aria-label="Ver detalles" title="Ver detalles" />
 
                             <x-ui.action-menu>
-                                @can('edit products')
+                                @can('products.edit')
                                     <x-ui.action-menu.item href="{{ route('inventory.products.edit', $item) }}" icon="heroicon-o-pencil-square">
                                         Editar
                                     </x-ui.action-menu.item>
                                 @endcan
-                                @can('delete products')
+                                @can('products.delete')
                                     <x-ui.action-menu.item
                                         x-data @click="$dispatch('open-modal', 'confirm-deletion-{{ $item->id }}')"
                                         icon="heroicon-o-trash" variant="danger">

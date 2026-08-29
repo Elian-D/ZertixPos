@@ -8,7 +8,7 @@ class StoreNcfTypeRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('manage ncf types');
+        return $this->user()->can('ncf_types.manage');
     }
 
     public function rules(): array

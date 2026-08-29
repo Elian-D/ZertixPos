@@ -7,7 +7,7 @@
         countLabel="lotes"
     >
         <x-slot:actions>
-            @can('manage ncf sequences')
+            @can('ncf_sequences.manage')
                 <x-ui.button x-data="" x-on:click="$dispatch('open-modal', 'create-ncf-sequence')"
                     variant="primary" iconLeft="heroicon-s-plus-circle">
                     Nuevo Lote NCF
@@ -127,7 +127,7 @@
                             x-data @click="$dispatch('open-modal', 'view-sequence-{{ $sequence->id }}')"
                             aria-label="Ver detalle" title="Ver Detalle y Estadísticas" />
 
-                        @can('manage ncf sequences')
+                        @can('ncf_sequences.manage')
                             <x-ui.action-menu>
                                 <x-ui.action-menu.item
                                     x-data @click="$dispatch('open-modal', 'extend-sequence-{{ $sequence->id }}')"

@@ -20,7 +20,7 @@ Route::prefix('finance')->as('finance.')->group(function () {
     // receivables/collections: CxC y su abono operativo son base, ver config/modules.php.
     Route::middleware('module:accounting.advanced')->group(function () {
 
-        Route::middleware('permission:configure accounting account')->group(function () {
+        Route::middleware('permission:accounting_accounts.manage')->group(function () {
 
             Route::get('accounts/eliminados', [AccountingAccountController::class, 'eliminadas'])
                 ->name('accounts.eliminados');
@@ -39,35 +39,35 @@ Route::prefix('finance')->as('finance.')->group(function () {
         Route::middleware('auth')->group(function () {
 
             Route::get('journal_entries', [JournalEntryController::class, 'index'])
-                ->middleware('permission:view journal entries')
+                ->middleware('permission:journal_entries.view')
                 ->name('journal_entries.index');
 
             Route::get('journal_entries/create', [JournalEntryController::class, 'create'])
-                ->middleware('permission:create journal entries')
+                ->middleware('permission:journal_entries.create')
                 ->name('journal_entries.create');
 
             Route::post('journal_entries', [JournalEntryController::class, 'store'])
-                ->middleware('permission:create journal entries')
+                ->middleware('permission:journal_entries.create')
                 ->name('journal_entries.store');
 
             Route::get('journal_entries/{journal_entry}/edit', [JournalEntryController::class, 'edit'])
-                ->middleware('permission:edit journal entries')
+                ->middleware('permission:journal_entries.edit')
                 ->name('journal_entries.edit');
 
             Route::put('journal_entries/{journal_entry}', [JournalEntryController::class, 'update'])
-                ->middleware('permission:edit journal entries')
+                ->middleware('permission:journal_entries.edit')
                 ->name('journal_entries.update');
 
             Route::patch('journal_entries/{journal_entry}/post', [JournalEntryController::class, 'post'])
-                ->middleware('permission:post journal entries')
+                ->middleware('permission:journal_entries.post')
                 ->name('journal_entries.post');
 
             Route::patch('journal_entries/{journal_entry}/cancel', [JournalEntryController::class, 'cancel'])
-                ->middleware('permission:cancel journal entries')
+                ->middleware('permission:journal_entries.cancel')
                 ->name('journal_entries.cancel');
 
             Route::get('journal_entries/export', [JournalEntryController::class, 'export'])
-                ->middleware('permission:view journal entries')
+                ->middleware('permission:journal_entries.view')
                 ->name('journal_entries.export');
         });
     });
@@ -82,7 +82,7 @@ Route::prefix('finance')->as('finance.')->group(function () {
         Route::prefix('receivables')->name('receivables.')->group(function () {
 
             Route::get('/', [ReceivableController::class, 'index'])
-                ->middleware('permission:view receivables')
+                ->middleware('permission:receivables.view')
                 ->name('index');
 
             // Sin destroy/eliminados/restaurar/borrarDefinitivo — Receivable es
@@ -98,7 +98,7 @@ Route::prefix('finance')->as('finance.')->group(function () {
     // cobrar, así que todo el grupo (incluido el historial) sigue la misma regla de
     // "apagado = 404 completo" que ya aplica al grupo receivables/* de arriba
     // (REQ-10.9 bis). Rename "Pagos"→"Cobros" (REQ-4.1) — nombres de permiso
-    // ('view payments', 'create payments', etc.) se mantienen tal cual: son slugs
+    // ('collections.view', 'collections.create', etc.) se mantienen tal cual: son slugs
     // ya sembrados en roles existentes, renombrarlos es un problema de datos
     // aparte de la reestructuración de rutas/clases de esta fase.
     Route::middleware(['auth', 'module:sales.receivables'])->group(function () {
@@ -109,23 +109,23 @@ Route::prefix('finance')->as('finance.')->group(function () {
         // papelera: Categoría C, ver docs/analisis/politica-soft-deletes.md.
 
         Route::get('collections', [CollectionController::class, 'index'])
-            ->middleware('permission:view payments')
+            ->middleware('permission:collections.view')
             ->name('collections.index');
 
         Route::get('collections/create', [CollectionController::class, 'create'])
-            ->middleware('permission:create payments')
+            ->middleware('permission:collections.create')
             ->name('collections.create');
 
         Route::post('collections', [CollectionController::class, 'store'])
-            ->middleware('permission:create payments')
+            ->middleware('permission:collections.create')
             ->name('collections.store');
 
         Route::get('collections/{payment}/print', [CollectionController::class, 'print'])
-            ->middleware('permission:print payment receipts')
+            ->middleware('permission:collections.print_receipt')
             ->name('collections.print');
 
         Route::post('collections/{payment}/cancel', [CollectionController::class, 'cancel'])
-            ->middleware('permission:cancel payments')
+            ->middleware('permission:collections.cancel')
             ->name('collections.cancel');
     });
 
@@ -141,7 +141,7 @@ Route::prefix('finance')->as('finance.')->group(function () {
     // Es la vista financiera universal; el Dashboard de arriba es un extra para
     // quien además tiene contabilidad formal activa.
     Route::get('/overview', FinancialOverviewController::class)
-        ->middleware('can:view accounting dashboard')
+        ->middleware('can:accounting.dashboard')
         ->name('overview.index');
 
     // routes/app/sales.php (antes) — Facturas, movidas junto con el resto de Finanzas.
@@ -153,21 +153,21 @@ Route::prefix('finance')->as('finance.')->group(function () {
 
         Route::get('invoices/{invoice}/preview', [InvoiceController::class, 'preview'])
             ->name('invoices.preview')
-            ->middleware(['auth', 'permission:view invoices']);
+            ->middleware(['auth', 'permission:invoices.view']);
 
         // Listado principal con AJAX
         Route::get('invoices', [InvoiceController::class, 'index'])
-            ->middleware('permission:view invoices')
+            ->middleware('permission:invoices.view')
             ->name('invoices.index');
 
         // Visualización de detalle (El documento legal)
         Route::get('invoices/{invoice}', [InvoiceController::class, 'show'])
-            ->middleware('permission:view invoices')
+            ->middleware('permission:invoices.view')
             ->name('invoices.show');
 
         // Impresión (Generación de PDF/Ticket)
         Route::get('invoices/{invoice}/print', [InvoiceController::class, 'print'])
-            ->middleware('permission:print invoices')
+            ->middleware('permission:invoices.print')
             ->name('invoices.print');
     });
 
@@ -187,7 +187,7 @@ Route::prefix('finance')->as('finance.')->group(function () {
     // que `accounting.advanced`/`sales.receivables` arriba en este mismo archivo)
     // — ese chequeo corre en tiempo de request, después de que la tenencia ya
     // está inicializada.
-    Route::middleware(['auth', 'permission:manage ncf sequences', 'module:sales.ncf'])
+    Route::middleware(['auth', 'permission:ncf_sequences.manage', 'module:sales.ncf'])
         ->prefix('ncf')->name('ncf.')->group(function () {
 
             // Dashboard NCF: movido a routes/app/reports.php como reports.ncf

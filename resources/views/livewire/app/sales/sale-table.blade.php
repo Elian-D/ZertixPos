@@ -7,7 +7,7 @@
         countLabel="ventas"
     >
         <x-slot:actions>
-            @can('create sales')
+            @can('sales.create')
                 <x-ui.button href="{{ route('sales.create') }}" variant="primary" iconLeft="heroicon-s-plus-circle">
                     Nueva Venta
                 </x-ui.button>
@@ -228,7 +228,7 @@
                                 Imprimir Comprobante
                             </x-ui.action-menu.item>
 
-                            @can('cancel sales')
+                            @can('sales.cancel')
                                 @if($sale->status === \App\Models\Sales\Sale::STATUS_COMPLETED)
                                     <x-ui.action-menu.item
                                         x-data @click="$dispatch('open-modal', 'confirm-cancel-sale-{{ $sale->id }}')"

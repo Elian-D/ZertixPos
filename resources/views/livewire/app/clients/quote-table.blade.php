@@ -7,7 +7,7 @@
         countLabel="cotizaciones"
     >
         <x-slot:actions>
-            @can('create quotes')
+            @can('quotes.create')
                 <x-ui.button href="{{ route('clients.quotes.create') }}" variant="primary" iconLeft="heroicon-s-plus-circle">
                     Nueva Cotización
                 </x-ui.button>

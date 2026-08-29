@@ -7,7 +7,7 @@
         countLabel="cobros"
     >
         <x-slot:actions>
-            @can('create payments')
+            @can('collections.create')
                 <x-ui.button href="{{ route('finance.collections.create') }}" variant="primary" iconLeft="heroicon-s-plus">
                     Nuevo Cobro
                 </x-ui.button>
@@ -143,7 +143,7 @@
                                 Imprimir Recibo
                             </x-ui.action-menu.item>
 
-                            @can('cancel payments')
+                            @can('collections.cancel')
                                 @if($payment->status === \App\Models\Accounting\ClientCollection::STATUS_ACTIVE)
                                     <x-ui.action-menu.item
                                         x-data @click="$dispatch('open-modal', 'confirm-cancel-payment-{{ $payment->id }}')"

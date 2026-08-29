@@ -7,7 +7,7 @@
         countLabel="terminales"
     >
         <x-slot:actions>
-            @can('create pos terminals')
+            @can('pos_terminals.create')
                 <x-ui.button href="{{ route('sales.pos.terminals.create') }}" variant="primary" iconLeft="heroicon-s-plus">
                     Nueva Terminal
                 </x-ui.button>
@@ -15,7 +15,7 @@
         </x-slot:actions>
 
         <x-slot:secondary>
-            @can('pos config view')
+            @can('pos_config.view')
                 <x-ui.button href="{{ route('sales.pos.settings.edit') }}"
                     appearance="ghost" variant="secondary" class="w-full justify-start" iconLeft="heroicon-o-cog">
                     Configuración Global
@@ -24,7 +24,7 @@
         </x-slot:secondary>
     </x-ui.page-header>
 
-    @can('view pos terminals')
+    @can('pos_terminals.view')
         <div class="flex gap-1 mb-4">
             <x-ui.button
                 size="sm"
@@ -139,7 +139,7 @@
                                 x-data @click="$dispatch('open-modal', 'confirm-deletion-{{ $item->id }}')"
                                 aria-label="Eliminar definitivamente" title="Eliminar definitivamente" />
                         @else
-                            @can('view pos terminals')
+                            @can('pos_terminals.view')
                                 <x-ui.button
                                     appearance="ghost" variant="secondary" size="sm" icon="heroicon-s-eye"
                                     x-data @click="$dispatch('open-modal', 'view-terminal-{{ $item->id }}')"
@@ -147,12 +147,12 @@
                             @endcan
 
                             <x-ui.action-menu>
-                                @can('edit pos terminals')
+                                @can('pos_terminals.edit')
                                     <x-ui.action-menu.item href="{{ route('sales.pos.terminals.edit', $item) }}" icon="heroicon-o-pencil-square">
                                         Editar
                                     </x-ui.action-menu.item>
                                 @endcan
-                                @can('delete pos terminals')
+                                @can('pos_terminals.delete')
                                     <x-ui.action-menu.item
                                         x-data @click="$dispatch('open-modal', 'confirm-deletion-{{ $item->id }}')"
                                         icon="heroicon-o-trash" variant="danger">

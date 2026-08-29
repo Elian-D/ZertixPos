@@ -10,37 +10,31 @@ use Illuminate\Support\Facades\Route;
 // users.*→config.users.*, URL app/users*→app/config/users*.
 Route::prefix('config/users')->as('config.users.')->group(function () {
 
-    Route::middleware('permission:users index')
+    Route::middleware('permission:users.view')
         ->get('/', [UserController::class, 'index'])
         ->name('index');
 
-    Route::middleware('permission:users create')
+    Route::middleware('permission:users.create')
         ->get('/create', [UserController::class, 'create'])
         ->name('create');
 
-    Route::middleware('permission:users create')
+    Route::middleware('permission:users.create')
         ->post('/', [UserController::class, 'store'])
         ->name('store');
 
-    Route::middleware('permission:users edit')
+    Route::middleware('permission:users.edit')
         ->get('/{user}/edit', [UserController::class, 'edit'])
         ->name('edit');
 
-    Route::middleware('permission:users edit')
+    Route::middleware('permission:users.edit')
         ->put('/{user}', [UserController::class, 'update'])
         ->name('update');
 
-    Route::middleware('permission:users delete')
+    Route::middleware('permission:users.delete')
         ->delete('/{user}', [UserController::class, 'destroy'])
         ->name('destroy');
 
-    // Editar roles
-    Route::middleware('permission:users assign')
-        ->get('/{user}/roles', [UserController::class, 'editRoles'])
-        ->name('roles.edit');
-
-    // Actualizar roles
-    Route::middleware('permission:users assign')
-        ->put('/{user}/roles', [UserController::class, 'updateRole'])
-        ->name('roles.update');
+    // roles.edit/roles.update (pantalla de "asignar rol" aparte) eliminadas —
+    // REQ-2.7 punto 6: rol + permisos extra se editan directo en edit.blade.php,
+    // gateado por 'users.assign' adentro de UserController::edit()/update().
 });

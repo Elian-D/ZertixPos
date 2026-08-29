@@ -9,7 +9,7 @@ class UpdatePosTerminalRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('edit pos terminals');
+        return $this->user()->can('pos_terminals.edit');
     }
 
     public function rules(): array

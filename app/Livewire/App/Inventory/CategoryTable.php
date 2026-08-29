@@ -60,7 +60,7 @@ class CategoryTable extends DataTable
 
     public function toggleActivo(int $id): void
     {
-        abort_unless(auth()->user()->can('configure categories'), 403);
+        abort_unless(auth()->user()->can('categories.manage'), 403);
 
         $category = Category::findOrFail($id);
         $category->toggleActivo();
@@ -70,7 +70,7 @@ class CategoryTable extends DataTable
 
     public function restore(int $id): void
     {
-        abort_unless(auth()->user()->can('configure categories'), 403);
+        abort_unless(auth()->user()->can('categories.manage'), 403);
 
         $category = Category::onlyTrashed()->findOrFail($id);
         $category->restore();
@@ -80,7 +80,7 @@ class CategoryTable extends DataTable
 
     public function forceDelete(int $id): void
     {
-        abort_unless(auth()->user()->can('configure categories'), 403);
+        abort_unless(auth()->user()->can('categories.manage'), 403);
 
         $category = Category::onlyTrashed()->findOrFail($id);
         $name = $category->name;

@@ -70,10 +70,6 @@
         @forelse($equipments as $item)
             <tr class="hover:bg-slate-50 transition-colors duration-150">
 
-                <x-data-table.cell column="code" :visible="$visibleColumns">
-                    <span class="font-mono text-slate-500">{{ $item->code }}</span>
-                </x-data-table.cell>
-
                 <x-data-table.cell column="name" :visible="$visibleColumns">
                     <span class="font-medium text-slate-800">{{ $item->name }}</span>
                 </x-data-table.cell>

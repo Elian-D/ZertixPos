@@ -7,7 +7,7 @@
         countLabel="movimientos"
     >
         <x-slot:actions>
-            @can('create inventory adjustments')
+            @can('inventory_movements.create_adjustment')
                 <x-ui.button variant="primary" iconLeft="heroicon-s-adjustments-vertical" x-data x-on:click="$dispatch('open-modal', 'create-adjustment')">
                     Ajuste de Stock
                 </x-ui.button>

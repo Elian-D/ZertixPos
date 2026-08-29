@@ -10,7 +10,7 @@
     <div class="p-4 md:p-6 flex flex-col gap-6">
         <x-ui.page-header title="Historial de Movimientos de Caja" description="Consulta los ingresos y egresos de efectivo registrados en las cajas de las terminales POS." :count="$items->total()" countLabel="movimientos">
             <x-slot name="actions">
-                @can('pos cash movements create')
+                @can('pos_cash_movements.create')
                     <x-ui.button @click="$dispatch('open-modal', 'register-cash-movement')"
                         variant="primary" iconLeft="heroicon-s-currency-dollar">
                         Registrar Movimiento

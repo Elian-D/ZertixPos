@@ -10,7 +10,7 @@ class UpdateReceivableRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('edit receivables');
+        return $this->user()->can('receivables.edit');
     }
 
     public function rules(): array

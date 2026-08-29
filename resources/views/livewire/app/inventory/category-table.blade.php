@@ -7,7 +7,7 @@
         countLabel="categorías"
     >
         <x-slot:actions>
-            @can('configure categories')
+            @can('categories.manage')
                 <x-ui.button variant="primary" iconLeft="heroicon-s-plus" x-data x-on:click="$dispatch('open-modal', 'crear-category')">
                     Nueva Categoría
                 </x-ui.button>
@@ -15,7 +15,7 @@
         </x-slot:actions>
     </x-ui.page-header>
 
-    @can('configure categories')
+    @can('categories.manage')
         <div class="flex gap-1 mb-4">
             <x-ui.button
                 size="sm"

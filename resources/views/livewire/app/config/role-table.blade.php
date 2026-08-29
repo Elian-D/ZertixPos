@@ -44,9 +44,8 @@
                             <x-ui.action-menu.item href="{{ route('config.roles.edit', $role) }}" icon="heroicon-o-pencil-square">
                                 Editar
                             </x-ui.action-menu.item>
-                            <x-ui.action-menu.item href="{{ route('config.roles.permissions.edit', $role) }}" icon="heroicon-o-key">
-                                Asignar Permisos
-                            </x-ui.action-menu.item>
+                            {{-- "Asignar Permisos" eliminado (REQ-2.7 punto 6) — los
+                                 permisos se editan directo en "Editar" ahora. --}}
                             <x-ui.action-menu.item
                                 x-data @click="$dispatch('open-modal', 'confirm-deletion-{{ $role->id }}')"
                                 icon="heroicon-o-trash" variant="danger">

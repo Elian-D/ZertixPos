@@ -87,7 +87,7 @@ class InventoryStockTable extends DataTable
 
     public function export()
     {
-        abort_unless(auth()->user()->can('inventory stocks export'), 403);
+        abort_unless(auth()->user()->can('inventory_stocks.export'), 403);
 
         return Excel::download(
             new InventoryStockExport($this->baseQuery()),

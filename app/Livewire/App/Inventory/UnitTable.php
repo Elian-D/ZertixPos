@@ -60,7 +60,7 @@ class UnitTable extends DataTable
 
     public function toggleActivo(int $id): void
     {
-        abort_unless(auth()->user()->can('configure units'), 403);
+        abort_unless(auth()->user()->can('units.manage'), 403);
 
         $unit = Unit::findOrFail($id);
         $unit->toggleActivo();
@@ -70,7 +70,7 @@ class UnitTable extends DataTable
 
     public function restore(int $id): void
     {
-        abort_unless(auth()->user()->can('configure units'), 403);
+        abort_unless(auth()->user()->can('units.manage'), 403);
 
         $unit = Unit::onlyTrashed()->findOrFail($id);
         $unit->restore();
@@ -80,7 +80,7 @@ class UnitTable extends DataTable
 
     public function forceDelete(int $id): void
     {
-        abort_unless(auth()->user()->can('configure units'), 403);
+        abort_unless(auth()->user()->can('units.manage'), 403);
 
         $unit = Unit::onlyTrashed()->findOrFail($id);
         $name = $unit->name;

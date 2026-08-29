@@ -82,7 +82,7 @@ class ProductTable extends DataTable
 
     public function restore(int $id): void
     {
-        abort_unless(auth()->user()->can('restore products'), 403);
+        abort_unless(auth()->user()->can('products.restore'), 403);
 
         $product = Product::onlyTrashed()->findOrFail($id);
         $product->restore();
@@ -92,7 +92,7 @@ class ProductTable extends DataTable
 
     public function forceDelete(int $id): void
     {
-        abort_unless(auth()->user()->can('delete products'), 403);
+        abort_unless(auth()->user()->can('products.delete'), 403);
 
         $product = Product::onlyTrashed()->findOrFail($id);
         $name = $product->name;

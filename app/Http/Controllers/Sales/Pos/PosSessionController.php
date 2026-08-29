@@ -25,7 +25,7 @@ class PosSessionController extends Controller
      */
     public function index()
     {
-        $this->authorize('pos sessions history');
+        $this->authorize('pos_sessions.history');
 
         return view('sales.pos.sessions.index');
     }
@@ -46,7 +46,7 @@ class PosSessionController extends Controller
 
     public function show(PosSession $posSession)
     {
-        $this->authorize('pos sessions history');
+        $this->authorize('pos_sessions.history');
 
         $posSession->load(['terminal', 'user', 'openedBy', 'closedBy']);
 
@@ -70,7 +70,7 @@ class PosSessionController extends Controller
      */
     public function print(PosSession $posSession, Request $request)
     {
-        $this->authorize('pos sessions history');
+        $this->authorize('pos_sessions.history');
 
         $data = $this->reportService->getReportData($posSession);
         $format = $request->query('format', 'letter');

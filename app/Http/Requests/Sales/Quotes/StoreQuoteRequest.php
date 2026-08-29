@@ -9,7 +9,7 @@ class StoreQuoteRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('create quotes');
+        return $this->user()->can('quotes.create');
     }
 
     public function rules(): array

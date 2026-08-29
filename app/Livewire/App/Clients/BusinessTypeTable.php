@@ -60,7 +60,7 @@ class BusinessTypeTable extends DataTable
 
     public function toggleActivo(int $id): void
     {
-        abort_unless(auth()->user()->can('configure business types'), 403);
+        abort_unless(auth()->user()->can('business_types.manage'), 403);
 
         $businessType = BusinessType::findOrFail($id);
         $businessType->toggleActivo();
@@ -70,7 +70,7 @@ class BusinessTypeTable extends DataTable
 
     public function restore(int $id): void
     {
-        abort_unless(auth()->user()->can('configure business types'), 403);
+        abort_unless(auth()->user()->can('business_types.manage'), 403);
 
         $businessType = BusinessType::onlyTrashed()->findOrFail($id);
         $businessType->restore();
@@ -80,7 +80,7 @@ class BusinessTypeTable extends DataTable
 
     public function forceDelete(int $id): void
     {
-        abort_unless(auth()->user()->can('configure business types'), 403);
+        abort_unless(auth()->user()->can('business_types.manage'), 403);
 
         $businessType = BusinessType::onlyTrashed()->findOrFail($id);
         $nombre = $businessType->nombre;

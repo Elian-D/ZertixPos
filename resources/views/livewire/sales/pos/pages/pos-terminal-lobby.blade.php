@@ -29,7 +29,7 @@
     @enderror
 
     <!-- GRID DE SELECCIÓN DE TERMINALES -->
-    <!-- Quien llega a esta página ya tiene permiso ('permission:pos sessions manage' en la
+    <!-- Quien llega a esta página ya tiene permiso ('permission:pos_sessions.manage' en la
          ruta) — todas las tarjetas son clickeables por igual. Un turno activo no bloquea,
          solo informa quién lo abrió; cualquier cajero autorizado puede entrar a atenderlo. -->
     <main class="max-w-6xl w-full mx-auto flex-1">

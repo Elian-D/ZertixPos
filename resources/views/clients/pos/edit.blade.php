@@ -47,39 +47,18 @@
                         </div>
 
                         <div>
-                            @can('pos regenerate-code')
-                                {{-- Usuario con permiso: Puede editar y el Service regenerará el código --}}
-                                <x-ui.forms.select
-                                    label="Tipo de Negocio"
-                                    name="business_type_id"
-                                    class="border-amber-300 bg-amber-50"
-                                    :error="$errors->first('business_type_id')"
-                                    required
-                                >
-                                    @foreach($businessTypes as $type)
-                                        <option value="{{ $type->id }}" {{ old('business_type_id', $pos->business_type_id) == $type->id ? 'selected' : '' }}>
-                                            {{ $type->nombre }} ({{ $type->prefix }})
-                                        </option>
-                                    @endforeach
-                                </x-ui.forms.select>
-                                <p class="text-[10px] text-amber-600 mt-1 italic">* Tienes permiso para cambiar el tipo. El código se regenerará al actualizar.</p>
-                            @else
-                                {{-- Usuario sin permiso: Solo lectura --}}
-                                <x-ui.forms.select
-                                    label="Tipo de Negocio"
-                                    class="bg-gray-100 text-gray-500 cursor-not-allowed"
-                                    disabled
-                                >
-                                    @foreach($businessTypes as $type)
-                                        <option value="{{ $type->id }}" {{ $pos->business_type_id == $type->id ? 'selected' : '' }}>
-                                            {{ $type->nombre }}
-                                        </option>
-                                    @endforeach
-                                </x-ui.forms.select>
-                                {{-- Campo oculto para que el valor no se pierda en el request si no tiene permiso --}}
-                                <input type="hidden" name="business_type_id" value="{{ $pos->business_type_id }}">
-                                <p class="text-[10px] text-gray-400 mt-1 italic">* Para cambiar el tipo, contacte al administrador.</p>
-                            @endcan
+                            <x-ui.forms.select
+                                label="Tipo de Negocio"
+                                name="business_type_id"
+                                :error="$errors->first('business_type_id')"
+                                required
+                            >
+                                @foreach($businessTypes as $type)
+                                    <option value="{{ $type->id }}" {{ old('business_type_id', $pos->business_type_id) == $type->id ? 'selected' : '' }}>
+                                        {{ $type->nombre }} ({{ $type->prefix }})
+                                    </option>
+                                @endforeach
+                            </x-ui.forms.select>
                         </div>
                     </div>
                 </section>

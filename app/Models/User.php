@@ -6,6 +6,7 @@ namespace App\Models;
 
 use App\Models\Sales\Pos\PosCashMovement;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
@@ -15,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles, SoftDeletes;
 
     /**
      * The attributes that are mass assignable.
@@ -109,7 +110,7 @@ class User extends Authenticatable
     public function scopeCashiers($query)
     {
         // Si usas permisos específicos:
-        return $query->permission('pos sessions manage');
+        return $query->permission('pos_sessions.manage');
         
         // O si prefieres por rol:
         // return $query->role('cajero');
