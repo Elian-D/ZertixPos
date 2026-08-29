@@ -7,7 +7,7 @@
         countLabel="almacenes"
     >
         <x-slot:actions>
-            @can('configure warehouses')
+            @can('warehouses.manage')
                 <x-ui.button variant="primary" iconLeft="heroicon-s-plus" x-data x-on:click="$dispatch('open-modal', 'crear-warehouse')">
                     Nuevo Almacén
                 </x-ui.button>
@@ -15,7 +15,7 @@
         </x-slot:actions>
     </x-ui.page-header>
 
-    @can('configure warehouses')
+    @can('warehouses.manage')
         <div class="flex gap-1 mb-4">
             <x-ui.button
                 size="sm"

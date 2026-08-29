@@ -89,7 +89,7 @@ class CollectionTable extends DataTable
 
     public function export()
     {
-        abort_unless(auth()->user()->can('export payments'), 403);
+        abort_unless(auth()->user()->can('collections.export'), 403);
 
         return Excel::download(
             new CollectionsExport($this->baseQuery()),

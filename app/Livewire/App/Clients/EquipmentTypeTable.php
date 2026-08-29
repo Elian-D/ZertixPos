@@ -60,7 +60,7 @@ class EquipmentTypeTable extends DataTable
 
     public function toggleActivo(int $id): void
     {
-        abort_unless(auth()->user()->can('configure equipment types'), 403);
+        abort_unless(auth()->user()->can('equipment_types.manage'), 403);
 
         $equipmentType = EquipmentType::findOrFail($id);
         $equipmentType->toggleActivo();
@@ -70,7 +70,7 @@ class EquipmentTypeTable extends DataTable
 
     public function restore(int $id): void
     {
-        abort_unless(auth()->user()->can('configure equipment types'), 403);
+        abort_unless(auth()->user()->can('equipment_types.manage'), 403);
 
         $equipmentType = EquipmentType::onlyTrashed()->findOrFail($id);
         $equipmentType->restore();
@@ -80,7 +80,7 @@ class EquipmentTypeTable extends DataTable
 
     public function forceDelete(int $id): void
     {
-        abort_unless(auth()->user()->can('configure equipment types'), 403);
+        abort_unless(auth()->user()->can('equipment_types.manage'), 403);
 
         $equipmentType = EquipmentType::onlyTrashed()->findOrFail($id);
         $nombre = $equipmentType->nombre;

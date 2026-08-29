@@ -15,7 +15,7 @@ class StoreSaleRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('create sales');
+        return $this->user()->can('sales.create');
     }
 
     /**

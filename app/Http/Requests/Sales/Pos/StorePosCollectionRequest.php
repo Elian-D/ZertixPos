@@ -11,8 +11,8 @@ class StorePosCollectionRequest extends FormRequest
     {
         // Mismo permiso que gatea todo el flujo del Workspace (Lobby/Checkout) — un
         // Cobro desde el TPV es una operación de caja más, no del backoffice de
-        // Cuentas por Cobrar (que usa 'create payments', ver routes/app/finance.php).
-        return $this->user()->can('pos sessions manage') && module_enabled('sales.receivables');
+        // Cuentas por Cobrar (que usa 'collections.create', ver routes/app/finance.php).
+        return $this->user()->can('pos_sessions.manage') && module_enabled('sales.receivables');
     }
 
     public function rules(): array

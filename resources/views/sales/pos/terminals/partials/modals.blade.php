@@ -157,7 +157,7 @@
                         <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')" class="flex-1 sm:flex-none justify-center">
                             Cerrar
                         </x-ui.button>
-                        @can('edit pos terminals')
+                        @can('pos_terminals.edit')
                             <x-ui.button href="{{ route('sales.pos.terminals.edit', $item) }}"
                                 variant="primary" iconLeft="heroicon-s-pencil" class="flex-1 sm:flex-none justify-center">
                                 Configurar

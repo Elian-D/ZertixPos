@@ -8,7 +8,7 @@ class StoreNcfSequenceRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('manage ncf sequences');
+        return $this->user()->can('ncf_sequences.manage');
     }
 
     public function rules(): array

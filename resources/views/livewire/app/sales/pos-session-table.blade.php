@@ -25,7 +25,7 @@
         countLabel="turnos"
     >
         <x-slot:actions>
-            @can('pos sessions manage')
+            @can('pos_sessions.manage')
                 <x-ui.button x-data="" x-on:click="$dispatch('open-modal', 'open-session-modal')"
                     variant="primary" iconLeft="heroicon-s-lock-open">
                     Nuevo Turno (Apertura)
@@ -180,7 +180,7 @@
                                 Ver Reporte Detallado
                             </x-ui.action-menu.item>
 
-                            @if($session->status === \App\Models\Sales\Pos\PosSession::STATUS_OPEN && auth()->user()->can('pos sessions manage'))
+                            @if($session->status === \App\Models\Sales\Pos\PosSession::STATUS_OPEN && auth()->user()->can('pos_sessions.manage'))
                                 <x-ui.action-menu.item href="{{ route('sales.pos.sessions.close-form', $session) }}" icon="heroicon-o-lock-closed">
                                     Realizar Arqueo y Cierre
                                 </x-ui.action-menu.item>

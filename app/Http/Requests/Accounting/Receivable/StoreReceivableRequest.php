@@ -10,7 +10,7 @@ class StoreReceivableRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('create receivables');
+        return $this->user()->can('receivables.create');
     }
 
     public function rules(): array

@@ -123,10 +123,10 @@ class ClientTable extends DataTable
 
     protected function performBulkAction(string $action, array $ids, mixed $value = null): void
     {
-        // La ruta clients.bulk vieja exigía 'clients edit' — al mover la acción
+        // La ruta clients.bulk vieja exigía 'clients.edit' — al mover la acción
         // acá adentro del componente Livewire, ese gate ya no lo pone el
         // middleware de la ruta, así que se replica acá.
-        abort_unless(auth()->user()->can('clients edit'), 403);
+        abort_unless(auth()->user()->can('clients.edit'), 403);
 
         $service = app(ClientService::class);
         $count = $service->performBulkAction($ids, $action, $value);
@@ -162,9 +162,9 @@ class ClientTable extends DataTable
 
     public function restore(int $id): void
     {
-        // Reemplaza la ruta clients.restore vieja (permission:clients restore)
+        // Reemplaza la ruta clients.restore vieja (permission:clients.restore)
         // — mismo permiso, ahora chequeado adentro del componente.
-        abort_unless(auth()->user()->can('clients restore'), 403);
+        abort_unless(auth()->user()->can('clients.restore'), 403);
 
         $client = Client::onlyTrashed()->findOrFail($id);
         $client->restore();
@@ -174,8 +174,8 @@ class ClientTable extends DataTable
 
     public function forceDelete(int $id): void
     {
-        // Reemplaza la ruta clients.borrarDefinitivo vieja (permission:clients delete).
-        abort_unless(auth()->user()->can('clients delete'), 403);
+        // Reemplaza la ruta clients.borrarDefinitivo vieja (permission:clients.delete).
+        abort_unless(auth()->user()->can('clients.delete'), 403);
 
         $client = Client::onlyTrashed()->findOrFail($id);
         $name = $client->name;

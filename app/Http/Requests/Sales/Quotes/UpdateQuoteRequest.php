@@ -11,7 +11,7 @@ class UpdateQuoteRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('edit quotes');
+        return $this->user()->can('quotes.edit');
     }
 
     public function rules(): array
@@ -41,7 +41,7 @@ class UpdateQuoteRequest extends FormRequest
                 $validator->errors()->add('status', 'No se puede editar una cotización que ya ha sido convertida en venta.');
             }
 
-            if ($quote->status === Quote::STATUS_EXPIRED && !$this->user()->can('edit quotes')) {
+            if ($quote->status === Quote::STATUS_EXPIRED && !$this->user()->can('quotes.edit')) {
                 $validator->errors()->add('status', 'No tiene permisos para reactivar una cotización vencida.');
             }
         });

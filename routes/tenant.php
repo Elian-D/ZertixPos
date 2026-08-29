@@ -31,7 +31,7 @@ Route::middleware([
 ])->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
-    })->middleware(['auth', 'verified', 'permission:view dashboard'])->name('dashboard');
+    })->middleware(['auth', 'verified', 'permission:dashboard.view'])->name('dashboard');
 
     Route::middleware('auth')->group(function () {
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

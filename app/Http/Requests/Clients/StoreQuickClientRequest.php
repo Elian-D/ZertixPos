@@ -11,7 +11,7 @@ class StoreQuickClientRequest extends FormRequest
     public function authorize(): bool
     {
         // Usamos el mismo permiso de creación de clientes
-        return $this->user()->can('clients create');
+        return $this->user()->can('clients.create');
     }
 
     public function rules(): array

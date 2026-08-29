@@ -72,7 +72,7 @@ class InventoryMovementTable extends DataTable
 
     public function export()
     {
-        abort_unless(auth()->user()->can('view inventory movements'), 403);
+        abort_unless(auth()->user()->can('inventory_movements.view'), 403);
 
         return Excel::download(
             new MovementsExport($this->baseQuery()),

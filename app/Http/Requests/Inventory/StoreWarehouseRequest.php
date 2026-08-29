@@ -10,7 +10,7 @@ class StoreWarehouseRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('configure warehouses');
+        return $this->user()->can('warehouses.manage');
     }
 
     public function rules(): array

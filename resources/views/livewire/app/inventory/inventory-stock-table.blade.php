@@ -103,7 +103,7 @@
                             x-data @click="$dispatch('open-modal', 'view-stock-{{ $item->id }}')"
                             aria-label="Ver detalles" title="Ver detalles" />
 
-                        @can('inventory stocks update')
+                        @can('inventory_stocks.update')
                             <x-ui.button
                                 appearance="ghost" variant="secondary" size="sm" icon="heroicon-s-bell-alert"
                                 x-data @click="$dispatch('open-modal', 'edit-min-stock-{{ $item->id }}')"

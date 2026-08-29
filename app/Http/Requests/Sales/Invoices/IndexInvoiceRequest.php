@@ -10,7 +10,7 @@ class IndexInvoiceRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('view invoices');
+        return $this->user()->can('invoices.view');
     }
 
     public function rules(): array

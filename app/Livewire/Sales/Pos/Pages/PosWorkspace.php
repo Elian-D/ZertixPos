@@ -28,7 +28,7 @@ class PosWorkspace extends Component
 
         // Cualquier usuario con permiso para operar sesiones POS puede trabajar en un
         // turno ya abierto, no solo quien lo abrió (ver PosSession 9.0 en POS-Interfaz.md).
-        abort_unless(Auth::user()->can('pos sessions manage'), 403);
+        abort_unless(Auth::user()->can('pos_sessions.manage'), 403);
 
         $this->session = PosSession::where('terminal_id', $pos_terminal->id)
             ->open()

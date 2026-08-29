@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Route;
 Route::prefix('clients')->as('clients.')->group(function () {
 
     Route::middleware('module:sales.delivery_points')->group(function () {
-        Route::middleware('permission:configure business types')->group(function () {
+        Route::middleware('permission:business_types.manage')->group(function () {
 
             // businessTypes.eliminados/restaurar/borrarDefinitivo/estado
             // reemplazadas por el tab "Papelera" + toggleActivo() del mismo
@@ -26,23 +26,23 @@ Route::prefix('clients')->as('clients.')->group(function () {
     Route::group([], function () {
 
         Route::get('/', [ClientController::class, 'index'])
-            ->middleware('permission:clients index')
+            ->middleware('permission:clients.view')
             ->name('index');
 
         Route::get('/crear', [ClientController::class, 'create'])
-            ->middleware('permission:clients create')
+            ->middleware('permission:clients.create')
             ->name('create');
 
         Route::post('/', [ClientController::class, 'store'])
-            ->middleware('permission:clients create')
+            ->middleware('permission:clients.create')
             ->name('store');
 
         Route::get('/{client}/editar', [ClientController::class, 'edit'])
-            ->middleware('permission:clients edit')
+            ->middleware('permission:clients.edit')
             ->name('edit');
 
         Route::put('/{client}', [ClientController::class, 'update'])
-            ->middleware('permission:clients edit')
+            ->middleware('permission:clients.edit')
             ->name('update');
 
         Route::get('/import', [ClientController::class, 'showImportForm'])->name('import.view');
@@ -50,7 +50,7 @@ Route::prefix('clients')->as('clients.')->group(function () {
         Route::get('/import-template', [ClientController::class, 'downloadTemplate'])->name('template');
 
         Route::delete('/{client}', [ClientController::class, 'destroy'])
-            ->middleware('permission:clients delete')
+            ->middleware('permission:clients.delete')
             ->name('destroy');
 
         // clients.eliminados/restore/borrarDefinitivo (vista de papelera aparte)
@@ -67,31 +67,31 @@ Route::prefix('clients')->as('clients.')->group(function () {
             // índice — ver App\Livewire\App\Clients\EquipmentTable.
 
             Route::get('equipments/', [EquipmentController::class, 'index'])
-                ->middleware('permission:equipment index')
+                ->middleware('permission:equipment.view')
                 ->name('index');
 
             Route::get('equipments/create', [EquipmentController::class, 'create'])
-                ->middleware('permission:equipment create')
+                ->middleware('permission:equipment.create')
                 ->name('create');
 
             Route::post('equipments/store', [EquipmentController::class, 'store'])
-                ->middleware('permission:equipment create')
+                ->middleware('permission:equipment.create')
                 ->name('store');
 
             Route::get('equipments/{equipment}/editar', [EquipmentController::class, 'edit'])
-                ->middleware('permission:equipment edit')
+                ->middleware('permission:equipment.edit')
                 ->name('edit');
 
             Route::put('equipments/{equipment}', [EquipmentController::class, 'update'])
-                ->middleware('permission:equipment edit')
+                ->middleware('permission:equipment.edit')
                 ->name('update');
 
             Route::delete('equipments/{id}', [EquipmentController::class, 'destroy'])
-                ->middleware('permission:equipment delete')
+                ->middleware('permission:equipment.delete')
                 ->name('destroy');
         });
 
-        Route::middleware('permission:configure equipment types')->group(function () {
+        Route::middleware('permission:equipment_types.manage')->group(function () {
 
             // equipmentTypes.eliminados/restaurar/borrarDefinitivo/estado
             // reemplazadas por el tab "Papelera" + toggleActivo() del mismo
@@ -115,27 +115,27 @@ Route::prefix('clients')->as('clients.')->group(function () {
             // índice — ver App\Livewire\App\Clients\PointOfSaleTable.
 
             Route::get('delivery-points/', [PointOfSaleController::class, 'index'])
-                ->middleware('permission:pos index')
+                ->middleware('permission:delivery_points.view')
                 ->name('index');
 
             Route::get('delivery-points/create', [PointOfSaleController::class, 'create'])
-                ->middleware('permission:pos create')
+                ->middleware('permission:delivery_points.create')
                 ->name('create');
 
             Route::post('delivery-points/store', [PointOfSaleController::class, 'store'])
-                ->middleware('permission:pos create')
+                ->middleware('permission:delivery_points.create')
                 ->name('store');
 
             Route::get('delivery-points/{pos}/editar', [PointOfSaleController::class, 'edit'])
-                ->middleware('permission:pos edit')
+                ->middleware('permission:delivery_points.edit')
                 ->name('edit');
 
             Route::put('delivery-points/{pos}', [PointOfSaleController::class, 'update'])
-                ->middleware('permission:pos edit')
+                ->middleware('permission:delivery_points.edit')
                 ->name('update');
 
             Route::delete('delivery-points/{pos}', [PointOfSaleController::class, 'destroy'])
-                ->middleware('permission:pos delete')
+                ->middleware('permission:delivery_points.delete')
                 ->name('destroy');
         });
     });

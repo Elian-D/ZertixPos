@@ -9,7 +9,7 @@ class UpdateInventoryStockRequest extends FormRequest
     public function authorize(): bool
     {
         // El permiso debe estar definido en tu seeder
-        return $this->user()->can('inventory stocks update');
+        return $this->user()->can('inventory_stocks.update');
     }
 
     public function rules(): array

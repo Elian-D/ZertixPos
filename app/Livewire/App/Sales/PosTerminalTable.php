@@ -55,7 +55,7 @@ class PosTerminalTable extends DataTable
 
     public function restore(int $id): void
     {
-        abort_unless(auth()->user()->can('edit pos terminals'), 403);
+        abort_unless(auth()->user()->can('pos_terminals.edit'), 403);
 
         $terminal = PosTerminal::onlyTrashed()->findOrFail($id);
         $terminal->restore();
@@ -65,7 +65,7 @@ class PosTerminalTable extends DataTable
 
     public function forceDelete(int $id): void
     {
-        abort_unless(auth()->user()->can('delete pos terminals'), 403);
+        abort_unless(auth()->user()->can('pos_terminals.delete'), 403);
 
         $terminal = PosTerminal::onlyTrashed()->findOrFail($id);
         $name = $terminal->name;

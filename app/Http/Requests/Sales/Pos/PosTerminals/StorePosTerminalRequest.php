@@ -8,7 +8,7 @@ class StorePosTerminalRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('create pos terminals');
+        return $this->user()->can('pos_terminals.create');
     }
 
     public function rules(): array

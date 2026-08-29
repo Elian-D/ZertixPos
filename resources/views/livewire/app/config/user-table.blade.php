@@ -32,6 +32,27 @@
         </x-slot:actions>
     </x-ui.page-header>
 
+    {{-- Papelera como tab del mismo índice (REQ-2.7 punto 3, mismo criterio de
+         docs/analisis/politica-soft-deletes.md §6) — solo Restaurar, sin
+         borrado definitivo, a diferencia del resto de módulos Categoría A. --}}
+    <div class="flex gap-1 mb-4">
+        <x-ui.button
+            size="sm"
+            :variant="$filters['trashed'] === '' ? 'primary' : 'secondary'"
+            :appearance="$filters['trashed'] === '' ? 'solid' : 'ghost'"
+            wire:click="$set('filters.trashed', '')">
+            Activos
+        </x-ui.button>
+
+        <x-ui.button
+            size="sm"
+            :variant="$filters['trashed'] === 'only' ? 'error' : 'secondary'"
+            :appearance="$filters['trashed'] === 'only' ? 'solid' : 'ghost'"
+            wire:click="$set('filters.trashed', 'only')">
+            Papelera
+        </x-ui.button>
+    </div>
+
     <x-data-table.base-table
         :items="$users"
         :columns="$this->columns()"
@@ -71,19 +92,32 @@
 
                 <td class="px-4 py-3.5 text-right">
                     <div class="flex items-center justify-end gap-1">
-                        <x-ui.action-menu>
-                            <x-ui.action-menu.item href="{{ route('config.users.edit', $user) }}" icon="heroicon-o-pencil-square">
-                                Editar
-                            </x-ui.action-menu.item>
-                            <x-ui.action-menu.item href="{{ route('config.users.roles.edit', $user) }}" icon="heroicon-o-key">
-                                Asignar Roles y Permisos
-                            </x-ui.action-menu.item>
-                            <x-ui.action-menu.item
-                                x-data @click="$dispatch('open-modal', 'confirm-deletion-{{ $user->id }}')"
-                                icon="heroicon-o-trash" variant="danger">
-                                Eliminar
-                            </x-ui.action-menu.item>
-                        </x-ui.action-menu>
+                        @if ($user->trashed())
+                            <x-ui.button
+                                appearance="ghost" variant="success" size="sm" icon="heroicon-o-arrow-path"
+                                wire:click="restore({{ $user->id }})"
+                                aria-label="Restaurar usuario" title="Restaurar usuario" />
+                        @else
+                            @php
+                                // REQ-2.7 puntos 1/2: ni la propia cuenta ni el último
+                                // usuario activo con el rol protegido se pueden eliminar
+                                // — la acción se oculta acá, el guard real vive en
+                                // UserController::destroy().
+                                $canDelete = $user->id !== auth()->id() && $user->id !== $protectedUserId;
+                            @endphp
+                            <x-ui.action-menu>
+                                <x-ui.action-menu.item href="{{ route('config.users.edit', $user) }}" icon="heroicon-o-pencil-square">
+                                    Editar
+                                </x-ui.action-menu.item>
+                                @if ($canDelete)
+                                    <x-ui.action-menu.item
+                                        x-data @click="$dispatch('open-modal', 'confirm-deletion-{{ $user->id }}')"
+                                        icon="heroicon-o-trash" variant="danger">
+                                        Eliminar
+                                    </x-ui.action-menu.item>
+                                @endif
+                            </x-ui.action-menu>
+                        @endif
                     </div>
                 </td>
             </tr>
@@ -100,13 +134,15 @@
 
     {{-- MODAL DE CONFIRMACIÓN --}}
     @foreach($users as $user)
-        <x-ui.confirm-deletion-modal
-            :id="$user->id"
-            :title="'¿Eliminar Usuario?'"
-            :itemName="$user->name"
-            :type="'el usuario'"
-            :route="route('config.users.destroy', $user)"
-            :description="'Esta acción es irreversible. Estás a punto de eliminar al usuario <strong>' . e($user->name) . '</strong>.'"
-        />
+        @if (! $user->trashed() && $user->id !== auth()->id() && $user->id !== $protectedUserId)
+            <x-ui.confirm-deletion-modal
+                :id="$user->id"
+                :title="'¿Eliminar Usuario?'"
+                :itemName="$user->name"
+                :type="'el usuario'"
+                :route="route('config.users.destroy', $user)"
+                :description="'Esta acción es irreversible. Estás a punto de eliminar al usuario <strong>' . e($user->name) . '</strong>.'"
+            />
+        @endif
     @endforeach
 </div>

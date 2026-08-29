@@ -22,7 +22,7 @@
             :active="request()->routeIs('clients.*') && ! request()->routeIs(['clients.quotes.*', 'clients.delivery_points.*', 'clients.equipment.*', 'clients.businessTypes.*', 'clients.equipmentTypes.*'])">
             Clientes
         </x-sidebar.subitem>
-        @can('view quotes')
+        @can('quotes.view')
             @if(module_enabled('sales.quotes'))
                 <x-sidebar.subitem href="{{ route('clients.quotes.index') }}">Cotizaciones</x-sidebar.subitem>
             @endif
@@ -42,7 +42,7 @@
     </x-sidebar.dropdown>
 
     {{-- GRUPO 2: Ventas (REQ-3.2) — un solo dropdown, colapsa "Ventas" + "Puntos de Venta" --}}
-    @canany(['view sales', 'pos sessions manage'])
+    @canany(['sales.view', 'pos_sessions.manage'])
         {{-- Dashboard Ventas (app/sales/dashboard→app/reports/sales) y Cotizaciones
                 (app/sales/quotes→app/clients/quotes) ya no viven bajo app/sales* (Fase
                 7.9, cuarta pasada) — un solo comodín simple alcanza de nuevo. --}}
@@ -52,7 +52,7 @@
             label="Ventas"
             :activeRoutes="['app/sales*']"
         >
-            @can('view sales')
+            @can('sales.view')
                 {{-- :active explícito (REQ-7.9, séptima pasada): mismo problema que
                         "Clientes" — "Ventas" vive en la raíz de app/sales, y los 4
                         subitems de POS viven anidados bajo app/sales/pos*. --}}
@@ -61,7 +61,7 @@
                     Ventas
                 </x-sidebar.subitem>
             @endcan
-            @can('pos sessions manage')
+            @can('pos_sessions.manage')
                 <x-sidebar.subitem href="{{ route('sales.pos.index') }}">Punto de Venta</x-sidebar.subitem>
                 <x-sidebar.subitem href="{{ route('sales.pos.settings.edit') }}">Configuración</x-sidebar.subitem>
                 <x-sidebar.subitem href="{{ route('sales.pos.terminals.index') }}">Terminales</x-sidebar.subitem>
@@ -80,7 +80,7 @@
         :label="module_enabled('inventory.tracking') ? 'Inventario' : 'Productos/Servicios'"
         :activeRoutes="['app/inventory*']"
     >
-        @can('view products')
+        @can('products.view')
             {{-- :active explícito (REQ-7.9, séptima pasada): mismo problema —
                     "Productos/Servicios" vive en la raíz de app/inventory/products, y
                     Categorías/Unidades viven anidadas bajo ese mismo prefijo. --}}
@@ -92,20 +92,20 @@
             <x-sidebar.subitem href="{{ route('inventory.products.units.index') }}">Unidades de Medida</x-sidebar.subitem>
         @endcan
         @if (module_enabled('inventory.tracking'))
-            @can('inventory stocks index')
+            @can('inventory_stocks.view')
                 <x-sidebar.subitem href="{{ route('inventory.stocks.index') }}">Stock Actual</x-sidebar.subitem>
             @endcan
-            @can('view inventory movements')
+            @can('inventory_movements.view')
                 <x-sidebar.subitem href="{{ route('inventory.movements.index') }}">Movimientos</x-sidebar.subitem>
             @endcan
-            @can('configure warehouses')
+            @can('warehouses.manage')
                 <x-sidebar.subitem href="{{ route('inventory.warehouses.index') }}">Almacenes</x-sidebar.subitem>
             @endcan
         @endif
     </x-sidebar.dropdown>
 
     {{-- GRUPO 4: Finanzas (REQ-3.2, rename de "Contabilidad") — absorbe Facturas y NCF --}}
-    @can('view accounting dashboard')
+    @can('accounting.dashboard')
         {{-- Dashboard Finanzas (app/finance/dashboard) y Dashboard NCF
                 (app/finance/ncf/dashboard) migraron a app/reports/finance y
                 app/reports/ncf (Fase 7.9, cuarta pasada) — un solo comodín simple
@@ -125,13 +125,13 @@
                 <x-sidebar.subitem href="{{ route('finance.journal_entries.index') }}">Asientos Contables</x-sidebar.subitem>
                 <x-sidebar.subitem href="{{ route('finance.accounts.index') }}">Plan de Cuentas</x-sidebar.subitem>
             @endif
-            @can('view invoices')
+            @can('invoices.view')
                 <x-sidebar.subitem href="{{ route('finance.invoices.index') }}">Facturas</x-sidebar.subitem>
             @endcan
 
             {{-- NCF (Fiscal) — movido de Configuración (REQ-3.2/3.4) --}}
             @if(module_enabled('sales.ncf'))
-                @can('view ncf sequences')
+                @can('ncf_sequences.view')
                     <x-sidebar.subitem href="{{ route('finance.ncf.sequences.index') }}">Secuencias NCF</x-sidebar.subitem>
                     <x-sidebar.subitem href="{{ route('finance.ncf.logs.index') }}">Historial NCF</x-sidebar.subitem>
                     <x-sidebar.subitem href="{{ route('finance.ncf.types.index') }}">Tipos NCF</x-sidebar.subitem>
@@ -142,10 +142,10 @@
 
     {{-- GRUPO 5: Reportes (REQ-3.2, nuevo) — junta los 4 dashboards sueltos --}}
     @php
-        $showReportes = auth()->user()->can('view sales')
-            || (module_enabled('inventory.tracking') && auth()->user()->can('view inventory dashboard'))
-            || (module_enabled('sales.ncf') && auth()->user()->can('view ncf sequences'))
-            || (module_enabled('accounting.advanced') && auth()->user()->can('view accounting dashboard'));
+        $showReportes = auth()->user()->can('sales.view')
+            || (module_enabled('inventory.tracking') && auth()->user()->can('inventory.dashboard'))
+            || (module_enabled('sales.ncf') && auth()->user()->can('ncf_sequences.view'))
+            || (module_enabled('accounting.advanced') && auth()->user()->can('accounting.dashboard'));
     @endphp
     @if($showReportes)
         <x-sidebar.dropdown
@@ -154,21 +154,21 @@
             label="Reportes"
             :activeRoutes="['app/reports*']"
         >
-            @can('view sales')
+            @can('sales.view')
                 <x-sidebar.subitem href="{{ route('reports.sales') }}">Reportes de Ventas</x-sidebar.subitem>
             @endcan
             @if(module_enabled('inventory.tracking'))
-                @can('view inventory dashboard')
+                @can('inventory.dashboard')
                     <x-sidebar.subitem href="{{ route('reports.inventory') }}">Reportes de Inventario</x-sidebar.subitem>
                 @endcan
             @endif
             @if(module_enabled('sales.ncf'))
-                @can('view ncf sequences')
+                @can('ncf_sequences.view')
                     <x-sidebar.subitem href="{{ route('reports.ncf') }}">Reportes de NCF</x-sidebar.subitem>
                 @endcan
             @endif
             @if(module_enabled('accounting.advanced'))
-                @can('view accounting dashboard')
+                @can('accounting.dashboard')
                     <x-sidebar.subitem href="{{ route('reports.finance') }}">Reportes de Finanzas</x-sidebar.subitem>
                 @endcan
             @endif
@@ -189,7 +189,7 @@
         <x-sidebar.subitem href="{{ route('configuration.general.edit') }}">Configuración General</x-sidebar.subitem>
         <x-sidebar.subitem href="{{ route('config.users.index') }}">Usuarios</x-sidebar.subitem>
         <x-sidebar.subitem href="{{ route('config.roles.index') }}">Roles/Permisos</x-sidebar.subitem>
-        @can('configure system modules')
+        @can('config.modules')
             <x-sidebar.subitem href="{{ route('configuration.features') }}">Funciones del Sistema</x-sidebar.subitem>
         @endcan
         <x-sidebar.subitem href="{{ route('configuration.catalogs.index') }}">Catálogos del Sistema</x-sidebar.subitem>

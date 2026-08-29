@@ -39,7 +39,7 @@
                     @endif --}}
 
                     {{-- Mismo botón/estilo "Cerrar Turno" que ya existe en el navbar del Workspace --}}
-                    @if($posSession->isOpen() && auth()->user()->can('pos sessions manage'))
+                    @if($posSession->isOpen() && auth()->user()->can('pos_sessions.manage'))
                         <a href="{{ route('sales.pos.sessions.close-form', $posSession) }}"
                            title="Cerrar Turno"
                            class="flex items-center gap-1.5 text-sm font-bold text-white bg-gray-800 hover:bg-gray-900 px-4 py-2.5 rounded-xl transition-colors shadow-sm active:scale-95">

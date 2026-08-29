@@ -44,7 +44,7 @@
                             Actualizado {{ $type->updated_at->diffForHumans() }}
                         </span>
 
-                        @can('edit document types')
+                        @can('document_types.edit')
                             <a href="{{ route('configuration.document_types.edit', $type) }}"
                                title="{{ $locked ? 'El correlativo ya no se puede editar, pero el nombre y el prefijo sí' : 'Nombre, prefijo y correlativo son editables' }}"
                                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition
