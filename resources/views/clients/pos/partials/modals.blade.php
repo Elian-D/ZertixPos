@@ -12,10 +12,6 @@
                         <div>
                             <h3 class="text-xl font-bold text-gray-900 leading-tight">{{ $item->name }}</h3>
                             <div class="flex items-center gap-2 mt-1">
-                                <span class="text-xs font-semibold px-2 py-0.5 bg-gray-200 text-gray-700 rounded uppercase tracking-wider">
-                                    {{ $item->code }}
-                                </span>
-                                <span class="text-gray-400 text-xs">•</span>
                                 <span class="text-sm text-gray-500 font-medium italic">{{ $item->businessType->nombre ?? 'Sin giro definido' }}</span>
                             </div>
                         </div>

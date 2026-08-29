@@ -25,10 +25,6 @@ return new class extends Migration
                 ->restrictOnDelete();
 
             // Identificación del equipo
-            $table->string('code', 30)->unique()->nullable();
-
-            // Código interno del sistema: EQ-0001, FRZ-002, etc.
-
             $table->string('serial_number', 100)->nullable();
             // Serial físico SOLO si aplica
 

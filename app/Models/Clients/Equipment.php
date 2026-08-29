@@ -20,15 +20,7 @@ class Equipment extends Model
         'model',
         'notes',
         'active',
-        'code',
     ];
-
-    protected static function booted()
-    {
-        static::created(function (Equipment $equipment) {
-            $equipment->generateCode();
-        });
-    }
 
     /* ===========================
      |  RELACIONES
@@ -42,28 +34,6 @@ class Equipment extends Model
     public function pointOfSale()
     {
         return $this->belongsTo(PointOfSale::class);
-    }
-
-    /* ===========================
-     |  CÓDIGOS
-     =========================== */
-
-    public function generateCode(): void
-    {
-        // Carga la relación si no existe para evitar el error de prefix sobre null
-        if (!$this->equipmentType) {
-            $this->load('equipmentType');
-        }
-
-        $prefix = $this->equipmentType ? $this->equipmentType->prefix : 'EQ';
-
-        $this->updateQuietly([
-            'code' => sprintf(
-                '%s-%05d',
-                strtoupper($prefix),
-                $this->id
-            )
-        ]);
     }
 
     /* ===========================

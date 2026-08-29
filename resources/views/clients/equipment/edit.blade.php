@@ -6,7 +6,7 @@
 
 
             <x-form-header
-                title="Editar Equipo: {{ $equipment->code }}"
+                title="Editar Equipo: {{ $equipment->name }}"
                 subtitle="Modifique la información técnica o la asignación del equipo."
                 :back-route="route('clients.equipment.index')" />
 
@@ -31,40 +31,18 @@
 
                         {{-- En la Sección 1: Identificación --}}
                         <div>
-                            @can('equipment regenerate-code')
-                                {{-- Usuario Admin: Puede cambiar tipo y el checkbox decide si regenera el código --}}
-                                <div class="space-y-2 mt-1">
-                                    <x-ui.forms.select
-                                        label="Tipo de Equipo"
-                                        name="equipment_type_id"
-                                        class="border-amber-300 bg-amber-50"
-                                        :error="$errors->first('equipment_type_id')"
-                                        required
-                                    >
-                                        @foreach($equipmentTypes as $type)
-                                            <option value="{{ $type->id }}" {{ old('equipment_type_id', $equipment->equipment_type_id) == $type->id ? 'selected' : '' }}>
-                                                {{ $type->nombre }} ({{ $type->prefix }})
-                                            </option>
-                                        @endforeach
-                                    </x-ui.forms.select>
-                                    <p class="text-[10px] text-amber-600 mt-1 italic">* Tienes permiso para cambiar el tipo. El código se regenerará al actualizar.</p>
-                                </div>
-                            @else
-                                {{-- Usuario Normal: Solo lectura --}}
-                                <x-ui.forms.select
-                                    label="Tipo de Equipo"
-                                    class="bg-gray-100 text-gray-500 cursor-not-allowed"
-                                    disabled
-                                >
-                                    @foreach($equipmentTypes as $type)
-                                        <option value="{{ $type->id }}" {{ $equipment->equipment_type_id == $type->id ? 'selected' : '' }}>
-                                            {{ $type->nombre }}
-                                        </option>
-                                    @endforeach
-                                </x-ui.forms.select>
-                                <input type="hidden" name="equipment_type_id" value="{{ $equipment->equipment_type_id }}">
-                                <p class="text-[10px] text-gray-400 mt-1 italic">* Para cambiar el tipo, contacte al administrador.</p>
-                            @endcan
+                            <x-ui.forms.select
+                                label="Tipo de Equipo"
+                                name="equipment_type_id"
+                                :error="$errors->first('equipment_type_id')"
+                                required
+                            >
+                                @foreach($equipmentTypes as $type)
+                                    <option value="{{ $type->id }}" {{ old('equipment_type_id', $equipment->equipment_type_id) == $type->id ? 'selected' : '' }}>
+                                        {{ $type->nombre }} ({{ $type->prefix }})
+                                    </option>
+                                @endforeach
+                            </x-ui.forms.select>
                         </div>
 
                         <div>

@@ -13,10 +13,12 @@
                     <div>
                         <h3 class="text-xl font-bold text-gray-900 leading-tight">{{ $item->name }}</h3>
                         <div class="flex items-center gap-2 mt-1">
-                            <span class="text-xs font-semibold px-2 py-0.5 bg-gray-200 text-gray-700 rounded uppercase tracking-wider">
-                                {{ $item->code }}
-                            </span>
-                            <span class="text-gray-400 text-xs">•</span>
+                            @if($item->serial_number)
+                                <span class="text-xs font-semibold px-2 py-0.5 bg-gray-200 text-gray-700 rounded uppercase tracking-wider">
+                                    {{ $item->serial_number }}
+                                </span>
+                                <span class="text-gray-400 text-xs">•</span>
+                            @endif
                             <span class="text-sm text-gray-500 font-medium italic">
                                 {{ $item->equipmentType->nombre ?? 'Tipo no definido' }}
                             </span>
