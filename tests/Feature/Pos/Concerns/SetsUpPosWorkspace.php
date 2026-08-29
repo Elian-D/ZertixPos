@@ -10,6 +10,10 @@ use App\Models\Sales\Pos\PosSession;
 use App\Models\Sales\Pos\PosSetting;
 use App\Models\Sales\Pos\PosTerminal;
 use App\Models\User;
+use Database\Seeders\Demo\CategorySeeder;
+use Database\Seeders\Demo\ProductSeeder;
+use Database\Seeders\Demo\UserSeeder;
+use Database\Seeders\Demo\WarehouseSeeder;
 
 trait SetsUpPosWorkspace
 {
@@ -26,6 +30,15 @@ trait SetsUpPosWorkspace
     protected function setUpPosWorkspace(int $stock = 50): void
     {
         $this->seed();
+        // DatabaseSeeder (arriba) es solo "core" — sin usuarios (el primero real lo
+        // crea el Wizard, REQ-07.13) ni catálogo demo (Warehouse/Product/etc, eso es
+        // zertix:seed-demo). Se replica acá el mismo subconjunto mínimo que usa
+        // SeedDemoData::seedCatalog() — no el comando completo, que además genera
+        // 100 ventas históricas innecesarias para este fixture.
+        $this->seed(UserSeeder::class);
+        $this->seed(CategorySeeder::class);
+        $this->seed(ProductSeeder::class);
+        $this->seed(WarehouseSeeder::class);
 
         $this->cashier = User::where('email', 'admin@local.com')->firstOrFail();
         $this->warehouse = Warehouse::firstOrFail();
