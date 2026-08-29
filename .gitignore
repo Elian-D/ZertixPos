@@ -26,5 +26,6 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /docs/promts.md
-.claude/
+.claude/settings.local.json
+.claude/launch.json
 /.mcp.json
