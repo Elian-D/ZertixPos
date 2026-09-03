@@ -15,6 +15,7 @@
         "maatwebsite/excel": "^3.1",
         "owenvoke/blade-fontawesome": "^2.9",
         "spatie/laravel-permission": "^6.23",
+        "srmklive/paypal": "^3.1",
         "stancl/tenancy": "^3.10"
     },
     "require-dev": {

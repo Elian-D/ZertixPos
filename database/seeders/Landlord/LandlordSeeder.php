@@ -20,6 +20,7 @@ class LandlordSeeder extends Seeder
         $this->call([
             LandlordRoleSeeder::class,
             LandlordAdminSeeder::class,
+            PlanSeeder::class, // REQ-3.4 — catálogo de planes, movido de tenant
         ]);
     }
 }

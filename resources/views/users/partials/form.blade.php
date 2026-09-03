@@ -44,60 +44,33 @@
                 :error="$errors->first('email')"
             />
 
-            {{-- Password y Password Confirmation se dejan con <input> nativo: el botón
-                 de mostrar/ocultar contraseña (ícono clickeable superpuesto que cambia
-                 `:type`) no encaja en x-ui.forms.input — iconRight solo acepta un
-                 heroicon estático sin @click, no un botón interactivo. --}}
-            <div x-data="{ show: false }" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
-                        Contraseña @if(isset($user)) (dejar en blanco para no cambiarla) @else (Mín. 8 caracteres) @endif:
-                    </label>
+            {{-- x-ui.forms.input trae el toggle mostrar/ocultar de fábrica para
+                 type="password" (docs/ui/forms.md, REQ-7.11) — no hay que
+                 reimplementarlo a mano con Alpine. --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <x-ui.forms.input
+                    type="password"
+                    label="Contraseña"
+                    name="password"
+                    id="password"
+                    icon-left="heroicon-s-lock-closed"
+                    placeholder="{{ isset($user) ? 'Dejar en blanco para no cambiarla' : 'Escribe una contraseña segura' }}"
+                    :hint="isset($user) ? null : 'Mín. 8 caracteres'"
+                    :required="! isset($user)"
+                    minlength="8"
+                    :error="$errors->first('password')"
+                />
 
-                    <div class="relative">
-                        <input :type="show ? 'text' : 'password'"
-                                name="password"
-                                id="password"
-                                placeholder="Escribe una contraseña segura"
-                                @unless(isset($user)) required @endunless
-                                minlength="8"
-                                class="w-full border-gray-300 rounded-md shadow-sm text-base py-2.5 pl-4 pr-12
-                                        focus:border-zertix-primary-500 focus:ring focus:ring-zertix-primary-500 focus:ring-opacity-50
-                                        @error('password') border-red-500 focus:border-red-500 focus:ring-red-200 @enderror">
-
-                        <button type="button"
-                                @click="show = !show"
-                                class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-400 hover:text-gray-600 focus:outline-none"
-                                title="Mostrar/Ocultar Contraseña">
-                            <template x-if="!show">
-                                <x-heroicon-s-eye-slash class="w-5 h-5" />
-                            </template>
-                            <template x-if="show">
-                                <x-heroicon-s-eye class="w-5 h-5" />
-                            </template>
-                        </button>
-                    </div>
-
-                    @error('password')
-                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div>
-                    <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-2">Confirmar Contraseña:</label>
-
-                    <div class="relative">
-                        <input :type="show ? 'text' : 'password'"
-                                name="password_confirmation"
-                                id="password_confirmation"
-                                placeholder="Repite la contraseña"
-                                @unless(isset($user)) required @endunless
-                                minlength="8"
-                                class="w-full border-gray-300 rounded-md shadow-sm text-base py-2.5 pl-4 pr-12
-                                        focus:border-zertix-primary-500 focus:ring focus:ring-zertix-primary-500 focus:ring-opacity-50
-                                        @error('password') border-red-500 focus:border-red-500 focus:ring-red-200 @enderror">
-                    </div>
-                </div>
+                <x-ui.forms.input
+                    type="password"
+                    label="Confirmar Contraseña"
+                    name="password_confirmation"
+                    id="password_confirmation"
+                    icon-left="heroicon-s-lock-closed"
+                    placeholder="Repite la contraseña"
+                    :required="! isset($user)"
+                    minlength="8"
+                />
             </div>
         </div>
     </section>

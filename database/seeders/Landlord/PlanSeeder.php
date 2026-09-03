@@ -1,10 +1,19 @@
 <?php
 
-namespace Database\Seeders\AppInit;
+namespace Database\Seeders\Landlord;
 
 use App\Models\Configuration\Plan;
 use Illuminate\Database\Seeder;
 
+/**
+ * Movido de Database\Seeders\AppInit (tenant) a acá (REQ-3.4, v1.3.0 Fase 3)
+ * — `plans`/`plan_module` son catálogo de ZertixPOS, no dato propio de cada
+ * negocio. Corre con `db:seed --class`, no con `tenants:seed`.
+ *
+ * Idempotente por slug (updateOrCreate) y no toca `gateway_plan_id` — correr
+ * esto de nuevo después de que `paypal:sync-plans` ya haya llenado esa
+ * columna no la borra.
+ */
 class PlanSeeder extends Seeder
 {
     /**

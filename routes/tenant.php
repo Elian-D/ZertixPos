@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Http\Controllers\ProfileController;
+use App\Http\Middleware\Billing\EnsureSubscriptionActive;
 use App\Http\Middleware\EnsureInstallationWizardCompleted;
 use Illuminate\Support\Facades\Route;
 use Stancl\Tenancy\Middleware\InitializeTenancyByDomain;
@@ -28,7 +29,23 @@ Route::middleware([
     // Después de InitializeTenancyByDomain a propósito — necesita la conexión
     // del tenant ya activa para consultar su propia ConfiguracionGeneral.
     EnsureInstallationWizardCompleted::class,
+    // Después de EnsureInstallationWizardCompleted a propósito — un tenant sin
+    // instalar todavía no tiene ninguna Subscription real que evaluar (REQ-3.5).
+    EnsureSubscriptionActive::class,
 ])->group(function () {
+    Route::view('/suscripcion/vencida', 'billing.past-due')->name('billing.past-due');
+
+    // REQ-3.11 — vista real de pagar/renovar/cambiar de plan. Requiere auth
+    // (a diferencia de billing.past-due, alcanzable sin sesión) — el permiso
+    // config.billing se verifica dentro de ManageSubscription::mount(). Wrapper
+    // fino + <livewire:billing.manage-subscription />, mismo patrón que el
+    // resto de módulos migrados (ARCHITECTURE.md), no ruta directa al
+    // componente (a diferencia de InstallWizard, que sí lo hace con su
+    // propio ->layout()).
+    Route::view('/suscripcion/aprobada', 'billing.approved')->name('billing.approved');
+    Route::view('/suscripcion/cancelada', 'billing.cancelled')->name('billing.cancelled');
+    Route::view('/suscripcion', 'billing.manage')->middleware('auth')->name('billing.manage');
+
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->middleware(['auth', 'verified', 'permission:dashboard.view'])->name('dashboard');

@@ -64,8 +64,14 @@
                  animado, no un elemento position:fixed que había que compensar a mano. --}}
             <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
 
+                
                 {{-- HEADER / TOPBAR --}}
                 <x-header />
+
+                {{-- REQ-3.10, v1.3.0 Fase 3 — fijo arriba del contenido, debajo
+                     del header (no lo tapa). Se auto-oculta cuando ninguna de
+                     las 3 variantes aplica. --}}
+                <x-ui.account-banner />
 
                 {{--
                     CONTENIDO VARIABLE — misma estructura que app.blade.php de Orvian (Fase 7):

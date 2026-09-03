@@ -25,6 +25,13 @@ return Application::configure(basePath: dirname(__DIR__))
             'module' => \App\Http\Middleware\EnsureModuleEnabled::class,
         ]);
 
+        // REQ-3.13, v1.3.0 Fase 3 — PayPal no manda token CSRF en sus webhooks;
+        // la autenticidad se verifica con la firma propia de PayPal adentro de
+        // PayPalGateway::handleWebhook() (verifyWebHookLocally()), no con sesión.
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/paypal',
+        ]);
+
         // EnsureInstallationWizardCompleted YA NO va acá (v1.3.0 Fase 1, REQ-1.1/1.7).
         // El grupo 'web' corre ANTES de que InitializeTenancyByDomain cambie la
         // conexión — si el middleware vivía acá, consultaba ConfiguracionGeneral
