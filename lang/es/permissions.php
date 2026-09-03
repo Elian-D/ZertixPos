@@ -50,6 +50,7 @@ return [
         'general' => ['label' => 'Editar configuración general', 'description' => 'Editar la configuración general (moneda, logo, impuestos, etc.).'],
         'payment_types' => ['label' => 'Gestionar tipos de pago', 'description' => 'Gestionar los tipos de pago disponibles en el sistema.'],
         'modules' => ['label' => 'Gestionar módulos del sistema', 'description' => 'Activar o desactivar módulos opcionales del sistema.'],
+        'billing' => ['label' => 'Gestionar plan y suscripción', 'description' => 'Ver el plan actual, cambiarlo o renovar el pago con la pasarela.'],
     ],
 
     'business_types' => [

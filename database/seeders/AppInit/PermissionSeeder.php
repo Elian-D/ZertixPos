@@ -177,6 +177,7 @@ class PermissionSeeder extends Seeder
                 'config.general',
                 'config.payment_types',
                 'config.modules',
+                'config.billing', // REQ-3.11 — vista de renovar/cambiar plan
             ],
 
             'clients' => [
