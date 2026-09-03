@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Billing\PayPalWebhookController;
 use App\Livewire\Install\InstallWizard;
 use Illuminate\Support\Facades\Route;
 
@@ -13,6 +14,11 @@ Route::get('/install', InstallWizard::class)->name('install.wizard');
 Route::get('/', function () {
     return view('welcome');
 });
+
+// REQ-3.13, v1.3.0 Fase 3 — central a propósito (Subscription/SubscriptionInvoice
+// son tablas landlord). Exenta de CSRF en bootstrap/app.php: PayPal no manda
+// token, verifica su propia firma adentro (PayPalGateway::handleWebhook()).
+Route::post('/webhooks/paypal', PayPalWebhookController::class)->name('webhooks.paypal');
 
 // Todo lo que depende del guard `web` (usuarios de negocio) vive en
 // routes/tenant.php, no acá — la tabla `users` ahora solo existe por tenant

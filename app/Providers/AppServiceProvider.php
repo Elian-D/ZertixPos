@@ -6,6 +6,8 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\ServiceProvider;
 use App\Contracts\Sales\NcfGeneratorInterface;
 use App\Services\Sales\Ncf\LocalNcfGenerator;
+use App\Contracts\Billing\PaymentGatewayContract;
+use App\Services\Billing\PayPalGateway;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -15,6 +17,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->app->bind(NcfGeneratorInterface::class, LocalNcfGenerator::class);
+        $this->app->bind(PaymentGatewayContract::class, PayPalGateway::class);
     }
 
     /**

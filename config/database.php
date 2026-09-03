@@ -65,6 +65,36 @@ return [
             ]) : [],
         ],
 
+        // Alias explícito de `mysql` (REQ-3.1/3.3, v1.3.0 Fase 3) — misma base
+        // física, mismas credenciales, sin `database` propio (usa el mismo
+        // DB_DATABASE de siempre). No es una tercera conexión real: existe
+        // solo para que los modelos landlord (`Subscription`, `SubscriptionInvoice`,
+        // y más adelante `Plan` por REQ-3.4) puedan fijar `protected $connection
+        // = 'landlord'` y sigan apuntando a la base central incluso cuando el
+        // código corre dentro de un tenant (ahí `database.default` pasa a ser
+        // `tenant`, y un modelo sin `$connection` explícito seguiría ese swap).
+        'landlord' => [
+            'driver' => 'mysql',
+            'url' => env('DB_URL'),
+            'host' => env('DB_HOST', '127.0.0.1'),
+            'port' => env('DB_PORT', '3306'),
+            'database' => env('DB_DATABASE', 'laravel'),
+            'username' => env('DB_USERNAME', 'root'),
+            'password' => env('DB_PASSWORD', ''),
+            'unix_socket' => env('DB_SOCKET', ''),
+            'charset' => env('DB_CHARSET', 'utf8mb4'),
+            'collation' => env('DB_COLLATION', 'utf8mb4_unicode_ci'),
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'strict' => true,
+            'engine' => null,
+            'options' => extension_loaded('pdo_mysql') ? array_filter([
+                PDO::MYSQL_ATTR_SSL_CA => env('MYSQL_ATTR_SSL_CA'),
+                PDO::ATTR_EMULATE_PREPARES => true,
+                PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => true,
+            ]) : [],
+        ],
+
         // Plantilla para la conexión dinámica de tenant (REQ-1.5, v1.3.0 Fase 1)
         // — stancl/tenancy clona esta config y le inyecta `database` en tiempo de
         // ejecución según el tenant activo. No se llama `tenant` a propósito: ese
