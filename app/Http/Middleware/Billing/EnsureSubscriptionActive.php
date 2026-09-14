@@ -44,10 +44,34 @@ class EnsureSubscriptionActive
 
         $isLivewireInternal = str_contains($request->route()?->getName() ?? '', 'livewire');
 
+        // Bug real encontrado en vivo (2026-09-06, probando Escenario B de
+        // REQ-4.8): `routes/auth.php` se registra DENTRO de este mismo grupo
+        // de middleware (routes/tenant.php), así que sin este bypass
+        // `/login` también quedaba bloqueado — un visitante sin sesión con
+        // el tenant vencido caía en `billing.past-due`, cuyo botón (sin
+        // `auth()->check()`) apunta de vuelta a `route('login')`: un loop
+        // cerrado, sin forma real de entrar a pagar. `logout`/`password.*`/
+        // `verification.*` por el mismo motivo — ninguna de estas rutas
+        // puede depender de que la suscripción esté al día.
+        //
+        // Segunda vuelta del mismo bug (2026-09-06, encontrada verificando
+        // con `curl` crudo después de que el fix por nombre "no alcanzó"):
+        // `Route::post('login', ...)` (routes/auth.php:17) y
+        // `Route::post('confirm-password', ...)` (línea 47) **no tienen
+        // `->name(...)`** — el bypass de arriba, que compara por nombre de
+        // ruta, nunca los alcanzaba. `Auth::attempt()` ni corría: el
+        // middleware cortaba antes de que `AuthenticatedSessionController::store()`
+        // se ejecutara, así que el POST de login "funcionaba" (302) pero
+        // jamás autenticaba a nadie — el mismo loop de antes, ahora en el
+        // paso del formulario en vez del link. Por eso el chequeo de acá
+        // usa el PATH (`$request->is()`), no el nombre — cubre ambos
+        // verbos (GET/POST) de una sola vez, con o sin nombre.
+        $isAuthRoute = $request->is('login', 'logout', 'confirm-password', 'forgot-password', 'reset-password*', 'verify-email*', 'email/verification-notification', 'password');
+
         // billing.* completo, no solo billing.past-due (REQ-3.11 agrega
         // billing.manage/approved/cancelled) — todas tienen que quedar
         // alcanzables para un tenant bloqueado, si no, no hay forma de pagar.
-        if ($isLivewireInternal || $request->routeIs('billing.*')) {
+        if ($isLivewireInternal || $isAuthRoute || $request->routeIs('billing.*')) {
             return $next($request);
         }
 
@@ -58,7 +82,16 @@ class EnsureSubscriptionActive
         $currentPeriodEndsAt = $subscription?->current_period_ends_at;
 
         if ($currentPeriodEndsAt === null || now()->gt($currentPeriodEndsAt)) {
-            return redirect()->route('billing.past-due');
+            // Rediseño (2026-09-07): un usuario YA AUTENTICADO va directo al
+            // resumen real (`billing.manage` — ManageSubscription, ahora
+            // dentro de <x-app-layout>, adapta su propio banner/CTA a
+            // "vencido"), no al placeholder de `billing.past-due`. Ese
+            // placeholder queda reservado para el único caso que de verdad
+            // lo necesita: un visitante SIN sesión, que no puede ver "su"
+            // resumen porque no hay ninguna sesión de la cual leerlo — para
+            // ese caso, `billing.past-due` sigue siendo la pantalla mínima
+            // de siempre (ver su propio docblock).
+            return redirect()->route(auth()->check() ? 'billing.manage' : 'billing.past-due');
         }
 
         return $next($request);

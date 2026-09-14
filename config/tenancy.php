@@ -33,7 +33,20 @@ return [
         Stancl\Tenancy\Bootstrappers\CacheTenancyBootstrapper::class,
         Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper::class,
         Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper::class,
-        // Stancl\Tenancy\Bootstrappers\RedisTenancyBootstrapper::class, // Note: phpredis is needed
+        // Activado (2026-09-06) — requiere phpredis, ya confirmado instalado
+        // (REDIS_CLIENT=phpredis en .env, extensión cargada). Sin esto, las
+        // sesiones (SESSION_DRIVER=redis) quedaban sin aislar por tenant: a
+        // diferencia de Cache::get()/put() (CacheTenancyBootstrapper), la
+        // sesión resuelve el store vía Cache::store('redis') internamente
+        // (Illuminate\Session\SessionManager::createCacheHandler()), que
+        // devuelve el repositorio SIN pasar por el wrapper de tags de
+        // Stancl\Tenancy\CacheManager::__call() — ese wrapper solo intercepta
+        // llamadas directas tipo Cache::get()/put(), no las que ya pasaron
+        // por ->store(). RedisTenancyBootstrapper resuelve esto a nivel de
+        // conexión (OPT_PREFIX del cliente phpredis), por debajo de cualquier
+        // capa de Cache, así que sí cubre este caso. Ver `redis.prefixed_connections`
+        // abajo — tiene que incluir 'default' (la conexión que usa la sesión).
+        Stancl\Tenancy\Bootstrappers\RedisTenancyBootstrapper::class,
     ],
 
     /**
@@ -157,7 +170,13 @@ return [
     'redis' => [
         'prefix_base' => 'tenant', // Each key in Redis will be prepended by this prefix_base, followed by the tenant id.
         'prefixed_connections' => [ // Redis connections whose keys are prefixed, to separate one tenant's keys from another.
-            // 'default',
+            // 'default' es la conexión que usa SESSION_DRIVER=redis (config/session.php,
+            // 'connection' => env('SESSION_CONNECTION') — null por defecto, cae en
+            // 'default'). Es el único caso real hoy: no hay usos directos de la
+            // fachada Redis:: en app/, y cache/queue ya se aíslan por sus propios
+            // bootstrappers (CacheTenancyBootstrapper/QueueTenancyBootstrapper),
+            // sin depender de esto.
+            'default',
         ],
     ],
 
