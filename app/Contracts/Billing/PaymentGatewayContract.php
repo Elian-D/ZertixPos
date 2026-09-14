@@ -32,12 +32,49 @@ interface PaymentGatewayContract
     ): array;
 
     /**
+     * REQ-4.7.1 — cambia el plan de una suscripción YA activa (upgrade o
+     * downgrade), sin crear un acuerdo de pasarela nuevo — a diferencia de
+     * `createSubscription()`, que sí crea uno. PayPal (confirmado en vivo
+     * contra el sandbox real) no prorratea nada solo, y el precio nuevo
+     * recién aplica en el ciclo siguiente sin importar cuándo se apruebe —
+     * pero SIEMPRE exige que el comprador reconsienta el cambio (devuelve un
+     * `approval_url`, mismo patrón que `createSubscription()`), no hay forma
+     * de aplicarlo en silencio ni siquiera para un downgrade. Que las
+     * funcionalidades del plan nuevo se reflejen ya (upgrade) o recién al
+     * terminar el ciclo (downgrade, `Subscription::scheduled_plan_id`) es una
+     * decisión de la app, no de la pasarela — ver REQ-4.7.1 en
+     * docs/features/v1.3.0.md.
+     *
+     * @return array{approval_url: string}
+     */
+    public function reviseSubscription(
+        Subscription $subscription,
+        Plan $newPlan,
+        string $returnUrl,
+        string $cancelUrl,
+    ): array;
+
+    /**
      * Cancela la suscripción real en la pasarela y refleja el resultado en
      * $subscription (status/cancelled_at) de inmediato — no depende de que
      * llegue el webhook de confirmación para que el registro local quede
      * consistente.
      */
     public function cancelSubscription(Subscription $subscription, string $reason): void;
+
+    /**
+     * Pregunta el estado real de una suscripción DIRECTO a la pasarela (no
+     * espera un webhook) y, si ya está activa del otro lado, actualiza
+     * `$subscription` localmente de la misma forma que `handleWebhook()` lo
+     * haría. Pensado para el `return_url` (REQ-3.11, `billing.approved`):
+     * el comprador ya aprobó en PayPal en ese momento — no hay razón para
+     * hacerlo esperar al webhook asíncrono para ver su cuenta activa, y el
+     * webhook puede tardar, fallar, o no llegar nunca (hallazgo real
+     * 2026-09-06 probando el sandbox — ver docs/features/v1.3.0.md §3.11).
+     *
+     * @return bool true si la suscripción quedó (o ya estaba) activa
+     */
+    public function syncSubscriptionStatus(Subscription $subscription): bool;
 
     /**
      * Verifica la firma del webhook entrante y, si es válida, actualiza

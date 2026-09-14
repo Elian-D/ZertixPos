@@ -25,6 +25,7 @@ class Subscription extends Model
     protected $fillable = [
         'tenant_id',
         'plan_id',
+        'scheduled_plan_id',
         'gateway',
         'gateway_subscription_id',
         'status',
@@ -45,6 +46,22 @@ class Subscription extends Model
     public function tenant(): BelongsTo
     {
         return $this->belongsTo(Tenant::class);
+    }
+
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Configuration\Plan::class);
+    }
+
+    /**
+     * REQ-4.7.1 — plan al que baja `tenants.plan_id` cuando termine el
+     * período actual (`current_period_ends_at`), no antes: nunca se le
+     * apaga a un tenant algo que ya pagó a mitad de ciclo. `ReconcileSubscriptions`
+     * (REQ-3.6) es quien lo aplica y lo limpia. `null` = sin downgrade agendado.
+     */
+    public function scheduledPlan(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Configuration\Plan::class, 'scheduled_plan_id');
     }
 
     public function invoices(): HasMany
