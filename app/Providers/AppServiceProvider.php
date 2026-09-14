@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use Illuminate\Auth\Middleware\Authenticate;
+use Illuminate\Auth\Middleware\RedirectIfAuthenticated;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
@@ -43,7 +45,29 @@ class AppServiceProvider extends ServiceProvider
 
         \App\Models\Accounting\Receivable::observe(\App\Observers\ReceivableObserver::class);
 
-        
+        // Fase 5, REQ-5 — el `RedirectIfAuthenticated` de fábrica (usado por
+        // 'guest:landlord' en routes/admin.php) manda por defecto a
+        // route('dashboard'), una ruta de tenant que revienta en el dominio
+        // central. Un Admin ya logueado que visita /admin/login vuelve al
+        // listado en su lugar; cualquier otro contexto sigue el default de
+        // siempre (dashboard/home).
+        RedirectIfAuthenticated::redirectUsing(function (Request $request) {
+            return $request->routeIs('admin.*')
+                ? route('admin.tenants.index')
+                : route('dashboard');
+        });
+
+        // Contraparte de lo de arriba: 'auth:landlord' sin sesión caía por
+        // defecto en route('login') (Handler::unauthenticated(), fuera de
+        // cualquier middleware nuestro) — la misma ruta de tenant, mismo
+        // problema en sentido inverso.
+        Authenticate::redirectUsing(function (Request $request) {
+            return $request->routeIs('admin.*')
+                ? route('admin.login')
+                : route('login');
+        });
+
+
         // Solo checkear si estamos en el panel administrativo o POS
         if (app()->runningInConsole()) return;
 

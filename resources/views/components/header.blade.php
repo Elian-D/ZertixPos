@@ -26,17 +26,21 @@
                         </svg>
                     </button>
                     <h1 class="text-xl font-semibold text-gray-800 ml-4 hidden sm:block">
-                        Dashboard
+                        {{ request()->routeIs('admin.*') ? 'Súper Admin' : 'Dashboard' }}
                     </h1>
                 </div>
-                
-                <div class="flex items-center space-x-4">
 
-                    <x-ui.button href="{{ route('sales.pos.index') }}" variant="primary" appearance="ghost" iconLeft="heroicon-o-computer-desktop">
-                        POS
-                    </x-ui.button>
+                {{-- route('sales.pos.index') es de tenant — sin sentido en el
+                     Panel de Súper Admin (Fase 5, dominio central). --}}
+                @unless(request()->routeIs('admin.*'))
+                    <div class="flex items-center space-x-4">
 
-                </div>
+                        <x-ui.button href="{{ route('sales.pos.index') }}" variant="primary" appearance="ghost" iconLeft="heroicon-o-computer-desktop">
+                            POS
+                        </x-ui.button>
+
+                    </div>
+                @endunless
             </div>
         </div>
     </nav>

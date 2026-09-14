@@ -35,4 +35,27 @@ class Admin extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
+    /**
+     * Mismo formato que `User::getInitials()` — lo necesita el avatar del
+     * menú de usuario en `components/sidebar/layout.blade.php`, reusado tal
+     * cual para el Panel de Súper Admin (Fase 5, REQ-5).
+     */
+    public function getInitials(): string
+    {
+        $name = trim(preg_replace('/\s+/', ' ', $this->name));
+        $parts = explode(' ', $name);
+
+        $initials = '';
+
+        if (isset($parts[0])) {
+            $initials .= strtoupper(substr($parts[0], 0, 1));
+        }
+
+        if (isset($parts[1])) {
+            $initials .= strtoupper(substr($parts[1], 0, 1));
+        }
+
+        return $initials;
+    }
 }

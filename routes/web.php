@@ -36,3 +36,8 @@ Route::get('/facturas/{invoice}/pdf', InvoicePdfController::class)
 // Todo lo que depende del guard `web` (usuarios de negocio) vive en
 // routes/tenant.php, no acá — la tabla `users` ahora solo existe por tenant
 // (database/migrations/tenant/), ver v1.3.0.md Fase 1, REQ-1.1/REQ-1.7.
+
+// Fase 5, REQ-5 — Panel de Súper Admin, guard `landlord`. Central a
+// propósito (ver docs/features/v1.3.0.md §Fase 5): no depende de ningún
+// tenant, así que no puede vivir detrás de InitializeTenancyByDomain.
+require __DIR__.'/admin.php';
