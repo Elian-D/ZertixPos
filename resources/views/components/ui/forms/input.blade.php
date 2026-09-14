@@ -25,8 +25,14 @@
         </label>
     @endif
 
-    {{-- Input wrapper --}}
-    <div class="relative flex items-center">
+    {{-- Input wrapper — con addon, el borde/radio/ring los lleva este div
+         (groupWrapperClasses()); sin addon, es puramente posicional (el
+         <input> lleva su propio borde vía inputClasses()). --}}
+    <div class="{{ $hasAddon() ? $groupWrapperClasses() : 'relative flex items-center' }}">
+
+        @if ($addonLeft)
+            <span class="{{ $addonClasses() }}">{{ $addonLeft }}</span>
+        @endif
 
         {{-- Icono izquierdo --}}
         @if ($iconLeft)
@@ -52,7 +58,7 @@
 
         {{-- Icono error (reemplaza el icono derecho) --}}
         @if ($error)
-            <span class="{{ $iconWrapClasses(right: true) }} text-state-error">
+            <span class="{{ $hasAddon() ? 'flex items-center pr-3' : $iconWrapClasses(right: true) }} text-state-error">
                 <x-heroicon-s-exclamation-circle class="w-5 h-5" />
             </span>
         @elseif ($isPassword())
@@ -72,6 +78,10 @@
             <span class="{{ $iconWrapClasses(right: true) }} {{ $iconColorClasses() }}">
                 <x-dynamic-component :component="$iconRight" class="w-5 h-5" />
             </span>
+        @endif
+
+        @if ($addonRight)
+            <span class="{{ $addonClasses(right: true) }}">{{ $addonRight }}</span>
         @endif
 
     </div>

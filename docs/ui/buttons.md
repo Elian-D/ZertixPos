@@ -174,6 +174,14 @@ El componente distingue dos modos según si el `$slot` tiene contenido:
 3. **El texto del slot NO cambia.** A diferencia del patrón original de Orvian (que reemplazaba el texto por "Guardando..."), acá se eligió el estilo Filament — spinner al lado, texto intacto — para evitar que el botón cambie de ancho (lo cual desplaza elementos vecinos, ej. el botón "Cancelar" al lado) y para no requerir un string de copy nuevo en cada call site.
 4. Si el botón no tiene ningún ícono (`iconLeft`/`icon` no declarados), el spinner simplemente no tiene dónde aparecer en modo texto — en ese caso considerá agregar un `iconLeft` al botón si querés feedback visual, o usar el mecanismo de Livewire (`wire:loading`, ver abajo) si el submit es vía `wire:click` en vez de un `<form>` HTML nativo.
 
+### Reset de `sending` — necesario para `<form wire:submit>`, no solo forms nativos
+
+El diseño de arriba asume que un submit termina en una **navegación de página completa** (POST nativo → recarga o redirect) — ahí "nunca resetear `sending`" no importa, porque toda la instancia de Alpine se destruye con la página. Ese supuesto **no se cumple** cuando el `<form>` más cercano usa `wire:submit.prevent="algunMétodo"`: Livewire intercepta el submit, nunca hay navegación real, y si el servidor responde con un error de validación el botón quedaría con el spinner pegado para siempre — no hay ningún evento posterior que le avise a Alpine que el request terminó.
+
+Por eso el componente también escucha un evento global `livewire-request-settled` (`x-on:livewire-request-settled.window="sending = false"`), disparado por un hook de Livewire registrado una sola vez en `resources/js/app.js` (`Livewire.hook('request', ({ respond }) => respond(() => window.dispatchEvent(new CustomEvent('livewire-request-settled'))))`). Ese hook es **global** — se dispara con cualquier request de Livewire en la página, no solo el de este form — así que resetea el botón sin importar si el request terminó en éxito o en error. En un `<form>` nativo real (sin Livewire de por medio) este evento simplemente nunca se dispara, así que el comportamiento de siempre (recarga de página, `sending` irrelevante) queda intacto.
+
+**Consecuencia práctica:** `<x-ui.button type="submit">` es seguro de usar tanto dentro de un `<form action="...">` HTML puro como dentro de un `<form wire:submit.prevent="...">` — el guard de doble-submit y su reset funcionan en los dos casos sin que la vista tenga que declarar nada extra.
+
 ### Alcance
 
 El guard solo se activa cuando:

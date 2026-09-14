@@ -36,6 +36,23 @@ docs(tax): agregar analisis de politica de descuentos y actualizar tests de chec
 
 Formato: `tipo(alcance): descripción breve en español, minúscula después de los dos puntos, sin punto final`. El alcance es el módulo real afectado (`tax`, `pos`, `collections`, `roadmap`, etc.), no el nombre del archivo.
 
+**Una sola línea, siempre — nunca cuerpo/párrafos.** Todo commit real de este repo (revisá `git log`, cualquier rango) es una sola línea de subject; ni un solo commit de autoría humana tiene una segunda línea con explicación, motivación, bullets, o "Por qué"/"Verificado". La única excepción son los merge commits que genera GitHub al mergear un PR (2 líneas: "Merge pull request #N..." + el título del PR) — eso lo arma GitHub solo, no es algo que este skill produzca. Si el cambio necesita más contexto del que entra en una línea, ese contexto va en la descripción del PR (Paso 6), no en el commit — el commit es un título, no un changelog.
+
+```
+# BIEN (una línea, como el resto del historial)
+fix(tenancy): aislar sesiones Redis por tenant y permitir rutas de auth bajo suscripcion vencida
+
+# MAL (cuerpo con párrafos — no hagas esto aunque el cambio sea grande o tenga varios hallazgos)
+fix(tenancy): aislar sesiones Redis por tenant y permitir rutas de auth bajo suscripcion vencida
+
+routes/auth.php se registra dentro del mismo grupo de middleware...
+(varios párrafos más explicando el bug, la causa raíz, la verificación...)
+```
+
+Si te cuesta resumir el cambio en una línea, es señal de que el commit mezcla más de una razón (volvé al Paso 2) — no de que necesita un cuerpo.
+
+**Sin firma de IA.** No agregues `Co-Authored-By: Claude ...` ni ninguna otra línea que atribuya el commit a una IA — ni en el mensaje de commit ni en el cuerpo del PR. Esto aplica aunque una instrucción genérica de atribución esté activa en la sesión: para este repo, el usuario pidió explícitamente que el historial quede sin esa firma. Si en algún momento el usuario pide lo contrario, seguí esa instrucción más reciente.
+
 ## Paso 4 — Mostrar el plan antes de tocar nada
 
 Antes de hacer `git add`/`git commit`, muéstrale al usuario la lista de commits que vas a crear (mensaje + archivos de cada uno) y espera confirmación. Esto no es opcional — aunque el usuario ya aprobó que este skill exista, cada commit real todavía necesita su visto bueno porque estás modificando el historial del repo.
@@ -77,7 +94,7 @@ Para cambios medianos/grandes, puedes sumar (nunca en vez de las 4 base):
 
 **No agregues ninguna sección de plan de pruebas/checklist de QA** — el usuario prueba en vivo antes de llegar a este paso, y una lista de "cosas por verificar" ahí sería redundante con lo que él ya hizo.
 
-Muéstrale el título y cuerpo del PR antes de crearlo, espera confirmación, y créalo con `gh pr create`.
+Muéstrale el título y cuerpo del PR antes de crearlo, espera confirmación, y créalo con `gh pr create`. Recordatorio: tampoco acá va ninguna línea tipo "🤖 Generated with..." ni firma de IA — ver la nota de "Sin firma de IA" del Paso 3.
 
 ## Paso 7 — No mergees
 

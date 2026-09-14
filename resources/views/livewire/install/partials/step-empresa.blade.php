@@ -1,124 +1,194 @@
-<div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 sm:p-10">
-    <h1 class="text-2xl font-bold text-gray-900 text-center">Información de la Empresa</h1>
-    <p class="mt-2 text-sm text-gray-500 text-center">Configure los datos fiscales y de contacto de su negocio.</p>
+{{-- Título/subtítulo viven en install-wizard.blade.php (fuera de la card,
+     ver InstallWizard::STEP_META) — rediseño 2026-09-05. --}}
+<div class="bg-white rounded-2xl border border-gray-200 shadow-sm p-7 sm:p-9">
+    <form wire:submit.prevent="nextStep" class="space-y-6">
+        {{-- Logo + Nombre/Subdominio en una sola fila (mockup Stitch "Instalación
+             Paso 2") — el logo es una caja cuadrada angosta (dropzone, ver
+             docs/ui/forms.md) al lado, no un campo más apilado arriba. --}}
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-5 items-start">
+            <div class="sm:col-span-4">
+                {{-- :dropzone="true" (docs/ui/forms.md, nuevo en el rediseño
+                     2026-09-05) — logo/foto de perfil, no un archivo genérico:
+                     caja cuadrada con ícono centrado en vez de la fila tipo
+                     campo de texto. :preview="true" llena la caja con la
+                     imagen elegida. --}}
+                <x-ui.forms.file-input
+                    label="Logotipo"
+                    name="logo"
+                    wire:model="logo"
+                    accept="image/*"
+                    :dropzone="true"
+                    :preview="true"
+                    size="lg"
+                    hint="PNG, JPG hasta 2MB"
+                    :error="$errors->first('logo')"
+                />
+            </div>
 
-    <form wire:submit.prevent="nextStep" class="mt-8 space-y-6">
-        {{-- LOGO --}}
-        <div x-data="{ preview: null }" class="border-2 border-dashed border-gray-200 rounded-2xl p-8 flex flex-col items-center text-center hover:border-zertix-primary transition-colors">
-            <label class="cursor-pointer flex flex-col items-center">
-                <template x-if="!preview">
-                    <span class="w-14 h-14 rounded-full bg-gray-100 flex items-center justify-center mb-3">
-                        <x-heroicon-s-photo class="w-6 h-6 text-gray-400" />
-                    </span>
-                </template>
-                <template x-if="preview">
-                    <img :src="preview" class="w-20 h-20 rounded-full object-cover mb-3" />
-                </template>
-                <span class="font-bold text-gray-800 text-sm">Subir Logo</span>
-                <span class="text-xs text-gray-400 mt-1">JPG, PNG o SVG. Tamaño recomendado: 512×512px.</span>
-                <input type="file" wire:model="logo" accept="image/*" class="hidden"
-                    @change="preview = URL.createObjectURL($event.target.files[0])" />
-            </label>
+            <div class="sm:col-span-8 space-y-5">
+                <x-ui.forms.input
+                    label="Nombre de la Empresa"
+                    name="nombreEmpresa"
+                    wire:model.live.debounce.500ms="nombreEmpresa"
+                    placeholder="Ej. Comercial López"
+                    :error="$errors->first('nombreEmpresa')"
+                    required
+                />
+
+                {{-- Subdominio (REQ-4.6/4.7) — define el Domain real. Auto-sugerido
+                     desde el nombre de la empresa (patrón Odoo: "Agua Discovery" →
+                     "agua-discovery") hasta que el usuario lo edita a mano.
+                     Interacción también estilo Odoo (rediseño 2026-09-05, pedido
+                     explícito): mientras no se toca, se muestra como texto de solo
+                     lectura ("preview") con un ícono de editar — no como un input
+                     editable desde el arranque. `$subdominioTouched` hace doble
+                     trabajo acá: además de apagar el auto-slug (ver
+                     updatedNombreEmpresa()), decide qué de las dos vistas se
+                     renderiza. Clickear "editar" lo marca touched directamente
+                     (equivale a que el usuario haya tocado el campo a mano). --}}
+                <div class="space-y-1.5">
+                    <label class="text-xs font-semibold text-slate-600 block">
+                        Subdominio <span class="text-state-error">*</span>
+                    </label>
+
+                    @if (! $subdominioTouched)
+                        @php $unavailableReason = $this->subdomainUnavailableReason; @endphp
+                        <div @class([
+                            'flex items-center gap-2.5 rounded-lg border pl-3.5 pr-2 py-2.5',
+                            'border-state-error bg-state-error/5' => $unavailableReason,
+                            'border-slate-200 bg-slate-50' => ! $unavailableReason,
+                        ])>
+                            <x-heroicon-s-globe-alt @class(['w-5 h-5 flex-shrink-0', 'text-state-error' => $unavailableReason, 'text-slate-400' => ! $unavailableReason]) />
+                            <span @class(['text-sm font-medium truncate', 'text-state-error' => $unavailableReason, 'text-slate-700' => ! $unavailableReason])>
+                                {{ $subdominio !== '' ? $subdominio : 'tu-negocio' }}.{{ request()->getHost() }}
+                            </span>
+                            <button
+                                type="button"
+                                wire:click="$set('subdominioTouched', true)"
+                                class="ml-auto flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:text-zertix-primary hover:bg-white transition-colors"
+                                aria-label="Editar subdominio"
+                            >
+                                <x-heroicon-s-pencil class="w-4 h-4" />
+                            </button>
+                        </div>
+                        {{-- Mismo estilo de error que el resto del formulario (texto rojo,
+                             sin ícono aparte) — prioriza el error real del servidor
+                             (post-submit) sobre el aviso en vivo (pre-submit). --}}
+                        @if ($errors->has('subdominio'))
+                            <p class="text-xs font-medium text-state-error break-words">{{ $errors->first('subdominio') }}</p>
+                        @elseif ($unavailableReason)
+                            <p class="text-xs font-medium text-state-error break-words">{{ $unavailableReason }}</p>
+                        @endif
+                    @else
+                        <x-ui.forms.input
+                            name="subdominio"
+                            wire:model.live.debounce.500ms="subdominio"
+                            placeholder="tu-negocio"
+                            icon-left="heroicon-s-globe-alt"
+                            :addonRight="'.' . request()->getHost()"
+                            :error="$errors->first('subdominio')"
+                            required
+                        />
+                    @endif
+                </div>
+            </div>
         </div>
-        @error('logo') <p class="text-xs text-red-600 text-center -mt-4">{{ $message }}</p> @enderror
+
+        <div class="h-px bg-gray-100"></div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <div class="sm:col-span-2">
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Nombre de la Empresa *</label>
-                <input type="text" wire:model="nombreEmpresa" placeholder="Ej. Comercial López"
-                    class="w-full px-4 py-3 rounded-xl border-gray-200 focus:border-zertix-primary focus:ring-zertix-primary text-sm" />
-                @error('nombreEmpresa') <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p> @enderror
-            </div>
             {{-- Tipo de documento explícito — antes se inferia del largo del numero
                  (9 digitos = RNC, 11 = Cedula) y ese resultado nunca se guardaba
                  realmente en tax_identifier_type. Ahora es un campo propio, en el
                  orden pedido: nombre, tipo, numero. --}}
-            <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Tipo de Documento *</label>
-                <select wire:model="taxIdentifierType"
-                    class="w-full px-4 py-3 rounded-xl border-gray-200 focus:border-zertix-primary focus:ring-zertix-primary text-sm">
-                    <option value="">Seleccione un tipo</option>
-                    @foreach (\App\Enums\TaxIdentifierType::cases() as $type)
-                        <option value="{{ $type->value }}">{{ $type->label() }}</option>
-                    @endforeach
-                </select>
-                @error('taxIdentifierType') <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p> @enderror
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Número de Documento *</label>
-                <input type="text" wire:model="taxId" placeholder="131-XXXXX-X"
-                    class="w-full px-4 py-3 rounded-xl border-gray-200 focus:border-zertix-primary focus:ring-zertix-primary text-sm" />
-                @error('taxId') <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p> @enderror
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Teléfono *</label>
-                <input type="text" wire:model="telefono" placeholder="(809) XXX-XXXX"
-                    class="w-full px-4 py-3 rounded-xl border-gray-200 focus:border-zertix-primary focus:ring-zertix-primary text-sm" />
-                @error('telefono') <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p> @enderror
-            </div>
-            <div>
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Correo Corporativo</label>
-                <input type="email" wire:model="email" placeholder="contacto@empresa.com"
-                    class="w-full px-4 py-3 rounded-xl border-gray-200 focus:border-zertix-primary focus:ring-zertix-primary text-sm" />
-                @error('email') <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p> @enderror
-            </div>
-            {{-- Cascada provincia→municipio 100% client-side (Alpine + @entangle) —
-                 sin request de red, mismo patrón que REQ-06.9 (Fase 6). La versión
-                 anterior usaba wire:model.live en ambos selects y un
-                 updatedProvinciaId() server-side; eso abría una condición de carrera
-                 real entre los dos round-trips donde el municipio elegido se perdía
-                 en silencio (bug reportado y reproducido). Entangle es puramente
-                 client-side hasta que el form se envía — no hay dos requests que
-                 puedan pisarse. --}}
+            <x-ui.forms.select
+                label="Tipo de Documento"
+                name="taxIdentifierType"
+                wire:model="taxIdentifierType"
+                placeholder="Seleccione un tipo"
+                :error="$errors->first('taxIdentifierType')"
+                required
+            >
+                @foreach (\App\Enums\TaxIdentifierType::cases() as $type)
+                    <option value="{{ $type->value }}">{{ $type->label() }}</option>
+                @endforeach
+            </x-ui.forms.select>
+
+            <x-ui.forms.input
+                label="Número de Documento"
+                name="taxId"
+                wire:model="taxId"
+                placeholder="131-XXXXX-X"
+                :error="$errors->first('taxId')"
+                required
+            />
+
+            {{-- Provincia/Municipio — listas estáticas (InstallWizard::provinceOptions()/
+                 municipalityOptions()), no una consulta a `provinces`/`municipalities`:
+                 en este paso el Tenant todavía no existe, no hay ninguna base de tenant
+                 contra la cual consultar. Mismo cascadeo 100% client-side (Alpine +
+                 @entangle) que ya usaba el wizard viejo con datos reales — acá la
+                 fuente es el array estático en vez de Municipality::all(). x-ui.forms.select
+                 reenvía cualquier atributo extra (x-model, @change) al <select> nativo. --}}
             <div x-data="{
-                    municipalities: {{ \Illuminate\Support\Js::from($this->municipalities) }},
+                    municipalities: {{ \Illuminate\Support\Js::from($this->municipalityOptions()) }},
                     provinciaId: @entangle('provinciaId'),
                     municipioId: @entangle('municipioId'),
-                    get filtered() { return this.municipalities.filter(m => m.province_id == this.provinciaId); },
+                    get filtered() { return Object.entries(this.municipalities).filter(([id, m]) => m.province_id == this.provinciaId); },
                 }" class="contents">
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Provincia *</label>
-                    <select x-model="provinciaId" @change="municipioId = null"
-                        class="w-full px-4 py-3 rounded-xl border-gray-200 focus:border-zertix-primary focus:ring-zertix-primary text-sm">
-                        <option value="">Seleccione una provincia</option>
-                        @foreach ($this->provinces as $province)
-                            <option value="{{ $province->id }}">{{ $province->name }}</option>
-                        @endforeach
-                    </select>
-                    @error('provinciaId') <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p> @enderror
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Municipio</label>
-                    <select x-model="municipioId" :disabled="!provinciaId"
-                        class="w-full px-4 py-3 rounded-xl border-gray-200 focus:border-zertix-primary focus:ring-zertix-primary text-sm disabled:bg-gray-50 disabled:text-gray-400">
-                        <option value="">Seleccione un municipio</option>
-                        <template x-for="m in filtered" :key="m.id">
-                            <option :value="m.id" x-text="m.name"></option>
-                        </template>
-                    </select>
-                    @error('municipioId') <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p> @enderror
-                </div>
+                <x-ui.forms.select
+                    label="Provincia"
+                    name="provinciaId"
+                    x-model="provinciaId"
+                    @change="municipioId = null"
+                    placeholder="Seleccione una provincia"
+                    :error="$errors->first('provinciaId')"
+                    required
+                >
+                    @foreach ($this->provinceOptions() as $id => $name)
+                        <option value="{{ $id }}">{{ $name }}</option>
+                    @endforeach
+                </x-ui.forms.select>
+
+                <x-ui.forms.select
+                    label="Municipio"
+                    name="municipioId"
+                    x-model="municipioId"
+                    x-bind:disabled="!provinciaId"
+                    placeholder="Seleccione un municipio"
+                    :error="$errors->first('municipioId')"
+                >
+                    <template x-for="[id, m] in filtered" :key="id">
+                        <option :value="id" x-text="m.name"></option>
+                    </template>
+                </x-ui.forms.select>
             </div>
+
             <div class="sm:col-span-2">
-                <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">Dirección Física *</label>
-                <input type="text" wire:model="direccion" placeholder="Calle, Número, Sector"
-                    class="w-full px-4 py-3 rounded-xl border-gray-200 focus:border-zertix-primary focus:ring-zertix-primary text-sm" />
-                @error('direccion') <p class="mt-1.5 text-xs text-red-600">{{ $message }}</p> @enderror
+                <x-ui.forms.input
+                    label="Dirección Física"
+                    name="direccion"
+                    wire:model="direccion"
+                    placeholder="Calle, Número, Sector"
+                    :error="$errors->first('direccion')"
+                    required
+                />
             </div>
         </div>
 
         {{-- Mobile: 2 columnas parejas (antes se apretaban en una sola fila) — desktop
              vuelve al layout natural, Atrás como link chico a la izquierda. --}}
         <div class="grid grid-cols-2 gap-3 pt-2 sm:flex sm:items-center sm:justify-between">
-            <button type="button" wire:click="prevStep"
-                class="border border-gray-200 sm:border-0 rounded-xl sm:rounded-none py-3 sm:py-0 text-sm font-semibold text-gray-500 hover:text-gray-700 flex items-center justify-center sm:justify-start gap-1">
-                <x-heroicon-s-arrow-left class="w-4 h-4" /> Atrás
-            </button>
-            <button type="submit"
-                class="bg-zertix-primary hover:bg-zertix-primary-dark text-white font-bold py-3.5 px-4 sm:px-8 rounded-xl transition-colors flex items-center justify-center gap-2 text-sm sm:text-base">
-                Siguiente: Seleccionar Plan
-                <x-heroicon-s-arrow-right class="w-4 h-4 flex-shrink-0" />
-            </button>
+            <x-ui.button type="button" variant="secondary" appearance="ghost" wire:click="prevStep" iconLeft="heroicon-s-arrow-left">
+                Atrás
+            </x-ui.button>
+            {{-- Solo valida y avanza — todavía no se crea nada (ver InstallWizard,
+                 el Tenant nace recién en "Finalizar"). El guard de doble-submit de
+                 x-ui.button (automático en type="submit") evita un segundo click
+                 mientras la validación todavía procesa. --}}
+            <x-ui.button type="submit" variant="primary" iconRight="heroicon-s-arrow-right">
+                Siguiente: Elegir Tipo de Negocio
+            </x-ui.button>
         </div>
     </form>
 </div>

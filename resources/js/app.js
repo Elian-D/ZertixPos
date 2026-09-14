@@ -14,6 +14,24 @@ import './bootstrap';
 // @livewireScripts en vez de @livewireScriptConfig; window.Alpine queda
 // definido por ese mismo script para cualquier código que lo necesite.
 
+// Reset del guard de doble-submit de x-ui.button (docs/ui/buttons.md) cuando
+// el form vive dentro de un wire:submit.prevent — encontrado real armando el
+// Wizard (v1.3.0 Fase 4): el guard pone sending=true al evento nativo
+// "submit" pero nunca lo revierte, porque su diseño original asume que el
+// submit termina en una navegación de página completa (recarga → Alpine se
+// destruye entero, "nunca resetear" no importa). Con wire:submit.prevent no
+// hay navegación — si el servidor responde con un error de validación, el
+// botón queda con el spinner pegado para siempre. Livewire.hook('request')
+// es el hook público documentado de Livewire (dispara con CUALQUIER request,
+// no solo el de este form) — respond() cubre éxito y error por igual, así
+// que un botón que se quedó en sending=true por cualquier motivo se
+// desengancha en cuanto termina la siguiente respuesta del servidor.
+document.addEventListener('livewire:init', () => {
+    Livewire.hook('request', ({ respond }) => {
+        respond(() => window.dispatchEvent(new CustomEvent('livewire-request-settled')));
+    });
+});
+
 // resources/js/pages/ (el wiring AjaxDataTable{tableId,formId,chips} del motor
 // AJAX viejo) y resources/js/components/ajax-datatable/ se purgaron completos
 // (2026-08-27, cierre de REQ-0.10) — el último módulo que los usaba de verdad

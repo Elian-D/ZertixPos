@@ -320,6 +320,23 @@ class PermissionSeeder extends Seeder
             ],
         ];
 
+        // REQ-4.6/perf (2026-09-04) — camino rápido para un tenant recién
+        // creado por el Wizard: sin filas previas que preservar, el loop de
+        // abajo (updateOrCreate fila por fila, 1 SELECT + 1 INSERT/UPDATE por
+        // cada uno de los ~103 permisos) es pura sobrecarga — confirmado real
+        // en el navegador, este seeder solo ya representaba ~220 de las ~700
+        // queries que tardaban 47s al crear un tenant. Con la tabla vacía
+        // (el caso del Wizard, y de cualquier tenant fresco vía tenants:seed)
+        // se hace un insert() masivo por tabla en su lugar. Un tenant que YA
+        // tiene permisos (re-seed de dev/test2 para levantar permisos nuevos
+        // agregados después) sigue el camino updateOrCreate de siempre, sin
+        // arriesgar duplicados ni pisar module_key ya asignado a mano.
+        if (Permission::query()->doesntExist()) {
+            $this->bulkInsert($permissions);
+
+            return;
+        }
+
         $order = 0;
         foreach ($permissions as $key => $names) {
             $group = PermissionGroup::updateOrCreate(
@@ -345,5 +362,43 @@ class PermissionSeeder extends Seeder
         // algún permiso todavía apuntara a uno de ellos (no debería, ya se
         // reasignaron arriba).
         PermissionGroup::whereNotIn('key', array_keys(self::GROUP_LABELS))->delete();
+    }
+
+    /**
+     * @param array<string, list<string>> $permissions
+     */
+    private function bulkInsert(array $permissions): void
+    {
+        $now = now();
+        $order = 0;
+
+        $groupRows = [];
+        foreach (array_keys($permissions) as $key) {
+            $groupRows[] = [
+                'key' => $key,
+                'label' => self::GROUP_LABELS[$key] ?? ucfirst($key),
+                'sort_order' => $order++,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+        PermissionGroup::insert($groupRows);
+
+        $groupIds = PermissionGroup::pluck('id', 'key');
+
+        $permissionRows = [];
+        foreach ($permissions as $key => $names) {
+            foreach ($names as $name) {
+                $permissionRows[] = [
+                    'name' => $name,
+                    'guard_name' => 'web',
+                    'permission_group_id' => $groupIds[$key],
+                    'module_key' => self::MODULE_KEYS[$name] ?? null,
+                    'created_at' => $now,
+                    'updated_at' => $now,
+                ];
+            }
+        }
+        Permission::insert($permissionRows);
     }
 }

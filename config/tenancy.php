@@ -33,7 +33,20 @@ return [
         Stancl\Tenancy\Bootstrappers\CacheTenancyBootstrapper::class,
         Stancl\Tenancy\Bootstrappers\FilesystemTenancyBootstrapper::class,
         Stancl\Tenancy\Bootstrappers\QueueTenancyBootstrapper::class,
-        // Stancl\Tenancy\Bootstrappers\RedisTenancyBootstrapper::class, // Note: phpredis is needed
+        // Activado (2026-09-06) — requiere phpredis, ya confirmado instalado
+        // (REDIS_CLIENT=phpredis en .env, extensión cargada). Sin esto, las
+        // sesiones (SESSION_DRIVER=redis) quedaban sin aislar por tenant: a
+        // diferencia de Cache::get()/put() (CacheTenancyBootstrapper), la
+        // sesión resuelve el store vía Cache::store('redis') internamente
+        // (Illuminate\Session\SessionManager::createCacheHandler()), que
+        // devuelve el repositorio SIN pasar por el wrapper de tags de
+        // Stancl\Tenancy\CacheManager::__call() — ese wrapper solo intercepta
+        // llamadas directas tipo Cache::get()/put(), no las que ya pasaron
+        // por ->store(). RedisTenancyBootstrapper resuelve esto a nivel de
+        // conexión (OPT_PREFIX del cliente phpredis), por debajo de cualquier
+        // capa de Cache, así que sí cubre este caso. Ver `redis.prefixed_connections`
+        // abajo — tiene que incluir 'default' (la conexión que usa la sesión).
+        Stancl\Tenancy\Bootstrappers\RedisTenancyBootstrapper::class,
     ],
 
     /**
@@ -157,7 +170,13 @@ return [
     'redis' => [
         'prefix_base' => 'tenant', // Each key in Redis will be prepended by this prefix_base, followed by the tenant id.
         'prefixed_connections' => [ // Redis connections whose keys are prefixed, to separate one tenant's keys from another.
-            // 'default',
+            // 'default' es la conexión que usa SESSION_DRIVER=redis (config/session.php,
+            // 'connection' => env('SESSION_CONNECTION') — null por defecto, cae en
+            // 'default'). Es el único caso real hoy: no hay usos directos de la
+            // fachada Redis:: en app/, y cache/queue ya se aíslan por sus propios
+            // bootstrappers (CacheTenancyBootstrapper/QueueTenancyBootstrapper),
+            // sin depender de esto.
+            'default',
         ],
     ],
 
@@ -189,11 +208,28 @@ return [
 
     /**
      * Parameters used by the tenants:migrate command.
+     *
+     * `--schema-path` (2026-09-04, perf real) — sin esto, un tenant NUEVO
+     * corre las 84 migraciones de tenant una por una: confirmado con
+     * medición real (proceso limpio, no acumulado) que eso solo tarda
+     * 38-40s, siendo el cuello de botella real de crear un tenant (el
+     * db:seed que le sigue tarda ~1.4s). El dump (`schema/mysql-schema.sql`,
+     * generado con `php artisan schema:dump --database=tenant`, 52 CREATE
+     * TABLE reales — coincide con lo que se ve en phpMyAdmin, las otras ~32
+     * de las 84 migraciones crean algo que una migración posterior modifica
+     * o elimina) se importa de una sola vez y deja las 84 filas de
+     * `migrations` ya marcadas como corridas — cualquier migración nueva que
+     * se agregue DESPUÉS de este dump sigue corriendo normal, encima del
+     * dump. Regenerar con: `php artisan schema:dump --database=tenant
+     * --path=database/migrations/tenant/schema/mysql-schema.sql` dentro de
+     * `$tenant->run()` sobre un tenant ya migrado, cada vez que se agreguen
+     * migraciones nuevas y se quiera consolidar de nuevo.
      */
     'migration_parameters' => [
         '--force' => true, // This needs to be true to run migrations in production.
         '--path' => [database_path('migrations/tenant')],
         '--realpath' => true,
+        '--schema-path' => database_path('migrations/tenant/schema/mysql-schema.sql'),
     ],
 
     /**

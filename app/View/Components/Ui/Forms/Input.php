@@ -21,6 +21,9 @@ class Input extends Component
         public bool    $required    = false,
         public bool    $disabled    = false,
         public bool    $readonly    = false,
+        /** Texto plano no editable pegado al input (ej. ".zertixpos.com") — nunca un ícono ni un botón. Ver docs/ui/forms.md. */
+        public ?string $addonLeft   = null,
+        public ?string $addonRight  = null,
     ) {
         $this->id = $id ?: $name;
     }
@@ -37,6 +40,48 @@ class Input extends Component
         return $this->type === 'password';
     }
 
+    public function hasAddon(): bool
+    {
+        return $this->addonLeft !== null || $this->addonRight !== null;
+    }
+
+    /**
+     * Con addon, el borde/radio/fondo/ring de foco los lleva este wrapper
+     * (no el `<input>`, ver `inputClasses()`) — patrón "grouped input"
+     * estándar: un solo borde compartido entre el addon y el campo, en vez
+     * de dos cajas bordeadas pegadas (que se verían como doble borde).
+     * "bg-white" no va incondicional por el mismo motivo que en `inputClasses()`.
+     */
+    public function groupWrapperClasses(): string
+    {
+        // "relative" es necesario acá (y no lo tenía) — iconLeft/iconRight/el
+        // ícono de error se posicionan "absolute" esperando que este wrapper
+        // sea su ancestro posicionado; sin esto se posicionaban contra el
+        // ancestro "relative" más cercano de la página entera (bug real,
+        // reportado: el ícono del subdominio aparecía flotando en la
+        // esquina superior izquierda del viewport, lejos del campo).
+        $base = 'relative w-full flex items-stretch rounded-lg border transition-colors duration-200 '
+              . 'focus-within:ring-1';
+
+        if ($this->error) {
+            return trim("{$base} border-state-error bg-state-error/5 focus-within:border-state-error focus-within:ring-state-error/20");
+        }
+
+        if ($this->disabled) {
+            return trim("{$base} bg-slate-50 border-slate-100");
+        }
+
+        return trim("{$base} bg-white border-slate-200 focus-within:border-zertix-primary focus-within:ring-zertix-primary/20");
+    }
+
+    public function addonClasses(bool $right = false): string
+    {
+        $edge = $right ? 'rounded-r-lg border-l' : 'rounded-l-lg border-r';
+        $border = $this->error ? 'border-state-error' : 'border-slate-200';
+
+        return "flex items-center px-3 text-sm text-slate-500 bg-slate-50 {$edge} {$border}";
+    }
+
     /**
      * Clases del <input> según estado — estilo "caja" (border+rounded-lg, no
      * underline como el original de Orvian), mismo radio de 8px que
@@ -44,6 +89,19 @@ class Input extends Component
      */
     public function inputClasses(): string
     {
+        $pl = $this->iconLeft ? 'pl-10' : ($this->addonLeft ? 'pl-3' : '');
+        $pr = ($this->iconRight || $this->error || $this->isPassword()) ? 'pr-10' : ($this->addonRight ? 'pr-3' : '');
+
+        // Con addon, el wrapper (`groupWrapperClasses()`) ya puso borde/radio/fondo/ring
+        // — el <input> queda "desnudo" adentro, sin competir por esos estilos.
+        if ($this->hasAddon()) {
+            $base = 'flex-1 min-w-0 bg-transparent border-0 px-3 py-2.5 text-sm '
+                  . 'focus:outline-none focus:ring-0 placeholder-slate-400 '
+                  . 'disabled:text-slate-400 disabled:cursor-not-allowed';
+
+            return trim("{$base} {$pl} {$pr}" . ($this->error ? ' text-state-error' : ' text-slate-800'));
+        }
+
         // "bg-white" NO va en $base: si conviviera con "bg-state-error/5" en el
         // branch de error, ambas clases compiten por el mismo background-color y
         // gana la que quede después en la hoja compilada, no la del HTML (mismo
@@ -53,9 +111,6 @@ class Input extends Component
               . 'focus:outline-none focus:ring-1 '
               . 'placeholder-slate-400 '
               . 'disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-100 disabled:cursor-not-allowed';
-
-        $pl = $this->iconLeft ? 'pl-10' : '';
-        $pr = ($this->iconRight || $this->error || $this->isPassword()) ? 'pr-10' : '';
 
         if ($this->error) {
             return trim("{$base} {$pl} {$pr} border-state-error bg-state-error/5 text-state-error focus:border-state-error focus:ring-state-error/20");

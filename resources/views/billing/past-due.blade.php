@@ -4,10 +4,18 @@
         sin auth a propósito: EnsureSubscriptionActive redirige acá ANTES de
         que la request pase por 'auth' (mismo criterio que
         EnsureInstallationWizardCompleted con /install), así que un visitante
-        sin sesión también tiene que poder verla. La acción real de pagar/
-        cambiar de plan (REQ-3.11) vive en `billing.manage`, que sí requiere
-        estar logueado — por eso el botón de abajo apunta a uno u otro según
-        haya sesión.
+        sin sesión también tiene que poder verla.
+
+        **Decisión final (2026-09-07, tras el rediseño de REQ-3.11):** esta
+        vista NO es un placeholder pendiente de reemplazo — es, a propósito,
+        la única pantalla para el caso sin sesión: no hay "su" resumen que
+        mostrarle a alguien sin autenticar. `EnsureSubscriptionActive` ahora
+        manda a cualquier usuario YA AUTENTICADO directo al resumen real
+        (`billing.manage` — ManageSubscription, con estado/plan/factura de
+        verdad, dentro de `<x-app-layout>`), nunca acá. El branch
+        `auth()->check()` del botón de abajo queda como red de seguridad
+        (si alguien autenticado llega a esta URL a mano), no como el camino
+        esperado.
     --}}
 
     {{-- REQ-3.10 — el banner de "cuenta vencida" convive con este bloqueo

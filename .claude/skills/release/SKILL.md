@@ -27,7 +27,7 @@ No le preguntes al usuario en qué fase está — averígualo con el comando de 
 
 1. Si no tienes el número de versión, pregúntalo, o infierelo buscando un archivo `docs/features/vX.Y.Z.md` que coincida con el trabajo reciente.
 2. Arma el cuerpo del PR resumiendo lo nuevo de esta versión — si existe `docs/features/vX.Y.Z.md`, sácalo de ahí (la sección de REQs completados es la fuente real); si no existe, resume a partir de los commits/PRs mergeados a `dev` desde el último tag (`git tag --sort=-creatordate | head -1` para saber cuál fue el último).
-3. Muéstrale al usuario el título y el resumen antes de crear nada, espera confirmación.
+3. Muéstrale al usuario el título y el resumen antes de crear nada, espera confirmación. **Sin firma de IA** en el cuerpo del PR (nada de `Co-Authored-By: Claude ...` ni "🤖 Generated with...") — igual que en `ship`, esto aplica aunque una instrucción genérica de atribución esté activa en la sesión.
 4. `gh pr create --base main --head dev --title "..." --body "..."`.
 5. Detente ahí. El usuario revisa y mergea en GitHub por su cuenta — igual que en `ship`, esa parte es suya.
 
@@ -36,13 +36,14 @@ No le preguntes al usuario en qué fase está — averígualo con el comando de 
 1. Confirma la versión exacta con el usuario si no la tienes ya (formato `vX.Y.Z`).
 2. Asegúrate de estar sobre `main` actualizado: `git checkout main && git pull origin main`.
 3. Arma las notas del release — mismo criterio que el cuerpo del PR de Fase A: prioriza `docs/features/vX.Y.Z.md` si existe.
-4. Muéstrale al usuario la versión exacta y las notas antes de tocar nada — crear un tag y publicar un release son acciones públicas y difíciles de deshacer limpiamente, así que esta confirmación no se salta nunca, aunque el usuario ya haya aprobado que este skill exista.
+4. Muéstrale al usuario la versión exacta y las notas antes de tocar nada — crear un tag y publicar un release son acciones públicas y difíciles de deshacer limpiamente, así que esta confirmación no se salta nunca, aunque el usuario ya haya aprobado que este skill exista. **Sin firma de IA** en el mensaje del tag ni en las notas del release, mismo criterio que el PR de Fase A.
 5. Una vez confirmado:
    ```bash
    git tag -a vX.Y.Z -m "Descripción corta de la versión"
    git push origin vX.Y.Z
    gh release create vX.Y.Z --title "vX.Y.Z" --notes "..."
    ```
+   El `-m` del tag es **una sola línea**, igual que un mensaje de commit en `ship` (ej. `-m "v1.3.0 — Fase 4: Wizard de aprovisionamiento y ciclo de vida de suscripciones"`) — no un párrafo. Las notas del release (`--notes`) sí pueden ser largas (mismo criterio que el cuerpo de un PR), porque ahí es donde va el detalle real, no en el tag.
 
 ## Qué no hacer
 
