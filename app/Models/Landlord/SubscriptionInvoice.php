@@ -13,6 +13,7 @@ class SubscriptionInvoice extends Model
 
     protected $fillable = [
         'subscription_id',
+        'plan_id',
         'tenant_id',
         'amount',
         'currency',
@@ -36,6 +37,16 @@ class SubscriptionInvoice extends Model
     public function subscription(): BelongsTo
     {
         return $this->belongsTo(Subscription::class);
+    }
+
+    /**
+     * Fase 4.9 — plan tal como estaba el día de este pago, no el actual de la
+     * suscripción (que puede haber cambiado desde entonces). Ver migración
+     * `add_plan_id_to_subscription_invoices_table`.
+     */
+    public function plan(): BelongsTo
+    {
+        return $this->belongsTo(\App\Models\Configuration\Plan::class);
     }
 
     public function tenant(): BelongsTo

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Billing\InvoicePdfController;
 use App\Http\Controllers\Billing\PayPalWebhookController;
 use App\Livewire\Install\InstallWizard;
 use Illuminate\Support\Facades\Route;
@@ -23,6 +24,14 @@ Route::get('/', function () {
 // son tablas landlord). Exenta de CSRF en bootstrap/app.php: PayPal no manda
 // token, verifica su propia firma adentro (PayPalGateway::handleWebhook()).
 Route::post('/webhooks/paypal', PayPalWebhookController::class)->name('webhooks.paypal');
+
+// Fase 4.9, REQ-4.9 — central por el mismo motivo que el webhook de arriba
+// (SubscriptionInvoice es landlord). Sin `auth`: es el link que llega por
+// correo (InvoicePaid), protegido por la firma de la URL (`signed`), no por
+// sesión — el cliente lo abre sin necesitar estar logueado.
+Route::get('/facturas/{invoice}/pdf', InvoicePdfController::class)
+    ->middleware('signed')
+    ->name('billing.invoice.pdf');
 
 // Todo lo que depende del guard `web` (usuarios de negocio) vive en
 // routes/tenant.php, no acá — la tabla `users` ahora solo existe por tenant
