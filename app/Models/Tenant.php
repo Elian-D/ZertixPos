@@ -4,8 +4,10 @@ namespace App\Models;
 
 use App\Models\Configuration\Plan;
 use App\Models\Landlord\Subscription;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Stancl\Tenancy\Contracts\TenantWithDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDatabase;
 use Stancl\Tenancy\Database\Concerns\HasDomains;
@@ -54,5 +56,21 @@ class Tenant extends BaseTenant implements TenantWithDatabase
     public function subscriptions(): HasMany
     {
         return $this->hasMany(Subscription::class, 'tenant_id');
+    }
+
+    /** REQ-5.1 — estado de suscripción mostrado en el listado del Súper Admin, sin traer todo el historial. */
+    public function latestSubscription(): HasOne
+    {
+        return $this->hasOne(Subscription::class, 'tenant_id')->latestOfMany();
+    }
+
+    /**
+     * Centraliza el eager loading del listado del Súper Admin (REQ-5.1) —
+     * mismo criterio que el resto de módulos (ver ARCHITECTURE.md): evita
+     * que `TenantsTable` dispare un N+1 por fila al leer domains/plan/estado.
+     */
+    public function scopeWithIndexRelations(Builder $query): Builder
+    {
+        return $query->with(['domains', 'plan', 'latestSubscription']);
     }
 }

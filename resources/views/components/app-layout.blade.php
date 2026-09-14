@@ -57,7 +57,10 @@
                  class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 sm:hidden">
             </div>
 
-            @include('layouts.sidebar')
+            {{-- Fase 5 (REQ-5) — mismo layout para app/admin, solo cambia qué
+                 sidebar se incluye (patrón Orvian: $isAdminContext), no un
+                 layout duplicado. Ver docs/features/v1.3.0.md §Fase 5. --}}
+            @include(request()->routeIs('admin.*') ? 'layouts.sidebar-admin' : 'layouts.sidebar')
 
             {{-- CONTENIDO PRINCIPAL — sin ml-64/ml-20: el <aside> de x-sidebar.layout ya es un
                  flex-child normal (sm:relative) que empuja el contenido con su propio ancho
