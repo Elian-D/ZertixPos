@@ -149,6 +149,26 @@ Componente para entradas de texto de una sola línea. Soporta todos los tipos de
 | `required` | `bool` | `false` | Agrega `*` al label y `required` al input |
 | `disabled` | `bool` | `false` | Desactiva el campo |
 | `readonly` | `bool` | `false` | Campo de solo lectura |
+| `addonLeft` | `string\|null` | `null` | Texto plano no editable pegado al borde izquierdo (ej. `"https://"`) |
+| `addonRight` | `string\|null` | `null` | Texto plano no editable pegado al borde derecho (ej. `".zertixpos.com"`) |
+
+### Addon (`addonLeft`/`addonRight`, nuevo en v1.3.0)
+
+Para un sufijo/prefijo fijo que forma parte del valor real (subdominio, código de país, unidad) pero no debe ser editable — patrón "grouped input" estándar (una sola caja compartida entre el addon y el campo, no dos cajas bordeadas pegadas, que se verían como doble borde). Con addon, el borde/radio/fondo/ring de foco los lleva el wrapper (`groupWrapperClasses()`), no el `<input>` (`inputClasses()` se vuelve "desnudo": sin borde, sin fondo propio, `focus:ring-0`) — mismo cuidado de "cada estado declara su propio fondo completo" que el resto del componente.
+
+**Es solo texto — nunca un ícono ni un botón.** No se combina con `iconLeft`/`iconRight` en el mismo lado (uno de los dos gana visualmente); sí se puede combinar un addon de un lado con un ícono del lado opuesto.
+
+```blade
+<x-ui.forms.input
+    label="Subdominio"
+    name="subdominio"
+    wire:model.live="subdominio"
+    placeholder="tu-negocio"
+    :addonRight="'.' . request()->getHost()"
+    :error="$errors->first('subdominio')"
+    required
+/>
+```
 
 ### Toggle mostrar/ocultar contraseña (REQ-7.11)
 
@@ -385,11 +405,56 @@ Interruptor visual con Alpine.js. Internamente usa un `<input type="checkbox">` 
 | `disabled` | `bool` | `false` | — |
 | `accept` | `string` | `'*'` | Atributo `accept` nativo (ej. `image/*`, `.pdf`) |
 | `multiple` | `bool` | `false` | Permite seleccionar más de un archivo |
+| `preview` | `bool` | `false` | Miniatura del archivo elegido (si es imagen) — ver abajo |
+| `dropzone` | `bool` | `false` | Variante cuadrada de arrastrar/soltar (logo/foto) — ver abajo |
+| `size` | `string` | `'md'` | Tamaño de la caja `dropzone` — `xs`/`sm`/`md`/`lg`/`xl`. Ignorado si `dropzone` es `false` |
 
 ### Comportamiento
 
 - Muestra `"Seleccionar archivo..."` hasta que el usuario elige uno; entonces muestra el nombre del archivo (o `"N archivos"` si `multiple` y hay más de uno).
 - Botón "×" para limpiar la selección aparece solo cuando hay un archivo elegido, y solo si no hay `error` activo (en ese caso el espacio lo ocupa el ícono de error).
+
+### Preview de imagen (`preview`, nuevo en v1.3.0)
+
+**Opt-in — `false` por defecto, no cambia ningún file-input existente en el sistema.** Con `preview="true"`, si el archivo elegido es una imagen (`file.type` empieza con `image/`), se genera un `URL.createObjectURL()` en el `@change` y se muestra como miniatura (`w-7 h-7 rounded object-cover`) reemplazando el `iconLeft` mientras haya un archivo elegido. El object URL se revoca (`URL.revokeObjectURL()`) tanto al limpiar (`clear()`) como al elegir un archivo nuevo, para no filtrar memoria del navegador. No sirve para `multiple` (solo previsualiza el primer archivo).
+
+### Variante dropzone (`dropzone`, nuevo en v1.3.0)
+
+**Opt-in — `false` por defecto, no cambia el look del file-input horizontal ya usado en el importador de datos (`x-data-table.import`).** Con `dropzone="true"`, la caja clickeable pasa de ser una fila tipo campo de texto a un **cuadrado real** (ancho y alto iguales vía `dropzoneSizeClasses()`, no un `h-*` con `w-full` que terminaba rectangular según el ancho del contenedor — bug real reportado con el logo del Wizard) con borde punteado, ícono centrado y `"Subir logo"` (o el `fileName` elegido) debajo — pensado para logo/foto de perfil, no para archivos genéricos. El `hint` se renderiza DENTRO del cuadro en vez de debajo (evita el mensaje duplicado). Combinado con `preview="true"`, la imagen elegida llena el cuadro entero (`object-cover` — se recorta para adaptarse sin deformarse, sin importar su proporción original) en vez de una miniatura chica, con un botón "×" flotante arriba a la derecha para limpiar. Misma lógica Alpine (`fileName`/`previewUrl`/`clear()`/`onChange()`) que la variante normal — solo cambia el markup de la caja.
+
+**Tamaños (`size`)** — mismo nombre de escala que `x-ui.button`:
+
+| Size | Dimensión |
+|---|---|
+| `xs` | `w-16 h-16` |
+| `sm` | `w-20 h-20` |
+| `md` (default) | `w-28 h-28` |
+| `lg` | `w-36 h-36` |
+| `xl` | `w-44 h-44` |
+
+```blade
+<x-ui.forms.file-input
+    label="Logo del Negocio"
+    name="logo"
+    accept="image/*"
+    :dropzone="true"
+    :preview="true"
+    size="lg"
+    hint="PNG, JPG hasta 2MB"
+    :error="$errors->first('logo')"
+/>
+```
+
+```blade
+<x-ui.forms.file-input
+    label="Logo del Negocio"
+    name="logo"
+    accept="image/*"
+    :preview="true"
+    hint="PNG o JPG, máximo 2MB"
+    :error="$errors->first('logo')"
+/>
+```
 
 ### Ejemplo
 
