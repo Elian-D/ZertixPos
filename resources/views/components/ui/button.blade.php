@@ -49,6 +49,14 @@
     @if($isSubmit)
         x-data="{ sending: false }"
         x-init="$el.closest('form')?.addEventListener('submit', () => { sending = true })"
+        {{-- Reset real cuando el form vive dentro de un wire:submit.prevent —
+             ver resources/js/app.js. Sin esto, un error de validación del
+             servidor deja el spinner pegado para siempre (no hay navegación
+             de página que reinicie el estado de Alpine, a diferencia de un
+             <form> nativo). Inofensivo en un form nativo real: ese caso nunca
+             dispara este evento (no hay ningún request de Livewire de por
+             medio), así que sending sigue su comportamiento de siempre. --}}
+        x-on:livewire-request-settled.window="sending = false"
     @endif
     @if($tag === 'button')
         type="{{ $attributes->get('type', 'button') }}"
