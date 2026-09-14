@@ -68,7 +68,25 @@ class ProvisionTenantJob implements ShouldQueue
     public function handle(): void
     {
         try {
-            $tenant = Tenant::create();
+            // Bug real (2026-09-14, reportado por el usuario): estas 3 columnas
+            // quedaban vacías en todo tenant creado por el wizard — Tenant::create()
+            // se llamaba sin argumentos. `business_name` (paso Empresa) y
+            // `billing_contact_*` (paso Administrador — el admin creado más abajo
+            // ES el contacto de facturación, ver comentario de la migración
+            // 2026_09_01_100000_add_billing_fields_to_tenants_table.php: copia
+            // landlord para que el Súper Admin no dependa de una consulta
+            // cross-DB). `payment_gateway`/`gateway_customer_id`/
+            // `gateway_subscription_id` de `tenants` siguen null acá a propósito
+            // (no hay gateway real todavía en un trial sin tarjeta) — y de hecho
+            // ninguna parte del código los escribe todavía en ningún punto
+            // (`PayPalGateway` guarda el `gateway_subscription_id` real en
+            // `subscriptions`, no en `tenants`); no es parte de este fix, quedan
+            // como estaban.
+            $tenant = Tenant::create([
+                'business_name' => $this->empresaData['nombreEmpresa'],
+                'billing_contact_name' => $this->adminName,
+                'billing_contact_email' => $this->adminEmail,
+            ]);
             $tenant->domains()->create(['domain' => $this->fullDomain]);
 
             $tenant->run(function () {
