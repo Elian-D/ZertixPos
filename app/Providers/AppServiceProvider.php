@@ -2,7 +2,10 @@
 
 namespace App\Providers;
 
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use App\Contracts\Sales\NcfGeneratorInterface;
 use App\Services\Sales\Ncf\LocalNcfGenerator;
@@ -30,6 +33,13 @@ class AppServiceProvider extends ServiceProvider
         // como por paginación de controladores normales fuera de Livewire.
         Paginator::defaultView('pagination.zertix-compact');
         Paginator::defaultSimpleView('pagination.zertix-compact');
+
+        // REQ-4.1, v1.3.0 Fase 4 — ver config/livewire.php:
+        // temporary_file_upload.middleware. Por IP, nunca por Auth::user()
+        // (esa ruta corre igual en central sin tenant que dentro de uno).
+        RateLimiter::for('livewire-uploads', function (Request $request) {
+            return Limit::perMinute(60)->by($request->ip());
+        });
 
         \App\Models\Accounting\Receivable::observe(\App\Observers\ReceivableObserver::class);
 

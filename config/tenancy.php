@@ -189,11 +189,28 @@ return [
 
     /**
      * Parameters used by the tenants:migrate command.
+     *
+     * `--schema-path` (2026-09-04, perf real) — sin esto, un tenant NUEVO
+     * corre las 84 migraciones de tenant una por una: confirmado con
+     * medición real (proceso limpio, no acumulado) que eso solo tarda
+     * 38-40s, siendo el cuello de botella real de crear un tenant (el
+     * db:seed que le sigue tarda ~1.4s). El dump (`schema/mysql-schema.sql`,
+     * generado con `php artisan schema:dump --database=tenant`, 52 CREATE
+     * TABLE reales — coincide con lo que se ve en phpMyAdmin, las otras ~32
+     * de las 84 migraciones crean algo que una migración posterior modifica
+     * o elimina) se importa de una sola vez y deja las 84 filas de
+     * `migrations` ya marcadas como corridas — cualquier migración nueva que
+     * se agregue DESPUÉS de este dump sigue corriendo normal, encima del
+     * dump. Regenerar con: `php artisan schema:dump --database=tenant
+     * --path=database/migrations/tenant/schema/mysql-schema.sql` dentro de
+     * `$tenant->run()` sobre un tenant ya migrado, cada vez que se agreguen
+     * migraciones nuevas y se quiera consolidar de nuevo.
      */
     'migration_parameters' => [
         '--force' => true, // This needs to be true to run migrations in production.
         '--path' => [database_path('migrations/tenant')],
         '--realpath' => true,
+        '--schema-path' => database_path('migrations/tenant/schema/mysql-schema.sql'),
     ],
 
     /**

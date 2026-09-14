@@ -101,6 +101,8 @@ The system is **mid-migration** between two table engines. Getting this wrong pr
 
 **No dark mode.** `.dark` tokens are reserved in `tailwind.config.js` but nothing renders them — never add `dark:*` Tailwind classes to new markup; there is no dark theme to target yet.
 
+**After adding or changing any file under `database/migrations/tenant/`, regenerate the tenant schema dump** (`database/migrations/tenant/schema/mysql-schema.sql`) — see `ARCHITECTURE.md` §"Migraciones de tenant y el schema dump" for the exact command and why it exists (skipping this doesn't break anything immediately — new migrations still run fine on top of the dump — but the dump silently drifts out of date, and a brand-new tenant goes back to paying the full ~38s of running all migrations one by one instead of ~12s via the dump).
+
 ---
 
 ## Architecture Overview

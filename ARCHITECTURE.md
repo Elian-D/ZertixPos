@@ -21,7 +21,8 @@ Este proyecto utiliza una arquitectura desacoplada basada en servicios y capas d
    - [9. Feedback de acciones (toasts)](#9-feedback-de-acciones-toasts)
 3. [Checklist de Implementación para Nuevos Módulos](#checklist-de-implementación-para-nuevos-módulos)
 4. [Ejemplo de Flujo Estándar (Store)](#ejemplo-de-flujo-estándar-store)
-5. [Referencia detallada](#referencia-detallada)
+5. [Migraciones de tenant y el schema dump](#migraciones-de-tenant-y-el-schema-dump)
+6. [Referencia detallada](#referencia-detallada)
 
 ---
 
@@ -211,6 +212,31 @@ public function store(StoreModuloRequest $request, ModuloService $service)
 ```
 
 Lo que cambió es el **listado** — ya no hay un método `index()` que arme filtros/paginación/columnas; eso vive en el componente Livewire (§2/§6).
+
+---
+
+## Migraciones de tenant y el schema dump
+
+**Cada migración nueva bajo `database/migrations/tenant/` requiere un paso extra que no aplica a las migraciones centrales:** regenerar `database/migrations/tenant/schema/mysql-schema.sql` — si no, esa migración nueva no se pierde (sigue corriendo normal para un tenant nuevo, Laravel la corre igual encima del dump), pero el dump deja de reflejar el estado real y arrastra el desfasaje hasta que alguien lo regenera.
+
+**Por qué existe el dump (v1.3.0 Fase 4, REQ-4.6, 2026-09-04):** un tenant nuevo (creado por el Wizard de aprovisionamiento) corre TODAS las migraciones de tenant una por una — confirmado con medición real (proceso limpio, no una sesión acumulada) que con las ~84 migraciones que hay hoy eso tarda **38-40 segundos**, siendo el cuello de botella real de crear un tenant (los seeders que corren después tardan ~1.4s). `config('tenancy.migration_parameters')` (`config/tenancy.php`) le agrega `--schema-path` a cualquier corrida de `tenants:migrate` — incluida la automática que dispara `Tenant::create()` — así que en vez de correr las 84 migraciones sueltas, Laravel importa el dump (una operación) y marca las 84 filas de `migrations` como ya corridas. Con esto, crear un tenant bajó a ~12s.
+
+**Un tenant que YA existe (tiene su propia tabla `migrations` poblada) ignora el dump por completo** — Laravel solo lo usa cuando la tabla `migrations` todavía no existe (un tenant genuinamente nuevo). Regenerar el dump **no** afecta retroactivamente a `dev`/`test2`/`demo` ni a ningún tenant real ya migrado.
+
+**Cuándo regenerarlo:** después de agregar (o modificar) cualquier archivo en `database/migrations/tenant/`. Comando real:
+
+```bash
+docker exec --user=sail <container> php artisan tinker --execute="
+App\Models\Tenant::find('<un_tenant_ya_migrado_con_las_migraciones_nuevas>')->run(function () {
+    Illuminate\Support\Facades\Artisan::call('schema:dump', [
+        '--database' => 'tenant',
+        '--path' => database_path('migrations/tenant/schema/mysql-schema.sql'),
+    ]);
+});
+"
+```
+
+El tenant de referencia tiene que estar migrado con la migración nueva ANTES de correr esto (`tenants:migrate --tenants=<id>` primero si hace falta) — el dump captura el estado real de ESA base, no lee los archivos `.php` de migración directamente.
 
 ---
 
