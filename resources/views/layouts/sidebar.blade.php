@@ -14,24 +14,20 @@
         'quotes.view',
         'delivery_points.view',
         'equipment.view',
-        'business_types.manage',
-        'equipment_types.manage',
     ])
-        <x-sidebar.dropdown 
-            id="clientes" 
-            icon="heroicon-s-user-group" 
-            label="CRM" 
+        <x-sidebar.dropdown
+            id="clientes"
+            icon="heroicon-s-user-group"
+            label="CRM"
             :activeRoutes="['app/clients*']"
         >
             @can('clients.view')
-                <x-sidebar.subitem 
+                <x-sidebar.subitem
                     href="{{ route('clients.index') }}"
                     :active="request()->routeIs('clients.*') && ! request()->routeIs([
-                        'clients.quotes.*', 
-                        'clients.delivery_points.*', 
-                        'clients.equipment.*', 
-                        'clients.businessTypes.*', 
-                        'clients.equipmentTypes.*'
+                        'clients.quotes.*',
+                        'clients.delivery_points.*',
+                        'clients.equipment.*'
                     ])"
                 >
                     Clientes
@@ -58,22 +54,6 @@
                 @if(module_enabled('clients.field_assets'))
                     <x-sidebar.subitem href="{{ route('clients.equipment.index') }}">
                         Equipos
-                    </x-sidebar.subitem>
-                @endif
-            @endcan
-
-            @can('business_types.manage')
-                @if(module_enabled('sales.delivery_points'))
-                    <x-sidebar.subitem href="{{ route('clients.businessTypes.index') }}">
-                        Tipos de Negocio
-                    </x-sidebar.subitem>
-                @endif
-            @endcan
-
-            @can('equipment_types.manage')
-                @if(module_enabled('clients.field_assets'))
-                    <x-sidebar.subitem href="{{ route('clients.equipmentTypes.index') }}">
-                        Tipos de Equipo
                     </x-sidebar.subitem>
                 @endif
             @endcan
@@ -132,8 +112,6 @@
     {{-- GRUPO 3: Inventario --}}
     @canany([
         'products.view',
-        'categories.manage',
-        'units.manage',
         'inventory_stocks.view',
         'inventory_movements.view',
         'warehouses.manage',
@@ -145,23 +123,11 @@
             :activeRoutes="['app/inventory*']"
         >
             @can('products.view')
-                <x-sidebar.subitem 
+                <x-sidebar.subitem
                     href="{{ route('inventory.products.index') }}"
-                    :active="request()->routeIs('inventory.products.*') && ! request()->routeIs(['inventory.products.categories.*', 'inventory.products.units.*'])"
+                    :active="request()->routeIs('inventory.products.*')"
                 >
                     Productos/Servicios
-                </x-sidebar.subitem>
-            @endcan
-
-            @can('categories.manage')
-                <x-sidebar.subitem href="{{ route('inventory.products.categories.index') }}">
-                    Categorías
-                </x-sidebar.subitem>
-            @endcan
-
-            @can('units.manage')
-                <x-sidebar.subitem href="{{ route('inventory.products.units.index') }}">
-                    Unidades de Medida
                 </x-sidebar.subitem>
             @endcan
 
@@ -194,7 +160,6 @@
         'collections.view',
         'invoices.view',
         'ncf_sequences.view',
-        'ncf_types.manage',
     ])
         <x-sidebar.dropdown
             id="finanzas"
@@ -250,12 +215,6 @@
                         Historial NCF
                     </x-sidebar.subitem>
                 @endcan
-
-                @can('ncf_types.manage')
-                    <x-sidebar.subitem href="{{ route('finance.ncf.types.index') }}">
-                        Tipos NCF
-                    </x-sidebar.subitem>
-                @endcan
             @endif
         </x-sidebar.dropdown>
     @endcanany
@@ -307,50 +266,32 @@
         </x-sidebar.dropdown>
     @endif
 
-    {{-- GRUPO 6: Configuración --}}
+    {{-- GRUPO 6: Configuración — Centro de Configuración unificado (REQ-7.4),
+         reemplaza el dropdown de links sueltos por un único punto de entrada.
+         Mismo OR de permisos que antes decidía si el dropdown aparecía; cada
+         tarjeta del hub (resources/views/configuration/index.blade.php) sigue
+         su propio @can, así que perder acceso a un permiso puntual no oculta
+         el botón entero, solo esa tarjeta. `config.view` (gateaba el viejo
+         mini-hub de Catálogos, absorbido acá) queda fuera de esta lista —
+         permiso huérfano, no borrado del seeder por si algún rol ya lo tiene
+         asignado, pero ya no controla nada real. --}}
     @canany([
         'config.general',
+        'config.payment_types',
+        'config.billing',
+        'ncf_types.manage',
+        'document_types.view',
+        'categories.manage',
+        'units.manage',
+        'business_types.manage',
+        'equipment_types.manage',
         'users.view',
         'roles.view',
         'config.modules',
-        'config.view',
     ])
-        <x-sidebar.dropdown
-            id="configuracion"
-            icon="heroicon-s-cog-6-tooth"
-            label="Configuración"
-            :activeRoutes="['app/config*']"
-        >
-            @can('config.general')
-                <x-sidebar.subitem href="{{ route('configuration.general.edit') }}">
-                    Configuración General
-                </x-sidebar.subitem>
-            @endcan
-
-            @can('users.view')
-                <x-sidebar.subitem href="{{ route('config.users.index') }}">
-                    Usuarios
-                </x-sidebar.subitem>
-            @endcan
-
-            @can('roles.view')
-                <x-sidebar.subitem href="{{ route('config.roles.index') }}">
-                    Roles/Permisos
-                </x-sidebar.subitem>
-            @endcan
-
-            @can('config.modules')
-                <x-sidebar.subitem href="{{ route('configuration.features') }}">
-                    Funciones del Sistema
-                </x-sidebar.subitem>
-            @endcan
-
-            @can('config.view')
-                <x-sidebar.subitem href="{{ route('configuration.catalogs.index') }}">
-                    Catálogos del Sistema
-                </x-sidebar.subitem>
-            @endcan
-        </x-sidebar.dropdown>
+        <x-sidebar.item href="{{ route('configuration.index') }}" icon="heroicon-s-cog-6-tooth">
+            Configuración
+        </x-sidebar.item>
     @endcanany
 
 </x-sidebar.layout>

@@ -18,7 +18,7 @@ class BusinessTypeController extends Controller
      */
     public function index()
     {
-        return view('clients.businessTypes.index');
+        return view('configuration.business_types.index');
     }
 
     /**
@@ -38,7 +38,7 @@ class BusinessTypeController extends Controller
 
         // ... (redirección)
         return redirect()
-            ->route('clients.businessTypes.index')
+            ->route('configuration.business_types.index')
             ->with('success', 'Tipo de negocio "'.$negocio->nombre.'" creado exitosamente.');
     }
 
@@ -58,7 +58,7 @@ class BusinessTypeController extends Controller
 
         // ... (redirección)
         return redirect()
-            ->route('clients.businessTypes.index')
+            ->route('configuration.business_types.index')
             ->with('success', 'Tipo de negocio "'.$negocio->nombre.'" actualizado exitosamente.');
     }
 
@@ -88,12 +88,12 @@ class BusinessTypeController extends Controller
 
     protected function getRouteIndex(): string
     {
-        return 'clients.businessTypes.index';
+        return 'configuration.business_types.index';
     }
 
     protected function getRouteEliminadas(): string
     {
-        return 'clients.businessTypes.eliminados';
+        return 'configuration.business_types.eliminados';
     }
 
     protected function getEntityName(): string

@@ -29,7 +29,7 @@ class CategoriesStep implements OnboardingStepInterface
 
     public function ctaRoute(): string
     {
-        return 'inventory.products.categories.index';
+        return 'configuration.categories.index';
     }
 
     public function requiredModule(): ?string

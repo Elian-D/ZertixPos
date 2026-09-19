@@ -1,27 +1,16 @@
 <?php
 
-use App\Http\Controllers\Clients\BusinessTypeController;
 use App\Http\Controllers\Clients\ClientController;
 use App\Http\Controllers\Clients\EquipmentController;
-use App\Http\Controllers\Clients\EquipmentTypeController;
 use App\Http\Controllers\Clients\PointOfSaleController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('clients')->as('clients.')->group(function () {
 
-    Route::middleware('module:sales.delivery_points')->group(function () {
-        Route::middleware('permission:business_types.manage')->group(function () {
-
-            // businessTypes.eliminados/restaurar/borrarDefinitivo/estado
-            // reemplazadas por el tab "Papelera" + toggleActivo() del mismo
-            // índice — ver App\Livewire\App\Clients\BusinessTypeTable.
-
-            Route::resource('businessTypes', BusinessTypeController::class)
-                ->parameters(['businessTypes' => 'negocio'])
-                ->only(['index', 'store', 'update', 'destroy'])
-                ->names('businessTypes');
-        });
-    });
+    // REQ-7.4 (2026-09-14) — businessTypes/equipmentTypes se mudaron a
+    // routes/app/configuration.php (configuration.business_types.*/
+    // .equipment_types.*) junto con el resto de "Catálogos del Sistema". Sin
+    // cambios de controlador/permiso/module gate, solo de dónde vive la ruta.
 
     Route::group([], function () {
 
@@ -91,17 +80,6 @@ Route::prefix('clients')->as('clients.')->group(function () {
                 ->name('destroy');
         });
 
-        Route::middleware('permission:equipment_types.manage')->group(function () {
-
-            // equipmentTypes.eliminados/restaurar/borrarDefinitivo/estado
-            // reemplazadas por el tab "Papelera" + toggleActivo() del mismo
-            // índice — ver App\Livewire\App\Clients\EquipmentTypeTable.
-
-            Route::resource('equipmentTypes', EquipmentTypeController::class)
-                ->parameters(['equipmentTypes' => 'equipo'])
-                ->only(['index', 'store', 'update', 'destroy'])
-                ->names('equipmentTypes');
-        });
     });
 
     // Rename clients.pos.*→clients.delivery_points.* (REQ-3.6) — PointOfSale (ubicación
