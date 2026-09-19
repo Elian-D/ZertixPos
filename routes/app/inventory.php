@@ -3,9 +3,7 @@
 use App\Http\Controllers\Inventory\InventoryMovementController;
 use App\Http\Controllers\Inventory\InventoryStockController;
 use App\Http\Controllers\Inventory\WarehouseController;
-use App\Http\Controllers\Products\CategoryController;
 use App\Http\Controllers\Products\ProductController;
-use App\Http\Controllers\Products\UnitController;
 use Illuminate\Support\Facades\Route;
 
 // Inventario (control de existencias — warehouses/stocks/movements) es núcleo
@@ -74,32 +72,12 @@ Route::prefix('inventory')->as('inventory.')->group(function () {
     // routes/app/products.php (antes) — merge dentro de Inventario (REQ-3.5),
     // namespace inventory.products.*, contenido sin cambios. Núcleo fijo — nunca
     // detrás de `module:inventory.tracking` (ver nota arriba).
+    // REQ-7.4 (2026-09-14) — categories/units se mudaron a
+    // routes/app/configuration.php (configuration.categories.*/
+    // .units.*, prefijo config/catalogs/...) junto con el resto de
+    // "Catálogos del Sistema". Sin cambios de controlador/permiso, solo de
+    // dónde vive la ruta.
     Route::prefix('products')->as('products.')->group(function () {
-
-        Route::middleware('permission:categories.manage')->group(function () {
-
-            // categories.eliminados/restaurar/borrarDefinitivo/estado reemplazadas
-            // por el tab "Papelera" + CategoryTable::restore()/forceDelete()/
-            // toggleActivo() del mismo índice — ver
-            // App\Livewire\App\Inventory\CategoryTable. Sin create/edit/show
-            // reales (CRUD por modal) — solo index/store/update/destroy.
-            Route::resource('categories', CategoryController::class)
-                ->parameters(['categories' => 'category'])
-                ->only(['index', 'store', 'update', 'destroy'])
-                ->names('categories');
-        });
-
-        Route::middleware('permission:units.manage')->group(function () {
-
-            // units.eliminados/restaurar/borrarDefinitivo/estado reemplazadas por
-            // el tab "Papelera" + UnitTable::restore()/forceDelete()/toggleActivo()
-            // del mismo índice — ver App\Livewire\App\Inventory\UnitTable. Sin
-            // create/edit/show reales (CRUD por modal) — solo index/store/update/destroy.
-            Route::resource('units', UnitController::class)
-                ->parameters(['units' => 'unit'])
-                ->only(['index', 'store', 'update', 'destroy'])
-                ->names('units');
-        });
 
         Route::group([], function () {
 

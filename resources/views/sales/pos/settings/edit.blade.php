@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Configuración POS">
     <div class="" x-cloak>
 
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-6">

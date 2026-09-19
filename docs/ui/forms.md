@@ -10,6 +10,7 @@ Adaptación a ZertixPOS de los componentes de formulario de Orvian (Fase 7, REQ-
 - [Diferencia real con el original de Orvian](#diferencia-real-con-el-original-de-orvian)
 - [Convenciones Compartidas](#convenciones-compartidas)
 - [Bug corregido: el hint/error se salía del ancho del input](#bug-corregido-el-hinterror-se-salía-del-ancho-del-input)
+- [Bugs corregidos (Fase 7.9): toggle de password tapado por el error + rojo persistente en foco](#bugs-corregidos-fase-79-toggle-de-password-tapado-por-el-error--rojo-persistente-en-foco)
 - [x-ui.forms.input](#x-uiformsinput)
 - [x-ui.forms.select](#x-uiformsselect)
 - [x-ui.forms.textarea](#x-uiformstextarea)
@@ -80,10 +81,10 @@ Todos los componentes con entrada de texto (`Input`, `Select`, `Textarea`) compa
 |---|---|---|---|---|
 | **Default** | `slate-200` | `slate-600` | `bg-white` | `slate-400` |
 | **Focus** | `zertix-primary` (ring 1px) | — | igual | `zertix-primary` |
-| **Error** | `state-error` | `state-error` | `bg-state-error/5` | `exclamation-circle` (automático, reemplaza `iconRight`) |
+| **Error** | `state-error` | `state-error` | `bg-state-error/5` | `exclamation-circle` (automático, reemplaza `iconRight` — **excepto en `Input` con `type="password"`**, ver Fase 7.9 abajo) |
 | **Disabled** | `slate-100` | — | `bg-slate-50` | `opacity-50`, `cursor-not-allowed` |
 
-La transición a Focus usa `group` + `group-focus-within:` en el wrapper — el label e ícono cambian de color sin JavaScript.
+La transición a Focus usa `group` + `group-focus-within:` en el wrapper — el label e ícono cambian de color sin JavaScript. **Excepción (Fase 7.9):** cuando el campo tiene `error` Y recibe foco, el borde/ring/fondo rojo se neutraliza mientras dura el foco (vía Alpine, no vía `focus:` de Tailwind) — ver la sección de bugs corregidos más abajo.
 
 ### Props de Mensaje
 
@@ -126,6 +127,30 @@ Igual que el resto de `x-ui.*`: `$attributes->merge()` pasa cualquier atributo a
 ```
 
 `min-w-0` le devuelve al wrapper la capacidad de encogerse al ancho real del contenedor padre (grid/flex del formulario), y `break-words` le da al texto un punto de quiebre aunque no tenga espacios. Los dos cambios son necesarios — solo uno de los dos no resuelve el overflow.
+
+---
+
+## Bugs corregidos (Fase 7.9): toggle de password tapado por el error + rojo persistente en foco
+
+**Encontrado en producción (2026-09-18), reportado con captura real de `profile/partials/tab-security.blade.php`.** Dos problemas de UX en el estado de error, ambos en el mismo flujo (cambiar contraseña con la actual incorrecta):
+
+### 1. El ícono de error tapaba el toggle de mostrar/ocultar
+
+`input.blade.php` decidía el ícono derecho con `@if ($error) ... @elseif ($isPassword()) ...` — mutuamente excluyente. Con `type="password"` y `error` a la vez, el `exclamation-circle` ganaba y el botón del ojito no se renderizaba en absoluto: el usuario no tenía forma de revisar qué escribió mal justo cuando más lo necesitaba.
+
+**Fix:** se invirtió la prioridad — `isPassword()` va primero, `error` segundo. El error no deja de comunicarse (borde/fondo rojo del campo + mensaje debajo siguen igual), y el propio botón del toggle ya se pinta de `text-state-error` vía `iconColorClasses()` cuando hay error, así que sigue señalando visualmente el problema sin perder la función.
+
+### 2. El borde/ring rojo se reafirmaba (no se neutralizaba) al hacer foco
+
+`inputClasses()`/`selectClasses()`/`textareaClasses()`/`groupWrapperClasses()` definían el branch de error con `focus:border-state-error focus:ring-state-error/20` (o `focus-within:` en el wrapper con addon) — es decir, el propio foco reforzaba el rojo en vez de aflojarlo. Efecto real: el usuario hace clic en el campo para corregir la contraseña, y el campo se pone *más* rojo (ring activo), como si le estuviera diciendo "sigue mal" mientras todavía no ha escrito nada nuevo.
+
+**Por qué no es solo una clase de Tailwind:** el error viene de `$errors->first(...)` o de una prop de Livewire — un string que Blade ya resolvió al renderizar. Blade no sabe "el usuario tiene el campo enfocado ahora mismo"; eso solo existe en el navegador. Por eso el fix necesita JS (Alpine), no un simple cambio de clase `focus:`.
+
+**Fix:** cada componente con esta capacidad (`Input`, `Select`, `Textarea`) agrega, **solo cuando hay `error`**, un estado Alpine `focused` (`x-data="{ focused: false }"`, o combinado con `showPassword` en `Input` vía el helper `alpineData()` de `Input.php`) y listeners `@focus`/`@blur` en el campo real. Mientras `focused` es `true`, una clase `:class` con el modificador `!` de Tailwind (`!border-zertix-primary !ring-zertix-primary/20 !bg-white !text-slate-800`, y `!text-slate-600` en el label) sobreescribe el rojo estático con el mismo look que tendría un campo sin error en foco normal. Se usa `!important` (no un simple orden de clases) porque competir por especificidad con las clases `focus:`/`focus-within:` estáticas que ya existen en la hoja compilada es frágil — el orden real depende de cómo Tailwind ordena los variants, no de cuál "parece" más específica en el HTML.
+
+**Qué NO cambia al enfocar (a propósito):** el ícono izquierdo (si lo hay) y el mensaje de error debajo del campo se quedan en rojo — solo se neutraliza el marco/fondo del campo en sí. El usuario sigue teniendo la referencia de qué está corrigiendo, solo deja de sentir que "todavía está mal" mientras lo edita.
+
+**Archivos tocados:** `Input.php` (`alpineData()`), `input.blade.php`, `select.blade.php`, `textarea.blade.php`. `Checkbox`/`Radio`/`Toggle`/`FileInput` no comparten este patrón de borde/ring (o no tienen `type="password"`), así que quedan fuera de este fix.
 
 ---
 
@@ -177,7 +202,7 @@ Para un sufijo/prefijo fijo que forma parte del valor real (subdominio, código 
 - El `<input>` deja de usar el atributo estático `type="password"` y pasa a un binding reactivo de Alpine: `:type="showPassword ? 'text' : 'password'"`.
 - El slot del ícono derecho lo ocupa un `<button type="button">` con `heroicon-s-eye-slash`/`heroicon-s-eye` — a diferencia del `iconRight` estático (que es `pointer-events-none`), este sí recibe clicks.
 - `iconRight` se **ignora** si `type="password"` — el espacio derecho es del toggle, no hay forma de combinar ambos.
-- El error (`exclamation-circle`) sigue teniendo prioridad sobre el toggle, igual que sobre `iconRight`.
+- **El toggle tiene prioridad sobre el error (Fase 7.9, ver "Bugs corregidos" arriba).** Antes el `exclamation-circle` reemplazaba el toggle cuando había error — eso dejaba al usuario sin forma de revisar la contraseña que escribió mal. Ahora el toggle se queda siempre; el error se sigue viendo por el borde/fondo rojo del campo, el mensaje debajo, y el propio botón del toggle pintado de `text-state-error`.
 
 ```blade
 <x-ui.forms.input

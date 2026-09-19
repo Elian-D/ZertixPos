@@ -39,7 +39,7 @@ class UnitController extends Controller
         ]);
 
         return redirect()
-            ->route('inventory.products.units.index')
+            ->route('configuration.units.index')
             ->with('success', 'Unidad de medida "'.$unit->name.'" creada exitosamente.');
     }
 
@@ -65,7 +65,7 @@ class UnitController extends Controller
         ]);
 
         return redirect()
-            ->route('inventory.products.units.index')
+            ->route('configuration.units.index')
             ->with('success', "Unidad de medida \"{$unit->name}\" actualizada correctamente.");
     }
 
@@ -93,12 +93,12 @@ class UnitController extends Controller
 
     protected function getRouteIndex(): string
     {
-        return 'inventory.products.units.index';
+        return 'configuration.units.index';
     }
 
     protected function getRouteEliminadas(): string
     {
-        return 'inventory.products.units.eliminados';
+        return 'configuration.units.eliminados';
     }
 
     protected function getEntityName(): string

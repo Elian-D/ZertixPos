@@ -50,10 +50,11 @@ Route::middleware([
         return view('dashboard');
     })->middleware(['auth', 'verified', 'permission:dashboard.view'])->name('dashboard');
 
+    // REQ-7.6 — sin profile.destroy: el auto-borrado de cuenta se eliminó,
+    // ver docblock de App\Http\Controllers\ProfileController.
     Route::middleware('auth')->group(function () {
         Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
         Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-        Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     });
 
     // Ruta temporal — Fase 7, REQ-7.5: mockup de x-ui.forms.* en contexto real de la app

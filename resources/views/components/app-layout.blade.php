@@ -10,7 +10,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        {{-- REQ-7.8 — mismo formato "ZertixPOS — Módulo" que ya usan
+             layouts/pos.blade.php y layouts/install.blade.php. $title lo
+             pasa cada vista wrapper (<x-app-layout title="...">); sin él,
+             cae al nombre de la app solo. --}}
+        <title>{{ $title ? config('app.name', 'ZertixPOS').' — '.$title : config('app.name', 'ZertixPOS') }}</title>
 
         {{-- Red de seguridad contra FOUC: la regla [x-cloak] real vive en app.css
              (vía @vite, más abajo), pero esa hoja depende de que termine de

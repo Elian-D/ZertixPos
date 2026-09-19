@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Nuevo Recibo de Cobro">
     <div class="max-w-4xl mx-auto py-4 md:py-8 px-4" 
          x-data="{ 
             clients: {{ $clients->toJson() }},

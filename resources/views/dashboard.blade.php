@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Panel de Control Principal">
     <x-slot name="header">
         <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
             {{ __('Panel de Control Principal') }}

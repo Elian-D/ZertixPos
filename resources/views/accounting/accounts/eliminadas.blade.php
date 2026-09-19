@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Papelera de Cuentas">
     <div class="p-4 md:p-6 flex flex-col gap-6">
 
         <x-ui.page-header title="Papelera de Cuentas" description="Consulta y restaura las cuentas contables eliminadas recientemente." :count="$items->total()" countLabel="cuentas">

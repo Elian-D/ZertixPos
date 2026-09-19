@@ -8,16 +8,16 @@ use Illuminate\Validation\Rules\Password;
 
 /**
  * Mismas reglas que traía `PasswordController::update()` inline (Breeze
- * stock) — se convierte a FormRequest solo para poder agregar el guard de
+ * stock) — se convirtió a FormRequest para poder agregar el guard de
  * cuenta demo (REQ-3.9, v1.3.0 Fase 3) siguiendo el patrón del proyecto
  * (CLAUDE.md: "FormRequest classes handle both validation and permission
- * checks"), no como parte de la migración completa del perfil (REQ-7.6,
- * todavía Pendiente).
+ * checks"). El perfil ya se migró del todo (REQ-7.6,
+ * resources/views/profile/partials/tab-security.blade.php).
  */
 class UpdatePasswordRequest extends FormRequest
 {
     /**
-     * La vista (`profile/partials/update-password-form.blade.php`) lee
+     * La vista (`profile/partials/tab-security.blade.php`) lee
      * `$errors->updatePassword->get(...)` — mismo bag que ya usaba el
      * `$request->validateWithBag('updatePassword', ...)` original, antes de
      * convertir esto a FormRequest.

@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Crear Nuevo Usuario">
 
     <div class="py-6 sm:py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">

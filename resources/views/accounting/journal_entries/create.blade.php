@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Nuevo Asiento Contable">
     <div class="max-w-5xl mx-auto py-8 px-4" 
          x-data="journalEntryForm()" 
          x-init="init()">

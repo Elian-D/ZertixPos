@@ -9,21 +9,21 @@ class Input extends Component
     public string $id;
 
     public function __construct(
-        public string  $label       = '',
-        public string  $name        = '',
-        string         $id          = '',
-        public string  $type        = 'text',
-        public string  $placeholder = '',
-        public ?string $iconLeft    = null,
-        public ?string $iconRight   = null,
-        public ?string $error       = null,
-        public ?string $hint        = null,
-        public bool    $required    = false,
-        public bool    $disabled    = false,
-        public bool    $readonly    = false,
+        public string $label = '',
+        public string $name = '',
+        string $id = '',
+        public string $type = 'text',
+        public string $placeholder = '',
+        public ?string $iconLeft = null,
+        public ?string $iconRight = null,
+        public ?string $error = null,
+        public ?string $hint = null,
+        public bool $required = false,
+        public bool $disabled = false,
+        public bool $readonly = false,
         /** Texto plano no editable pegado al input (ej. ".zertixpos.com") — nunca un ícono ni un botón. Ver docs/ui/forms.md. */
-        public ?string $addonLeft   = null,
-        public ?string $addonRight  = null,
+        public ?string $addonLeft = null,
+        public ?string $addonRight = null,
     ) {
         $this->id = $id ?: $name;
     }
@@ -38,6 +38,28 @@ class Input extends Component
     public function isPassword(): bool
     {
         return $this->type === 'password';
+    }
+
+    /**
+     * v1.3.0 Fase 7.9 (fix CSS): estado Alpine del wrapper, armado condicional
+     * (mismo criterio que el x-data de showPassword) para no instanciar Alpine
+     * en un input que no lo necesita. `focused` solo se agrega si hay `error`
+     * — es el único caso donde el foco cambia algo visualmente (ver
+     * docs/ui/forms.md "Foco sobre un campo con error").
+     */
+    public function alpineData(): ?string
+    {
+        $parts = [];
+
+        if ($this->isPassword()) {
+            $parts[] = 'showPassword: false';
+        }
+
+        if ($this->error) {
+            $parts[] = 'focused: false';
+        }
+
+        return $parts ? '{ '.implode(', ', $parts).' }' : null;
     }
 
     public function hasAddon(): bool
@@ -61,7 +83,7 @@ class Input extends Component
         // reportado: el ícono del subdominio aparecía flotando en la
         // esquina superior izquierda del viewport, lejos del campo).
         $base = 'relative w-full flex items-stretch rounded-lg border transition-colors duration-200 '
-              . 'focus-within:ring-1';
+              .'focus-within:ring-1';
 
         if ($this->error) {
             return trim("{$base} border-state-error bg-state-error/5 focus-within:border-state-error focus-within:ring-state-error/20");
@@ -96,10 +118,10 @@ class Input extends Component
         // — el <input> queda "desnudo" adentro, sin competir por esos estilos.
         if ($this->hasAddon()) {
             $base = 'flex-1 min-w-0 bg-transparent border-0 px-3 py-2.5 text-sm '
-                  . 'focus:outline-none focus:ring-0 placeholder-slate-400 '
-                  . 'disabled:text-slate-400 disabled:cursor-not-allowed';
+                  .'focus:outline-none focus:ring-0 placeholder-slate-400 '
+                  .'disabled:text-slate-400 disabled:cursor-not-allowed';
 
-            return trim("{$base} {$pl} {$pr}" . ($this->error ? ' text-state-error' : ' text-slate-800'));
+            return trim("{$base} {$pl} {$pr}".($this->error ? ' text-state-error' : ' text-slate-800'));
         }
 
         // "bg-white" NO va en $base: si conviviera con "bg-state-error/5" en el
@@ -108,9 +130,9 @@ class Input extends Component
         // bug ya resuelto en Badge/Button esta fase) — cada branch declara su
         // propio fondo completo.
         $base = 'w-full rounded-lg border px-3 py-2.5 text-sm transition-colors duration-200 '
-              . 'focus:outline-none focus:ring-1 '
-              . 'placeholder-slate-400 '
-              . 'disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-100 disabled:cursor-not-allowed';
+              .'focus:outline-none focus:ring-1 '
+              .'placeholder-slate-400 '
+              .'disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-100 disabled:cursor-not-allowed';
 
         if ($this->error) {
             return trim("{$base} {$pl} {$pr} border-state-error bg-state-error/5 text-state-error focus:border-state-error focus:ring-state-error/20");
@@ -125,6 +147,7 @@ class Input extends Component
     public function iconWrapClasses(bool $right = false): string
     {
         $side = $right ? 'right-3' : 'left-3';
+
         return "absolute {$side} top-1/2 -translate-y-1/2 w-5 h-5 pointer-events-none transition-colors duration-200";
     }
 

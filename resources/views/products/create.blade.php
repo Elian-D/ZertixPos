@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Nuevo Producto/Servicio">
     <div class="max-w-7xl mx-auto py-8 px-4"
         x-cloak
         x-data="{

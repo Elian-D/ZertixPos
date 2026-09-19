@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Cotización #{{ str_pad($quote->id, 8, '0', STR_PAD_LEFT) }}">
     <div class="py-6">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             

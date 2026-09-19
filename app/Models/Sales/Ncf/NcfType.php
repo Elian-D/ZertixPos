@@ -29,4 +29,10 @@ class NcfType extends Model
     {
         return "{$this->name} ({$this->code})";
     }
+
+    /** REQ-7.3 — formato DGII combinado (ej. "B01"/"E31") para la columna Código del listado. */
+    public function getFullCodeAttribute(): string
+    {
+        return "{$this->prefix}{$this->code}";
+    }
 }

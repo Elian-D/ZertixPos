@@ -18,7 +18,7 @@ class EquipmentTypeController extends Controller
      */
     public function index()
     {
-        return view('clients.equipmentTypes.index');
+        return view('configuration.equipment_types.index');
     }
 
     /**
@@ -38,7 +38,7 @@ class EquipmentTypeController extends Controller
 
         // ... (redirección)
         return redirect()
-            ->route('clients.equipmentTypes.index')
+            ->route('configuration.equipment_types.index')
             ->with('success', 'Tipo de equipo "'.$equipo->nombre.'" creado exitosamente.');
     }
 
@@ -58,7 +58,7 @@ class EquipmentTypeController extends Controller
 
         // ... (redirección)
         return redirect()
-            ->route('clients.equipmentTypes.index')
+            ->route('configuration.equipment_types.index')
             ->with('success', 'Tipo de equipo "'.$equipo->nombre.'" actualizado exitosamente.');
     }
 
@@ -86,12 +86,12 @@ class EquipmentTypeController extends Controller
 
     protected function getRouteIndex(): string
     {
-        return 'clients.equipmentTypes.index';
+        return 'configuration.equipment_types.index';
     }
 
     protected function getRouteEliminadas(): string
     {
-        return 'clients.equipmentTypes.eliminados';
+        return 'configuration.equipment_types.eliminados';
     }
 
     protected function getEntityName(): string

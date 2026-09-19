@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Ingresos y Gastos">
     <div class="py-6 px-4 sm:px-6 lg:px-8 max-w-[1600px] mx-auto">
 
         {{-- Header & Filtros --}}

@@ -4,9 +4,9 @@
         <x-form-header
             title="Nuevo Tipo de Negocio"
             subtitle="Registre un nuevo tipo de negocio."
-            :back-route="route('clients.businessTypes.index')" />
+            :back-route="route('configuration.business_types.index')" />
 
-        <form action="{{ route('clients.businessTypes.store') }}" method="POST" class="p-6">
+        <form action="{{ route('configuration.business_types.store') }}" method="POST" class="p-6">
             
             @csrf
 
@@ -44,9 +44,9 @@
         <x-form-header
             title="Editar Tipo de Negocio: {{ $item->nombre }}"
             subtitle="Modifique la informacion del tipo de negocio."
-            :back-route="route('clients.businessTypes.index')" />
+            :back-route="route('configuration.business_types.index')" />
 
-        <form method="POST" action="{{ route('clients.businessTypes.update', $item) }}" class="p-6">
+        <form method="POST" action="{{ route('configuration.business_types.update', $item) }}" class="p-6">
             @csrf @method('PUT')
 
             <div class="space-y-4">
@@ -94,7 +94,7 @@
         :title="'¿Eliminar Tipo de Negocio?'"
         :itemName="$item->nombre"
         :type="'el tipo de negocio'"
-        :route="route('clients.businessTypes.destroy', $item)"
+        :route="route('configuration.business_types.destroy', $item)"
         />
     @endif
     @endforeach

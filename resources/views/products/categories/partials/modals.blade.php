@@ -4,9 +4,9 @@
         <x-form-header
             title="Nueva Categoría de Producto"
             subtitle="Registre una nueva categoría de producto."
-            :back-route="route('inventory.products.categories.index')" />
+            :back-route="route('configuration.categories.index')" />
 
-        <form action="{{ route('inventory.products.categories.store') }}" method="POST" class="p-6">
+        <form action="{{ route('configuration.categories.store') }}" method="POST" class="p-6">
             
             @csrf
 
@@ -58,9 +58,9 @@
         <x-form-header
             title="Editar Categoría: {{ $item->name }}"
             subtitle="Modifique la informacion de la categoría."
-            :back-route="route('inventory.products.categories.index')" />
+            :back-route="route('configuration.categories.index')" />
 
-        <form method="POST" action="{{ route('inventory.products.categories.update', $item) }}" class="p-6">
+        <form method="POST" action="{{ route('configuration.categories.update', $item) }}" class="p-6">
             @csrf @method('PUT')
 
             <div class="space-y-4">
@@ -123,7 +123,7 @@
             :title="'¿Eliminar Categoría de Producto?'"
             :itemName="$item->name"
             :type="'la categoría de producto'"
-            :route="route('inventory.products.categories.destroy', $item)"
+            :route="route('configuration.categories.destroy', $item)"
         />
     @endif
     @endforeach

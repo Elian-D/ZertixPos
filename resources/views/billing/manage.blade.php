@@ -9,6 +9,6 @@
     cuenta real (estado, próxima factura, método de pago), sí es una pantalla
     más de la app, no un checkout aislado.
 --}}
-<x-app-layout>
+<x-app-layout title="Suscripción y Facturación">
     <livewire:billing.manage-subscription />
 </x-app-layout>
