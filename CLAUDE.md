@@ -10,14 +10,41 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **Stack:** Laravel 12 + Livewire 4 + Alpine.js 3 + Tailwind CSS 3 + Vite 7 + MySQL/SQLite
 
-**Database:** Default SQLite for development, MySQL via Docker Compose for production.
+**Database:** Default SQLite for development (single tenant, no tenancy active), MySQL via Docker Compose for the real multi-tenant flow (see "Multi-tenancy" below).
 
 **Key dependencies:**
-- `spatie/laravel-permission` - Role-based access control
+- `stancl/tenancy` v3 - Multi-tenant database isolation, resolved by subdomain
+- `spatie/laravel-permission` - Role-based access control (isolated per tenant — its cache is per-connection)
+- `srmklive/paypal` - Subscription billing gateway (landlord-side)
 - `livewire/livewire` - Real-time reactive components
 - `maatwebsite/excel` - Excel import/export
 - `barryvdh/laravel-dompdf` - PDF generation
 - `laravel/sail` - Docker development environment
+- **Redis** - required for cache/session/queue, not optional: `CacheTenancyBootstrapper` needs it to keep cache isolated per tenant
+
+## Multi-tenancy (v1.3.0)
+
+The app is a multi-tenant SaaS: each business (`Tenant`) gets its own MySQL database, resolved by subdomain (`<subdomain>.zertixpos.com`). This splits nearly everything in two:
+
+| | Central (`zertixpos.com`, `localhost`) | Tenant (`<subdomain>.zertixpos.com`) |
+|---|---|---|
+| Routes | `routes/web.php`, `routes/admin.php` | `routes/tenant.php` (includes `routes/app/*.php`) |
+| Guard | `landlord` (`App\Models\Landlord\Admin`) | `web` (`App\Models\User` — this table only exists per-tenant, not centrally) |
+| DB connection | `landlord` (fixed) | `tenant` (switches per request via `InitializeTenancyByDomain`) |
+| Lives there | Install wizard (`/install`), Super Admin panel, PayPal webhook, signed subscription-invoice PDFs | The actual business: dashboard, POS, sales, inventory, accounting, profile |
+
+`config/tenancy.php` → `central_domains` lists what does NOT resolve as a tenant. **Migrations split too:** `database/migrations/` (root) is central/landlord-only; `database/migrations/tenant/` is what every tenant database gets. After adding/changing a file under `database/migrations/tenant/`, regenerate the schema dump (`database/migrations/tenant/schema/mysql-schema.sql`, see `ARCHITECTURE.md` §"Migraciones de tenant y el schema dump") — a new tenant imports that dump instead of running ~84 migrations one by one (~12s vs ~38s); skipping the regen doesn't break anything immediately, it just drifts stale.
+
+```bash
+php artisan migrate:fresh --seed        # central/landlord DB only
+php artisan tenants:migrate             # migrate all tenants (or --tenants=<id>)
+php artisan tenants:migrate-fresh       # drop + re-migrate all tenants (destructive)
+php artisan tenants:seed                # seed tenant(s)
+php artisan tenants:list                # list tenants
+php artisan zertix:seed-demo            # populate the demo tenant with realistic data
+```
+
+The `demo` tenant is billing-exempt and blocks admin profile/password edits server-side (not just hidden in the UI) — don't expect to reproduce password-change flows against it.
 
 ## Running the Application
 
@@ -170,9 +197,9 @@ For a Categoría A model, there is no dedicated `eliminados` route/view anymore 
 
 ### Permission System
 
-- **Spatie Laravel Permission**: Roles and permissions seeded in `database/seeders/AppInit/PermissionSeeder.php`
-- Permission naming convention: `view module`, `create module`, `edit module`, `delete module`, `restore module` (not yet the `recurso.accion` convention proposed for v1.3.0 Fase 2 — still pending)
-- Middleware applied per route: `middleware('permission:view products')`
+- **Spatie Laravel Permission**: Roles and permissions seeded in `database/seeders/AppInit/PermissionSeeder.php`; its permission cache is isolated per tenant connection (see "Multi-tenancy" above)
+- Permission naming convention: `recurso.accion` (e.g. `products.view`, `sales.create`, `users.restore`) — v1.3.0 Fase 2 renamed the old `view module`/`create module` convention project-wide, this is done, not pending
+- Middleware applied per route: `middleware('permission:products.view')`
 - FormRequests: `$this->user()->can('...')` in `authorize()`
 - Livewire component methods that replace a deleted route: `abort_unless(auth()->user()->can('...'), 403)` inside the method itself (see above)
 
@@ -254,11 +281,10 @@ Seeders are organized by domain:
 ## Environment
 
 Copy `.env.example` to `.env`. Key variables:
-- `DB_CONNECTION=sqlite` (dev) or `mysql` (production)
+- `DB_CONNECTION=sqlite` (dev, single tenant, no tenancy) or `mysql` (real multi-tenant flow, landlord + tenants)
 - `APP_DEBUG=true` (development only)
-- `QUEUE_CONNECTION=database` (sync in testing)
-- `CACHE_STORE=database` (persistent across requests)
-- `SESSION_DRIVER=database` (shared across instances)
+- `QUEUE_CONNECTION=redis`, `CACHE_STORE=redis`, `SESSION_DRIVER=redis` — required, not a perf option: `CacheTenancyBootstrapper` needs Redis to keep cache isolated per tenant
+- `REDIS_CLIENT=phpredis`, `REDIS_HOST`, `REDIS_PORT` — Sail's `redis` service by default
 
 ## Git Workflow
 
