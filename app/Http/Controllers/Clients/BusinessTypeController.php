@@ -18,7 +18,7 @@ class BusinessTypeController extends Controller
      */
     public function index()
     {
-        return view('configuration.business_types.index');
+        return view('clients.businessTypes.index');
     }
 
     /**

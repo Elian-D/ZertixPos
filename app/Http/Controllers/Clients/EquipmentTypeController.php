@@ -18,7 +18,7 @@ class EquipmentTypeController extends Controller
      */
     public function index()
     {
-        return view('configuration.equipment_types.index');
+        return view('clients.equipmentTypes.index');
     }
 
     /**
