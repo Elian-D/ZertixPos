@@ -9,6 +9,6 @@
     facturación rediseñado — el comprador ya está autenticado en este punto
     (solo se llega acá desde `billing.manage`, que requiere `auth`).
 --}}
-<x-app-layout>
+<x-app-layout title="Pago Aprobado">
     <livewire:billing.subscription-approved />
 </x-app-layout>

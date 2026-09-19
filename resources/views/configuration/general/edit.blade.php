@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Configuración General">
     <div class="min-h-screen py-12 px-4"
         x-cloak
         x-data="{

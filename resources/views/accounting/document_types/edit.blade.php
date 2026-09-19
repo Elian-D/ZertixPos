@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Editar Tipo de Documento: {{ $item->name }}">
     <div class="max-w-4xl mx-auto py-8 px-4">
         
         <form action="{{ route('configuration.document_types.update', $item) }}" method="POST"

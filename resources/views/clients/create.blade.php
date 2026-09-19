@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Nuevo Cliente">
     <div class="max-w-4xl mx-auto py-8 px-4">
             <form action="{{ route('clients.store') }}" method="POST"
                 class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100"

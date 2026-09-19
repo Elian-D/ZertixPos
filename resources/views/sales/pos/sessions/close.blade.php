@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Arqueo y Cierre de Caja">
     <div class="py-8">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
 

@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Gestión de Equipos">
     <div class="p-4 md:p-6 flex flex-col gap-6">
         <livewire:app.clients.equipment-table />
     </div>

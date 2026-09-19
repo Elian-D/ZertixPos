@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Editar Asiento Contable">
     <div class="max-w-5xl mx-auto py-8 px-4" 
          x-data="journalEntryForm({{ $item->items->toJson() }})" 
          x-init="init()">

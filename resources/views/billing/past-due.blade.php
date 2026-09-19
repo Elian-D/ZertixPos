@@ -12,7 +12,7 @@
         mostrarle a alguien sin autenticar. `EnsureSubscriptionActive` ahora
         manda a cualquier usuario YA AUTENTICADO directo al resumen real
         (`billing.manage` — ManageSubscription, con estado/plan/factura de
-        verdad, dentro de `<x-app-layout>`), nunca acá. El branch
+        verdad, dentro de `<x-app-layout title="Suscripción Vencida">`), nunca acá. El branch
         `auth()->check()` del botón de abajo queda como red de seguridad
         (si alguien autenticado llega a esta URL a mano), no como el camino
         esperado.

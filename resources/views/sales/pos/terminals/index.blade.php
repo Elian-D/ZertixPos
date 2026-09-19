@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Configuración de Terminales POS">
     <div class="p-4 md:p-6 flex flex-col gap-6">
         <livewire:app.sales.pos-terminal-table />
     </div>

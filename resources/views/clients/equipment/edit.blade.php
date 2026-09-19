@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Editar Equipo: {{ $equipment->name }}">
     <div class="max-w-4xl mx-auto py-8 px-4">
         <form action="{{ route('clients.equipment.update', $equipment) }}" method="POST"
             class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">

@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Tipos de Documento">
     <div class="p-4 md:p-6 flex flex-col gap-6">
 
         <x-ui.page-header title="Tipos de Documento" description="Gestiona los tipos de documento fiscal y sus correlativos de numeración." />

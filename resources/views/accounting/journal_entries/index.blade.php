@@ -4,7 +4,7 @@
     };
 </script>
 
-<x-app-layout>
+<x-app-layout title="Libro Diario">
     <div class="p-4 md:p-6 flex flex-col gap-6">
 
         <x-ui.page-header title="Libro Diario" description="Gestiona los asientos contables del libro diario y su estado de aprobación." :count="$items->total()" countLabel="asientos">
