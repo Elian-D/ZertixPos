@@ -134,7 +134,7 @@ class PosTerminalLobby extends Component
         if ($exists) {
             session()->flash('error', 'Esta terminal acaba de ser abierta por otro turno.');
 
-            return redirect()->route('pos.index');
+            return redirect()->route('sales.pos.index');
         }
 
         PosSession::create([
