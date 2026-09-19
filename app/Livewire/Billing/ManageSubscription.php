@@ -223,9 +223,36 @@ class ManageSubscription extends Component
      * (`SubscriptionApproved`, REQ-3.11) — ninguno de los dos depende de que
      * este método haga algo más que redirigir.
      */
+    /**
+     * Fix real (2026-09-18, reportado por el usuario): nada bloqueaba a un
+     * tenant `is_demo` de pagar/cambiar de plan de verdad — `EnsureSubscriptionActive`
+     * lo deja pasar siempre (nunca vence, ver su propio docblock), así que
+     * `billing.manage` era 100% alcanzable, y ni `subscribe()` ni
+     * `confirmCancel()` tenían ningún guard. El botón deshabilitado en la
+     * vista (docs/ui/buttons.md) es solo cosmético — cualquiera puede
+     * disparar el método Livewire directo con un POST armado a mano a
+     * `livewire/update`, sin pasar por el botón. El guard real vive acá,
+     * mismo criterio que `ProfileUpdateRequest`/`UpdatePasswordRequest`
+     * (REQ-3.9).
+     */
+    private function blockedInDemo(): bool
+    {
+        if (! tenant()?->is_demo) {
+            return false;
+        }
+
+        $this->errorMessage = 'Esta es una cuenta de demostración compartida — no se puede pagar ni cambiar de plan de verdad.';
+
+        return true;
+    }
+
     public function subscribe(PaymentGatewayContract $gateway): void
     {
         $this->errorMessage = null;
+
+        if ($this->blockedInDemo()) {
+            return;
+        }
 
         $plan = $this->selectedPlan;
 
@@ -346,6 +373,12 @@ class ManageSubscription extends Component
      */
     public function confirmCancel(PaymentGatewayContract $gateway): void
     {
+        if ($this->blockedInDemo()) {
+            $this->dispatch('close-modal', 'cancel-subscription');
+
+            return;
+        }
+
         $subscription = $this->currentSubscription;
 
         if (! $subscription) {

@@ -43,6 +43,21 @@
         </div>
     @endif
 
+    {{-- Fix real (2026-09-18) — tenant()->is_demo nunca vence
+         (EnsureSubscriptionActive lo deja pasar siempre), así que esta
+         pantalla es 100% alcanzable para la cuenta demo compartida. Los
+         botones que pagan/cambian de plan/cancelan quedan `disabled`
+         (docs/ui/buttons.md) más abajo — esto es solo el aviso, el bloqueo
+         real está en ManageSubscription::blockedInDemo(). --}}
+    @if (tenant()?->is_demo)
+        <div class="flex items-start gap-3 bg-state-info/10 text-state-info border border-state-info/20 rounded-lg px-4 py-3.5">
+            <x-heroicon-s-information-circle class="w-5 h-5 flex-shrink-0 mt-0.5" />
+            <p class="text-sm">
+                Esta es una cuenta de demostración compartida — podés explorar los planes, pero no se puede pagar ni cambiar de plan de verdad.
+            </p>
+        </div>
+    @endif
+
     {{-- ============================================================
          RESUMEN — adapta banner/CTA a active/trialing/past_due sin
          duplicar la regla de bloqueo real (esa sigue solo en
@@ -188,6 +203,7 @@
                             wire:click="openCancelModal"
                             iconLeft="heroicon-s-x-circle"
                             class="mt-1"
+                            :disabled="(bool) tenant()?->is_demo"
                         >
                             Cancelar suscripción
                         </x-ui.button>
@@ -521,6 +537,7 @@
                         wire:loading.attr="disabled"
                         wire:target="subscribe"
                         iconLeft="heroicon-s-credit-card"
+                        :disabled="(bool) tenant()?->is_demo"
                     >
                         {{ $isChangeOfPlan ? 'Confirmar cambio con PayPal' : 'Pagar $' . number_format($plan->grossPrice(), 2) . ' USD con PayPal' }}
                     </x-ui.button>
@@ -596,7 +613,7 @@
                 <x-ui.button variant="primary" :fullWidth="true" class="sm:w-auto" x-on:click="$dispatch('close')" iconLeft="heroicon-s-check-circle">
                     Mantener mi suscripción
                 </x-ui.button>
-                <x-ui.button variant="error" appearance="outline" :fullWidth="true" class="sm:w-auto" wire:click="confirmCancel" iconLeft="heroicon-s-x-circle">
+                <x-ui.button variant="error" appearance="outline" :fullWidth="true" class="sm:w-auto" wire:click="confirmCancel" iconLeft="heroicon-s-x-circle" :disabled="(bool) tenant()?->is_demo">
                     Confirmar cancelación
                 </x-ui.button>
             </div>
