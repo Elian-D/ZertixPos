@@ -8,7 +8,6 @@ use App\Http\Controllers\Accounting\ReceivableController;
 use App\Http\Controllers\Sales\InvoiceController;
 use App\Http\Controllers\Sales\Ncf\NcfLogController;
 use App\Http\Controllers\Sales\Ncf\NcfSequenceController;
-use App\Http\Controllers\Sales\Ncf\NcfTypeController;
 use Illuminate\Support\Facades\Route;
 
 // Reemplaza accounting.php (REQ-3.4) — nombres de ruta accounting.*→finance.*,
@@ -216,10 +215,5 @@ Route::prefix('finance')->as('finance.')->group(function () {
                 Route::get('/export/txt', [NcfLogController::class, 'exportTxt'])->name('export.txt');
             });
 
-            Route::group(['prefix' => 'types', 'as' => 'types.'], function () {
-                Route::get('/', [NcfTypeController::class, 'index'])->name('index');
-                Route::post('/', [NcfTypeController::class, 'store'])->name('store');
-                Route::put('/{ncfType}', [NcfTypeController::class, 'update'])->name('update');
-            });
         });
 });
