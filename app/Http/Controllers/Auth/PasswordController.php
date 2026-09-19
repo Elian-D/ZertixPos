@@ -18,6 +18,8 @@ class PasswordController extends Controller
             'password' => Hash::make($request->validated('password')),
         ]);
 
-        return back()->with('status', 'password-updated');
+        // 'success', no 'status' (Breeze) — es la clave que docs/ui/toast.md
+        // reconoce para disparar el toast automático al renderizar.
+        return back()->with('success', 'Contraseña actualizada correctamente.');
     }
 }
