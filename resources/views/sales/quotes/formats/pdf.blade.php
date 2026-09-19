@@ -111,7 +111,7 @@
             </td>
             <td class="text-right" style="width: 40%;">
                 @if($config->logo)
-                    <img src="{{ public_path('storage/'.$config->logo) }}" style="max-height: 70px;">
+                    <img src="{{ storage_path('app/public/'.$config->logo) }}" style="max-height: 70px;">
                 @else
                     <div style="height: 70px;"></div>
                 @endif

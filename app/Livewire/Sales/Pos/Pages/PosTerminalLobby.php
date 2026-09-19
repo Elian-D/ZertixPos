@@ -25,12 +25,12 @@ class PosTerminalLobby extends Component
         $this->pin = '';
         $this->selectedTerminalId = $terminalId;
 
-        // El permiso de operar POS ya lo exige la ruta ('permission:pos sessions manage'
+        // El permiso de operar POS ya lo exige la ruta ('permission:pos_sessions.manage'
         // en routes/app/sales.php) — quien llega aquí ya está autorizado. Este check
         // es solo defensa en profundidad para la llamada Livewire en sí (que no pasa por el
         // middleware de la ruta de página), por eso es un 403 silencioso, no un mensaje en
         // la vista: la vista ya no necesita saber nada de permisos.
-        abort_unless(Auth::user()->can('pos sessions manage'), 403);
+        abort_unless(Auth::user()->can('pos_sessions.manage'), 403);
 
         $terminal = PosTerminal::find($terminalId);
         if (! $terminal || ! $terminal->is_active) {
@@ -100,7 +100,7 @@ class PosTerminalLobby extends Component
         // para dar buen feedback en la UI, este método es el que de verdad decide si se
         // entra al Workspace o se abre un turno — se re-valida aquí por si se invoca un
         // método de Livewire directamente (ej. verifyPin) sin pasar por selectTerminal().
-        abort_unless(Auth::user()->can('pos sessions manage'), 403);
+        abort_unless(Auth::user()->can('pos_sessions.manage'), 403);
 
         $activeSession = $terminal->sessions()->where('status', PosSession::STATUS_OPEN)->first();
 
@@ -118,7 +118,7 @@ class PosTerminalLobby extends Component
 
     public function openSession()
     {
-        abort_unless(Auth::user()->can('pos sessions manage'), 403);
+        abort_unless(Auth::user()->can('pos_sessions.manage'), 403);
 
         $this->validate([
             'opening_balance' => 'required|numeric|min:0',
@@ -162,7 +162,7 @@ class PosTerminalLobby extends Component
 
         /** @var \Livewire\Features\SupportPageComponents\View $view */
         // No se pasa nada de permisos a la vista: quien llega aquí ya pasó el
-        // middleware 'permission:pos sessions manage' de la ruta.
+        // middleware 'permission:pos_sessions.manage' de la ruta.
         $view = view('livewire.sales.pos.pages.pos-terminal-lobby', [
             'terminals' => $terminals,
         ]);

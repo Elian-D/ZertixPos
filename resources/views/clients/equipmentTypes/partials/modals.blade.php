@@ -4,9 +4,9 @@
         <x-form-header
             title="Nuevo Tipo de Equipo"
             subtitle="Registre un nuevo tipo de equipo."
-            :back-route="route('clients.equipmentTypes.index')" />
+            :back-route="route('configuration.equipment_types.index')" />
 
-        <form action="{{ route('clients.equipmentTypes.store') }}" method="POST" class="p-6">
+        <form action="{{ route('configuration.equipment_types.store') }}" method="POST" class="p-6">
             
             @csrf
 
@@ -44,9 +44,9 @@
         <x-form-header
             title="Editar Tipo de Equipo: {{ $item->nombre }}"
             subtitle="Modifique la informacion del tipo de equipo."
-            :back-route="route('clients.equipmentTypes.index')" />
+            :back-route="route('configuration.equipment_types.index')" />
 
-        <form method="POST" action="{{ route('clients.equipmentTypes.update', $item) }}" class="p-6">
+        <form method="POST" action="{{ route('configuration.equipment_types.update', $item) }}" class="p-6">
             @csrf @method('PUT')
 
             <div class="space-y-4">
@@ -75,11 +75,26 @@
         </form>
     </x-modal>
 
-    <x-ui.confirm-deletion-modal 
-    :id="$item->id"
-    :title="'¿Eliminar Tipo de Equipo?'"
-    :itemName="$item->nombre"
-    :type="'el tipo de equipo'"
-    :route="route('clients.equipmentTypes.destroy', $item)"
-    />
+    @if($item->trashed())
+        {{-- Papelera (docs/analisis/politica-soft-deletes.md §6) — borrado
+             definitivo vía wireConfirm, dispara EquipmentTypeTable::forceDelete(). --}}
+        <x-ui.confirm-deletion-modal
+        :id="$item->id"
+        :title="'¿Eliminar Permanentemente?'"
+        :itemName="$item->nombre"
+        :type="'el tipo de equipo'"
+        :wireConfirm="'forceDelete(' . $item->id . ')'"
+        :description="'Estás a punto de borrar definitivamente el tipo de equipo <strong>' . e($item->nombre) . '</strong>.'"
+        >
+        <strong>Aviso Crítico:</strong> Esta operación borrará todos los datos asociados y no se puede deshacer.
+        </x-ui.confirm-deletion-modal>
+    @else
+        <x-ui.confirm-deletion-modal
+        :id="$item->id"
+        :title="'¿Eliminar Tipo de Equipo?'"
+        :itemName="$item->nombre"
+        :type="'el tipo de equipo'"
+        :route="route('configuration.equipment_types.destroy', $item)"
+        />
+    @endif
     @endforeach

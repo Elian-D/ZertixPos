@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Catálogo de Cuentas">
     <div class="p-4 md:p-6 flex flex-col gap-6">
 
         <x-ui.page-header title="Catálogo de Cuentas" description="Gestiona el catálogo de cuentas contables de la empresa." :count="$items->total()" countLabel="cuentas">

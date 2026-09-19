@@ -143,4 +143,8 @@
             </div>
         </div>
     </x-modal>
+
+    {{-- Categoría C (docs/analisis/politica-soft-deletes.md) — CxC es bitácora de
+         deuda del cliente, nunca se borra ni se archiva: sin modal de eliminación
+         aquí a propósito. --}}
 @endforeach

@@ -9,7 +9,7 @@ class UpdateDocumentTypeRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('edit document types');
+        return $this->user()->can('document_types.edit');
     }
 
     public function rules(): array

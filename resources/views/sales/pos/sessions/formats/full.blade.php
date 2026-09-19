@@ -52,7 +52,7 @@
         <tr>
             <td style="width: 60%;">
                 @if($config->logo)
-                    <img src="{{ public_path('storage/'.$config->logo) }}" style="max-height: 55px; margin-bottom: 6px;"><br>
+                    <img src="{{ storage_path('app/public/'.$config->logo) }}" style="max-height: 55px; margin-bottom: 6px;"><br>
                 @endif
                 <span class="company-name">{{ $config->nombre_empresa }}</span><br>
                 <span style="font-size: 10px; color: #666;">{{ $config->direccion }}</span>

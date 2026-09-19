@@ -34,7 +34,7 @@
     <div class="ticket">
         <div class="center">
             @if($config->logo)
-                <img src="{{ asset('storage/'.$config->logo) }}" style="max-height: 45px; margin-bottom: 4px;"><br>
+                <img src="{{ tenant_asset($config->logo) }}" style="max-height: 45px; margin-bottom: 4px;"><br>
             @endif
             <span class="bold" style="font-size: 14px; display:block;">{{ $config->nombre_empresa }}</span>
             <span style="font-size: 10px;">{{ $config->direccion }}</span>

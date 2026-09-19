@@ -27,19 +27,21 @@ Route::prefix('reports')->as('reports.')->group(function () {
 
     Route::middleware('module:inventory.tracking')->group(function () {
         Route::get('/inventory', InventoryDashboardController::class)
-            ->middleware('permission:view inventory dashboard')
+            ->middleware('permission:inventory.dashboard')
             ->name('inventory');
     });
 
     Route::middleware('module:accounting.advanced')->group(function () {
         Route::get('/finance', AccountingDashboardController::class)
-            ->middleware('can:view accounting dashboard')
+            ->middleware('can:accounting.dashboard')
             ->name('finance');
     });
 
-    if (module_enabled('sales.ncf')) {
-        Route::get('/ncf', NcfDashboardController::class)
-            ->middleware(['auth', 'permission:manage ncf sequences'])
-            ->name('ncf');
-    }
+    // REQ-1.15 (v1.3.0 Fase 1): igual que en routes/app/finance.php — `module:sales.ncf`
+    // como middleware, no un `if (module_enabled(...))` en el archivo de rutas (ese
+    // corre al registrar rutas, antes de que la tenencia se inicialice para la
+    // petición, y siempre evaluaba `false` contra la conexión central).
+    Route::get('/ncf', NcfDashboardController::class)
+        ->middleware(['auth', 'permission:ncf_sequences.manage', 'module:sales.ncf'])
+        ->name('ncf');
 });

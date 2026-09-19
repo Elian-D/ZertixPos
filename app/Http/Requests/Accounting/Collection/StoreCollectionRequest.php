@@ -12,7 +12,7 @@ class StoreCollectionRequest extends FormRequest
         // Defensa en profundidad: la ruta ya está gateada por module:sales.receivables
         // (REQ-10.9 bis), pero si el flag se apaga entre el GET del form y el POST,
         // esto evita registrar un cobro contra un módulo que el negocio desactivó.
-        return $this->user()->can('create payments') && module_enabled('sales.receivables');
+        return $this->user()->can('collections.create') && module_enabled('sales.receivables');
     }
 
     public function rules(): array

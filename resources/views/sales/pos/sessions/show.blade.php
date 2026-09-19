@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Detalle de Turno: {{ $posSession->terminal->name ?? 'Terminal eliminada' }}">
     <div class="py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
             
@@ -39,7 +39,7 @@
                     @endif --}}
 
                     {{-- Mismo botón/estilo "Cerrar Turno" que ya existe en el navbar del Workspace --}}
-                    @if($posSession->isOpen() && auth()->user()->can('pos sessions manage'))
+                    @if($posSession->isOpen() && auth()->user()->can('pos_sessions.manage'))
                         <a href="{{ route('sales.pos.sessions.close-form', $posSession) }}"
                            title="Cerrar Turno"
                            class="flex items-center gap-1.5 text-sm font-bold text-white bg-gray-800 hover:bg-gray-900 px-4 py-2.5 rounded-xl transition-colors shadow-sm active:scale-95">

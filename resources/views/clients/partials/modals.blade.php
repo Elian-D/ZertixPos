@@ -176,7 +176,21 @@
         </div>
     </x-modal>
 
-    @unless($client->isConsumidorFinal())
+    @if($client->trashed())
+        {{-- Papelera (docs/analisis/politica-soft-deletes.md §6) — borrado
+             definitivo vía wireConfirm, dispara ClientTable::forceDelete()
+             en vez de una ruta HTTP dedicada. --}}
+        <x-ui.confirm-deletion-modal
+        :id="$client->id"
+        :title="'¿Eliminar Permanentemente?'"
+        :itemName="$client->name"
+        :type="'el cliente'"
+        :wireConfirm="'forceDelete(' . $client->id . ')'"
+        :description="'Estás a punto de borrar definitivamente el cliente <strong>' . e($client->name) . '</strong>.'"
+        >
+        <strong>Aviso Crítico:</strong> Esta operación borrará todos los datos asociados y no se puede deshacer.
+        </x-ui.confirm-deletion-modal>
+    @elseif(! $client->isConsumidorFinal())
         <x-ui.confirm-deletion-modal
         :id="$client->id"
         :title="'¿Eliminar Cliente?'"
@@ -186,7 +200,7 @@
         >
         <strong>Aviso:</strong> Esta operación se puede deshacer desde la papelera.
         </x-ui.confirm-deletion-modal>
-    @endunless
+    @endif
     @endforeach
 
     

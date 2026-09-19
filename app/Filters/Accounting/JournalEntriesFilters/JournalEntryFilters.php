@@ -11,7 +11,8 @@ class JournalEntryFilters extends QueryFilter
         return [
             'search'    => EntrySearchFilter::class,
             'status'    => EntryStatusFilter::class,
-            'from_date' => EntryDateFilter::class,
+            'from_date' => EntryDateFromFilter::class,
+            'to_date'   => EntryDateToFilter::class,
         ];
     }
 }

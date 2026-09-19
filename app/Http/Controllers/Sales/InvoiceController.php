@@ -2,67 +2,31 @@
 
 namespace App\Http\Controllers\Sales;
 
-use App\Exports\Sales\InvoicesExport;
-use App\Filters\Sales\InvoiceFilters\InvoiceFilters;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Sales\Invoices\ExportInvoiceRequest;
 use App\Models\Sales\Invoice;
-use App\Services\Sales\InvoicesServices\InvoiceCatalogService;
 use App\Services\Sales\InvoicesServices\InvoicePrintService;
 use App\Services\Sales\Pos\PosPrintService;
-use App\Tables\SalesTables\InvoiceTable;
-use App\Traits\SoftDeletesTrait;
-use Exception;
 use Illuminate\Http\Request;
-use Maatwebsite\Excel\Facades\Excel;
 
+/**
+ * Categoría C (docs/analisis/politica-soft-deletes.md) — Invoice::status solo
+ * refleja la anulación de la venta origen (SaleService::cancel()), nunca un
+ * cancel() propio. Nunca implementó destroy() pese al SoftDeletesTrait viejo
+ * (boilerplate muerto, igual que SaleController) — se quitó del todo.
+ */
 class InvoiceController extends Controller
 {
-    use SoftDeletesTrait;
-
     public function __construct(
-        protected InvoiceCatalogService $catalogService,
         protected InvoicePrintService $printService,
         protected PosPrintService $posPrintService
     ) {}
 
     /**
-     * Vista principal: Listado de documentos legales.
+     * Listado migrado a Livewire — ver App\Livewire\App\Finance\InvoiceTable.
      */
-    public function index(Request $request)
+    public function index()
     {
-        $visibleColumns = $request->input('columns', InvoiceTable::defaultDesktop());
-        $perPage = $request->input('per_page', 10);
-
-        // Aplicación del Pipeline de Filtros sobre la relación con ventas y clientes
-        $invoices = (new InvoiceFilters($request))
-            ->apply(Invoice::query()->withIndexRelations())
-            ->latest()
-            ->paginate($perPage)
-            ->withQueryString();
-
-        $catalogs = $this->catalogService->getForFilters();
-
-        if ($request->ajax()) {
-            return view('sales.invoices.partials.table', [
-                'items' => $invoices,
-                'visibleColumns' => $visibleColumns,
-                'allColumns' => InvoiceTable::allColumns(),
-                'defaultDesktop' => InvoiceTable::defaultDesktop(),
-                'defaultMobile' => InvoiceTable::defaultMobile(),
-            ])->render();
-        }
-
-        return view('sales.invoices.index', array_merge(
-            [
-                'items' => $invoices,
-                'visibleColumns' => $visibleColumns,
-                'allColumns' => InvoiceTable::allColumns(),
-                'defaultDesktop' => InvoiceTable::defaultDesktop(),
-                'defaultMobile' => InvoiceTable::defaultMobile(),
-            ],
-            $catalogs
-        ));
+        return view('sales.invoices.index');
     }
 
     public function show(Invoice $invoice)
@@ -153,50 +117,5 @@ class InvoiceController extends Controller
         $view = view('sales.invoices.formats.full', ['invoice' => $invoice])->render();
 
         return view('sales.invoices.print', compact('invoice', 'view'));
-    }
-
-    /**
-     * Exportación filtrada de facturas a Excel.
-     */
-    public function export(ExportInvoiceRequest $request)
-    {
-        try {
-            // Aplicamos los mismos filtros que en la tabla
-            $query = (new InvoiceFilters($request))
-                ->apply(Invoice::query());
-
-            $fileName = 'historial-facturacion-'.now()->format('d-m-Y-H-i').'.xlsx';
-
-            return Excel::download(new InvoicesExport($query), $fileName);
-
-        } catch (Exception $e) {
-            return back()->with('error', 'No se pudo generar el reporte: '.$e->getMessage());
-        }
-    }
-
-    // Requerimientos para SoftDeletesTrait (Auditoría técnica)
-    protected function getModelClass(): string
-    {
-        return Invoice::class;
-    }
-
-    protected function getViewFolder(): string
-    {
-        return 'sales.invoices';
-    }
-
-    protected function getRouteIndex(): string
-    {
-        return 'finance.invoices.index';
-    }
-
-    protected function getRouteEliminadas(): string
-    {
-        return 'finance.invoices.eliminadas';
-    }
-
-    protected function getEntityName(): string
-    {
-        return 'Factura';
     }
 }

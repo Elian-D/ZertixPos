@@ -11,7 +11,7 @@ class StoreClientRequest extends FormRequest
     public function authorize(): bool
     {
         // Verificamos el permiso del Seeder que compartiste
-        return $this->user()->can('clients create');
+        return $this->user()->can('clients.create');
     }
 
     public function rules(): array

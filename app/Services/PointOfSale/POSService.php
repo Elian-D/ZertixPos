@@ -14,15 +14,7 @@ class POSService
 
     public function updatePOS(PointOfSale $pos, array $data): bool
     {
-        $oldTypeId = $pos->business_type_id;
-        $updated = $pos->update($data);
-
-        // Si el tipo de negocio cambió durante la edición, regeneramos el código
-        if ($updated && isset($data['business_type_id']) && $data['business_type_id'] != $oldTypeId) {
-            $pos->generateCode();
-        }
-
-        return $updated;
+        return $pos->update($data);
     }
 
     public function performBulkAction(array $ids, string $action, $value = null): int

@@ -235,4 +235,25 @@
         </div>
     </div>
 </x-modal>
+
+{{-- MODAL: CONFIRMACIÓN DE ELIMINACIÓN — solo alcanzable si el lote sigue
+     virgen (current < from), mismo guard que NcfSequenceService::delete(). --}}
+@if($item->current < $item->from)
+    <x-modal name="confirm-sequence-deletion-{{ $item->id }}" focusable>
+        <form method="post" action="{{ route('finance.ncf.sequences.destroy', $item) }}" class="p-6 text-left">
+            @csrf
+            @method('DELETE')
+            <h2 class="text-lg font-medium text-gray-900">
+                ¿Está seguro de que desea eliminar este lote de NCF?
+            </h2>
+            <p class="mt-1 text-sm text-gray-600">
+                Esta acción no se puede deshacer. Se eliminará la secuencia <strong>{{ $item->series }}{{ $item->type->code }}</strong> desde el {{ $item->from }} hasta el {{ $item->to }}.
+            </p>
+            <div class="mt-6 flex justify-end">
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
+                <x-ui.button type="submit" variant="error" class="ml-3">Eliminar Lote</x-ui.button>
+            </div>
+        </form>
+    </x-modal>
+@endif
 @endforeach

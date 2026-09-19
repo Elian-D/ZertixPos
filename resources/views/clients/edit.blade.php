@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Editar Cliente: {{ $client->name }}">
     <div class="max-w-4xl mx-auto py-8 px-4">
         {{-- Acción dinámica: update si existe $client, store si no --}}
         <form action="{{ isset($client) ? route('clients.update', $client) : route('clients.store') }}"

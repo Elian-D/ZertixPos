@@ -10,7 +10,7 @@ class OpenSessionRequest extends FormRequest
     public function authorize(): bool
     {
         // Usamos el permiso que definimos en el seeder
-        return $this->user()->can('pos sessions manage');
+        return $this->user()->can('pos_sessions.manage');
     }
 
     public function rules(): array

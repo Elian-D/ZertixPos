@@ -11,7 +11,8 @@ class NcfLogFilters extends QueryFilter
         return [
             'ncf_type_id' => NcfTypeFilter::class, // Reutilizado
             'status'      => NcfLogStatusFilter::class,
-            'from_date'   => NcfLogDateFilter::class,
+            'from_date'   => NcfLogDateFromFilter::class,
+            'to_date'     => NcfLogDateToFilter::class,
             'search'      => NcfLogSearchFilter::class, // Para buscar por NCF específico
         ];
     }

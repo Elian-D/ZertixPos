@@ -9,7 +9,7 @@ class StorePointOfSaleRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('pos create');
+        return $this->user()->can('delivery_points.create');
     }
 
     public function rules(): array

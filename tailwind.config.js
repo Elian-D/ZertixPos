@@ -78,6 +78,35 @@ export default {
                 '12': '4rem',    // 48px
                 '13': '5.5rem', // 88px
             },
+
+            // Install Wizard (v1.3.0 Fase 4, rediseño 2026-09-05): "carrusel"
+            // en vez del fade vertical original (`fadeSlideIn`) — cada paso
+            // entra desvaneciendo, desde la derecha al avanzar
+            // (`carousel-in`, "Siguiente") o desde la izquierda al retroceder
+            // (`carousel-in-reverse`, "Atrás" — `InstallWizard::$stepDirection`
+            // decide cuál aplica, ver install-wizard.blade.php). Puesta
+            // directo en `class` (no vía `x-transition` de Alpine) — el
+            // navegador dispara el `@keyframes` solo por insertar el nodo
+            // nuevo en el DOM (Livewire lo agrega/quita por `wire:key`), sin
+            // depender de que Alpine coordine esa inserción, que es lo que
+            // `x-transition` necesita y acá no pasa (probado, no funcionaba).
+            // Sin animación de salida real: Livewire destruye el nodo viejo
+            // en el mismo instante que inserta el nuevo, no hay forma de
+            // animar una salida sin mantener los dos nodos en el DOM a la vez.
+            keyframes: {
+                carouselIn: {
+                    '0%': { opacity: '0', transform: 'translateX(28px)' },
+                    '100%': { opacity: '1', transform: 'translateX(0)' },
+                },
+                carouselInReverse: {
+                    '0%': { opacity: '0', transform: 'translateX(-28px)' },
+                    '100%': { opacity: '1', transform: 'translateX(0)' },
+                },
+            },
+            animation: {
+                'carousel-in': 'carouselIn 0.35s ease-out',
+                'carousel-in-reverse': 'carouselInReverse 0.35s ease-out',
+            },
         },
     },
 

@@ -3,9 +3,7 @@
 namespace App\Services\Equipment;
 
 use App\Models\Clients\Equipment;
-use App\Models\Clients\EquipmentType;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Str;
 
 class EquipmentService
 {
@@ -13,7 +11,6 @@ class EquipmentService
     public function create(array $data): Equipment
     {
         return DB::transaction(function () use ($data) {
-            // El evento booted -> created del modelo llamará a generateCode automáticamente
             return Equipment::create($data);
         });
     }
@@ -21,21 +18,7 @@ class EquipmentService
     public function update(Equipment $equipment, array $data): bool
     {
         return DB::transaction(function () use ($equipment, $data) {
-            $oldTypeId = $equipment->equipment_type_id;
-            
-            $updated = $equipment->update($data);
-
-            // Si cambió el tipo o se marcó el checkbox de regenerar
-            if ($updated) {
-                $typeChanged = isset($data['equipment_type_id']) && $data['equipment_type_id'] != $oldTypeId;
-                $forceRegenerate = isset($data['regenerate_code']) && $data['regenerate_code'] == '1';
-
-                if ($typeChanged || $forceRegenerate) {
-                    $equipment->generateCode();
-                }
-            }
-
-            return $updated;
+            return $equipment->update($data);
         });
     }
 

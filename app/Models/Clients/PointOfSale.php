@@ -18,7 +18,6 @@ class PointOfSale extends Model
         'client_id',
         'business_type_id',
         'name',
-        'code',
         'provincia_id',
         'city',
         'address',
@@ -29,45 +28,6 @@ class PointOfSale extends Model
         'notes',
         'active',
     ];
-
-    /* ===========================
-    | COMPORTAMIENTO AUTOMÁTICO
-    =========================== */
-    protected static function booted()
-    {
-        static::created(function (PointOfSale $pos) {
-            $pos->generateCode();
-        });
-    }
-
-    /* ===========================
-    |  GENERACIÓN DE CÓDIGO
-    =========================== */
-
-    /**
-     * Genera y guarda el código basado en prefijo + ID
-     */
-    public function generateCode(): void
-    {
-        // Cargamos la relación si no existe para evitar errores
-        if (! $this->businessType) {
-            $this->load('businessType');
-        }
-
-        $prefix = $this->businessType ? $this->businessType->prefix : 'POS';
-
-        $generatedCode = sprintf(
-            '%s-%05d',
-            strtoupper($prefix),
-            $this->id
-        );
-
-        $this->updateQuietly([
-            'code' => $generatedCode,
-        ]);
-
-        $this->syncOriginal();
-    }
 
     /* ===========================
      |      RELACIONES
@@ -106,9 +66,7 @@ class PointOfSale extends Model
      */
     public function getDisplayNameAttribute(): string
     {
-        return $this->code
-            ? "{$this->name} ({$this->code})"
-            : $this->name;
+        return $this->name;
     }
 
     /* ===========================

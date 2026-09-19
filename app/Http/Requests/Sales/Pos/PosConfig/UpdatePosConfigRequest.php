@@ -9,7 +9,7 @@ class UpdatePosConfigRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return Gate::allows('pos config update');
+        return Gate::allows('pos_config.update');
     }
 
     /**

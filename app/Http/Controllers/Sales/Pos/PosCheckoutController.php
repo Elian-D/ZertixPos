@@ -4,12 +4,11 @@ namespace App\Http\Controllers\Sales\Pos;
 
 use App\DTOs\Sales\PosContext;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Sales\StoreSaleRequest;
+use App\Http\Requests\Sales\Pos\StorePosSaleRequest;
 use App\Models\Sales\Pos\PosSession;
 use App\Models\Sales\Pos\PosTerminal;
 use App\Services\Sales\SalesServices\SaleService;
 use Exception;
-use Illuminate\Support\Facades\Auth;
 
 class PosCheckoutController extends Controller
 {
@@ -17,15 +16,14 @@ class PosCheckoutController extends Controller
 
     /**
      * Registra una venta originada desde el Workspace POS.
-     * Reutiliza StoreSaleRequest/SaleService (mismo camino que el checkout de backoffice)
-     * para no duplicar reglas de negocio; el contexto de caja se resuelve en el servidor.
+     * StorePosSaleRequest (REQ-2.4, v1.3.0 Fase 2) — extiende las reglas de
+     * StoreSaleRequest sin duplicarlas, pero autoriza por `pos_sessions.manage`,
+     * no `sales.create` (permiso de backoffice, ya no aplica acá). Cualquier
+     * usuario con permiso para operar sesiones POS puede vender en un turno ya
+     * abierto, no solo quien lo abrió (ver PosSession 9.0 en POS-Interfaz.md).
      */
-    public function store(StoreSaleRequest $request, PosTerminal $pos_terminal)
+    public function store(StorePosSaleRequest $request, PosTerminal $pos_terminal)
     {
-        // Cualquier usuario con permiso para operar sesiones POS puede vender en un
-        // turno ya abierto, no solo quien lo abrió (ver PosSession 9.0 en POS-Interfaz.md).
-        abort_unless(Auth::user()->can('pos sessions manage'), 403);
-
         $session = PosSession::where('terminal_id', $pos_terminal->id)
             ->open()
             ->first();

@@ -8,7 +8,7 @@ class StoreEquipmentRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('equipment create');
+        return $this->user()->can('equipment.create');
     }
 
     public function rules(): array

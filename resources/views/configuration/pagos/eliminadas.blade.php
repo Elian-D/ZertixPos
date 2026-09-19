@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Papelera de Métodos de Pago">
 
     <div class="max-w-7xl mx-auto">
         <div class="bg-white shadow-xl rounded-lg p-6">

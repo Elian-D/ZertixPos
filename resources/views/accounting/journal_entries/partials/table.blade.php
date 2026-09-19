@@ -78,7 +78,7 @@
             <td class="px-6 py-4">
                 <div class="flex items-center justify-end gap-2">
                     @if($entry->status === \App\Models\Accounting\JournalEntry::STATUS_DRAFT)
-                        @can('edit journal entries')
+                        @can('journal_entries.edit')
                             <a href="{{ route('finance.journal_entries.edit', $entry) }}" 
                                class="bg-white border border-amber-200 text-amber-600 hover:bg-amber-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"
                                title="Editar Asiento">
@@ -86,7 +86,7 @@
                             </a>
                         @endcan
                         
-                        @can('post journal entries')
+                        @can('journal_entries.post')
                             <button type="button" 
                                     @click="$dispatch('open-modal', 'confirm-post-{{ $entry->id }}')"
                                     class="bg-white border border-emerald-200 text-emerald-600 hover:bg-emerald-600 hover:text-white p-2 rounded-lg transition-all shadow-sm"

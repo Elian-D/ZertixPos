@@ -285,11 +285,26 @@
         </form>
     </x-modal>
 
-    <x-ui.confirm-deletion-modal 
-        :id="$item->id"
-        :title="'¿Eliminar Almacén?'"
-        :itemName="$item->name"
-        :type="'el almacén'"
-        :route="route('inventory.warehouses.destroy', $item)"
-    />
+    @if($item->trashed())
+        {{-- Papelera (docs/analisis/politica-soft-deletes.md §6) — borrado
+             definitivo vía wireConfirm, dispara WarehouseTable::forceDelete(). --}}
+        <x-ui.confirm-deletion-modal
+            :id="$item->id"
+            :title="'¿Eliminar Permanentemente?'"
+            :itemName="$item->name"
+            :type="'el almacén'"
+            :wireConfirm="'forceDelete(' . $item->id . ')'"
+            :description="'Estás a punto de borrar definitivamente el almacén <strong>' . e($item->name) . '</strong>.'"
+        >
+            <strong>Aviso Crítico:</strong> Esta operación es irreversible. Si este almacén tuvo movimientos de inventario históricos, podrías perder coherencia en reportes antiguos.
+        </x-ui.confirm-deletion-modal>
+    @else
+        <x-ui.confirm-deletion-modal
+            :id="$item->id"
+            :title="'¿Eliminar Almacén?'"
+            :itemName="$item->name"
+            :type="'el almacén'"
+            :route="route('inventory.warehouses.destroy', $item)"
+        />
+    @endif
     @endforeach

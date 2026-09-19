@@ -13,15 +13,10 @@ class RoleSeeder extends Seeder
      */
     public function run(): void
     {
-        // Creación de roles
-
+        // Creación de rol Admin
         $admin = Role::firstOrCreate(['name' => 'admin']);
-        $user = Role::firstOrCreate(['name' => 'Usuario Genérico']);
 
         // Asignar todos los permisos al rol admin
         $admin->syncPermissions(Permission::all());
-
-        // Asignar todos los permisos al rol admin
-        $user->syncPermissions('view dashboard');
     }
 }

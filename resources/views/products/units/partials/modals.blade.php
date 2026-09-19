@@ -4,9 +4,9 @@
         <x-form-header
             title="Nueva Unidad de Medida"
             subtitle="Registre una nueva unidad de medida."
-            :back-route="route('inventory.products.units.index')" />
+            :back-route="route('configuration.units.index')" />
 
-        <form action="{{ route('inventory.products.units.store') }}" method="POST" class="p-6">
+        <form action="{{ route('configuration.units.store') }}" method="POST" class="p-6">
             
             @csrf
 
@@ -58,9 +58,9 @@
         <x-form-header
             title="Editar Unidad de Medida: {{ $item->name }}"
             subtitle="Modifique la informacion de la unidad de medida."
-            :back-route="route('inventory.products.units.index')" />
+            :back-route="route('configuration.units.index')" />
 
-        <form method="POST" action="{{ route('inventory.products.units.update', $item) }}" class="p-6">
+        <form method="POST" action="{{ route('configuration.units.update', $item) }}" class="p-6">
             @csrf @method('PUT')
 
             <div class="space-y-4">
@@ -106,11 +106,26 @@
         </form>
     </x-modal>
 
-    <x-ui.confirm-deletion-modal 
-    :id="$item->id"
-    :title="'¿Eliminar Unidad de medida?'"
-    :itemName="$item->name"
-    :type="'la unidad de medida'"
-    :route="route('inventory.products.units.destroy', $item)"
-    />
+    @if($item->trashed())
+        {{-- Papelera (docs/analisis/politica-soft-deletes.md §6) — borrado
+             definitivo vía wireConfirm, dispara UnitTable::forceDelete(). --}}
+        <x-ui.confirm-deletion-modal
+            :id="$item->id"
+            :title="'¿Eliminar Permanentemente?'"
+            :itemName="$item->name"
+            :type="'la unidad de medida'"
+            :wireConfirm="'forceDelete(' . $item->id . ')'"
+            :description="'Estás a punto de borrar definitivamente la unidad de medida <strong>' . e($item->name) . '</strong>.'"
+        >
+            <strong>Aviso Crítico:</strong> Esta operación borrará todos los datos asociados y no se puede deshacer.
+        </x-ui.confirm-deletion-modal>
+    @else
+        <x-ui.confirm-deletion-modal
+            :id="$item->id"
+            :title="'¿Eliminar Unidad de medida?'"
+            :itemName="$item->name"
+            :type="'la unidad de medida'"
+            :route="route('configuration.units.destroy', $item)"
+        />
+    @endif
     @endforeach

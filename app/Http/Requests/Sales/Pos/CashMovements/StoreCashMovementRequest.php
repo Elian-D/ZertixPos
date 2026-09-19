@@ -10,7 +10,7 @@ class StoreCashMovementRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('pos cash movements create');
+        return $this->user()->can('pos_cash_movements.create');
     }
 
     public function rules(): array

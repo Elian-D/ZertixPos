@@ -12,7 +12,6 @@ use Database\Seeders\AppInit\GeoDataSeeder;
 use Database\Seeders\AppInit\InstallationModuleSeeder;
 use Database\Seeders\AppInit\NcfTypeSeeder;
 use Database\Seeders\AppInit\PermissionSeeder;
-use Database\Seeders\AppInit\PlanSeeder;
 use Database\Seeders\AppInit\PosSettingSeeder;
 use Database\Seeders\AppInit\RoleSeeder;
 use Database\Seeders\AppInit\TipoPagoSeeder;
@@ -41,7 +40,9 @@ class DatabaseSeeder extends Seeder
             // Datos geográficos (RD-only, Fase 6)
             GeoDataSeeder::class,
 
-            PlanSeeder::class,
+            // PlanSeeder ya NO corre acá — plans/plan_module se movieron a
+            // landlord (REQ-3.4, v1.3.0 Fase 3). Corre vía
+            // Database\Seeders\Landlord\PlanSeeder, con db:seed --class.
             InstallationModuleSeeder::class,
             TipoPagoSeeder::class,
             ConfiguracionGeneralSeeder::class, // sin 'Empresa Demo' (REQ-07.4)

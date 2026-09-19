@@ -19,10 +19,13 @@
 /storage/*.key
 /storage/pail
 /storage/debugbar
+# Archivos subidos por cada tenant (FilesystemTenancyBootstrapper, suffix_storage_path) — v1.3.0 Fase 1
+/storage/tenant*
 /vendor
 Homestead.json
 Homestead.yaml
 Thumbs.db
 /docs/promts.md
-.claude/
+.claude/settings.local.json
+.claude/launch.json
 /.mcp.json

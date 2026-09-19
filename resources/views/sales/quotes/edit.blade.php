@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Editar Cotización #{{ $quote->id }}">
     <div class="max-w-5xl mx-auto py-8 px-4">
         <div class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
             
