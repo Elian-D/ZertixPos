@@ -5,6 +5,7 @@ namespace Database\Seeders\Demo;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
+use Spatie\Permission\Models\Role;
 
 /**
  * Usuarios de fábrica hardcodeados (admin@local.com/usuario@local.com,
@@ -32,7 +33,17 @@ class UserSeeder extends Seeder
             ]
         );
 
+        // 'Usuario Genérico' ya no se siembra en RoleSeeder (init real: solo
+        // 'admin', ver AppInit/RoleSeeder.php) — este seeder de demo se lo
+        // crea a sí mismo si hace falta, para no depender de un rol que el
+        // init real ya no garantiza. Mínimo permiso real (dashboard.view),
+        // mismo criterio que tenía antes en RoleSeeder.
+        $normalRole = Role::firstOrCreate(['name' => 'Usuario Genérico']);
+        if ($normalRole->permissions->isEmpty()) {
+            $normalRole->syncPermissions('dashboard.view');
+        }
+
         $admin->assignRole('admin');
-        $normal->assignRole('Usuario Genérico');
+        $normal->assignRole($normalRole);
     }
 }

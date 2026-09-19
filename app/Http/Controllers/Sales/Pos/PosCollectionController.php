@@ -24,7 +24,7 @@ class PosCollectionController extends Controller
     {
         // Defensa en profundidad — StorePosCollectionRequest::authorize() ya exige
         // el permiso, pero esta es la escritura real.
-        abort_unless(Auth::user()->can('pos sessions manage'), 403);
+        abort_unless(Auth::user()->can('pos_sessions.manage'), 403);
 
         abort_unless($pos_terminal->allow_receivable_collection, 403, 'Esta terminal no permite cobrar cuentas por cobrar.');
 

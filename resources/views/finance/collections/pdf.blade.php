@@ -1,5 +1,10 @@
 @php
     $config = general_config();
+    // Misma vista para DomPDF (CollectionPrintService::pdf(), ruta local — DomPDF
+    // no sigue URLs remotas) y vista previa en navegador (CollectionController,
+    // necesita una URL real). El caller pasa $logoSrc explícito para DomPDF; si
+    // no, se usa tenant_asset() (REQ-1.14, v1.3.0 Fase 1).
+    $logoSrc ??= $config && $config->logo ? tenant_asset($config->logo) : null;
 @endphp
 <!DOCTYPE html>
 <html lang="es">
@@ -33,8 +38,7 @@
         <tr>
             <td style="width: 60%;" class="company-info">
                 @if($config && $config->logo)
-                    {{-- Usamos storage_path para que dompdf acceda localmente a la imagen --}}
-                    <img src="{{ storage_path('app/public/' . $config->logo) }}" class="logo">
+                    <img src="{{ $logoSrc }}" class="logo">
                 @endif
                 <h2>{{ $config->nombre_empresa ?? 'Plaza Merengue SRL' }}</h2>
                 <p><strong>{{ $config->tax_identifier_type?->value ?? 'RNC' }}:</strong> {{ $config->tax_id ?? 'N/A' }}</p>

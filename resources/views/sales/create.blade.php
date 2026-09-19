@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Nueva Venta">
     <div class="max-w-6xl mx-auto py-8 px-4" x-data="saleForm()" x-init="init()">
         
         <form action="{{ route('sales.store') }}" method="POST"

@@ -47,7 +47,6 @@ class EquipmentsExport implements
         return $this->query
             ->select([
                 'id',
-                'code',
                 'equipment_type_id',
                 'point_of_sale_id',
                 'serial_number',
@@ -64,7 +63,6 @@ class EquipmentsExport implements
     {
         return [
             'ID',
-            'Código',
             'Tipo de Equipo',
             'Punto de Venta',
             'Serial',
@@ -83,7 +81,6 @@ class EquipmentsExport implements
 
         return [
             $data['id'],
-            $data['code'],
             $this->equipmentTypesCache[$data['equipment_type_id']] ?? 'N/A',
             $this->pointsOfSaleCache[$data['point_of_sale_id']] ?? 'N/A',
             $data['serial_number'] ?? '',

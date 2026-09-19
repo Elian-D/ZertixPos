@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Editar: {{ $posTerminal->name }}">
     <div class="max-w-6xl mx-auto py-8 px-4">
 
         {{-- Encabezado plano, sin tarjeta ni botón X — "Cancelar" abajo ya cubre el

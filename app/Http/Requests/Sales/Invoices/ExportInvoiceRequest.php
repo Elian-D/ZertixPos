@@ -6,6 +6,6 @@ class ExportInvoiceRequest extends IndexInvoiceRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('export invoices');
+        return $this->user()->can('invoices.export');
     }
 }

@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Factura {{ $invoice->invoice_number }}">
     <div class="py-6">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             

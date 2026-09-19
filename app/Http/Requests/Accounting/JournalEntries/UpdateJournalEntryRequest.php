@@ -12,7 +12,7 @@ class UpdateJournalEntryRequest extends FormRequest
     {
         // El usuario debe tener permiso y el asiento debe estar en borrador para ser editable
         $entry = $this->route('journal_entry');
-        return $this->user()->can('edit journal entries') && $entry->status === JournalEntry::STATUS_DRAFT;
+        return $this->user()->can('journal_entries.edit') && $entry->status === JournalEntry::STATUS_DRAFT;
     }
 
     public function rules(): array

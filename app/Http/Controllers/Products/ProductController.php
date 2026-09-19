@@ -2,94 +2,24 @@
 
 namespace App\Http\Controllers\Products;
 
-use App\Filters\Products\ProductsFilters;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Products\BulkProductRequest; // Para la papelera
 use App\Http\Requests\Products\StoreProductRequest;
 use App\Http\Requests\Products\UpdateProductRequest;
 use App\Models\Products\Product;
 use App\Services\Products\ProductCatalogService;
 use App\Services\Products\ProductService;
-use App\Tables\ProductTable;
 use App\Traits\SoftDeletesTrait;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
     use SoftDeletesTrait;
 
     /**
-     * Listado principal con Pipeline de Filtros y AJAX
+     * Listado migrado a Livewire — ver App\Livewire\App\Inventory\ProductTable.
      */
-    public function index(Request $request, ProductCatalogService $catalogService)
+    public function index()
     {
-        // 1. Configuración de columnas visibles y paginación
-        $visibleColumns = $request->input('columns', ProductTable::defaultDesktop());
-        $perPage = $request->input('per_page', 10);
-
-        // 2. Aplicación de filtros mediante el Pipeline y Eager Loading
-        $products = (new ProductsFilters($request))
-            ->apply(Product::query()->withIndexRelations())
-            ->paginate($perPage)
-            ->withQueryString();
-
-        // 3. Respuesta para peticiones AJAX (DataTable)
-        if ($request->ajax()) {
-            return view('products.partials.table', [
-                'products' => $products,
-                'visibleColumns' => $visibleColumns,
-                'allColumns' => ProductTable::allColumns(),
-                'defaultDesktop' => ProductTable::defaultDesktop(),
-                'defaultMobile' => ProductTable::defaultMobile(),
-                'bulkActions' => true,
-            ])->render();
-        }
-
-        // 4. Carga de la vista completa
-        return view('products.index', array_merge(
-            [
-                'products' => $products,
-                'visibleColumns' => $visibleColumns,
-                'allColumns' => ProductTable::allColumns(),
-                'defaultDesktop' => ProductTable::defaultDesktop(),
-                'defaultMobile' => ProductTable::defaultMobile(),
-                'bulkActions' => true,
-            ],
-            $catalogService->getForFilters() // Trae categories y units activos
-        ));
-    }
-
-    /**
-     * Acciones masivas (Eliminar, Activar, Cambiar Categoría)
-     */
-    public function bulk(BulkProductRequest $request, ProductService $productService)
-    {
-        try {
-            $count = $productService->performBulkAction(
-                $request->ids,
-                $request->action,
-                $request->value
-            );
-
-            $label = $productService->getActionLabel($request->action);
-            $message = "Se ha {$label} correctamente {$count} productos.";
-
-            session()->flash('success', $message);
-
-            return response()->json([
-                'success' => true,
-                'message' => $message,
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Error en acción masiva de productos: '.$e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'No se pudo completar la operación masiva.',
-            ], 422);
-        }
+        return view('products.index');
     }
 
     public function create(ProductCatalogService $catalogService)
@@ -134,7 +64,9 @@ class ProductController extends Controller
         return $this->destroyTrait($product, null);
     }
 
-    /* Configuración del Trait para la papelera */
+    /* Configuración del Trait para destroy() (eliminados/restaurar/borrarDefinitivo
+     * del trait ya no se usan — reemplazados por el tab "Papelera" + ProductTable
+     * ::restore()/forceDelete(), ver docs/analisis/politica-soft-deletes.md §6). */
     protected function getModelClass(): string
     {
         return Product::class;

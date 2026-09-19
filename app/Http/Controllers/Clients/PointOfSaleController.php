@@ -2,111 +2,25 @@
 
 namespace App\Http\Controllers\Clients;
 
-use App\Exports\PointOfSale\PointsOfSaleExport;
-use App\Filters\PointOfSale\PointOfSaleFilters;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\PointOfSale\BulkPointOfSaleRequest;
 use App\Http\Requests\PointOfSale\StorePointOfSaleRequest;
 use App\Http\Requests\PointOfSale\UpdatePointOfSaleRequest;
 use App\Models\Clients\PointOfSale;
 use App\Services\PointOfSale\POSCatalogService;
 use App\Services\PointOfSale\POSService;
-use App\Tables\PointOfSaleTable;
 use App\Traits\SoftDeletesTrait;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Maatwebsite\Excel\Facades\Excel;
 
 class PointOfSaleController extends Controller
 {
     use SoftDeletesTrait;
 
     /**
-     * Listado principal con Pipeline de Filtros y AJAX
+     * REQ-0.7: la tabla vive ahora en App\Livewire\App\Clients\PointOfSaleTable
+     * (motor Livewire, Fase 0) — este método solo renderiza el layout.
      */
-    public function index(Request $request, POSCatalogService $catalogService)
+    public function index()
     {
-        // 1. Configuración de columnas visibles
-        $visibleColumns = $request->input('columns', PointOfSaleTable::defaultDesktop());
-        $perPage = $request->input('per_page', 10);
-
-        // 2. Aplicación de filtros mediante el Pipeline
-        $pos = (new PointOfSaleFilters($request))
-            ->apply(PointOfSale::query()->withIndexRelations())
-            ->paginate($perPage)
-            ->withQueryString();
-
-        // 3. Respuesta para peticiones AJAX (DataTable)
-        if ($request->ajax()) {
-            return view('clients.pos.partials.table', [
-                'pos' => $pos,
-                'visibleColumns' => $visibleColumns,
-                'allColumns' => PointOfSaleTable::allColumns(),
-                'defaultDesktop' => PointOfSaleTable::defaultDesktop(),
-                'defaultMobile' => PointOfSaleTable::defaultMobile(),
-                'bulkActions' => true,
-            ])->render();
-        }
-
-        // 4. Carga de la vista completa
-        return view('clients.pos.index', array_merge(
-            [
-                'pos' => $pos,
-                'visibleColumns' => $visibleColumns,
-                'allColumns' => PointOfSaleTable::allColumns(),
-                'defaultDesktop' => PointOfSaleTable::defaultDesktop(),
-                'defaultMobile' => PointOfSaleTable::defaultMobile(),
-                'bulkActions' => true,
-            ],
-            $catalogService->getForFilters() // Inyecta clients, businessTypes y states
-        ));
-    }
-
-    /**
-     * Acciones masivas (Activar/Desactivar, Cambiar tipo, etc.)
-     */
-    public function bulk(BulkPointOfSaleRequest $request, POSService $posService)
-    {
-        try {
-            $count = $posService->performBulkAction(
-                $request->ids,
-                $request->action,
-                $request->value
-            );
-
-            $label = $posService->getActionLabel($request->action);
-            $message = "Se han {$label} correctamente {$count} puntos de venta.";
-
-            session()->flash('success', $message);
-
-            return response()->json([
-                'success' => true,
-                'message' => $message,
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error('Error en acción masiva de pos: '.$e->getMessage());
-
-            return response()->json([
-                'success' => false,
-                'message' => 'No se pudo completar la operación masiva.',
-            ], 422);
-        }
-    }
-
-    public function export(Request $request)
-    {
-        // 1. Aplicamos filtros (ajusta PointOfSaleFilters y withIndexRelations a tus nombres reales)
-        $query = (new PointOfSaleFilters($request))
-            ->apply(PointOfSale::query());
-
-        // 2. Ejecutar descarga
-        $fileName = 'puntos-de-venta-'.now()->format('d-m-Y-H-i').'.xlsx';
-
-        return Excel::download(
-            new PointsOfSaleExport($query),
-            $fileName
-        );
+        return view('clients.pos.index');
     }
 
     public function create(POSCatalogService $catalogService)
@@ -143,7 +57,10 @@ class PointOfSaleController extends Controller
         return $this->destroyTrait($pos, null);
     }
 
-    /* Configuración del Trait para la papelera */
+    /* Configuración del Trait — solo destroyTrait() (destroy() arriba) sigue
+     | alcanzable por HTTP. eliminadas()/restaurar()/borrarDefinitivo() del
+     | trait ya no tienen ruta — el tab "Papelera" de PointOfSaleTable
+     | Livewire las reemplazó (docs/analisis/politica-soft-deletes.md §6). */
     protected function getModelClass(): string
     {
         return PointOfSale::class;

@@ -48,6 +48,8 @@ Todo lo que se construya después hereda este hueco si no se corrige antes:
 
 ## v1.3.0 — Multi-tenant (Fase SaaS, adelantada)
 
+**Detalle completo, fase por fase (tabla de Requerimientos + desglose por dependencia, orden real de ramas), en [`v1.3.0.md`](v1.3.0.md).** Este documento reemplaza el resumen que sigue abajo — se deja igual como contexto de por qué se adelantó, pero el alcance real y ejecutable vive en `v1.3.0.md`.
+
 ### Por qué se adelanta desde v1.5.0, y por qué es seguro hacerlo ahora
 
 El plan original ponía esto al final porque asumía PostgreSQL con aislamiento por esquema (`stancl/tenancy` en modo schema) — bajo ese modelo, cada tabla que existiera al momento de migrar se convierte en el contrato permanente del esquema compartido, así que esperar a que el modelo de datos se estabilizara (Devoluciones + Compras ya construidos) tenía sentido real, no solo prudencia.

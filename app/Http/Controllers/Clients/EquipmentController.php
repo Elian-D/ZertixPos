@@ -5,104 +5,24 @@ namespace App\Http\Controllers\Clients;
 use App\Http\Controllers\Controller;
 use App\Models\Clients\Equipment;
 use App\Traits\SoftDeletesTrait;
-use App\Filters\Equipment\EquipmentFilters;
 use App\Services\Equipment\EquipmentCatalogService;
 use App\Services\Equipment\EquipmentService;
-use App\Tables\EquipmentTable;
 use App\Http\Requests\Equipment\{
     StoreEquipmentRequest,
     UpdateEquipmentRequest,
-    BulkEquipmentRequest
 };
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Maatwebsite\Excel\Facades\Excel;
-use App\Exports\Equipment\EquipmentsExport;
 
 class EquipmentController extends Controller
 {
     use SoftDeletesTrait;
 
     /**
-     * Listado principal
+     * REQ-0.7: la tabla vive ahora en App\Livewire\App\Clients\EquipmentTable
+     * (motor Livewire, Fase 0) — este método solo renderiza el layout.
      */
-    public function index(Request $request, EquipmentCatalogService $catalogService)
+    public function index()
     {
-        $visibleColumns = $request->input('columns', EquipmentTable::defaultDesktop());
-        $perPage = $request->input('per_page', 10);
-
-        $equipments = (new EquipmentFilters($request))
-            ->apply(Equipment::query()->withIndexRelations())
-            ->paginate($perPage)
-            ->withQueryString();
-
-        if ($request->ajax()) {
-            return view('clients.equipment.partials.table', [
-                'equipments'     => $equipments,
-                'visibleColumns' => $visibleColumns,
-                'allColumns'     => EquipmentTable::allColumns(),
-                'defaultDesktop' => EquipmentTable::defaultDesktop(),
-                'defaultMobile'  => EquipmentTable::defaultMobile(),
-                'bulkActions'    => true,
-            ])->render();
-        }
-
-        return view('clients.equipment.index', array_merge(
-            [
-                'equipments'     => $equipments,
-                'visibleColumns' => $visibleColumns,
-                'allColumns'     => EquipmentTable::allColumns(),
-                'defaultDesktop' => EquipmentTable::defaultDesktop(),
-                'defaultMobile'  => EquipmentTable::defaultMobile(),
-                'bulkActions'    => true,
-            ],
-            $catalogService->getForFilters()
-        ));
-    }
-
-    /**
-     * Acciones masivas
-     */
-    public function bulk(BulkEquipmentRequest $request, EquipmentService $service)
-    {
-        try {
-            $count = $service->performBulkAction(
-                $request->ids,
-                $request->action,
-                $request->value
-            );
-
-            $label = $service->getActionLabel($request->action);
-            $message = "Se han {$label} correctamente {$count} equipos.";
-
-            session()->flash('success', $message);
-
-            return response()->json([
-                'success' => true,
-                'message' => $message
-            ]);
-
-        } catch (\Exception $e) {
-            Log::error("Error bulk Equipment: {$e->getMessage()}");
-
-            return response()->json([
-                'success' => false,
-                'message' => 'No se pudo completar la operación.'
-            ], 422);
-        }
-    }
-
-    public function export(Request $request)
-    {
-        $query = (new EquipmentFilters($request))
-            ->apply(Equipment::query());
-
-        $fileName = 'equipos-' . now()->format('d-m-Y-H-i') . '.xlsx';
-
-        return Excel::download(
-            new EquipmentsExport($query),
-            $fileName
-        );
+        return view('clients.equipment.index');
     }
 
     public function create(EquipmentCatalogService $catalogService)
@@ -143,7 +63,10 @@ class EquipmentController extends Controller
     }
 
 
-    /* ===== Configuración del Trait ===== */
+    /* ===== Configuración del Trait — solo destroyTrait() sigue alcanzable
+     |  por HTTP. eliminadas()/restaurar()/borrarDefinitivo() del trait ya
+     |  no tienen ruta, reemplazadas por el tab "Papelera" de EquipmentTable
+     |  Livewire (docs/analisis/politica-soft-deletes.md §6). ===== */
     protected function getModelClass(): string { return Equipment::class; }
     protected function getViewFolder(): string { return 'clients.equipment'; }
     protected function getRouteIndex(): string { return 'clients.equipment.index'; }

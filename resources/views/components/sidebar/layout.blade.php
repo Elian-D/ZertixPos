@@ -26,7 +26,9 @@
 >
     <div class="absolute inset-y-0 left-0 w-full bg-white border-r border-slate-100 flex flex-col shadow-xl">
         <div class="h-20 flex items-center px-4 border-b border-slate-100 overflow-hidden flex-shrink-0">
-            <a href="{{ route('dashboard') }}" class="flex items-center w-full justify-center transition-all duration-300">
+            {{-- Fase 5 (REQ-5): route('dashboard') es una ruta de tenant —
+                 rompería en el dominio central del Panel de Súper Admin. --}}
+            <a href="{{ route(request()->routeIs('admin.*') ? 'admin.tenants.index' : 'dashboard') }}" class="flex items-center w-full justify-center transition-all duration-300">
                 <div x-show="sidebarOpen" x-cloak class="flex items-center justify-center">
                     <x-ui.application-logo type="full" />
                 </div>
@@ -108,17 +110,21 @@
                     </div>
                 </div>
 
-                <a href="{{ route('profile.edit') }}"
-                class="flex w-full items-center gap-3 px-3 py-2 rounded-xl text-sm
-                        text-slate-600
-                        hover:bg-zertix-secondary/5
-                        hover:text-zertix-secondary
-                        transition duration-200 group">
-                    <x-heroicon-s-user class="w-4 h-4 text-slate-400 group-hover:text-zertix-secondary" />
-                    <span>Mi Perfil</span>
-                </a>
+                {{-- Fase 5 (REQ-5): route('profile.edit') es de tenant — el
+                     Súper Admin no tiene todavía una pantalla de perfil propia. --}}
+                @unless(request()->routeIs('admin.*'))
+                    <a href="{{ route('profile.edit') }}"
+                    class="flex w-full items-center gap-3 px-3 py-2 rounded-xl text-sm
+                            text-slate-600
+                            hover:bg-zertix-secondary/5
+                            hover:text-zertix-secondary
+                            transition duration-200 group">
+                        <x-heroicon-s-user class="w-4 h-4 text-slate-400 group-hover:text-zertix-secondary" />
+                        <span>Mi Perfil</span>
+                    </a>
+                @endunless
 
-                <form method="POST" action="{{ route('logout') }}">
+                <form method="POST" action="{{ route(request()->routeIs('admin.*') ? 'admin.logout' : 'logout') }}">
                     @csrf
                     <button type="submit"
                             class="flex w-full items-center gap-3 px-3 py-2 rounded-xl text-sm

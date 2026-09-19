@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers\Sales\Ncf;
 
-use App\Filters\Sales\Ncf\NcfSequenceFilters;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Sales\Ncf\StoreNcfSequenceRequest;
 use App\Models\Sales\Ncf\NcfSequence;
 use App\Services\Sales\Ncf\NcfCatalogService;
 use App\Services\Sales\Ncf\NcfSequenceService;
-use App\Tables\SalesTables\Ncf\NcfSequenceTable;
 use Illuminate\Http\Request;
 
 class NcfSequenceController extends Controller
@@ -18,38 +16,12 @@ class NcfSequenceController extends Controller
         protected NcfCatalogService $catalog
     ) {}
 
-    public function index(Request $request)
+    /**
+     * Listado migrado a Livewire — ver App\Livewire\App\Finance\NcfSequenceTable.
+     */
+    public function index()
     {
-        // 1. Obtener configuración de tabla
-        $visibleColumns = $request->input('columns', NcfSequenceTable::defaultDesktop());
-        $perPage = $request->input('per_page', 10);
-
-        // 2. Aplicar Filtros (Pipeline)
-        // Importante: Pasamos el $request al constructor
-        $sequences = (new NcfSequenceFilters($request))
-            ->apply(NcfSequence::query()->with('type'))
-            ->latest()
-            ->paginate($perPage)
-            ->withQueryString();
-
-        // 3. Obtener Catálogos (Necesarios para el Index Y el Modal)
-        $catalog = $this->catalog->getForSequences();
-
-        // 4. Preparar datos para la vista
-        $data = array_merge([
-            'items' => $sequences,
-            'visibleColumns' => $visibleColumns,
-            'allColumns' => NcfSequenceTable::allColumns(),
-            'defaultDesktop' => NcfSequenceTable::defaultDesktop(),
-            'defaultMobile' => NcfSequenceTable::defaultMobile(),
-        ], $catalog);
-
-        // Si es AJAX, retornamos solo la tabla (y opcionalmente los modales si se refrescan)
-        if ($request->ajax()) {
-            return view('sales.ncf.sequences.partials.table', $data)->render();
-        }
-
-        return view('sales.ncf.sequences.index', $data);
+        return view('sales.ncf.sequences.index');
     }
 
     public function store(StoreNcfSequenceRequest $request)

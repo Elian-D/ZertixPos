@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers\Products;
 
-use App\Filters\Units\UnitsFilters;
 use App\Http\Controllers\Controller;
 use App\Models\Products\Unit;
-use App\Tables\UnitsTable;
 use App\Traits\SoftDeletesTrait;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -14,40 +12,14 @@ class UnitController extends Controller
 {
     use SoftDeletesTrait;
 
-    public function index(Request $request)
+    /**
+     * Listado migrado a Livewire — ver App\Livewire\App\Inventory\UnitTable.
+     */
+    public function index()
     {
-        $visibleColumns = $request->input('columns', UnitsTable::defaultDesktop());
-        $perPage = $request->input('per_page', 10);
-
-        $units = (new UnitsFilters($request))
-            ->apply(Unit::query())
-            ->paginate($perPage)
-            ->withQueryString();
-
-        if ($request->ajax()) {
-            return view('products.units.partials.table', [
-                'units' => $units,
-                'visibleColumns' => $visibleColumns,
-                'allColumns' => UnitsTable::allColumns(),
-                'defaultDesktop' => UnitsTable::defaultDesktop(),
-                'defaultMobile' => UnitsTable::defaultMobile(),
-            ])->render();
-        }
-
-        return view('products.units.index', array_merge(
-            [
-                'units' => $units,
-                'visibleColumns' => $visibleColumns,
-                'allColumns' => UnitsTable::allColumns(),
-                'defaultDesktop' => UnitsTable::defaultDesktop(),
-                'defaultMobile' => UnitsTable::defaultMobile(),
-            ],
-        ));
+        return view('products.units.index');
     }
 
-    /**
-     * Crear Tipos de Negocio
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -66,9 +38,8 @@ class UnitController extends Controller
             'is_active' => $request->is_active,
         ]);
 
-        // ... (redirección)
         return redirect()
-            ->route('inventory.products.units.index')
+            ->route('configuration.units.index')
             ->with('success', 'Unidad de medida "'.$unit->name.'" creada exitosamente.');
     }
 
@@ -94,17 +65,8 @@ class UnitController extends Controller
         ]);
 
         return redirect()
-            ->route('inventory.products.units.index')
+            ->route('configuration.units.index')
             ->with('success', "Unidad de medida \"{$unit->name}\" actualizada correctamente.");
-    }
-
-    public function toggleEstado(Unit $unit)
-    {
-        $unit->toggleActivo();
-
-        return redirect()
-            ->route('inventory.products.units.index')
-            ->with('success', 'Estado actualizado para "'.$unit->name.'".');
     }
 
     // Elimina la Unit si no tiene relaciones (o desactiva la eliminación por defecto).
@@ -115,7 +77,10 @@ class UnitController extends Controller
         return $this->destroyTrait($unit);
     }
 
-    // Métodos abstractos que el trait necesita
+    /* Configuración del Trait para destroy() (eliminados/restaurar/borrarDefinitivo
+     * del trait ya no se usan — reemplazados por el tab "Papelera" + UnitTable
+     * ::restore()/forceDelete(); toggleEstado() reemplazado por UnitTable
+     * ::toggleActivo(), ver docs/analisis/politica-soft-deletes.md §6). */
     protected function getModelClass(): string
     {
         return \App\Models\Products\Unit::class;
@@ -128,12 +93,12 @@ class UnitController extends Controller
 
     protected function getRouteIndex(): string
     {
-        return 'inventory.products.units.index';
+        return 'configuration.units.index';
     }
 
     protected function getRouteEliminadas(): string
     {
-        return 'inventory.products.units.eliminados';
+        return 'configuration.units.eliminados';
     }
 
     protected function getEntityName(): string

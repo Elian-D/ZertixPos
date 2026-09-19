@@ -30,11 +30,14 @@ if (! function_exists('module_enabled')) {
 
 if (! function_exists('current_plan')) {
     /**
-     * Resuelve qué Plan tiene asignada esta instalación (configuraciones_generales.plan_id).
+     * Resuelve qué Plan tiene asignada esta instalación. `plan_id` vive en
+     * `tenants` (landlord), no en `configuraciones_generales` (REQ-3.4,
+     * v1.3.0 Fase 3) — `tenant()` es el helper de stancl/tenancy, resuelve
+     * al tenant activo de la request.
      */
     function current_plan(): ?Plan
     {
-        $planId = general_config()?->plan_id;
+        $planId = tenant()?->plan_id;
 
         return $planId ? Plan::find($planId) : null;
     }

@@ -36,7 +36,14 @@ class CollectionPrintService
     {
         $payment->load(['client', 'creator', 'tipoPago', 'receivable']);
 
-        return Pdf::loadView('finance.collections.pdf', compact('payment'))
+        // DomPDF no sigue URLs remotas (enable_remote=false por defecto) — el
+        // logo necesita una ruta de archivo local, no la URL que usa la vista
+        // previa en navegador (ver comentario en finance/collections/pdf.blade.php,
+        // REQ-1.14).
+        $config = general_config();
+        $logoSrc = $config->logo ? storage_path('app/public/'.$config->logo) : null;
+
+        return Pdf::loadView('finance.collections.pdf', compact('payment', 'logoSrc'))
             ->setPaper('letter', 'portrait');
     }
 

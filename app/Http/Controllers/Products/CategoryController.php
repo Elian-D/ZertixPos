@@ -2,10 +2,8 @@
 
 namespace App\Http\Controllers\Products;
 
-use App\Filters\Categories\CategoryFilters;
 use App\Http\Controllers\Controller;
 use App\Models\Products\Category;
-use App\Tables\CategoryTable;
 use App\Traits\SoftDeletesTrait;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -14,40 +12,14 @@ class CategoryController extends Controller
 {
     use SoftDeletesTrait;
 
-    public function index(Request $request)
+    /**
+     * Listado migrado a Livewire — ver App\Livewire\App\Inventory\CategoryTable.
+     */
+    public function index()
     {
-        $visibleColumns = $request->input('columns', CategoryTable::defaultDesktop());
-        $perPage = $request->input('per_page', 10);
-
-        $categories = (new CategoryFilters($request))
-            ->apply(Category::query())
-            ->paginate($perPage)
-            ->withQueryString();
-
-        if ($request->ajax()) {
-            return view('products.categories.partials.table', [
-                'categories' => $categories,
-                'visibleColumns' => $visibleColumns,
-                'allColumns' => CategoryTable::allColumns(),
-                'defaultDesktop' => CategoryTable::defaultDesktop(),
-                'defaultMobile' => CategoryTable::defaultMobile(),
-            ])->render();
-        }
-
-        return view('products.categories.index', array_merge(
-            [
-                'categories' => $categories,
-                'visibleColumns' => $visibleColumns,
-                'allColumns' => CategoryTable::allColumns(),
-                'defaultDesktop' => CategoryTable::defaultDesktop(),
-                'defaultMobile' => CategoryTable::defaultMobile(),
-            ],
-        ));
+        return view('products.categories.index');
     }
 
-    /**
-     * Crear Tipos de Negocio
-     */
     public function store(Request $request)
     {
         $request->validate([
@@ -62,9 +34,8 @@ class CategoryController extends Controller
             'is_active' => $request->is_active,
         ]);
 
-        // ... (redirección)
         return redirect()
-            ->route('inventory.products.categories.index')
+            ->route('configuration.categories.index')
             ->with('success', 'Categoria "'.$category->name.'" creada exitosamente.');
     }
 
@@ -86,17 +57,8 @@ class CategoryController extends Controller
         ]);
 
         return redirect()
-            ->route('inventory.products.categories.index')
+            ->route('configuration.categories.index')
             ->with('success', "Categoría \"{$category->name}\" actualizada correctamente.");
-    }
-
-    public function toggleEstado(Category $category)
-    {
-        $category->toggleActivo();
-
-        return redirect()
-            ->route('inventory.products.categories.index')
-            ->with('success', 'Estado actualizado para "'.$category->name.'".');
     }
 
     // Elimina la Category si no tiene relaciones (o desactiva la eliminación por defecto).
@@ -107,7 +69,10 @@ class CategoryController extends Controller
         return $this->destroyTrait($Category);
     }
 
-    // Métodos abstractos que el trait necesita
+    /* Configuración del Trait para destroy() (eliminados/restaurar/borrarDefinitivo
+     * del trait ya no se usan — reemplazados por el tab "Papelera" + CategoryTable
+     * ::restore()/forceDelete(); toggleEstado() reemplazado por CategoryTable
+     * ::toggleActivo(), ver docs/analisis/politica-soft-deletes.md §6). */
     protected function getModelClass(): string
     {
         return \App\Models\Products\Category::class;
@@ -120,12 +85,12 @@ class CategoryController extends Controller
 
     protected function getRouteIndex(): string
     {
-        return 'inventory.products.categories.index';
+        return 'configuration.categories.index';
     }
 
     protected function getRouteEliminadas(): string
     {
-        return 'inventory.products.categories.eliminados';
+        return 'configuration.categories.eliminados';
     }
 
     protected function getEntityName(): string

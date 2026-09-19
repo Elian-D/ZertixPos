@@ -14,8 +14,13 @@
     $isAdminContext y el multi-tenant Hub/SuperAdmin de Orvian no aplican acá, se removieron.
 --}}
 @php
+    // Fase 5 (REQ-5): 'admin' se ignora igual que 'app' — es el prefijo de
+    // ruta del Panel de Súper Admin, no un segmento significativo para el
+    // usuario. route('dashboard') es de tenant, rompería en el dominio
+    // central — el inicio del breadcrumb apunta al listado de tenants ahí.
+    $isAdminContext = request()->routeIs('admin.*');
     $segments = request()->segments();
-    $ignoredSegments = ['app', 'dashboard'];
+    $ignoredSegments = ['app', 'admin', 'dashboard'];
 
     $visibleSegments = [];
     $accUrl = '';
@@ -34,9 +39,9 @@
 <nav class="flex mb-4" aria-label="Breadcrumb">
     <ol class="inline-flex items-center flex-wrap gap-1 text-xs font-medium tracking-wide">
         <li class="inline-flex items-center">
-            <a href="{{ route('dashboard') }}" class="text-gray-400 hover:text-zertix-secondary transition flex items-center gap-1">
+            <a href="{{ route($isAdminContext ? 'admin.tenants.index' : 'dashboard') }}" class="text-gray-400 hover:text-zertix-secondary transition flex items-center gap-1">
                 <x-heroicon-s-home class="w-3.5 h-3.5" />
-                Dashboard
+                {{ $isAdminContext ? 'Súper Admin' : 'Dashboard' }}
             </a>
         </li>
 

@@ -21,57 +21,57 @@ Route::middleware(['auth', 'module:sales.quotes'])->prefix('clients/quotes')->as
 
     // Listado principal (DataTables / AJAX)
     Route::get('/', [QuoteController::class, 'index'])
-        ->middleware('permission:view quotes')
+        ->middleware('permission:quotes.view')
         ->name('index');
 
     // Creación (Livewire Builder)
     Route::get('/create', [QuoteController::class, 'create'])
-        ->middleware('permission:create quotes')
+        ->middleware('permission:quotes.create')
         ->name('create');
 
     Route::post('/', [QuoteController::class, 'store'])
-        ->middleware('permission:create quotes')
+        ->middleware('permission:quotes.create')
         ->name('store');
 
     // Preview (Vista previa en iframe)
     Route::get('/{quote}/preview', [QuoteController::class, 'preview'])
-        ->middleware('permission:view quotes')
+        ->middleware('permission:quotes.view')
         ->name('preview');
 
     // Detalle (Vista previa antes de imprimir o convertir)
     Route::get('/{quote}', [QuoteController::class, 'show'])
-        ->middleware('permission:view quotes')
+        ->middleware('permission:quotes.view')
         ->name('show');
 
     // Edición (Solo para estado Borrador)
     Route::get('/{quote}/edit', [QuoteController::class, 'edit'])
-        ->middleware('permission:edit quotes')
+        ->middleware('permission:quotes.edit')
         ->name('edit');
 
     Route::put('/{quote}', [QuoteController::class, 'update'])
-        ->middleware('permission:edit quotes')
+        ->middleware('permission:quotes.edit')
         ->name('update');
 
     // --- ACCIONES DE NEGOCIO (Cambios de estado) ---
 
     // Marcar como aprobada (lista para el cliente)
     Route::patch('/{quote}/approve', [QuoteController::class, 'approve'])
-        ->middleware('permission:convert quotes')
+        ->middleware('permission:quotes.convert')
         ->name('approve');
 
     // Cancelar (por error o decisión del cliente)
     Route::patch('/{quote}/cancel', [QuoteController::class, 'cancel'])
-        ->middleware('permission:cancel quotes')
+        ->middleware('permission:quotes.cancel')
         ->name('cancel');
 
     // Convertir en venta final
     Route::post('/{quote}/convert', [QuoteController::class, 'convert'])
-        ->middleware('permission:convert quotes')
+        ->middleware('permission:quotes.convert')
         ->name('convert');
 
     // --- IMPRESIÓN ---
 
     Route::get('/{quote}/print/{format?}', [QuoteController::class, 'print'])
-        ->middleware('permission:view quotes')
+        ->middleware('permission:quotes.view')
         ->name('print');
 });

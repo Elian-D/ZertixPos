@@ -12,10 +12,6 @@
                         <div>
                             <h3 class="text-xl font-bold text-gray-900 leading-tight">{{ $item->name }}</h3>
                             <div class="flex items-center gap-2 mt-1">
-                                <span class="text-xs font-semibold px-2 py-0.5 bg-gray-200 text-gray-700 rounded uppercase tracking-wider">
-                                    {{ $item->code }}
-                                </span>
-                                <span class="text-gray-400 text-xs">•</span>
                                 <span class="text-sm text-gray-500 font-medium italic">{{ $item->businessType->nombre ?? 'Sin giro definido' }}</span>
                             </div>
                         </div>
@@ -118,7 +114,21 @@
         </div>
     </x-modal>
 
-    <x-ui.confirm-deletion-modal 
+    @if($item->trashed())
+        {{-- Papelera (docs/analisis/politica-soft-deletes.md §6) — borrado
+             definitivo vía wireConfirm, dispara PointOfSaleTable::forceDelete(). --}}
+        <x-ui.confirm-deletion-modal
+        :id="$item->id"
+        :title="'¿Eliminar Permanentemente?'"
+        :itemName="$item->name"
+        :type="'el punto de venta'"
+        :wireConfirm="'forceDelete(' . $item->id . ')'"
+        :description="'Estás a punto de borrar definitivamente el punto de venta <strong>' . e($item->name) . '</strong>.'"
+        >
+        <strong>Aviso Crítico:</strong> Esta operación borrará todos los datos asociados y no se puede deshacer.
+        </x-ui.confirm-deletion-modal>
+    @else
+        <x-ui.confirm-deletion-modal
         :id="$item->id"
         :title="'¿Eliminar Punto de Venta?'"
         :itemName="$item->name"
@@ -126,5 +136,6 @@
         :route="route('clients.delivery_points.destroy', $item)"
         >
         <strong>Aviso:</strong> Esta operación se puede deshacer desde la papelera.
-    </x-ui.confirm-deletion-modal>
+        </x-ui.confirm-deletion-modal>
+    @endif
 @endforeach

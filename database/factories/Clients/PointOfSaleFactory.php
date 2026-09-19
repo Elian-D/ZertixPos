@@ -18,7 +18,6 @@ class PointOfSaleFactory extends Factory
             'client_id' => Client::query()->inRandomOrder()->value('id') ?? Client::factory(),
             'business_type_id' => BusinessType::query()->inRandomOrder()->value('id') ?? 1,
             'name' => fake()->company().' - '.fake()->city(),
-            // 'code' se queda fuera para que lo maneje el hook
             'provincia_id' => Province::inRandomOrder()->value('id') ?? 1,
             'city' => fake()->city(),
             'address' => fake()->address(),
@@ -28,19 +27,5 @@ class PointOfSaleFactory extends Factory
             'contact_phone' => fake()->phoneNumber(),
             'active' => fake()->boolean(90),
         ];
-    }
-
-    /**
-     * Hook para disparar la generación del código justo después de crear
-     */
-    public function configure()
-    {
-        return $this->afterCreating(function (PointOfSale $pos) {
-            $prefix = $pos->businessType->prefix ?? 'POS';
-
-            $pos->updateQuietly([
-                'code' => sprintf('%s-%05d', strtoupper($prefix), $pos->id),
-            ]);
-        });
     }
 }

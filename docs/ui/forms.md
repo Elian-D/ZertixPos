@@ -10,6 +10,7 @@ Adaptación a ZertixPOS de los componentes de formulario de Orvian (Fase 7, REQ-
 - [Diferencia real con el original de Orvian](#diferencia-real-con-el-original-de-orvian)
 - [Convenciones Compartidas](#convenciones-compartidas)
 - [Bug corregido: el hint/error se salía del ancho del input](#bug-corregido-el-hinterror-se-salía-del-ancho-del-input)
+- [Bugs corregidos (Fase 7.9): toggle de password tapado por el error + rojo persistente en foco](#bugs-corregidos-fase-79-toggle-de-password-tapado-por-el-error--rojo-persistente-en-foco)
 - [x-ui.forms.input](#x-uiformsinput)
 - [x-ui.forms.select](#x-uiformsselect)
 - [x-ui.forms.textarea](#x-uiformstextarea)
@@ -80,10 +81,10 @@ Todos los componentes con entrada de texto (`Input`, `Select`, `Textarea`) compa
 |---|---|---|---|---|
 | **Default** | `slate-200` | `slate-600` | `bg-white` | `slate-400` |
 | **Focus** | `zertix-primary` (ring 1px) | — | igual | `zertix-primary` |
-| **Error** | `state-error` | `state-error` | `bg-state-error/5` | `exclamation-circle` (automático, reemplaza `iconRight`) |
+| **Error** | `state-error` | `state-error` | `bg-state-error/5` | `exclamation-circle` (automático, reemplaza `iconRight` — **excepto en `Input` con `type="password"`**, ver Fase 7.9 abajo) |
 | **Disabled** | `slate-100` | — | `bg-slate-50` | `opacity-50`, `cursor-not-allowed` |
 
-La transición a Focus usa `group` + `group-focus-within:` en el wrapper — el label e ícono cambian de color sin JavaScript.
+La transición a Focus usa `group` + `group-focus-within:` en el wrapper — el label e ícono cambian de color sin JavaScript. **Excepción (Fase 7.9):** cuando el campo tiene `error` Y recibe foco, el borde/ring/fondo rojo se neutraliza mientras dura el foco (vía Alpine, no vía `focus:` de Tailwind) — ver la sección de bugs corregidos más abajo.
 
 ### Props de Mensaje
 
@@ -129,6 +130,30 @@ Igual que el resto de `x-ui.*`: `$attributes->merge()` pasa cualquier atributo a
 
 ---
 
+## Bugs corregidos (Fase 7.9): toggle de password tapado por el error + rojo persistente en foco
+
+**Encontrado en producción (2026-09-18), reportado con captura real de `profile/partials/tab-security.blade.php`.** Dos problemas de UX en el estado de error, ambos en el mismo flujo (cambiar contraseña con la actual incorrecta):
+
+### 1. El ícono de error tapaba el toggle de mostrar/ocultar
+
+`input.blade.php` decidía el ícono derecho con `@if ($error) ... @elseif ($isPassword()) ...` — mutuamente excluyente. Con `type="password"` y `error` a la vez, el `exclamation-circle` ganaba y el botón del ojito no se renderizaba en absoluto: el usuario no tenía forma de revisar qué escribió mal justo cuando más lo necesitaba.
+
+**Fix:** se invirtió la prioridad — `isPassword()` va primero, `error` segundo. El error no deja de comunicarse (borde/fondo rojo del campo + mensaje debajo siguen igual), y el propio botón del toggle ya se pinta de `text-state-error` vía `iconColorClasses()` cuando hay error, así que sigue señalando visualmente el problema sin perder la función.
+
+### 2. El borde/ring rojo se reafirmaba (no se neutralizaba) al hacer foco
+
+`inputClasses()`/`selectClasses()`/`textareaClasses()`/`groupWrapperClasses()` definían el branch de error con `focus:border-state-error focus:ring-state-error/20` (o `focus-within:` en el wrapper con addon) — es decir, el propio foco reforzaba el rojo en vez de aflojarlo. Efecto real: el usuario hace clic en el campo para corregir la contraseña, y el campo se pone *más* rojo (ring activo), como si le estuviera diciendo "sigue mal" mientras todavía no ha escrito nada nuevo.
+
+**Por qué no es solo una clase de Tailwind:** el error viene de `$errors->first(...)` o de una prop de Livewire — un string que Blade ya resolvió al renderizar. Blade no sabe "el usuario tiene el campo enfocado ahora mismo"; eso solo existe en el navegador. Por eso el fix necesita JS (Alpine), no un simple cambio de clase `focus:`.
+
+**Fix:** cada componente con esta capacidad (`Input`, `Select`, `Textarea`) agrega, **solo cuando hay `error`**, un estado Alpine `focused` (`x-data="{ focused: false }"`, o combinado con `showPassword` en `Input` vía el helper `alpineData()` de `Input.php`) y listeners `@focus`/`@blur` en el campo real. Mientras `focused` es `true`, una clase `:class` con el modificador `!` de Tailwind (`!border-zertix-primary !ring-zertix-primary/20 !bg-white !text-slate-800`, y `!text-slate-600` en el label) sobreescribe el rojo estático con el mismo look que tendría un campo sin error en foco normal. Se usa `!important` (no un simple orden de clases) porque competir por especificidad con las clases `focus:`/`focus-within:` estáticas que ya existen en la hoja compilada es frágil — el orden real depende de cómo Tailwind ordena los variants, no de cuál "parece" más específica en el HTML.
+
+**Qué NO cambia al enfocar (a propósito):** el ícono izquierdo (si lo hay) y el mensaje de error debajo del campo se quedan en rojo — solo se neutraliza el marco/fondo del campo en sí. El usuario sigue teniendo la referencia de qué está corrigiendo, solo deja de sentir que "todavía está mal" mientras lo edita.
+
+**Archivos tocados:** `Input.php` (`alpineData()`), `input.blade.php`, `select.blade.php`, `textarea.blade.php`. `Checkbox`/`Radio`/`Toggle`/`FileInput` no comparten este patrón de borde/ring (o no tienen `type="password"`), así que quedan fuera de este fix.
+
+---
+
 ## x-ui.forms.input
 
 Componente para entradas de texto de una sola línea. Soporta todos los tipos de `<input>` HTML.
@@ -149,6 +174,26 @@ Componente para entradas de texto de una sola línea. Soporta todos los tipos de
 | `required` | `bool` | `false` | Agrega `*` al label y `required` al input |
 | `disabled` | `bool` | `false` | Desactiva el campo |
 | `readonly` | `bool` | `false` | Campo de solo lectura |
+| `addonLeft` | `string\|null` | `null` | Texto plano no editable pegado al borde izquierdo (ej. `"https://"`) |
+| `addonRight` | `string\|null` | `null` | Texto plano no editable pegado al borde derecho (ej. `".zertixpos.com"`) |
+
+### Addon (`addonLeft`/`addonRight`, nuevo en v1.3.0)
+
+Para un sufijo/prefijo fijo que forma parte del valor real (subdominio, código de país, unidad) pero no debe ser editable — patrón "grouped input" estándar (una sola caja compartida entre el addon y el campo, no dos cajas bordeadas pegadas, que se verían como doble borde). Con addon, el borde/radio/fondo/ring de foco los lleva el wrapper (`groupWrapperClasses()`), no el `<input>` (`inputClasses()` se vuelve "desnudo": sin borde, sin fondo propio, `focus:ring-0`) — mismo cuidado de "cada estado declara su propio fondo completo" que el resto del componente.
+
+**Es solo texto — nunca un ícono ni un botón.** No se combina con `iconLeft`/`iconRight` en el mismo lado (uno de los dos gana visualmente); sí se puede combinar un addon de un lado con un ícono del lado opuesto.
+
+```blade
+<x-ui.forms.input
+    label="Subdominio"
+    name="subdominio"
+    wire:model.live="subdominio"
+    placeholder="tu-negocio"
+    :addonRight="'.' . request()->getHost()"
+    :error="$errors->first('subdominio')"
+    required
+/>
+```
 
 ### Toggle mostrar/ocultar contraseña (REQ-7.11)
 
@@ -157,7 +202,7 @@ Componente para entradas de texto de una sola línea. Soporta todos los tipos de
 - El `<input>` deja de usar el atributo estático `type="password"` y pasa a un binding reactivo de Alpine: `:type="showPassword ? 'text' : 'password'"`.
 - El slot del ícono derecho lo ocupa un `<button type="button">` con `heroicon-s-eye-slash`/`heroicon-s-eye` — a diferencia del `iconRight` estático (que es `pointer-events-none`), este sí recibe clicks.
 - `iconRight` se **ignora** si `type="password"` — el espacio derecho es del toggle, no hay forma de combinar ambos.
-- El error (`exclamation-circle`) sigue teniendo prioridad sobre el toggle, igual que sobre `iconRight`.
+- **El toggle tiene prioridad sobre el error (Fase 7.9, ver "Bugs corregidos" arriba).** Antes el `exclamation-circle` reemplazaba el toggle cuando había error — eso dejaba al usuario sin forma de revisar la contraseña que escribió mal. Ahora el toggle se queda siempre; el error se sigue viendo por el borde/fondo rojo del campo, el mensaje debajo, y el propio botón del toggle pintado de `text-state-error`.
 
 ```blade
 <x-ui.forms.input
@@ -385,11 +430,56 @@ Interruptor visual con Alpine.js. Internamente usa un `<input type="checkbox">` 
 | `disabled` | `bool` | `false` | — |
 | `accept` | `string` | `'*'` | Atributo `accept` nativo (ej. `image/*`, `.pdf`) |
 | `multiple` | `bool` | `false` | Permite seleccionar más de un archivo |
+| `preview` | `bool` | `false` | Miniatura del archivo elegido (si es imagen) — ver abajo |
+| `dropzone` | `bool` | `false` | Variante cuadrada de arrastrar/soltar (logo/foto) — ver abajo |
+| `size` | `string` | `'md'` | Tamaño de la caja `dropzone` — `xs`/`sm`/`md`/`lg`/`xl`. Ignorado si `dropzone` es `false` |
 
 ### Comportamiento
 
 - Muestra `"Seleccionar archivo..."` hasta que el usuario elige uno; entonces muestra el nombre del archivo (o `"N archivos"` si `multiple` y hay más de uno).
 - Botón "×" para limpiar la selección aparece solo cuando hay un archivo elegido, y solo si no hay `error` activo (en ese caso el espacio lo ocupa el ícono de error).
+
+### Preview de imagen (`preview`, nuevo en v1.3.0)
+
+**Opt-in — `false` por defecto, no cambia ningún file-input existente en el sistema.** Con `preview="true"`, si el archivo elegido es una imagen (`file.type` empieza con `image/`), se genera un `URL.createObjectURL()` en el `@change` y se muestra como miniatura (`w-7 h-7 rounded object-cover`) reemplazando el `iconLeft` mientras haya un archivo elegido. El object URL se revoca (`URL.revokeObjectURL()`) tanto al limpiar (`clear()`) como al elegir un archivo nuevo, para no filtrar memoria del navegador. No sirve para `multiple` (solo previsualiza el primer archivo).
+
+### Variante dropzone (`dropzone`, nuevo en v1.3.0)
+
+**Opt-in — `false` por defecto, no cambia el look del file-input horizontal ya usado en el importador de datos (`x-data-table.import`).** Con `dropzone="true"`, la caja clickeable pasa de ser una fila tipo campo de texto a un **cuadrado real** (ancho y alto iguales vía `dropzoneSizeClasses()`, no un `h-*` con `w-full` que terminaba rectangular según el ancho del contenedor — bug real reportado con el logo del Wizard) con borde punteado, ícono centrado y `"Subir logo"` (o el `fileName` elegido) debajo — pensado para logo/foto de perfil, no para archivos genéricos. El `hint` se renderiza DENTRO del cuadro en vez de debajo (evita el mensaje duplicado). Combinado con `preview="true"`, la imagen elegida llena el cuadro entero (`object-cover` — se recorta para adaptarse sin deformarse, sin importar su proporción original) en vez de una miniatura chica, con un botón "×" flotante arriba a la derecha para limpiar. Misma lógica Alpine (`fileName`/`previewUrl`/`clear()`/`onChange()`) que la variante normal — solo cambia el markup de la caja.
+
+**Tamaños (`size`)** — mismo nombre de escala que `x-ui.button`:
+
+| Size | Dimensión |
+|---|---|
+| `xs` | `w-16 h-16` |
+| `sm` | `w-20 h-20` |
+| `md` (default) | `w-28 h-28` |
+| `lg` | `w-36 h-36` |
+| `xl` | `w-44 h-44` |
+
+```blade
+<x-ui.forms.file-input
+    label="Logo del Negocio"
+    name="logo"
+    accept="image/*"
+    :dropzone="true"
+    :preview="true"
+    size="lg"
+    hint="PNG, JPG hasta 2MB"
+    :error="$errors->first('logo')"
+/>
+```
+
+```blade
+<x-ui.forms.file-input
+    label="Logo del Negocio"
+    name="logo"
+    accept="image/*"
+    :preview="true"
+    hint="PNG o JPG, máximo 2MB"
+    :error="$errors->first('logo')"
+/>
+```
 
 ### Ejemplo
 

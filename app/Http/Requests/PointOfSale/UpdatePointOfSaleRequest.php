@@ -8,7 +8,7 @@ class UpdatePointOfSaleRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('pos edit');
+        return $this->user()->can('delivery_points.edit');
     }
 
     public function rules(): array

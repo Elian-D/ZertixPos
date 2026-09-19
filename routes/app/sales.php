@@ -18,31 +18,29 @@ Route::prefix('sales')->as('sales.')->group(function () {
     Route::middleware('auth')->group(function () {
         // Listado y Dashboard de Ventas
         Route::get('/', [SaleController::class, 'index'])
-            ->middleware('permission:view sales')
+            ->middleware('permission:sales.view')
             ->name('index');
 
         // Creación de Ventas (Formulario y Proceso)
         Route::get('/create', [SaleController::class, 'create'])
-            ->middleware('permission:create sales')
+            ->middleware('permission:sales.create')
             ->name('create');
 
         Route::post('/', [SaleController::class, 'store'])
-            ->middleware('permission:create sales')
+            ->middleware('permission:sales.create')
             ->name('store');
 
         // Acción de Anulación (Genera reversión contable e inventario)
         Route::patch('/{sale}/cancel', [SaleController::class, 'cancel'])
-            ->middleware('permission:cancel sales')
+            ->middleware('permission:sales.cancel')
             ->name('cancel');
 
-        // Exportación de Reportes
-        Route::get('/export', [SaleController::class, 'export'])
-            ->middleware('permission:view sales')
-            ->name('export');
+        // sales.export reemplazado por SaleTable::export() (wire:click) — ver
+        // App\Livewire\App\Sales\SaleTable.
 
         Route::get('sales/{sale}/print-invoice', [SaleController::class, 'printInvoice'])
             ->name('print-invoice')
-            ->middleware('permission:print invoices');
+            ->middleware('permission:invoices.print');
     });
 
     // routes/app/sales/pos.php
@@ -60,11 +58,11 @@ Route::prefix('sales')->as('sales.')->group(function () {
 
                 Route::get('/', 'edit')
                     ->name('edit')
-                    ->middleware('permission:pos config view');
+                    ->middleware('permission:pos_config.view');
 
                 Route::put('/', 'update')
                     ->name('update')
-                    ->middleware('permission:pos config update');
+                    ->middleware('permission:pos_config.update');
             });
 
         /*
@@ -87,10 +85,9 @@ Route::prefix('sales')->as('sales.')->group(function () {
 
                 Route::delete('/{pos_terminal}', 'destroy')->name('destroy');
 
-                // Soft Deletes
-                Route::get('/eliminados', 'eliminadas')->name('eliminadas');
-                Route::post('/{id}/restore', 'restaurar')->name('restore');
-                Route::delete('/{id}/force-delete', 'borrarDefinitivo')->name('force-delete');
+                // terminals.eliminados/restore/force-delete reemplazadas por el tab
+                // "Papelera" del mismo índice — ver App\Livewire\App\Sales\PosTerminalTable
+                // ::restore()/forceDelete() y docs/analisis/politica-soft-deletes.md §6.
             });
 
         /*
@@ -114,7 +111,7 @@ Route::prefix('sales')->as('sales.')->group(function () {
                 // (403 nativo, mismo patrón que Lobby/Workspace/Checkout en 9.0).
                 Route::get('/{pos_session}/close', 'closeForm')
                     ->name('close-form')
-                    ->middleware('permission:pos sessions manage');
+                    ->middleware('permission:pos_sessions.manage');
                 Route::patch('/{pos_session}/close', 'close')->name('close');
 
                 // Edición administrativa
@@ -190,23 +187,23 @@ Route::prefix('sales')->as('sales.')->group(function () {
         // 7.0 — Lobby de Selección de Terminales y Apertura de Sesión
         Route::get('/lobby', \App\Livewire\Sales\Pos\Pages\PosTerminalLobby::class)
             ->name('index')
-            ->middleware(['auth', 'verified', 'permission:pos sessions manage']);
+            ->middleware(['auth', 'verified', 'permission:pos_sessions.manage']);
 
         // 7.1 — POS Workspace (Mesa de Trabajo Completa del POS)
         Route::get('/workspace/{pos_terminal}', \App\Livewire\Sales\Pos\Pages\PosWorkspace::class)
             ->name('workspace')
-            ->middleware(['auth', 'verified', 'permission:pos sessions manage', 'check.terminal.access']);
+            ->middleware(['auth', 'verified', 'permission:pos_sessions.manage', 'check.terminal.access']);
 
         // 7.4 — Checkout Engine: registra la venta originada en el Workspace
         Route::post('/workspace/{pos_terminal}/checkout', [PosCheckoutController::class, 'store'])
             ->name('checkout.store')
-            ->middleware(['auth', 'verified', 'permission:pos sessions manage', 'check.terminal.access']);
+            ->middleware(['auth', 'verified', 'permission:pos_sessions.manage', 'check.terminal.access']);
 
         // Fase 6 (REQ-6.6) — Cobro de CxC registrado desde el Workspace, sin salir
         // al backoffice. Mismo middleware stack que el checkout de venta.
         Route::post('/workspace/{pos_terminal}/collect', [PosCollectionController::class, 'store'])
             ->name('collect.store')
-            ->middleware(['auth', 'verified', 'permission:pos sessions manage', 'check.terminal.access']);
+            ->middleware(['auth', 'verified', 'permission:pos_sessions.manage', 'check.terminal.access']);
     });
 });
 

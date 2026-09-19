@@ -8,7 +8,7 @@ class UpdatePosSessionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('pos sessions manage');
+        return $this->user()->can('pos_sessions.manage');
     }
 
     public function rules(): array

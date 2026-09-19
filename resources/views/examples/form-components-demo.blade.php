@@ -6,7 +6,7 @@
     Ruta temporal: Route::view('/demo/form', 'examples.form-components-demo').
 --}}
 
-<x-app-layout>
+<x-app-layout title="Demo de Componentes">
 
 <div class="max-w-2xl mx-auto py-12 px-4 space-y-12">
 

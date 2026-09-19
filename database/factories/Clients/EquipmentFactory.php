@@ -29,14 +29,6 @@ class EquipmentFactory extends Factory
             'model' => $this->faker->bothify('MOD-###??'),
             'notes' => $this->faker->sentence(),
             'active' => true,
-            'code' => null, // IMPORTANTE
         ];
-    }
-
-    public function configure()
-    {
-        return $this->afterCreating(function (Equipment $equipment) {
-            $equipment->generateCode();
-        });
     }
 }

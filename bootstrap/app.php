@@ -25,12 +25,20 @@ return Application::configure(basePath: dirname(__DIR__))
             'module' => \App\Http\Middleware\EnsureModuleEnabled::class,
         ]);
 
-        // Corre antes que cualquier ruta del grupo 'web' — sin esto, una instalación
-        // recién migrada (sin ConfiguracionGeneral.nombre_empresa real) dejaría entrar
-        // a /login o /admin/* directo, sin pasar nunca por el Wizard (Fase 8).
-        $middleware->web(append: [
-            \App\Http\Middleware\EnsureInstallationWizardCompleted::class,
+        // REQ-3.13, v1.3.0 Fase 3 — PayPal no manda token CSRF en sus webhooks;
+        // la autenticidad se verifica con la firma propia de PayPal adentro de
+        // PayPalGateway::handleWebhook() (verifyWebHookLocally()), no con sesión.
+        $middleware->validateCsrfTokens(except: [
+            'webhooks/paypal',
         ]);
+
+        // EnsureInstallationWizardCompleted YA NO va acá (v1.3.0 Fase 1, REQ-1.1/1.7).
+        // El grupo 'web' corre ANTES de que InitializeTenancyByDomain cambie la
+        // conexión — si el middleware vivía acá, consultaba ConfiguracionGeneral
+        // siempre contra la conexión central, que ya no tiene esa tabla (es de
+        // negocio, solo existe por tenant). Se registra ahora dentro de
+        // routes/tenant.php, después de InitializeTenancyByDomain, para que
+        // consulte la base del tenant correcto. Ver v1.3.0.md Fase 1.
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

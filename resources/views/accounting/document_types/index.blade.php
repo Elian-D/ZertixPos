@@ -1,4 +1,4 @@
-<x-app-layout>
+<x-app-layout title="Tipos de Documento">
     <div class="p-4 md:p-6 flex flex-col gap-6">
 
         <x-ui.page-header title="Tipos de Documento" description="Gestiona los tipos de documento fiscal y sus correlativos de numeración." />
@@ -44,7 +44,7 @@
                             Actualizado {{ $type->updated_at->diffForHumans() }}
                         </span>
 
-                        @can('edit document types')
+                        @can('document_types.edit')
                             <a href="{{ route('configuration.document_types.edit', $type) }}"
                                title="{{ $locked ? 'El correlativo ya no se puede editar, pero el nombre y el prefijo sí' : 'Nombre, prefijo y correlativo son editables' }}"
                                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition

@@ -1,6 +1,6 @@
 
 
-<x-app-layout>
+<x-app-layout title="Importar Clientes">
     <x-data-table.import.main-container 
         title="Clientes" 
         uploadRoute="clients.import.process"

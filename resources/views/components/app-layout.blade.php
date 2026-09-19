@@ -10,7 +10,11 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <title>{{ config('app.name', 'Laravel') }}</title>
+        {{-- REQ-7.8 — mismo formato "ZertixPOS — Módulo" que ya usan
+             layouts/pos.blade.php y layouts/install.blade.php. $title lo
+             pasa cada vista wrapper (<x-app-layout title="...">); sin él,
+             cae al nombre de la app solo. --}}
+        <title>{{ $title ? config('app.name', 'ZertixPOS').' — '.$title : config('app.name', 'ZertixPOS') }}</title>
 
         {{-- Red de seguridad contra FOUC: la regla [x-cloak] real vive en app.css
              (vía @vite, más abajo), pero esa hoja depende de que termine de
@@ -57,15 +61,24 @@
                  class="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 sm:hidden">
             </div>
 
-            @include('layouts.sidebar')
+            {{-- Fase 5 (REQ-5) — mismo layout para app/admin, solo cambia qué
+                 sidebar se incluye (patrón Orvian: $isAdminContext), no un
+                 layout duplicado. Ver docs/features/v1.3.0.md §Fase 5. --}}
+            @include(request()->routeIs('admin.*') ? 'layouts.sidebar-admin' : 'layouts.sidebar')
 
             {{-- CONTENIDO PRINCIPAL — sin ml-64/ml-20: el <aside> de x-sidebar.layout ya es un
                  flex-child normal (sm:relative) que empuja el contenido con su propio ancho
                  animado, no un elemento position:fixed que había que compensar a mano. --}}
             <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
 
+                
                 {{-- HEADER / TOPBAR --}}
                 <x-header />
+
+                {{-- REQ-3.10, v1.3.0 Fase 3 — fijo arriba del contenido, debajo
+                     del header (no lo tapa). Se auto-oculta cuando ninguna de
+                     las 3 variantes aplica. --}}
+                <x-ui.account-banner />
 
                 {{--
                     CONTENIDO VARIABLE — misma estructura que app.blade.php de Orvian (Fase 7):

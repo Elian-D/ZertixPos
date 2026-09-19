@@ -68,9 +68,13 @@ class ClientCollection extends Model
      |      RELACIONES
      =========================== */
 
+    // withTrashed(): un cobro histórico debe seguir mostrando su cliente aunque
+    // ese Client se haya desactivado/borrado después (mismo criterio que
+    // tipoPago() abajo, y que Receivable::client() — bug real encontrado ahí
+    // al migrar CxC, REQ-0.9).
     public function client(): BelongsTo
     {
-        return $this->belongsTo(Client::class);
+        return $this->belongsTo(Client::class)->withTrashed();
     }
 
     public function receivable(): BelongsTo

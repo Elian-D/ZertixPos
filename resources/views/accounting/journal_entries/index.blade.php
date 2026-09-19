@@ -4,12 +4,12 @@
     };
 </script>
 
-<x-app-layout>
+<x-app-layout title="Libro Diario">
     <div class="p-4 md:p-6 flex flex-col gap-6">
 
         <x-ui.page-header title="Libro Diario" description="Gestiona los asientos contables del libro diario y su estado de aprobación." :count="$items->total()" countLabel="asientos">
             <x-slot name="actions">
-                @can('create journal entries')
+                @can('journal_entries.create')
                     <x-ui.button href="{{ route('finance.journal_entries.create') }}" variant="primary" iconLeft="heroicon-s-plus">
                         Nuevo Asiento
                     </x-ui.button>
