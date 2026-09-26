@@ -738,7 +738,7 @@ CREATE TABLE `products` (
   `price` decimal(12,2) NOT NULL DEFAULT '0.00',
   `cost` decimal(12,2) NOT NULL DEFAULT '0.00',
   `is_active` tinyint(1) NOT NULL DEFAULT '1',
-  `is_stockable` tinyint(1) NOT NULL DEFAULT '1',
+  `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'product',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
@@ -1145,3 +1145,5 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (81,'2026_08_28_100
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (82,'2026_08_28_100500_add_module_key_to_permissions_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (83,'2026_08_30_100000_add_gateway_plan_id_to_plans_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (84,'2026_09_01_110000_drop_plan_catalog_from_tenant',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (85,'2026_09_26_100000_add_type_to_products_table',2);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (86,'2026_09_26_100001_drop_is_stockable_from_products_table',2);

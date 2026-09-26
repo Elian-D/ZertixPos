@@ -116,9 +116,9 @@
                     </x-ui.badge>
                 </x-data-table.cell>
 
-                <x-data-table.cell column="is_stockable" :visible="$visibleColumns">
-                    <x-ui.badge :variant="$item->is_stockable ? 'info' : 'warning'" size="sm" :dot="false">
-                        {{ $item->is_stockable ? 'Producto' : 'Servicio' }}
+                <x-data-table.cell column="type" :visible="$visibleColumns">
+                    <x-ui.badge :variant="$item->isProduct() ? 'info' : 'warning'" size="sm" :dot="false">
+                        {{ $item->isProduct() ? 'Producto' : 'Servicio' }}
                     </x-ui.badge>
                 </x-data-table.cell>
 

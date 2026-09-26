@@ -117,11 +117,11 @@ class SaleService
             ]);
 
             // 4. PROCESAMIENTO DE ÍTEMS, IMPUESTOS Y MOVIMIENTOS DE INVENTARIO
-            // Precargado en una sola query: un "servicio" (is_stockable=false) no debe
-            // generar movimiento de inventario ni asiento de Costo de Ventas — no tiene
-            // cantidad física real que descontar de ningún almacén.
+            // Precargado en una sola query: un "servicio" (type=service, v1.4.0 Fase 1)
+            // no debe generar movimiento de inventario ni asiento de Costo de Ventas —
+            // no tiene cantidad física real que descontar de ningún almacén.
             $products = Product::whereIn('id', collect($data['items'])->pluck('product_id'))
-                ->get(['id', 'is_stockable'])
+                ->get(['id', 'type'])
                 ->keyBy('id');
 
             // Impuestos multi-tasa por línea (Fase 5, REQ-5.3) — ya no una tasa global
@@ -159,7 +159,7 @@ class SaleService
                 $netAccum += $lineSubtotal;
                 $taxAccum += $lineTax;
 
-                $isStockable = $product?->is_stockable ?? true;
+                $isStockable = ($product?->type ?? Product::TYPE_PRODUCT) === Product::TYPE_PRODUCT;
 
                 // inventory.tracking es núcleo flexible (REQ-10.5) — apagado, la venta
                 // sigue funcionando pero no se escribe ningún InventoryMovement ni se
@@ -513,7 +513,16 @@ class SaleService
             // NOTA ARQUITECTÓNICA: Se usa TYPE_ADJUSTMENT en lugar de TYPE_INPUT para no inflar artificialmente las
             // métricas de compras/entradas ordinarias en los reportes analíticos de inventario.
             if (module_enabled('inventory.tracking')) {
+                $sale->loadMissing('items.product:id,type');
+
                 foreach ($sale->items as $item) {
+                    // v1.4.0 Fase 1, REQ-1.1 — bug real corregido: antes esto reingresaba
+                    // stock para TODOS los ítems sin distinguir tipo, "devolviendo"
+                    // cantidad física a un servicio que nunca tuvo ninguna.
+                    if ($item->product?->isService()) {
+                        continue;
+                    }
+
                     $this->inventoryService->register([
                         'warehouse_id' => $sale->warehouse_id,
                         'product_id' => $item->product_id,
