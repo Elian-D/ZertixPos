@@ -2,8 +2,8 @@
 
 namespace App\Services\Inventory;
 
-use App\Models\Inventory\Warehouse;
 use App\Models\Inventory\InventoryMovement;
+use App\Models\Inventory\Warehouse;
 use App\Models\Products\Product; // Asegúrate de que la ruta sea correcta
 
 class MovementCatalogService
@@ -15,11 +15,11 @@ class MovementCatalogService
                 ->select('id', 'name')
                 ->orderBy('name')
                 ->get(),
-            
+
             'types' => InventoryMovement::getTypes(),
-            
+
             // Opcional: Solo productos que son "stockeables"
-            'products' => Product::where('is_stockable', true)
+            'products' => Product::where('type', Product::TYPE_PRODUCT)
                 ->select('id', 'name')
                 ->orderBy('name')
                 ->get(),

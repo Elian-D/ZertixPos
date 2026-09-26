@@ -14,8 +14,37 @@ class Product extends Model
 
     protected $fillable = [
         'category_id', 'unit_id', 'name', 'slug', 'sku', 'description',
-        'image_path', 'price', 'cost', 'is_active', 'is_stockable',
+        'image_path', 'price', 'cost', 'is_active', 'type',
     ];
+
+    /**
+     * Tipos de producto (v1.4.0 Fase 1, REQ-1.1 — reemplaza el booleano
+     * `is_stockable`). Constantes en el modelo, no `enum` de columna a
+     * propósito: agregar un tipo nuevo el día que exista (ej. `combo`, un
+     * producto compuesto por varios productos) es cambiar un `match`/`Rule::in()`,
+     * no una migración de schema.
+     */
+    const TYPE_PRODUCT = 'product';
+
+    const TYPE_SERVICE = 'service';
+
+    public static function getTypes(): array
+    {
+        return [
+            self::TYPE_PRODUCT => 'Producto',
+            self::TYPE_SERVICE => 'Servicio',
+        ];
+    }
+
+    public function isService(): bool
+    {
+        return $this->type === self::TYPE_SERVICE;
+    }
+
+    public function isProduct(): bool
+    {
+        return $this->type === self::TYPE_PRODUCT;
+    }
 
     /* ===========================
      |  ASESORES
@@ -136,7 +165,7 @@ class Product extends Model
 
     public function scopeStockable(Builder $query): Builder
     {
-        return $query->where('is_stockable', true);
+        return $query->where('type', self::TYPE_PRODUCT);
     }
 
     // Para obtener la suma total de stock de este producto (el que borramos de la tabla)

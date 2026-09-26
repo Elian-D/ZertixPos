@@ -110,13 +110,13 @@
                             <div class="bg-gray-50 p-4 rounded-xl border border-gray-100">
                                 <div class="flex items-center justify-between">
                                     <span class="text-xs text-gray-500 font-medium">Control de Inventario:</span>
-                                    <x-ui.badge :variant="$item->is_stockable ? 'warning' : 'slate'" size="sm" :dot="false">
-                                        {{ $item->is_stockable ? 'Sujeto a Stock' : 'No Inventariable' }}
+                                    <x-ui.badge :variant="$item->isProduct() ? 'warning' : 'slate'" size="sm" :dot="false">
+                                        {{ $item->isProduct() ? 'Sujeto a Stock' : 'No Inventariable' }}
                                     </x-ui.badge>
                                 </div>
                                 <p class="text-[10px] text-gray-400 mt-2 italic leading-tight">
-                                    {{ $item->is_stockable 
-                                        ? '* Este producto requiere asignación en almacenes para ser vendido.' 
+                                    {{ $item->isProduct()
+                                        ? '* Este producto requiere asignación en almacenes para ser vendido.'
                                         : '* Este producto se trata como servicio o activo libre.' }}
                                 </p>
                             </div>
