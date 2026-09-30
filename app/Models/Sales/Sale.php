@@ -10,11 +10,14 @@ use App\Models\Sales\Ncf\NcfLog;
 use App\Models\Sales\Pos\PosSession;
 use App\Models\Sales\Pos\PosTerminal;
 use App\Models\Sales\Quotes\Quote;
+use App\Models\Sales\Returns\ReturnItem;
+use App\Models\Sales\Returns\SaleReturn;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -121,7 +124,26 @@ class Sale extends Model
             'items', // Cargamos todos los campos de los items (precio, cantidad)
             'items.product:id,name,sku', // Cargamos el producto de cada item
             'quote:id,discount_total', // <--- NUEVO (Para mostrar descuentos de cotizacion)
-        ]);
+        ])
+            // Badge "Devuelta"/"Devuelta parcial" (v1.4.0 REQ-2.7) sin N+1.
+            ->withSum('items as sold_quantity', 'quantity')
+            ->withSum(['returnItems as returned_quantity' => fn ($q) => $q->where('returns.status', SaleReturn::STATUS_COMPLETED)], 'return_items.quantity');
+    }
+
+    /**
+     * 'full' | 'partial' | null según las unidades devueltas (devoluciones no
+     * anuladas). Usa los agregados de scopeWithIndexRelations() si están cargados.
+     */
+    public function getReturnStatusAttribute(): ?string
+    {
+        $returned = (float) ($this->attributes['returned_quantity'] ?? $this->returnItems()->where('returns.status', SaleReturn::STATUS_COMPLETED)->sum('return_items.quantity'));
+        $sold = (float) ($this->attributes['sold_quantity'] ?? $this->items()->sum('quantity'));
+
+        if ($returned <= 0) {
+            return null;
+        }
+
+        return $returned >= $sold ? 'full' : 'partial';
     }
 
     public function requiresNcf(): bool
@@ -243,5 +265,44 @@ class Sale extends Model
     public function receivable(): MorphOne
     {
         return $this->morphOne(Receivable::class, 'reference');
+    }
+
+    public function returns(): HasMany
+    {
+        return $this->hasMany(SaleReturn::class);
+    }
+
+    public function returnItems(): HasManyThrough
+    {
+        return $this->hasManyThrough(ReturnItem::class, SaleReturn::class, 'sale_id', 'return_id');
+    }
+
+    /**
+     * Motivo por el que esta venta ya no se puede anular, o null si sí se puede
+     * (v1.4.0 REQ-1.2). Anular solo es seguro mientras la venta pertenece a un
+     * turno de caja abierto; una venta de turno cerrado o creada desde backoffice
+     * se resuelve con Devolución. Única fuente de la regla: la usan
+     * SaleService::cancel() y la UI (botón Anular vs Devolver).
+     */
+    public function cancellationBlockReason(): ?string
+    {
+        if ($this->status === self::STATUS_CANCELED) {
+            return 'La venta ya se encuentra anulada.';
+        }
+
+        if (! $this->pos_session_id) {
+            return 'Esta venta se registró desde backoffice y ya quedó consolidada — no se puede anular. Este caso se resolverá con el flujo de Devolución.';
+        }
+
+        if ($this->posSession && $this->posSession->isClosed()) {
+            return 'Esta venta pertenece a un turno de caja ya cerrado — no se puede anular. Este caso se resolverá con el flujo de Devolución.';
+        }
+
+        return null;
+    }
+
+    public function canBeCanceled(): bool
+    {
+        return $this->cancellationBlockReason() === null;
     }
 }

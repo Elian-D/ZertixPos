@@ -8,6 +8,7 @@ use App\Http\Controllers\Sales\Pos\PosConfigController;
 use App\Http\Controllers\Sales\Pos\PosSessionController;
 use App\Http\Controllers\Sales\Pos\PosTerminalController;
 use App\Http\Controllers\Sales\Pos\PosTerminalLockController;
+use App\Http\Controllers\Sales\ReturnController;
 use App\Http\Controllers\Sales\SaleController;
 use Illuminate\Support\Facades\Route;
 
@@ -38,9 +39,20 @@ Route::prefix('sales')->as('sales.')->group(function () {
         // sales.export reemplazado por SaleTable::export() (wire:click) — ver
         // App\Livewire\App\Sales\SaleTable.
 
+        // Sin permiso propio de impresión — ver nota en routes/app/finance.php
+        // junto a finance.invoices.print (mismo fix, misma razón).
         Route::get('sales/{sale}/print-invoice', [SaleController::class, 'printInvoice'])
             ->name('print-invoice')
-            ->middleware('permission:invoices.print');
+            ->middleware('permission:sales.view');
+
+        // Devoluciones (v1.4.0 Fase 2). Crear = modal Livewire ReturnForm (sin ruta).
+        // Ver/imprimir: quien puede hacer o anular devoluciones.
+        Route::prefix('returns')->as('returns.')->controller(ReturnController::class)->group(function () {
+            Route::get('/', 'index')->middleware('permission:returns.create|returns.void')->name('index');
+            Route::get('/{return}', 'show')->middleware('permission:returns.create|returns.void')->name('show');
+            Route::get('/{return}/print', 'print')->middleware('permission:returns.create|returns.void')->name('print');
+            Route::patch('/{return}/void', 'void')->middleware('permission:returns.void')->name('void');
+        });
     });
 
     // routes/app/sales/pos.php

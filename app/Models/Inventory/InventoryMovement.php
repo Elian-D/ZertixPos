@@ -32,6 +32,9 @@ class InventoryMovement extends Model
     const TYPE_OUTPUT = 'output';
     const TYPE_ADJUSTMENT = 'adjustment';
     const TYPE_TRANSFER = 'transfer';
+    // Devoluciones (v1.4.0 Fase 2): cantidad con signo, igual que TYPE_ADJUSTMENT —
+    // +N entra la unidad devuelta, -N sale el reemplazo de un cambio o se revierte al anular.
+    const TYPE_RETURN = 'return';
 
     public static function getTypes(): array
     {
@@ -40,6 +43,7 @@ class InventoryMovement extends Model
             self::TYPE_OUTPUT => 'Salida',
             self::TYPE_ADJUSTMENT => 'Ajuste',
             self::TYPE_TRANSFER => 'Transferencia',
+            self::TYPE_RETURN => 'Devolución',
         ];
     }
 

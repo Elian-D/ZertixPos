@@ -23,6 +23,12 @@ class DocumentTypeSeeder extends Seeder
                 'code' => 'PAG',
                 'prefix' => 'PAG',
             ],
+            [
+                // Correlativo interno de Devoluciones (v1.4.0 Fase 2) — no fiscal.
+                'name' => 'Devolución',
+                'code' => 'DEV',
+                'prefix' => 'DEV',
+            ],
         ];
 
         foreach ($docs as $doc) {

@@ -21,7 +21,7 @@ class CollectionCatalogService
                 ->orderBy('name')
                 ->get(),
 
-            'paymentMethods' => TipoPago::activo()
+            'paymentMethods' => TipoPago::seleccionable()
                 ->select('id', 'nombre')
                 ->orderBy('nombre')
                 ->get(),
@@ -44,7 +44,7 @@ class CollectionCatalogService
 
             // 'slug' se agrega acá (Fase 6, REQ-6.9) — el form necesita distinguir
             // Efectivo/Tarjeta en el frontend para ocultar el campo de referencia.
-            'paymentMethods' => TipoPago::activo()
+            'paymentMethods' => TipoPago::seleccionable()
                 ->select('id', 'nombre', 'slug')
                 ->orderBy('nombre')
                 ->get(),

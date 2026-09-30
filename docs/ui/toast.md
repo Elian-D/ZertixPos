@@ -69,9 +69,11 @@ El sistema escucha tres eventos globales de `window`:
 
 | Evento | Payload | Descripción |
 |--------|---------|-------------|
-| `notify` | `{ type, title, message, duration? }` | Muestra un toast inmediatamente |
-| `notify-redirect` | `{ type, title, message, duration? }` | Guarda el toast en `sessionStorage` para mostrarlo tras una redirección |
+| `notify` | `{ type, title, message, duration?, link? }` | Muestra un toast inmediatamente |
+| `notify-redirect` | `{ type, title, message, duration?, link? }` | Guarda el toast en `sessionStorage` para mostrarlo tras una redirección |
 | `remove-toast` | `id` (number) | Elimina un toast específico por su ID interno |
+
+**`link` (opcional, v1.4.0):** `{ url, label }` — renderiza un enlace bajo el mensaje que abre `url` en una pestaña nueva. Uso real: el toast de "Devolución registrada" lleva "Imprimir ticket" como respaldo por si el navegador bloquea el `window.open` automático. Desde Livewire: `$this->dispatch('notify', type: 'success', title: '...', message: '...', link: ['url' => $url, 'label' => 'Imprimir ticket'])`.
 
 ### Estructura del Payload
 

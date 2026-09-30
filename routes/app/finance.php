@@ -119,8 +119,13 @@ Route::prefix('finance')->as('finance.')->group(function () {
             ->middleware('permission:collections.create')
             ->name('collections.store');
 
+        // Sin permiso propio de impresión — mismo bug y mismo fix que
+        // finance.invoices.print (v1.4.0 REQ-1.3): 'collections.print_receipt' se
+        // eliminó del seeder en v1.3.0 REQ-2.2 pero esta ruta lo siguió exigiendo.
+        // Puede imprimir quien ve o registra cobros, y el cajero del TPV
+        // (pos_sessions.manage), que abre este recibo solo al cobrar desde el Workspace.
         Route::get('collections/{payment}/print', [CollectionController::class, 'print'])
-            ->middleware('permission:collections.print_receipt')
+            ->middleware('permission:collections.view|collections.create|pos_sessions.manage')
             ->name('collections.print');
 
         Route::post('collections/{payment}/cancel', [CollectionController::class, 'cancel'])
@@ -164,9 +169,15 @@ Route::prefix('finance')->as('finance.')->group(function () {
             ->middleware('permission:invoices.view')
             ->name('invoices.show');
 
-        // Impresión (Generación de PDF/Ticket)
+        // Impresión (Generación de PDF/Ticket) — sin permiso propio a propósito,
+        // ver docs/features/v1.3.0.md §2.9 y docs/features/v1.4.0.md §1.3 (REQ-1.3):
+        // quien puede ver la factura (invoices.view) puede imprimirla, no tiene
+        // sentido un permiso separado que niegue solo la impresión de algo que
+        // ya se puede ver.
+        // pos_sessions.manage: el TPV abre este ticket solo tras cada venta
+        // (pos-workspace.blade.php, printUrl) — un cajero sin invoices.view recibía 403.
         Route::get('invoices/{invoice}/print', [InvoiceController::class, 'print'])
-            ->middleware('permission:invoices.print')
+            ->middleware('permission:invoices.view|pos_sessions.manage')
             ->name('invoices.print');
     });
 

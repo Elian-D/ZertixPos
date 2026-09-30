@@ -67,6 +67,8 @@
         'pos_terminals.view',
         'pos_config.view',
         'pos_sessions.history',
+        'returns.create',
+        'returns.void',
     ])
         <x-sidebar.dropdown
             id="ventas"
@@ -77,11 +79,17 @@
             @can('sales.view')
                 <x-sidebar.subitem 
                     href="{{ route('sales.index') }}"
-                    :active="request()->routeIs('sales.*') && ! request()->routeIs('sales.pos.*')"
+                    :active="request()->routeIs('sales.*') && ! request()->routeIs('sales.pos.*') && ! request()->routeIs('sales.returns.*')"
                 >
                     Ventas
                 </x-sidebar.subitem>
             @endcan
+
+            @canany(['returns.create', 'returns.void'])
+                <x-sidebar.subitem href="{{ route('sales.returns.index') }}" :active="request()->routeIs('sales.returns.*')">
+                    Devoluciones
+                </x-sidebar.subitem>
+            @endcanany
 
             @can('pos_sessions.manage')
                 <x-sidebar.subitem href="{{ route('sales.pos.index') }}">
