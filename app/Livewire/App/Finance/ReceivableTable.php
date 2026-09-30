@@ -92,7 +92,7 @@ class ReceivableTable extends DataTable
             'journalEntry',
         ]);
 
-        return $this->applyFilters(Receivable::query()->with($relations));
+        return $this->applyFilters(Receivable::query()->with($relations)->withReturnedAmount());
     }
 
     public function render()

@@ -77,8 +77,16 @@
                             
                             <div class="flex justify-between items-center mb-2 text-white/80">
                                 <span class="text-xs">Monto Original:</span>
-                                <span class="text-sm font-bold">{{ config('regional.currency_symbol') }}{{ number_format($item->total_amount, 2) }}</span>
+                                <span class="text-sm font-bold">{{ config('regional.currency_symbol') }}{{ number_format($item->original_amount, 2) }}</span>
                             </div>
+
+                            {{-- Devoluciones (v1.4.0): bajan la deuda sin ser un abono --}}
+                            @if(($item->returned_amount ?? 0) > 0)
+                                <div class="flex justify-between items-center mb-2 text-amber-300">
+                                    <span class="text-xs">Devuelto:</span>
+                                    <span class="text-sm font-bold">-{{ config('regional.currency_symbol') }}{{ number_format($item->returned_amount, 2) }}</span>
+                                </div>
+                            @endif
 
                             @if($item->current_balance < $item->total_amount && $item->current_balance > 0)
                                 <div class="flex justify-between items-center mb-2 text-emerald-400">

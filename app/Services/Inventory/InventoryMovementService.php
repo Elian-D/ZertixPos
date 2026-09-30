@@ -32,8 +32,11 @@ class InventoryMovementService
                 InventoryMovement::TYPE_TRANSFER,
             ]);
 
+            // TYPE_ADJUSTMENT y TYPE_RETURN usan la cantidad con signo tal cual llega.
+            $isSigned = in_array($type, [InventoryMovement::TYPE_ADJUSTMENT, InventoryMovement::TYPE_RETURN]);
+
             // 2. Cálculo de Stock Físico
-            if ($type === InventoryMovement::TYPE_ADJUSTMENT) {
+            if ($isSigned) {
                 $newStockQuantity = $previousStock + $rawQty;
             } else {
                 $newStockQuantity = $isNegativeOperation ? $previousStock - $absQty : $previousStock + $absQty;
@@ -49,7 +52,7 @@ class InventoryMovementService
                 'to_warehouse_id' => $data['to_warehouse_id'] ?? null,
                 'product_id' => $data['product_id'],
                 'user_id' => Auth::id(),
-                'quantity' => ($type === InventoryMovement::TYPE_ADJUSTMENT) ? $rawQty : ($isNegativeOperation ? -$absQty : $absQty),
+                'quantity' => $isSigned ? $rawQty : ($isNegativeOperation ? -$absQty : $absQty),
                 'type' => $type,
                 'previous_stock' => $previousStock,
                 'current_stock' => $newStockQuantity,
@@ -77,6 +80,12 @@ class InventoryMovementService
         // Sin contabilidad avanzada, un movimiento de inventario no necesita asiento —
         // es una operación base (Sale/InventoryMovement bastan para reportar).
         if (! module_enabled('accounting.advanced')) {
+            return;
+        }
+
+        // Devoluciones no generan asiento en esta versión (v1.4.0 Fase 2). Sin este
+        // corte se crearía un JournalEntry vacío: el switch de abajo no lo reconoce.
+        if ($movement->type === InventoryMovement::TYPE_RETURN) {
             return;
         }
 

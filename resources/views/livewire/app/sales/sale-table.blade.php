@@ -192,9 +192,16 @@
                             default => 'slate',
                         };
                     @endphp
-                    <x-ui.badge :variant="$sVariant" size="sm" :dot="false">
-                        {{ $sLabels[$sale->status] ?? $sale->status }}
-                    </x-ui.badge>
+                    <div class="inline-flex flex-wrap items-center justify-center gap-1">
+                        <x-ui.badge :variant="$sVariant" size="sm" :dot="false">
+                            {{ $sLabels[$sale->status] ?? $sale->status }}
+                        </x-ui.badge>
+                        @if($sale->return_status === 'full')
+                            <x-ui.badge variant="warning" size="sm" icon="heroicon-s-arrow-uturn-left">Devuelta</x-ui.badge>
+                        @elseif($sale->return_status === 'partial')
+                            <x-ui.badge variant="info" size="sm" icon="heroicon-s-arrow-uturn-left">Devuelta parcial</x-ui.badge>
+                        @endif
+                    </div>
                 </x-data-table.cell>
 
                 <x-data-table.cell column="user_id" :visible="$visibleColumns">
@@ -228,15 +235,26 @@
                                 Imprimir Comprobante
                             </x-ui.action-menu.item>
 
-                            @can('sales.cancel')
-                                @if($sale->status === \App\Models\Sales\Sale::STATUS_COMPLETED)
-                                    <x-ui.action-menu.item
-                                        x-data @click="$dispatch('open-modal', 'confirm-cancel-sale-{{ $sale->id }}')"
-                                        icon="heroicon-o-x-circle" variant="danger">
-                                        Anular Venta
-                                    </x-ui.action-menu.item>
+                            {{-- Anular solo en turno abierto; si no, Devolver (v1.4.0 REQ-2.4, Sale::canBeCanceled()) --}}
+                            @if($sale->status === \App\Models\Sales\Sale::STATUS_COMPLETED)
+                                @if($sale->canBeCanceled())
+                                    @can('sales.cancel')
+                                        <x-ui.action-menu.item
+                                            x-data @click="$dispatch('open-modal', 'confirm-cancel-sale-{{ $sale->id }}')"
+                                            icon="heroicon-o-x-circle" variant="danger">
+                                            Anular Venta
+                                        </x-ui.action-menu.item>
+                                    @endcan
+                                @elseif($sale->return_status !== 'full')
+                                    @can('returns.create')
+                                        <x-ui.action-menu.item
+                                            x-data @click="$dispatch('open-return', { saleId: {{ $sale->id }} })"
+                                            icon="heroicon-o-arrow-uturn-left">
+                                            Devolver
+                                        </x-ui.action-menu.item>
+                                    @endcan
                                 @endif
-                            @endcan
+                            @endif
                         </x-ui.action-menu>
                     </div>
                 </td>
@@ -253,4 +271,6 @@
     </x-data-table.base-table>
 
     @include('sales.partials.modals', ['items' => $sales])
+
+    <livewire:app.sales.return-form />
 </div>

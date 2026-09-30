@@ -141,7 +141,7 @@ class SaleCatalogService
                 }),
 
             'tipo_pagos' => TipoPago::sortByPriority(
-                TipoPago::activo()->select('id', 'nombre', 'slug', 'accounting_account_id')->get()
+                TipoPago::seleccionable()->select('id', 'nombre', 'slug', 'accounting_account_id')->get()
             ),
         ];
     }

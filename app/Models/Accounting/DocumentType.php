@@ -2,6 +2,7 @@
 
 namespace App\Models\Accounting;
 
+use App\Models\Sales\Returns\SaleReturn;
 use App\Models\Sales\Sale;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -16,7 +17,7 @@ class DocumentType extends Model
      * Códigos que el propio sistema consulta por texto (SaleService, CollectionService...).
      * Cambiar el 'code' de uno de estos rompería esas búsquedas hardcodeadas.
      */
-    const SYSTEM_PROTECTED_CODES = ['FAC', 'PAG'];
+    const SYSTEM_PROTECTED_CODES = ['FAC', 'PAG', 'DEV'];
 
     protected static function booted()
     {
@@ -60,6 +61,7 @@ class DocumentType extends Model
             'FAC' => Sale::where('document_type_id', $this->id)->exists(),
             // ClientCollection no guarda document_type_id; se identifica por el prefijo de su receipt_number.
             'PAG' => ClientCollection::where('receipt_number', 'like', $this->prefix.'-%')->exists(),
+            'DEV' => SaleReturn::where('document_type_id', $this->id)->exists(),
             default => false,
         };
     }

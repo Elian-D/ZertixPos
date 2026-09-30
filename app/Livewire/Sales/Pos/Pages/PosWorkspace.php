@@ -192,7 +192,7 @@ class PosWorkspace extends Component
             'clients' => $this->getClients(),
             'debtors' => $canCollect ? $this->getDebtors() : [],
             'canCollect' => $canCollect,
-            'tipoPagos' => TipoPago::sortByPriority(TipoPago::activo()->select('id', 'nombre', 'slug')->get()),
+            'tipoPagos' => TipoPago::sortByPriority(TipoPago::seleccionable()->select('id', 'nombre', 'slug')->get()),
             'ncfTypes' => $usaNcf ? NcfType::where('is_active', true)->select('id', 'name', 'code', 'requires_rnc')->get() : collect(),
             'usaNcf' => $usaNcf,
             'posConfig' => pos_config(),

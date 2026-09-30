@@ -7,6 +7,7 @@ use App\Livewire\Base\DataTable;
 use App\Models\Sales\Sale;
 use App\Services\Sales\SalesServices\SaleCatalogService;
 use Illuminate\Database\Eloquent\Builder;
+use Livewire\Attributes\On;
 use Maatwebsite\Excel\Facades\Excel;
 
 class SaleTable extends DataTable
@@ -35,7 +36,6 @@ class SaleTable extends DataTable
             'warehouse_id'    => ['label' => 'Almacén'],
             'pos_terminal_id' => ['label' => 'Terminal POS', 'default' => true],
             'pos_session_id'  => ['label' => 'Sesión POS'],
-            'payment_type'    => ['label' => 'Tipo de Venta', 'default' => true],
             'tipo_pago_id'    => ['label' => 'Método de Pago', 'default' => true],
             'total_amount'    => ['label' => 'Total', 'default' => true, 'mobile' => true],
             'status'          => ['label' => 'Estado', 'default' => true, 'mobile' => true],
@@ -91,6 +91,10 @@ class SaleTable extends DataTable
     {
         return $this->applyFilters(Sale::query()->withIndexRelations());
     }
+
+    // Re-render tras registrar una devolución desde ReturnForm (badge + acción de fila).
+    #[On('return-created')]
+    public function refreshAfterReturn(): void {}
 
     public function export()
     {

@@ -2,6 +2,7 @@
 namespace App\Models\Accounting;
 
 use App\Models\Clients\Client;
+use App\Models\Sales\Returns\SaleReturn;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes, Relations\BelongsTo, Relations\HasMany, Relations\MorphTo};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
@@ -112,4 +113,28 @@ class Receivable extends Model
      * determina si ya se puede cancelar (Fase 6, REQ-6.11), no el saldo mutable.
      */
     public function collections(): HasMany { return $this->hasMany(ClientCollection::class, 'receivable_id'); }
+
+    /**
+     * Devoluciones de la venta de esta CxC (reference_type siempre es Sale — ver
+     * ReceivableService::createReceivable()). v1.4.0: una devolución a crédito
+     * baja total_amount y current_balance juntos, así que "Total Abonado"
+     * (total - saldo) sigue siendo solo cobros reales; lo devuelto se muestra aparte.
+     */
+    public function saleReturns(): HasMany
+    {
+        return $this->hasMany(SaleReturn::class, 'sale_id', 'reference_id');
+    }
+
+    public function scopeWithReturnedAmount($query)
+    {
+        return $query->withSum(['saleReturns as returned_amount' => fn ($q) => $q
+            ->where('status', SaleReturn::STATUS_COMPLETED)
+            ->where('refund_method', SaleReturn::METHOD_RECEIVABLE)], 'refund_value');
+    }
+
+    /** Monto original de la venta, antes de devoluciones. */
+    public function getOriginalAmountAttribute(): float
+    {
+        return (float) $this->total_amount + (float) ($this->returned_amount ?? 0);
+    }
 }

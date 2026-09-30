@@ -262,6 +262,10 @@ class PermissionSeeder extends Seeder
                 'quotes.edit',
                 'quotes.convert',
                 'quotes.cancel',
+
+                // Devoluciones (v1.4.0 Fase 2). Sin module_key — módulo base fijo.
+                'returns.create',
+                'returns.void',
             ],
 
             'pos' => [

@@ -480,27 +480,12 @@ class SaleService
     public function cancel(Sale $sale, ?string $reason = null): bool
     {
         return DB::transaction(function () use ($sale, $reason) {
-            if ($sale->status === Sale::STATUS_CANCELED) {
-                throw new Exception('La venta ya se encuentra anulada.');
-            }
-
-            // Guard de turno (v1.4.0 Fase 1, REQ-1.2) — hallazgo real de auditoría: hasta
-            // acá, una venta 100% en efectivo (sin Receivable de por medio) se podía
-            // anular sin ninguna restricción, sin importar que su turno de caja ya
-            // hubiera cerrado hace días. Anular es un borrado limpio — solo es seguro
-            // mientras nada más depende todavía de la venta (turno abierto). Mismo
-            // criterio y mismo mensaje honesto que ya usan ReceivableService::cancelReceivable()
-            // y CollectionService::cancelCollection() para sus propios guards: el camino
-            // real para esto es Devolución (v1.4.0 Fase 2), no forzar la anulación.
-            if ($sale->pos_session_id) {
-                if ($sale->posSession && $sale->posSession->isClosed()) {
-                    throw new Exception('Esta venta pertenece a un turno de caja ya cerrado — no se puede anular. Este caso se resolverá con el flujo de Devolución.');
-                }
-            } else {
-                // Sin importar si fue al contado o crédito: una venta creada desde
-                // backoffice no tiene turno que la respalde como "corrección en
-                // caliente" — mismo bloqueo total que ya aplica a un cobro de backoffice.
-                throw new Exception('Esta venta se registró desde backoffice y ya quedó consolidada — no se puede anular. Este caso se resolverá con el flujo de Devolución.');
+            // Guard de turno (v1.4.0 Fase 1, REQ-1.2) — anular solo es seguro mientras
+            // la venta pertenece a un turno abierto; turno cerrado o venta de backoffice
+            // se resuelven con Devolución. La regla vive en Sale::cancellationBlockReason()
+            // para que la UI (botón Anular vs Devolver) y este guard no diverjan.
+            if ($blocked = $sale->cancellationBlockReason()) {
+                throw new Exception($blocked);
             }
 
             // Regla de Negocio Crítica: Si la factura fue a crédito, no se puede anular si el cliente ya
