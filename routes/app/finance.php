@@ -164,9 +164,13 @@ Route::prefix('finance')->as('finance.')->group(function () {
             ->middleware('permission:invoices.view')
             ->name('invoices.show');
 
-        // Impresión (Generación de PDF/Ticket)
+        // Impresión (Generación de PDF/Ticket) — sin permiso propio a propósito,
+        // ver docs/features/v1.3.0.md §2.9 y docs/features/v1.4.0.md §1.3 (REQ-1.3):
+        // quien puede ver la factura (invoices.view) puede imprimirla, no tiene
+        // sentido un permiso separado que niegue solo la impresión de algo que
+        // ya se puede ver.
         Route::get('invoices/{invoice}/print', [InvoiceController::class, 'print'])
-            ->middleware('permission:invoices.print')
+            ->middleware('permission:invoices.view')
             ->name('invoices.print');
     });
 

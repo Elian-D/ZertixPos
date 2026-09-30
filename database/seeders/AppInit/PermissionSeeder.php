@@ -242,7 +242,20 @@ class PermissionSeeder extends Seeder
 
                 'invoices.view',
                 'invoices.export',
-                // 'invoices.print' eliminado (REQ-2.2) — cero uso.
+                // 'invoices.print' eliminado (REQ-2.2) — la auditoría de "cero uso"
+                // fue un falso negativo (corrió contra el nombre viejo `print
+                // invoices` justo antes de que el script de renombrado de REQ-2.3
+                // lo reviviera como `invoices.print` en las rutas, sin volver a
+                // sembrarlo). Detectado en v1.4.0 (REQ-1.3) al dar 403 imprimiendo
+                // un ticket como admin en el tenant demo, pero es un bug de la
+                // Fase 2 de v1.3.0 (REQ-2.1/2.2, ver docs/features/v1.3.0.md §2.9).
+                // Resuelto quitando el gate en vez de restaurar el permiso:
+                // imprimir una factura no necesita su propio permiso, basta con
+                // poder verla (`invoices.view`) — ver routes/app/finance.php
+                // (finance.invoices.print) y
+                // routes/app/sales.php (sales.print-invoice, ahora sobre
+                // `sales.view`). Detalle completo en docs/features/v1.3.0.md §2.9
+                // y docs/features/v1.4.0.md §1.3.
 
                 'quotes.view',
                 'quotes.create',

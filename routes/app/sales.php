@@ -38,9 +38,11 @@ Route::prefix('sales')->as('sales.')->group(function () {
         // sales.export reemplazado por SaleTable::export() (wire:click) — ver
         // App\Livewire\App\Sales\SaleTable.
 
+        // Sin permiso propio de impresión — ver nota en routes/app/finance.php
+        // junto a finance.invoices.print (mismo fix, misma razón).
         Route::get('sales/{sale}/print-invoice', [SaleController::class, 'printInvoice'])
             ->name('print-invoice')
-            ->middleware('permission:invoices.print');
+            ->middleware('permission:sales.view');
     });
 
     // routes/app/sales/pos.php
