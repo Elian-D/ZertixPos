@@ -95,6 +95,23 @@ class Receivable extends Model
         return $today->gt($due);
     }
 
+    /** Variante de x-ui.badge por estado (vistas show, patrón Infolist). */
+    public function getStatusVariantAttribute(): string
+    {
+        return match ($this->status) {
+            self::STATUS_PAID => 'success',
+            self::STATUS_PARTIAL => 'info',
+            self::STATUS_CANCELLED => 'slate',
+            default => 'warning',
+        };
+    }
+
+    /** Lo realmente cobrado: la devolución baja total_amount, así que no cuenta aquí. */
+    public function getPaidAmountAttribute(): float
+    {
+        return max(0, (float) $this->total_amount - (float) $this->current_balance);
+    }
+
     /**
      * Etiqueta legible del estado
      */

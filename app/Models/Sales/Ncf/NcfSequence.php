@@ -87,6 +87,23 @@ class NcfSequence extends Model
     /**
      * Accesor para obtener la etiqueta traducida
      */
+    /** NCF completo para un número de esta secuencia (8 dígitos, 10 si es electrónico). */
+    public function formatNumber(int $number): string
+    {
+        return $this->series.$this->type->code.str_pad($number, $this->type->is_electronic ? 10 : 8, '0', STR_PAD_LEFT);
+    }
+
+    /** Variante de x-ui.badge según el estado calculado (vistas show, patrón Infolist). */
+    public function getStatusVariantAttribute(): string
+    {
+        return match ($this->calculated_status) {
+            self::STATUS_ACTIVE => $this->isLow() ? 'warning' : 'success',
+            self::STATUS_EXHAUSTED => 'warning',
+            self::STATUS_EXPIRED => 'error',
+            default => 'slate',
+        };
+    }
+
     public function getStatusLabelAttribute(): string
     {
         $status = $this->calculated_status;

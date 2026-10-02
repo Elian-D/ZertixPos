@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Sales\Ncf;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Sales\Ncf\StoreNcfSequenceRequest;
+use App\Models\Sales\Ncf\NcfLog;
 use App\Models\Sales\Ncf\NcfSequence;
 use App\Services\Sales\Ncf\NcfCatalogService;
 use App\Services\Sales\Ncf\NcfSequenceService;
@@ -11,6 +12,9 @@ use Illuminate\Http\Request;
 
 class NcfSequenceController extends Controller
 {
+    /** NCF emitidos que se listan en el show (el resto, en el Log NCF). */
+    private const LOG_LIMIT = 25;
+
     public function __construct(
         protected NcfSequenceService $service,
         protected NcfCatalogService $catalog
@@ -22,6 +26,33 @@ class NcfSequenceController extends Controller
     public function index()
     {
         return view('sales.ncf.sequences.index');
+    }
+
+    /**
+     * Detalle de la secuencia NCF (v1.4.0 Fase 3, patrón Infolist — /filament-show).
+     * Reemplaza el modal "view-sequence" del listado.
+     */
+    public function show(NcfSequence $sequence)
+    {
+        $sequence->load('type');
+
+        $logs = NcfLog::where('ncf_sequence_id', $sequence->id);
+
+        return view('sales.ncf.sequences.show', array_merge([
+            'sequence' => $sequence,
+            'recentLogs' => (clone $logs)
+                ->with(['sale:id,number,client_id', 'sale.client:id,name,commercial_name'])
+                ->latest()
+                ->limit(self::LOG_LIMIT)
+                ->get(),
+            'issuedCount' => (clone $logs)->count(),
+            'voidedCount' => (clone $logs)->where('status', NcfLog::STATUS_VOIDED)->count(),
+            'logLimit' => self::LOG_LIMIT,
+        ],
+            // El partial de modales trae también el de "crear secuencia", que
+            // necesita el catálogo de tipos (ncf_types, ncf_types_prefixes…).
+            $this->catalog->getTypesData()
+        ));
     }
 
     public function store(StoreNcfSequenceRequest $request)

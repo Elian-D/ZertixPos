@@ -4,8 +4,8 @@
             clients: {{ $clients->toJson() }},
             allReceivables: {{ $pendingReceivables->toJson() }},
             tipoPagos: {{ $paymentMethods->toJson() }},
-            selectedClientId: '{{ old('client_id', '') }}',
-            selectedReceivableId: '{{ old('receivable_id', '') }}',
+            selectedClientId: '{{ old('client_id', request('client_id', '')) }}',
+            selectedReceivableId: '{{ old('receivable_id', request('receivable_id', '')) }}',
             selectedTipoPagoId: '{{ old('tipo_pago_id', '') }}',
             paymentAmount: {{ old('amount', 0) }},
 
@@ -65,7 +65,11 @@
                             placeholder="Seleccione un cliente..."
                         >
                             <template x-for="client in clients" :key="client.id">
-                                <option :value="client.id" x-text="`${client.name} (Saldo: {{ config('regional.currency_symbol') }}${client.balance})`"></option>
+                                {{-- :selected — las opciones se dibujan con x-for DESPUÉS de que
+                                     x-model fija el valor inicial; sin esto el select queda en el
+                                     placeholder aunque selectedClientId venga de old() o de la URL. --}}
+                                <option :value="client.id" :selected="client.id == selectedClientId"
+                                    x-text="`${client.name} (Saldo: {{ config('regional.currency_symbol') }}${client.balance})`"></option>
                             </template>
                         </x-ui.forms.select>
 
@@ -79,7 +83,8 @@
                             required
                         >
                             <template x-for="receivable in filteredReceivables" :key="receivable.id">
-                                <option :value="receivable.id" x-text="`${receivable.document_number} — Saldo: {{ config('regional.currency_symbol') }}${receivable.current_balance}`"></option>
+                                <option :value="receivable.id" :selected="receivable.id == selectedReceivableId"
+                                    x-text="`${receivable.number} (venta ${receivable.document_number}) — Saldo: {{ config('regional.currency_symbol') }}${receivable.current_balance}`"></option>
                             </template>
                         </x-ui.forms.select>
                     </div>

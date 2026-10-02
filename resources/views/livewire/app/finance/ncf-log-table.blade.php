@@ -61,9 +61,13 @@
                 </x-data-table.cell>
 
                 <x-data-table.cell column="sale_number" :visible="$visibleColumns">
-                    <a href="{{ route('sales.index', $log->sale_id) }}" class="text-zertix-primary-600 hover:underline font-medium">
-                        #{{ $log->sale->number ?? 'N/A' }}
-                    </a>
+                    @if($log->sale && auth()->user()->can('sales.view'))
+                        <a href="{{ route('sales.show', $log->sale_id) }}" class="text-zertix-primary-600 hover:underline font-medium">
+                            {{ $log->sale->number }}
+                        </a>
+                    @else
+                        <span class="text-slate-500">{{ $log->sale->number ?? '—' }}</span>
+                    @endif
                 </x-data-table.cell>
 
                 <x-data-table.cell column="customer" :visible="$visibleColumns">

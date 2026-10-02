@@ -32,7 +32,8 @@ class ReceivableTable extends DataTable
         return array_filter([
             'emission_date'          => ['label' => 'Fecha Emisión', 'default' => true],
             'due_date'                => ['label' => 'Vencimiento', 'default' => true],
-            'document_number'         => ['label' => 'No. Factura', 'default' => true, 'mobile' => true],
+            'number'                  => ['label' => 'No. CxC', 'default' => true, 'mobile' => true],
+            'document_number'         => ['label' => 'Venta origen', 'default' => true],
             'client'                  => ['label' => 'Cliente', 'default' => true, 'mobile' => true],
             'description'             => ['label' => 'Concepto'],
             'total_amount'            => ['label' => 'Monto Original', 'default' => true],
@@ -45,11 +46,18 @@ class ReceivableTable extends DataTable
         ]);
     }
 
+    /** En qué busca el filtro 'search' de abajo — debe coincidir con su closure. */
+    protected function searchFields(): array
+    {
+        return ['número', 'venta', 'concepto'];
+    }
+
     protected function filterMap(): array
     {
         return [
             'search' => fn (Builder $q, $v) => $q->where(fn (Builder $qq) => $qq
-                ->where('document_number', 'like', "%{$v}%")
+                ->where('number', 'like', "%{$v}%")
+                ->orWhere('document_number', 'like', "%{$v}%")
                 ->orWhere('description', 'like', "%{$v}%")),
             'status'    => fn (Builder $q, $v) => $q->where('status', $v),
             'client_id' => fn (Builder $q, $v) => $q->where('client_id', $v),
@@ -92,7 +100,7 @@ class ReceivableTable extends DataTable
             'journalEntry',
         ]);
 
-        return $this->applyFilters(Receivable::query()->with($relations)->withReturnedAmount());
+        return $this->applyFilters(Receivable::query()->with($relations));
     }
 
     public function render()
