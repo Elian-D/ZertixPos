@@ -154,7 +154,7 @@
             <div class="cancelled-banner">
                 <span class="cancelled-text">*** CANCELADA ***</span>
                 <div class="cancellation-reason" style="font-size: 12px; margin-top: 3px; text-transform: none;">
-                    MOTIVO: {{ $ncfLog->cancellation_reason ?? 'SIN MOTIVO REGISTRADO' }}
+                    MOTIVO: {{ $sale->cancellation_reason ?? $ncfLog?->cancellation_reason ?? 'SIN MOTIVO REGISTRADO' }}
                 </div>
             </div>
         @endif

@@ -1,316 +1,171 @@
+{{-- Configuración General — formulario estilo Filament (/filament-form): secciones
+     apiladas a lo ancho con x-ui.infolist.section (mismo lenguaje que los show) y la
+     grilla de campos dentro de cada una.
+     Recibe $config (ConfiguracionGeneral::actual()), $provinces, $municipalities
+     (precargados: el filtro provincia → municipio es de Alpine, sin AJAX) y $taxTypes. --}}
+@php
+    $plan = current_plan();
+    $receivablesOn = module_enabled('sales.receivables');
+@endphp
+
 <x-app-layout title="Configuración General">
-    <div class="min-h-screen py-12 px-4"
-        x-cloak
+    <div class="p-4 md:p-6"
         x-data="{
             provinces: {{ $provinces->toJson() }},
             municipalities: {{ $municipalities->toJson() }},
             taxTypes: {{ $taxTypes->toJson() }},
-
             selectedProvincia: '{{ old('provincia_id', $config->provincia_id ?? '') }}',
             selectedMunicipio: '{{ old('municipio_id', $config->municipio_id ?? '') }}',
             selectedTaxType: '{{ old('tax_identifier_type', $config->tax_identifier_type?->value ?? '') }}',
-
-            logoPreview: '{{ $config?->logo ? tenant_asset($config->logo) : '' }}',
-            currency: '{{ config('regional.currency') }}',
-            timezone: '{{ config('regional.timezone') }}',
-
-            activeTab: 'ubicacion',
-
-            updateLogoPreview(event) {
-                const file = event.target.files[0];
-                if (file) {
-                    const reader = new FileReader();
-                    reader.onload = (e) => { this.logoPreview = e.target.result; };
-                    reader.readAsDataURL(file);
-                }
-            },
-
             get municipiosDeProvincia() {
                 return this.municipalities.filter(m => m.province_id == this.selectedProvincia);
-            }
+            },
         }">
 
-        <div class="max-w-4xl mx-auto">
+        <x-ui.page-header title="Configuración general" description="Datos de la empresa que aparecen en facturas, tickets y reportes." />
 
-            {{-- Banner de Plan — visible siempre, fuera de los tabs, para que el dueño
-                 sepa qué Plan tiene activo sin tener que navegar a Funcionalidades del
-                 Sistema. Solo lectura acá: el Plan en sí no se cambia desde esta pantalla. --}}
-            @php $plan = current_plan(); @endphp
-            <div class="mb-6 bg-gradient-to-r from-zertix-primary to-zertix-primary-dark rounded-3xl shadow-lg shadow-zertix-primary/20 p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div class="flex items-center gap-4">
-                    <span class="flex-none w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center">
-                        <x-heroicon-s-sparkles class="w-6 h-6 text-white" />
-                    </span>
+        <form method="POST" action="{{ route('configuration.general.update') }}" enctype="multipart/form-data"
+              class="mt-6 flex flex-col gap-6">
+            @csrf
+            @method('PUT')
+
+            {{-- Identidad --}}
+            <x-ui.infolist.section title="Identidad y datos fiscales" icon="heroicon-o-identification" :cols="0"
+                description="Cómo se identifica la empresa en los documentos que emite.">
+                <div class="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-x-8 gap-y-6">
+                    {{-- Logo --}}
                     <div>
-                        <p class="text-[10px] font-bold text-white/70 uppercase tracking-widest">Plan Actual</p>
-                        <p class="text-xl font-black text-white leading-tight">{{ $plan?->name ?? 'Sin Plan asignado' }}</p>
-                        @if ($plan?->description)
-                            <p class="text-xs text-white/80 mt-0.5">{{ $plan->description }}</p>
-                        @endif
+                        <span class="block text-sm font-medium text-gray-900 mb-2">Logo</span>
+                        <div class="flex items-start gap-3">
+                            @if($config?->logo)
+                                <div class="text-center">
+                                    <img src="{{ tenant_asset($config->logo) }}" alt="Logo actual"
+                                         class="w-28 h-28 rounded-xl border border-gray-100 object-contain bg-white p-2">
+                                    <span class="mt-1 block text-xs text-gray-400">Actual</span>
+                                </div>
+                            @endif
+                            <x-ui.forms.file-input name="logo" accept="image/*" :dropzone="true" :preview="true" size="md"
+                                hint="PNG o SVG, hasta 2 MB" :error="$errors->first('logo')" />
+                        </div>
+                    </div>
+
+                    {{-- Nombre e identificación --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-5 content-start">
+                        <div class="sm:col-span-3">
+                            <x-ui.forms.input label="Nombre comercial" name="nombre_empresa" required
+                                value="{{ old('nombre_empresa', $config->nombre_empresa ?? '') }}"
+                                hint="Aparece en el encabezado de facturas y tickets."
+                                :error="$errors->first('nombre_empresa')" />
+                        </div>
+                        {{-- :selected en cada option: las opciones salen de x-for DESPUÉS de que
+                             x-model fija el valor; sin esto el valor guardado no se marca. --}}
+                        <x-ui.forms.select label="Tipo de identificación" name="tax_identifier_type"
+                            x-model="selectedTaxType" placeholder="Seleccionar..."
+                            :error="$errors->first('tax_identifier_type')">
+                            <template x-for="type in taxTypes" :key="type.value">
+                                <option :value="type.value" x-text="type.label" :selected="type.value == selectedTaxType"></option>
+                            </template>
+                        </x-ui.forms.select>
+                        <div class="sm:col-span-2">
+                            <x-ui.forms.input label="Número de identificación" name="tax_id" placeholder="Ej. 131-12345-6"
+                                value="{{ old('tax_id', $config->tax_id ?? '') }}"
+                                :error="$errors->first('tax_id')" />
+                        </div>
                     </div>
                 </div>
-                <a href="{{ route('configuration.features') }}"
-                    class="w-full sm:w-auto text-center bg-white/15 hover:bg-white/25 text-white text-xs font-bold uppercase tracking-wide px-5 py-3 rounded-2xl transition-colors">
-                    Gestionar Funcionalidades
-                </a>
+            </x-ui.infolist.section>
+
+            {{-- Contacto --}}
+            <x-ui.infolist.section title="Contacto" icon="heroicon-o-phone" :cols="0">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+                    <x-ui.forms.input label="Email" name="email" type="email" icon-left="heroicon-s-envelope"
+                        placeholder="admin@empresa.com"
+                        value="{{ old('email', $config->email ?? '') }}"
+                        :error="$errors->first('email')" />
+                    <x-ui.forms.input label="Teléfono" name="telefono" icon-left="heroicon-s-phone"
+                        placeholder="809 000 0000" hint="Solo el número local, sin +1."
+                        value="{{ old('telefono', $config->telefono ?? '') }}"
+                        :error="$errors->first('telefono')" />
+                </div>
+            </x-ui.infolist.section>
+
+            {{-- Ubicación --}}
+            <x-ui.infolist.section title="Ubicación" icon="heroicon-o-map-pin" :cols="0">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+                    <x-ui.forms.select label="Provincia" name="provincia_id" required
+                        x-model="selectedProvincia" @change="selectedMunicipio = ''"
+                        placeholder="Seleccionar..."
+                        :error="$errors->first('provincia_id')">
+                        <template x-for="provincia in provinces" :key="provincia.id">
+                            <option :value="provincia.id" x-text="provincia.name" :selected="provincia.id == selectedProvincia"></option>
+                        </template>
+                    </x-ui.forms.select>
+
+                    <x-ui.forms.select label="Municipio" name="municipio_id"
+                        x-model="selectedMunicipio" x-bind:disabled="! selectedProvincia"
+                        placeholder="Sin especificar"
+                        :error="$errors->first('municipio_id')">
+                        <template x-for="municipio in municipiosDeProvincia" :key="municipio.id">
+                            <option :value="municipio.id" x-text="municipio.name" :selected="municipio.id == selectedMunicipio"></option>
+                        </template>
+                    </x-ui.forms.select>
+
+                    <div class="sm:col-span-2">
+                        <x-ui.forms.input label="Dirección" name="direccion" placeholder="Calle, número, sector..."
+                            value="{{ old('direccion', $config->direccion ?? '') }}"
+                            :error="$errors->first('direccion')" />
+                    </div>
+                </div>
+            </x-ui.infolist.section>
+
+            {{-- Parámetros regionales --}}
+            <x-ui.infolist.section title="Parámetros regionales" icon="heroicon-o-globe-americas" :cols="0"
+                description="Moneda y zona horaria vienen fijas de la instalación.">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-x-6 gap-y-5">
+                    <x-ui.forms.input label="Moneda" name="currency_display" value="{{ config('regional.currency') }}" disabled />
+                    <x-ui.forms.input label="Zona horaria" name="timezone_display" value="{{ config('regional.timezone') }}" disabled />
+                    {{-- Alimenta Client::esMoroso(); sin sentido con Cuentas por Cobrar apagado.
+                         disabled no se envía y la regla es nullable: no se pisa el valor guardado. --}}
+                    <x-ui.forms.input label="Días de gracia para mora" name="dias_gracia_mora" type="number" min="0"
+                        value="{{ old('dias_gracia_mora', $config->dias_gracia_mora ?? 0) }}"
+                        :disabled="! $receivablesOn"
+                        :hint="$receivablesOn ? 'Días tras el vencimiento antes de marcar al cliente como moroso.' : 'Se activa junto a Cuentas por Cobrar.'"
+                        :error="$errors->first('dias_gracia_mora')" />
+                </div>
+            </x-ui.infolist.section>
+
+            {{-- Plan (solo lectura) --}}
+            <x-ui.infolist.section title="Plan actual" icon="heroicon-o-sparkles" :cols="0">
+                <x-slot:headerActions>
+                    <x-ui.button href="{{ route('configuration.features') }}" variant="secondary" appearance="outline" size="sm"
+                        iconLeft="heroicon-s-squares-2x2">
+                        Gestionar funcionalidades
+                    </x-ui.button>
+                </x-slot:headerActions>
+                <p class="text-sm font-semibold text-gray-900">{{ $plan?->name ?? 'Sin plan asignado' }}</p>
+                @if($plan?->description)
+                    <p class="mt-1 text-sm text-gray-500">{{ $plan->description }}</p>
+                @endif
+            </x-ui.infolist.section>
+
+            {{-- Acciones --}}
+            <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('open-modal', 'confirm-discard')">
+                    Descartar cambios
+                </x-ui.button>
+                <x-ui.button type="submit" variant="primary" iconLeft="heroicon-s-check">
+                    Guardar configuración
+                </x-ui.button>
             </div>
+        </form>
 
-            <form method="POST" action="{{ route('configuration.general.update') }}" enctype="multipart/form-data">
-                @csrf
-                @method('PUT')
-
-                {{-- Navegación por tabs — reemplaza el scroll largo de 3 secciones
-                     apiladas por paneles independientes (mejora UI/UX pedida). --}}
-                <div class="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
-                    <div class="flex border-b border-slate-100 overflow-x-auto">
-                        <button type="button" @click="activeTab = 'ubicacion'"
-                            :class="activeTab === 'ubicacion' ? 'text-zertix-primary-dark border-zertix-primary' : 'text-slate-400 border-transparent hover:text-slate-600'"
-                            class="flex items-center gap-2 px-6 py-4 text-sm font-bold border-b-2 transition-colors whitespace-nowrap shrink-0">
-                            <x-heroicon-s-map-pin class="w-4 h-4" />
-                            Ubicación de Operación
-                        </button>
-                        <button type="button" @click="activeTab = 'contacto'"
-                            :class="activeTab === 'contacto' ? 'text-zertix-primary-dark border-zertix-primary' : 'text-slate-400 border-transparent hover:text-slate-600'"
-                            class="flex items-center gap-2 px-6 py-4 text-sm font-bold border-b-2 transition-colors whitespace-nowrap shrink-0">
-                            <x-heroicon-s-phone class="w-4 h-4" />
-                            Canales de Contacto
-                        </button>
-                        <button type="button" @click="activeTab = 'identidad'"
-                            :class="activeTab === 'identidad' ? 'text-zertix-primary-dark border-zertix-primary' : 'text-slate-400 border-transparent hover:text-slate-600'"
-                            class="flex items-center gap-2 px-6 py-4 text-sm font-bold border-b-2 transition-colors whitespace-nowrap shrink-0">
-                            <x-heroicon-s-identification class="w-4 h-4" />
-                            Identidad y Legal
-                        </button>
-                    </div>
-
-                    {{-- PANEL 1: Ubicación de Operación --}}
-                    <div x-show="activeTab === 'ubicacion'" x-cloak>
-                        <div class="p-8 space-y-6">
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div>
-                                    {{-- Select nativo (antes era un dropdown Alpine con buscador propio,
-                                         pero se cortaba dentro del panel de tabs por el overflow del
-                                         contenedor — un <select> nativo no tiene ese problema). --}}
-                                    <x-ui.forms.select
-                                        label="Provincia"
-                                        name="provincia_id"
-                                        x-model="selectedProvincia"
-                                        @change="selectedMunicipio = ''"
-                                        required
-                                        placeholder="Seleccionar..."
-                                        :error="$errors->first('provincia_id')"
-                                    >
-                                        <template x-for="provincia in provinces" :key="provincia.id">
-                                            <option :value="provincia.id" x-text="provincia.name"></option>
-                                        </template>
-                                    </x-ui.forms.select>
-                                </div>
-
-                                <div>
-                                    {{-- x-init + $nextTick: las <option> las genera x-for dentro del propio
-                                         <select>, y Alpine aplica x-model ANTES de que ese x-for termine de
-                                         renderizarlas en el primer render — el municipio guardado en BD
-                                         nunca quedaba seleccionado visualmente (aunque sí estaba guardado,
-                                         bug reportado y confirmado por consulta directa a la BD). Forzamos
-                                         la sincronización una vez el DOM ya tiene las opciones montadas. --}}
-                                    <x-ui.forms.select
-                                        label="Municipio"
-                                        name="municipio_id"
-                                        x-model="selectedMunicipio"
-                                        x-init="$nextTick(() => { $el.value = selectedMunicipio })"
-                                        placeholder="Sin especificar"
-                                        :error="$errors->first('municipio_id')"
-                                    >
-                                        <template x-for="municipio in municipiosDeProvincia" :key="municipio.id">
-                                            <option :value="municipio.id" x-text="municipio.name"></option>
-                                        </template>
-                                    </x-ui.forms.select>
-                                </div>
-                            </div>
-
-                            <div class="grid grid-cols-1 gap-6">
-                                <div>
-                                    <x-ui.forms.input
-                                        label="Dirección"
-                                        name="direccion"
-                                        type="text"
-                                        placeholder="Calle, edificio, apto..."
-                                        value="{{ $config->direccion ?? '' }}"
-                                        :error="$errors->first('direccion')"
-                                    />
-                                </div>
-                            </div>
-
-                            <div class="pt-6 border-t border-slate-100">
-                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                    <div class="bg-zertix-primary/5 border border-zertix-primary/20 rounded-2xl p-4 transition-all">
-                                        <p class="text-[10px] font-bold text-zertix-primary-dark uppercase tracking-widest mb-1">Moneda Local</p>
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-lg font-bold text-zertix-primary-dark" x-text="currency"></span>
-                                        </div>
-                                    </div>
-                                    <div class="bg-slate-50 border border-slate-200 rounded-2xl p-4 transition-all overflow-hidden">
-                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Zona Horaria</p>
-                                        <div class="flex items-center gap-2">
-                                            <span class="text-xs font-bold text-slate-700 truncate" x-text="timezone"></span>
-                                        </div>
-                                    </div>
-                                    {{-- dias_gracia_mora alimenta Client::esMoroso() (§11.4) — sin sentido
-                                         editarlo con sales.receivables apagado (núcleo flexible, REQ-10.5).
-                                         Deshabilitado, no oculto: nullable en el request, así que disabled
-                                         es seguro acá (no rompe la validación al no enviarse). --}}
-                                    <div class="bg-amber-50/50 border border-amber-100 rounded-2xl p-4 transition-all">
-                                        <label class="text-[10px] font-bold text-amber-500 uppercase tracking-widest mb-1 block">Días de Gracia (Mora)</label>
-                                        <input type="number" name="dias_gracia_mora" min="0" value="{{ old('dias_gracia_mora', $config->dias_gracia_mora ?? 0) }}"
-                                            @disabled(! module_enabled('sales.receivables'))
-                                            class="w-full bg-transparent border-0 p-0 text-lg font-bold {{ module_enabled('sales.receivables') ? 'text-amber-700' : 'text-gray-400 cursor-not-allowed' }} focus:ring-0" />
-                                        @unless (module_enabled('sales.receivables'))
-                                            <p class="text-[9px] text-amber-500 italic mt-1">Se activa junto a Cuentas por Cobrar.</p>
-                                        @endunless
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- PANEL 2: Canales de Contacto --}}
-                    <div x-show="activeTab === 'contacto'" x-cloak>
-                        <div class="p-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <x-ui.forms.input
-                                    label="Email Corporativo"
-                                    name="email"
-                                    type="email"
-                                    placeholder="admin@empresa.com"
-                                    value="{{ $config->email ?? '' }}"
-                                    icon-left="heroicon-s-envelope"
-                                    :error="$errors->first('email')"
-                                />
-                            </div>
-                            <div>
-                                <x-ui.forms.input
-                                    label="Teléfono"
-                                    name="telefono"
-                                    type="text"
-                                    placeholder="809 000 0000"
-                                    value="{{ $config->telefono ?? '' }}"
-                                    hint="No incluyas el +1, solo el número local"
-                                    :error="$errors->first('telefono')"
-                                />
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- PANEL 3: Identidad e Información Legal --}}
-                    <div x-show="activeTab === 'identidad'" x-cloak>
-                        <div class="p-8">
-                            <div class="grid grid-cols-1 md:grid-cols-12 gap-10">
-                                <div class="md:col-span-4 flex flex-col items-center border-b md:border-b-0 md:border-r border-slate-100 pb-8 md:pb-0 md:pr-10">
-                                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-4 self-start">Logo de la Empresa</label>
-                                    <div class="w-40 h-40 rounded-3xl border-2 border-dashed border-slate-200 bg-slate-50 flex items-center justify-center overflow-hidden mb-4 relative group transition-all hover:border-zertix-primary">
-                                        <template x-if="logoPreview">
-                                            <img :src="logoPreview" class="object-contain w-full h-full p-2">
-                                        </template>
-                                        <template x-if="!logoPreview">
-                                            <x-heroicon-s-photo class="w-16 h-16 text-slate-200" />
-                                        </template>
-                                        <div x-show="logoPreview" class="absolute inset-0 bg-zertix-secondary/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
-                                            <span class="text-[10px] text-white font-black uppercase tracking-widest">Cambiar Imagen</span>
-                                        </div>
-                                    </div>
-                                    <input type="file" name="logo" accept="image/*" @change="updateLogoPreview"
-                                        class="text-[10px] text-slate-400 file:mr-3 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:bg-zertix-primary/10 file:text-zertix-primary-dark hover:file:bg-zertix-primary/20 cursor-pointer w-full" />
-                                    <p class="mt-3 text-[9px] text-slate-400 italic text-center leading-tight">Sugerido: PNG/SVG fondo transparente (200x200px)</p>
-                                </div>
-
-                                <div class="md:col-span-8 space-y-8">
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div class="sm:col-span-2">
-                                            <x-ui.forms.input
-                                                label="Nombre Comercial"
-                                                name="nombre_empresa"
-                                                value="{{ $config->nombre_empresa ?? '' }}"
-                                                :error="$errors->first('nombre_empresa')"
-                                            />
-                                        </div>
-                                        <div class="sm:col-span-2">
-                                            <label class="text-[10px] font-bold text-slate-400 uppercase mb-1">Identificación Fiscal</label>
-                                            <div class="flex flex-col sm:flex-row gap-2">
-                                                <div class="w-full sm:w-32">
-                                                    <x-ui.forms.select
-                                                        name="tax_identifier_type"
-                                                        x-model="selectedTaxType"
-                                                        placeholder="Tipo"
-                                                        :error="$errors->first('tax_identifier_type')"
-                                                    >
-                                                        <template x-for="type in taxTypes" :key="type.value">
-                                                            <option :value="type.value" x-text="type.label" :selected="type.value == selectedTaxType"></option>
-                                                        </template>
-                                                    </x-ui.forms.select>
-                                                </div>
-                                                <div class="flex-1">
-                                                    <x-ui.forms.input
-                                                        name="tax_id"
-                                                        placeholder="Número de identificación"
-                                                        value="{{ $config->tax_id ?? '' }}"
-                                                        :error="$errors->first('tax_id')"
-                                                    />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {{-- "Impuesto Principal" (tasa única global) se eliminó (Fase 5, REQ-5.1) —
-                                         los impuestos ahora se asignan por producto (ITBIS 18%/16%, Exento,
-                                         ISC) desde config/impuestos.php + product_taxes, no acá. --}}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {{-- Sección "Regulación Fiscal (NCF)" eliminada (REQ-10.9) — el toggle
-                         ncf_enabled quedó duplicado con el módulo sales.ncf, que ahora se
-                         administra desde Configuración → Funcionalidades del Sistema
-                         (REQ-10.6). Tener el mismo flag editable en dos pantallas invitaba a
-                         que quedaran desincronizados; el patrón "toggle aplica al instante"
-                         que usaba esta sección era además el que REQ-10.6 explícitamente
-                         decidió no replicar en la pantalla nueva. --}}
-                </div>
-
-                <div class="sticky bottom-6 mt-8 bg-white/80 backdrop-blur-md border border-slate-200 p-4 rounded-3xl shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-4 z-[40]">
-                    <button type="button" x-on:click="$dispatch('open-modal', 'confirm-discard')"
-                        class="w-full sm:w-auto px-6 py-3 text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors uppercase tracking-widest">
-                        Descartar cambios
-                    </button>
-
-                    <x-ui.button type="submit" variant="primary" :hoverEffect="true" class="w-full sm:w-auto px-10 py-4 rounded-2xl shadow-lg">
-                        <span class="flex items-center gap-2">
-                            <x-heroicon-s-cloud-arrow-up class="w-5 h-5" />
-                            Guardar Configuración
-                        </span>
-                    </x-ui.button>
-                </div>
-            </form>
-        </div>
-
-        <x-modal name="confirm-discard" :show="false" maxWidth="md">
-            <div class="p-8">
-                <div class="flex items-center justify-center w-16 h-16 mx-auto bg-red-50 rounded-full mb-4">
-                    <x-heroicon-s-exclamation-triangle class="w-8 h-8 text-red-500" />
-                </div>
-                <div class="text-center">
-                    <h3 class="text-xl font-bold text-slate-800 mb-2">¿Descartar cambios?</h3>
-                    <p class="text-sm text-slate-500 leading-relaxed">
-                        Se perderán todos los datos modificados. Los valores volverán a su estado original guardado en el servidor.
-                    </p>
-                </div>
-                <div class="mt-8 flex flex-col sm:flex-row justify-center gap-3">
-                    <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')" class="w-full sm:w-auto justify-center py-3">
-                        Continuar editando
-                    </x-ui.button>
-                    <x-ui.button type="submit" variant="error" @click="window.location.reload()" class="w-full sm:w-auto justify-center py-3">
-                        Sí, descartar todo
-                    </x-ui.button>
+        <x-modal name="confirm-discard" maxWidth="md">
+            <div class="p-6">
+                <h3 class="text-lg font-semibold text-gray-900">¿Descartar cambios?</h3>
+                <p class="mt-1 text-sm text-gray-500">Se perderán los datos modificados y se recargarán los valores guardados.</p>
+                <div class="mt-6 flex justify-end gap-3">
+                    <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Seguir editando</x-ui.button>
+                    <x-ui.button variant="error" x-on:click="window.location.reload()">Descartar</x-ui.button>
                 </div>
             </div>
         </x-modal>

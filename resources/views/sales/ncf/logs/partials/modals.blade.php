@@ -1,127 +1,52 @@
-{{-- MODAL VER DETALLE / LOGS RÁPIDOS --}}
+{{-- MODAL VER DETALLE DEL NCF — mismo lenguaje que las vistas show (Infolist,
+     docs/ui/infolist.md): encabezado blanco, pares etiqueta/valor, sin degradados. --}}
 @foreach($items as $log)
-<x-modal name="view-log-{{ $log->id }}" maxWidth="2xl">
-    <div class="overflow-hidden rounded-xl bg-white shadow-2xl">
-        {{-- Header dinámico --}}
-        @php
-            $logVariant = match($log->status) {
-                \App\Models\Sales\Ncf\NcfLog::STATUS_USED => 'info',
-                \App\Models\Sales\Ncf\NcfLog::STATUS_VOIDED => 'slate',
-                default => 'slate',
-            };
-            $logLabel = \App\Models\Sales\Ncf\NcfLog::getStatuses()[$log->status] ?? $log->status;
-        @endphp
-
-        <div class="bg-gray-900 px-8 py-6 flex justify-between items-center text-white">
-            <div>
-                <span class="text-[10px] font-bold text-zertix-primary-400 uppercase tracking-[0.2em] block mb-1">
-                    {{ $log->type->name }}
-                </span>
-                <h3 class="text-2xl font-mono font-black tracking-widest">{{ $log->full_ncf }}</h3>
+    @php
+        $isVoided = $log->status === \App\Models\Sales\Ncf\NcfLog::STATUS_VOIDED;
+        $sale = $log->sale;
+    @endphp
+    <x-modal name="view-log-{{ $log->id }}" maxWidth="2xl">
+        {{-- Encabezado --}}
+        <div class="flex items-start justify-between gap-4 px-6 py-5 border-b border-gray-100">
+            <div class="min-w-0">
+                <p class="text-xs text-slate-500">{{ $log->type->code }} — {{ $log->type->name }}</p>
+                <h3 @class(['mt-0.5 font-mono text-xl font-bold text-gray-900', 'line-through text-gray-400' => $isVoided])>{{ $log->full_ncf }}</h3>
             </div>
-            <div class="text-right">
-                <x-ui.badge :variant="$logVariant" :dot="false" class="shadow-md">
-                    {{ strtoupper($logLabel) }}
-                </x-ui.badge>
-            </div>
+            <x-ui.badge :variant="$isVoided ? 'error' : 'success'" size="sm" :dot="false">
+                {{ \App\Models\Sales\Ncf\NcfLog::getStatuses()[$log->status] ?? $log->status }}
+            </x-ui.badge>
         </div>
 
-        <div class="p-8">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                {{-- Sección de la Transacción --}}
-                <div class="space-y-4">
-                    <h4 class="text-xs font-black text-gray-400 uppercase tracking-wider border-b pb-2">Datos de la Venta</h4>
-                    <div class="flex items-start gap-3">
-                        <div class="w-8 h-8 bg-gray-100 rounded flex items-center justify-center text-gray-500">
-                            <x-heroicon-s-document-text class="w-4 h-4"/>
-                        </div>
-                        <div>
-                            <p class="text-[10px] text-gray-400 font-bold uppercase">Factura y Monto</p>
-                            <div class="flex flex-col">
-                                <span class="text-sm font-bold text-zertix-primary-600">#{{ $log->sale->number ?? 'N/A' }}</span>
-                                <span class="text-xs font-medium text-gray-500">Total: {{ config('regional.currency_symbol') }} {{ number_format($log->sale->grand_total ?? 0, 2) }}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-3">
-                        <div class="w-8 h-8 bg-gray-100 rounded flex items-center justify-center text-gray-500">
-                            <x-heroicon-s-calendar class="w-4 h-4"/>
-                        </div>
-                        <div>
-                            <p class="text-[10px] text-gray-400 font-bold uppercase">Fecha de Emisión</p>
-                            <p class="text-sm font-medium text-gray-700">{{ $log->created_at->format('d/m/Y h:i A') }}</p>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Sección del Cliente --}}
-                <div class="space-y-4">
-                    <h4 class="text-xs font-black text-gray-400 uppercase tracking-wider border-b pb-2">Información Fiscal Cliente</h4>
-                    <div class="flex items-start gap-3">
-                        <div class="w-8 h-8 bg-zertix-primary-50 rounded flex items-center justify-center text-zertix-primary-600">
-                            <x-heroicon-s-user class="w-4 h-4"/>
-                        </div>
-                        <div>
-                            <p class="text-[10px] text-gray-400 font-bold uppercase">Razón Social</p>
-                            <p class="text-sm font-bold text-gray-800">{{ $log->sale->client->name ?? 'Consumidor Final' }}</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-3">
-                        <div class="w-8 h-8 bg-zertix-primary-50 rounded flex items-center justify-center text-zertix-primary-600">
-                            <x-heroicon-s-identification class="w-4 h-4"/>
-                        </div>
-                        <div>
-                            <p class="text-[10px] text-gray-400 font-bold uppercase">RNC / Cédula</p>
-                            <p class="text-sm font-mono text-gray-700">{{ $log->sale->client->tax_id ?? '00000000000' }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Detalle del Tipo de Comprobante --}}
-            <div class="mb-8 p-4 bg-gray-50 rounded-xl border border-gray-100">
-                <div class="flex justify-between items-center text-xs">
-                    <span class="text-gray-500 font-bold uppercase">Configuración de Origen</span>
-                    <span class="px-2 py-0.5 bg-white border rounded text-gray-400 font-mono">Tipo: {{ $log->type->code }}</span>
-                </div>
-                <p class="mt-1 text-sm text-gray-600">Este comprobante pertenece a la secuencia de <strong>{{ $log->type->name }}</strong>.</p>
-            </div>
-
-            {{-- Alerta de Anulación --}}
-            @if($log->status === 'canceled' || $log->status === 'voided')
-                <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-xl mb-8">
-                    <div class="flex items-center gap-2 mb-1">
-                        <x-heroicon-s-exclamation-triangle class="w-4 h-4 text-red-600"/>
-                        <span class="text-[10px] font-black text-red-600 uppercase">Motivo de Anulación</span>
-                    </div>
-                    <p class="text-sm text-red-800 italic">"{{ $log->cancellation_reason ?? 'No se especificó un motivo.' }}"</p>
-                </div>
+        {{-- Datos --}}
+        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-7 px-6 py-6">
+            <x-ui.infolist.entry label="Venta" :value="$sale?->number" strong
+                :href="$sale && auth()->user()->can('sales.view') ? route('sales.show', $sale) : null" />
+            <x-ui.infolist.entry label="Total de la venta" :value="$sale ? config('regional.currency_symbol').number_format($sale->grand_total, 2) : null" />
+            <x-ui.infolist.entry label="Cliente" :value="$sale?->client?->name ?? 'Consumidor Final'" />
+            <x-ui.infolist.entry label="RNC / Cédula" :value="$sale?->client?->tax_id" />
+            <x-ui.infolist.entry label="Emitido" :value="$log->created_at->format('d/m/Y h:i A')" />
+            <x-ui.infolist.entry label="Registrado por" :value="$log->user?->name ?? 'Sistema'" />
+            @if($isVoided)
+                <x-ui.infolist.entry label="Motivo de anulación" full>
+                    <span class="text-state-error">{{ $log->cancellation_reason ?? 'No se especificó un motivo.' }}</span>
+                </x-ui.infolist.entry>
             @endif
+        </dl>
 
-            {{-- Auditoría de Usuario --}}
-            <div class="bg-gray-50 rounded-lg p-4 flex justify-between items-center">
-                <div class="flex items-center gap-2">
-                    <div class="w-6 h-6 bg-zertix-primary-600 rounded-full flex items-center justify-center text-[10px] font-bold text-white uppercase">
-                        {{ substr($log->user->name ?? 'S', 0, 1) }}
-                    </div>
-                    <span class="text-[11px] text-gray-500 font-medium">Registrado por: <strong>{{ $log->user->name ?? 'Sistema' }}</strong></span>
-                </div>
-                <span class="text-[10px] text-gray-400 font-mono">ID Registro: #{{ str_pad($log->id, 6, '0', STR_PAD_LEFT) }}</span>
-            </div>
-        </div>
-
-        <div class="px-8 py-4 bg-gray-50 border-t flex justify-end gap-3">
+        {{-- Acciones --}}
+        <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100">
             <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cerrar</x-ui.button>
-            {{-- $log->sale->invoice (no sale_id): la ruta espera el id de la Invoice,
-                 no el de la Sale — son modelos distintos con ids independientes. Pasar
-                 sale_id ahí buscaba una factura equivocada (404 real, corregido). --}}
-            @if($log->sale?->invoice)
-                <x-ui.button href="{{ route('finance.invoices.print', $log->sale->invoice) }}" target="_blank"
-                    variant="primary" size="sm" iconLeft="heroicon-s-eye">
-                    Ver Factura
+            {{-- $sale->invoice (no sale_id): la factura tiene su propio id, distinto al de la venta. --}}
+            @if($sale?->invoice && auth()->user()->can('invoices.view'))
+                <x-ui.button href="{{ route('finance.invoices.show', $sale->invoice) }}" variant="secondary" appearance="outline" iconLeft="heroicon-s-document-text">
+                    Ver factura
+                </x-ui.button>
+            @endif
+            @if($sale && auth()->user()->can('sales.view'))
+                <x-ui.button href="{{ route('sales.show', $sale) }}" variant="primary" iconLeft="heroicon-s-eye">
+                    Ver venta
                 </x-ui.button>
             @endif
         </div>
-    </div>
-</x-modal>
+    </x-modal>
 @endforeach

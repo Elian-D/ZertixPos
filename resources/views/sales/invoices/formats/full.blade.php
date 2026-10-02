@@ -1,301 +1,152 @@
+{{-- Factura, PDF carta — diseño base x-pdf.* (v1.4.0 REQ-3.20 f, docs/ui/pdf-documents.md).
+     La misma vista sirve para DomPDF (InvoicePrintService pasa $logoSrc como ruta
+     local) y para la vista previa en navegador (sin $logoSrc → tenant_asset() en
+     x-pdf.document, REQ-1.14). --}}
+@use('App\Models\Sales\Invoice')
+@use('App\Models\Sales\Sale')
 @php
-    $config = general_config();
-    // Esta misma vista se renderiza en 2 contextos distintos (REQ-1.14, v1.3.0
-    // Fase 1): DomPDF (InvoicePrintService::pdf(), necesita una ruta de archivo
-    // local — DomPDF no sigue URLs remotas, enable_remote=false por defecto) y
-    // vista previa en navegador (InvoiceController, necesita una URL real). El
-    // caller pasa $logoSrc explícito cuando renderiza para DomPDF; si no lo pasa
-    // (vista previa), se usa tenant_asset() — una URL válida en el navegador.
-    $logoSrc ??= $config->logo ? tenant_asset($config->logo) : null;
     $sale = $invoice->sale;
     $client = $sale->client;
     $currency = config('regional.currency_symbol');
+    $money = fn ($v) => $currency.number_format((float) $v, 2);
+    $qty = fn ($q) => rtrim(rtrim(number_format((float) $q, 2), '0'), '.');
 
-    // Identificador fiscal de la EMPRESA
-    $taxLabel = $config->tax_identifier_type?->value ?? 'RNC';
+    $isCredit = $sale->payment_type === Sale::PAYMENT_CREDIT;
+    $isCanceled = $invoice->status === Invoice::STATUS_CANCELLED;
 
-    // Identificador fiscal del CLIENTE (RNC/Cédula)
-    $clientTaxLabel = $client->tax_identifier_type?->value ?? 'RNC/CED';
+    // Fiscal solo si el módulo está activo y la venta tiene NCF.
+    $ncfLog = $sale->ncfLog;
+    $isFiscal = module_enabled('sales.ncf') && $sale->ncf;
+    $ncfTypeName = $isFiscal ? ($ncfLog?->type?->name ?? 'Comprobante fiscal') : null;
 
-    // Desglose real por tipo de impuesto (Fase 5, REQ-5.6) — agrupa el snapshot
-    // congelado de cada línea, ya no una sola tasa global aplicada a todo el carrito.
+    // Desglose real por tipo de impuesto (Fase 5, REQ-5.6) desde el snapshot de cada línea.
     $taxBreakdown = $sale->items->pluck('tax_breakdown')->filter()->flatten(1)->groupBy('key');
 
-    // Vencimiento de factura (Crédito comercial) — se lee de la Receivable, nunca
-    // se recalcula acá (REQ-11.10): es la única fuente de verdad, la misma que
-    // controla esMoroso().
-    $vencimientoPago = $sale->payment_type === 'credit'
-        ? $sale->receivable?->due_date?->format('d/m/Y')
-        : null;
-
-    // Lógica de NCF y su Vencimiento Fiscal
-    $ncfLog = $sale->ncfLog;
-    $vencimientoNcf = $ncfLog?->sequence?->expiry_date 
-        ? $ncfLog->sequence->expiry_date->format('d/m/Y') 
-        : null;
-
-    // Lógica para Multipay
-    $payments = $sale->payments;
-    $isMultiPay = $payments->count() > 1;
-
-    // NUEVO: Lógica de visibilidad fiscal
-    $mostrarFiscal = module_enabled('sales.ncf') && $sale->ncf;
-
-    // 11.2.6: mismo desglose y misma lógica de reconstrucción que ticket.blade.php —
-    // ver el comentario allá para el porqué de usar discount_percentage como señal.
+    // 11.2.6: descuento por ítem vs. global — misma reconstrucción que ticket.blade.php
+    // (discount_percentage de la línea es la señal de descuento por ítem).
     $itemDiscountTotal = 0;
     $eligibleGrossForGlobal = 0;
-
     foreach ($sale->items as $saleItem) {
         $lineGross = $saleItem->quantity * $saleItem->unit_price;
-        $itemPct = $saleItem->discount_percentage ?? 0;
-
-        if ($itemPct > 0) {
-            $itemDiscountTotal += ($lineGross * $itemPct) / 100;
+        if (($saleItem->discount_percentage ?? 0) > 0) {
+            $itemDiscountTotal += ($lineGross * $saleItem->discount_percentage) / 100;
         } else {
             $eligibleGrossForGlobal += $lineGross;
         }
     }
-
     $globalDiscountTotal = max(0, ($sale->discount_total ?? 0) - $itemDiscountTotal);
     $globalDiscountPct = $eligibleGrossForGlobal > 0 ? ($globalDiscountTotal / $eligibleGrossForGlobal) * 100 : 0;
+
+    $metaItems = [
+        ['label' => 'Cliente', 'value' => $client->name, 'strong' => true, 'span' => 2,
+            'sub' => collect([
+                $client->tax_id ? ($client->tax_identifier_type?->value ?? 'RNC/Cédula').': '.$client->tax_id : null,
+                $client->phone ? 'Tel. '.$client->phone : null,
+            ])->filter()->join(' · ')],
+        ['label' => $ncfLog?->type?->is_electronic ? 'e-NCF' : 'NCF',
+            'html' => $isFiscal ? '<span class="mono bold">'.e($sale->ncf).'</span>' : null,
+            'sub' => $isFiscal && $ncfLog?->sequence?->expiry_date ? 'Válido hasta '.$ncfLog->sequence->expiry_date->format('d/m/Y') : null],
+        ['label' => 'Condición de pago', 'value' => $isCredit ? 'Crédito' : 'Contado', 'strong' => true,
+            'sub' => $isCredit && $sale->receivable?->due_date ? 'Vence el '.$sale->receivable->due_date->format('d/m/Y') : null],
+        ['label' => 'Venta', 'value' => $sale->number],
+        ['label' => 'Vendedor', 'value' => $sale->user->name ?? null],
+        ['label' => 'Terminal', 'value' => $sale->posTerminal?->name],
+        ['label' => 'Cotización', 'value' => $sale->quote?->number],
+    ];
+
+    $totalRows = [
+        ['label' => 'Subtotal bruto', 'value' => $money($sale->total_amount)],
+        ['label' => 'Descuento por ítems', 'value' => $itemDiscountTotal > 0.01 ? '-'.$money($itemDiscountTotal) : null, 'variant' => 'discount'],
+        ['label' => 'Descuento global ('.number_format($globalDiscountPct, 0).'%)', 'value' => $globalDiscountTotal > 0.01 ? '-'.$money($globalDiscountTotal) : null, 'variant' => 'discount'],
+        ['label' => 'Subtotal neto', 'value' => $money($sale->net_amount)],
+    ];
+    foreach ($taxBreakdown as $lines) {
+        $totalRows[] = ['label' => $lines->first()['label'], 'value' => $money($lines->sum('amount'))];
+    }
+    $totalRows[] = ['label' => 'Total', 'value' => $money($sale->grand_total), 'variant' => 'grand'];
+    if (! $isCredit && $sale->cash_received > 0) {
+        $totalRows[] = ['label' => 'Efectivo recibido', 'value' => $money($sale->cash_received), 'variant' => 'sep'];
+        $totalRows[] = ['label' => 'Cambio', 'value' => $money($sale->cash_change)];
+    }
 @endphp
 
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <style>
-        body { font-family: 'Helvetica', 'Arial', sans-serif; color: #333; font-size: 12px; margin: 0; padding: 0; }
-        .header-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-        .company-name { font-size: 20px; font-weight: bold; text-transform: uppercase; color: #1a1a1a; }
-        .info-label { color: #666; font-size: 9px; text-transform: uppercase; font-weight: bold; }
-        .text-right { text-align: right; }
-        .text-center { text-align: center; }
-        .bold { font-weight: bold; }
-        
-        /* BANNER FISCAL */
-        .invoice-banner { background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; margin-bottom: 20px; border-radius: 8px; }
-        .ncf-value { font-size: 18px; font-weight: bold; color: #1e293b; font-family: 'Courier New', Courier, monospace; }
-        .invoice-type { font-size: 14px; font-weight: bold; color: #475569; }
+<x-pdf.document
+    title="Factura"
+    :number="$invoice->invoice_number"
+    :subtitle="$ncfTypeName"
+    :date="$sale->sale_date->format('d/m/Y h:i A')"
+    dateLabel="Emisión"
+    :status="$isCanceled ? 'Anulada' : null"
+    statusVariant="bad"
+    :logoSrc="$logoSrc ?? null"
+    :footer="$isFiscal ? $ncfTypeName : 'Comprobante interno sin valor fiscal'">
 
-        .items-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        .items-table th { background: #1e293b; color: white; padding: 10px; text-transform: uppercase; font-size: 10px; }
-        .items-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; }
+    <x-pdf.meta :items="$metaItems" />
 
-        .totals-container { margin-top: 20px; width: 320px; float: right; }
-        .grand-total { font-size: 22px; border-top: 2px solid #1e293b; padding-top: 10px; margin-top: 5px; color: #0f172a; }
+    @if($isCanceled)
+        <x-pdf.note label="Factura anulada" variant="danger">
+            {{ $sale->cancellation_reason ?? $ncfLog?->cancellation_reason ?? 'Sin motivo registrado.' }}
+            @if($sale->canceled_at)
+                <span class="cell-sub">{{ $sale->canceled_at->format('d/m/Y h:i A') }}</span>
+            @endif
+        </x-pdf.note>
+    @endif
 
-        .footer-notes { margin-top: 50px; font-size: 10px; color: #64748b; border-top: 1px solid #e2e8f0; padding-top: 15px; clear: both; }
-        .dgii-stamp { font-size: 9px; font-weight: bold; color: #94a3b8; text-align: center; margin-top: 5px; text-transform: uppercase; }
-        
-        .payment-method-badge { 
-            background: #f1f5f9; 
-            padding: 2px 6px; 
-            border-radius: 4px; 
-            font-size: 10px; 
-            border: 1px solid #e2e8f0;
-        }
-    </style>
-</head>
-<body>
-
-    {{-- 1. ENCABEZADO --}}
-    <table class="header-table">
-        <tr>
-            <td style="width: 60%;">
-                <div class="company-name">{{ $config->nombre_empresa }}</div>
-                <div style="margin-top: 5px;">{{ $config->direccion }}</div>
-                <div>Teléfono: {{ $config->telefono }}</div>
-                <div class="bold">{{ $taxLabel }}: {{ $config->tax_id }}</div>
-            </td>
-            <td class="text-right" style="width: 40%;">
-                @if($config->logo)
-                    <img src="{{ $logoSrc }}" style="max-height: 70px;">
-                @else
-                    <div style="height: 70px;"></div>
-                @endif
-                
-                {{-- Ocultar sello DGII si no es fiscal --}}
-                @if($mostrarFiscal)
-                    <div class="dgii-stamp">Comprobante Autorizado por la DGII</div>
-                @endif
-            </td>
-        </tr>
-    </table>
-
-    {{-- 2. BLOQUE FISCAL (NCF / e-NCF) --}}
-    <div class="invoice-banner">
-        <table style="width: 100%;">
-            <tr>
-                <td style="width: 33%;">
-                    <span class="info-label">Número de Factura:</span><br>
-                    <span class="bold" style="font-size: 14px;">{{ $invoice->invoice_number }}</span>
-                </td>
-                <td style="width: 33%; border-left: 1px solid #cbd5e1; padding-left: 15px;">
-                    @if($mostrarFiscal)
-                        <span class="info-label">{{ $ncfLog?->type?->is_electronic ? 'e-NCF (Secuencia Electrónica):' : 'NCF (Número de Comprobante):' }}</span><br>
-                        <span class="ncf-value">{{ $sale->ncf }}</span>
-                    @else
-                        <span class="info-label">Tipo de Documento:</span><br>
-                        <span class="bold">DOCUMENTO</span>
-                    @endif
-                </td>
-                <td class="text-right" style="width: 33%;">
-                    <span class="info-label">Condición de Pago:</span><br>
-                    <span class="invoice-type">{{ $sale->payment_type === 'credit' ? 'CRÉDITO' : 'CONTADO' }}</span>
-                </td>
-            </tr>
-        </table>
-    </div>
-
-    {{-- 3. CLIENTE Y FECHAS --}}
-    <table class="header-table" style="border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px;">
-        <tr>
-            <td style="width: 45%;">
-                <span class="info-label">Cliente:</span><br>
-                <span class="bold" style="font-size: 13px;">{{ $client->name }}</span><br>
-                {{ $clientTaxLabel }}: <span class="bold">{{ $client->tax_id ?? 'N/A' }}</span><br>
-                Tel: {{ $client->phone ?? 'S/N' }}
-            </td>
-            <td style="width: 30%; border-left: 1px solid #f1f5f9; padding-left: 10px;">
-                <span class="info-label">Vendedor / Terminal:</span><br>
-                <span>{{ $sale->user->name ?? 'Sistema' }} {{ $sale->posTerminal ? '('.$sale->posTerminal->name.')' : '' }}</span><br>
-                <span class="info-label">Fecha de Emisión:</span><br>
-                <span>{{ $sale->created_at->format('d/m/Y g:i A') }}</span>
-            </td>
-            <td style="width: 25%;" class="text-right">
-                @if($mostrarFiscal && $vencimientoNcf)
-                    <span class="info-label">Vencimiento NCF:</span><br>
-                    <span class="bold">{{ $vencimientoNcf }}</span><br><br>
-                @endif
-                @if($vencimientoPago)
-                    <span class="info-label" style="color: #dc2626;">Vence Factura:</span><br>
-                    <span class="bold" style="color: #dc2626;">{{ $vencimientoPago }}</span>
-                @endif
-            </td>
-        </tr>
-    </table>
-
-    {{-- 4. TABLA DE PRODUCTOS --}}
-    <table class="items-table">
+    <table class="data-table" style="margin-top: 4px;">
         <thead>
             <tr>
-                <th class="text-center" width="8%">Cant.</th>
-                <th style="text-align: left;">Descripción / Producto</th>
-                <th class="text-right" width="15%">Precio Unit.</th>
-                <th class="text-right" width="15%">Subtotal</th>
+                <th class="center" style="width: 9%">Cant.</th>
+                <th style="width: 55%">Descripción</th>
+                <th class="num" style="width: 18%">Precio unit.</th>
+                <th class="num" style="width: 18%">Importe</th>
             </tr>
         </thead>
         <tbody>
             @foreach($sale->items as $item)
                 <tr>
-                    <td class="text-center bold">{{ (int)$item->quantity }}</td>
+                    <td class="center bold">{{ $qty($item->quantity) }}</td>
                     <td>
                         <span class="bold">{{ $item->product->name }}</span>
                         @if($item->product->sku)
-                            <br><small style="color: #64748b;">SKU: {{ $item->product->sku }}</small>
+                            <span class="cell-sub">SKU {{ $item->product->sku }}</span>
                         @endif
                         @if(($item->discount_percentage ?? 0) > 0)
-                            <br><small style="color: #dc2626;">Desc. ítem {{ number_format($item->discount_percentage, 0) }}%: -{{ $currency }}{{ number_format(($item->quantity * $item->unit_price * $item->discount_percentage) / 100, 2) }}</small>
+                            <span class="cell-sub discount">Desc. {{ number_format($item->discount_percentage, 0) }}%: -{{ $money(($item->quantity * $item->unit_price * $item->discount_percentage) / 100) }}</span>
                         @endif
                     </td>
-                    <td class="text-right">{{ $currency }}{{ number_format($item->unit_price, 2) }}</td>
-                    <td class="text-right bold">{{ $currency }}{{ number_format($item->quantity * $item->unit_price, 2) }}</td>
+                    <td class="num">{{ $money($item->unit_price) }}</td>
+                    <td class="num bold">{{ $money($item->quantity * $item->unit_price) }}</td>
                 </tr>
             @endforeach
         </tbody>
     </table>
 
-    {{-- 5. TOTALES Y DESGLOSE DE PAGO --}}
-    <div style="width: 100%; margin-top: 30px;">
-        <div style="width: 45%; float: left; padding: 10px;">
-            <span class="info-label" style="display: block; margin-bottom: 5px;">Detalle de Pago:</span>
-            @if($isMultiPay)
-                @foreach($payments as $payment)
-                    <div style="margin-bottom: 3px;">
-                        <span class="payment-method-badge">
-                            {{ $payment->tipoPago?->nombre ?? 'N/A' }}: {{ $currency }}{{ number_format($payment->amount, 2) }}
-                        </span>
-                    </div>
-                @endforeach
-            @elseif($sale->payment_type !== 'credit')
-                <span class="bold">{{ $sale->tipoPago->nombre ?? 'EFECTIVO' }}</span>
-            @endif
-
-            @if($sale->payment_type === 'credit')
-                <div style="margin-top: 40px; border-top: 1px solid #94a3b8; text-align: center; width: 250px;">
-                    <span class="info-label">Recibido Conforme (Firma y Sello)</span>
-                </div>
-            @endif
-        </div>
-
-        <div class="totals-container">
-            <table style="width: 100%;">
-                <tr>
-                    <td class="info-label" style="padding: 5px 0;">Subtotal Bruto:</td>
-                    <td class="text-right bold" style="font-size: 14px;">{{ $currency }}{{ number_format($sale->total_amount, 2) }}</td>
-                </tr>
-                @if($itemDiscountTotal > 0.01)
-                <tr style="color: #dc2626;">
-                    <td class="info-label" style="padding: 5px 0;">Desc. por Ítems:</td>
-                    <td class="text-right bold" style="font-size: 14px; color: #dc2626;">-{{ $currency }}{{ number_format($itemDiscountTotal, 2) }}</td>
-                </tr>
-                @endif
-                @if($globalDiscountTotal > 0.01)
-                <tr style="color: #dc2626;">
-                    <td class="info-label" style="padding: 5px 0;">Desc. Global ({{ number_format($globalDiscountPct, 0) }}%):</td>
-                    <td class="text-right bold" style="font-size: 14px; color: #dc2626;">-{{ $currency }}{{ number_format($globalDiscountTotal, 2) }}</td>
-                </tr>
-                @endif
-                <tr>
-                    <td class="info-label" style="padding: 5px 0;">Subtotal Neto:</td>
-                    <td class="text-right bold" style="font-size: 14px;">{{ $currency }}{{ number_format($sale->net_amount, 2) }}</td>
-                </tr>
-            </table>
-            {{-- Separación real entre grupos (margen), no una segunda línea divisoria. --}}
-            <table style="width: 100%; margin-top: 6px; padding-top: 4px;">
-                @foreach($taxBreakdown as $key => $lines)
-                    <tr>
-                        <td class="info-label" style="padding: 5px 0;">{{ $lines->first()['label'] }}:</td>
-                        <td class="text-right bold" style="font-size: 14px;">{{ $currency }}{{ number_format($lines->sum('amount'), 2) }}</td>
-                    </tr>
-                @endforeach
-                {{-- Línea de Propina Legal (REQ-5.7) se agrega cuando esa fase se retome —
-                     service_charge_amount no existe como columna todavía, ver 5.2. --}}
-                <tr class="grand-total">
-                    <td class="bold">TOTAL:</td>
-                    <td class="text-right bold">{{ $currency }}{{ number_format($sale->grand_total, 2) }}</td>
-                </tr>
-                @if($sale->payment_type === 'cash' && $sale->cash_received > 0)
-                <tr>
-                    <td class="info-label" style="padding: 5px 0;">Efectivo Recibido:</td>
-                    <td class="text-right">{{ $currency }}{{ number_format($sale->cash_received, 2) }}</td>
-                </tr>
-                <tr>
-                    <td class="info-label" style="padding: 5px 0;">Cambio:</td>
-                    <td class="text-right">{{ $currency }}{{ number_format($sale->cash_change, 2) }}</td>
-                </tr>
-                @endif
-            </table>
-        </div>
-        <div style="clear: both;"></div>
-    </div>
-
-    {{-- 6. PIE DE PÁGINA --}}
-    <div class="footer-notes">
-        @if($sale->notes)
-            <p><strong>Observaciones:</strong> {{ $sale->notes }}</p>
+    <x-pdf.totals :rows="$totalRows">
+        <span class="label">Forma de pago</span>
+        @if($isCredit)
+            <span class="value">A crédito{{ $sale->receivable?->number ? ' · '.$sale->receivable->number : '' }}</span>
+        @elseif($sale->payments->count() > 1)
+            @foreach($sale->payments as $payment)
+                <div class="value">{{ $payment->tipoPago?->nombre }}: <span class="bold">{{ $money($payment->amount) }}</span></div>
+            @endforeach
+        @else
+            <span class="value">{{ $sale->payments->first()?->tipoPago?->nombre ?? $sale->tipoPago?->nombre ?? 'Efectivo' }}</span>
         @endif
-        <p class="text-center bold" style="color: #475569; font-size: 11px;">
-            @if($mostrarFiscal)
-                {{ $ncfLog?->type?->name ?? 'Factura con Valor Fiscal' }}
-            @else
-                Documento de Venta Interna
-            @endif
-            - {{ $config->nombre_empresa }}
-        </p>
-    </div>
 
-</body>
-</html>
+        @if($sale->notes)
+            <div style="margin-top: 12px;">
+                <span class="label">Observaciones</span>
+                <span class="value">{{ $sale->notes }}</span>
+            </div>
+        @endif
+    </x-pdf.totals>
+
+    @if($isCredit)
+        <table class="signature">
+            <tr>
+                <td><div class="signature-line">{{ $sale->user->name ?? 'Vendedor' }}</div><span class="small muted">Entregado por</span></td>
+                <td><div class="signature-line">{{ $client->name }}</div><span class="small muted">Recibido conforme (firma y sello)</span></td>
+            </tr>
+        </table>
+    @endif
+</x-pdf.document>

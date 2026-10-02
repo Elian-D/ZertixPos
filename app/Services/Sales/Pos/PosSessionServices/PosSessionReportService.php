@@ -40,6 +40,7 @@ class PosSessionReportService
             }
 
             return [
+                'id'       => $sale->id, // enlace al show de la venta (vista de turno)
                 'hora'     => $sale->created_at->format('h:i A'),
                 'numero'   => $sale->number,
                 'cliente'  => $sale->client->name ?? 'Consumidor Final',

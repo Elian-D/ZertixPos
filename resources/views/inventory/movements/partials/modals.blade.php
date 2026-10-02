@@ -256,9 +256,15 @@
                                 <p class="text-xs font-medium text-gray-700">{{ $item->user->name ?? 'Sistema' }}</p>
                             </div>
                             <div class="text-right">
-                                <p class="text-[10px] text-gray-400 italic">
-                                    Ref: {{ $item->reference_type ? basename($item->reference_type) . ' #' . $item->reference_id : 'Manual' }}
-                                </p>
+                                @php $origin = $item->origin; @endphp
+                                <h4 class="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Origen</h4>
+                                @if($origin['url'])
+                                    <a href="{{ $origin['url'] }}" class="text-xs font-medium text-zertix-primary-700 hover:underline">
+                                        {{ $origin['label'] }} →
+                                    </a>
+                                @else
+                                    <p class="text-xs font-medium text-gray-700">{{ $origin['label'] }}</p>
+                                @endif
                             </div>
                         </section>
                     </div>

@@ -32,7 +32,7 @@
                         required placeholder="Seleccione una sesión...">
                         @foreach($sessions as $s)
                             <option value="{{ $s->id }}">
-                                {{ $s->terminal?->name ?? 'Sin Terminal' }} - {{ $s->user?->name }} (#{{ $s->id }})
+                                {{ $s->terminal?->name ?? 'Sin Terminal' }} - {{ $s->user?->name }} ({{ $s->number }})
                             </option>
                         @endforeach
                     </x-ui.forms.select>

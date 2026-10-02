@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Permission;
+use App\Models\PermissionGroup;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
@@ -76,6 +77,28 @@ class UserController extends Controller
         return redirect()
             ->route('config.users.index')
             ->with('success', 'Usuario creado correctamente');
+    }
+
+    /**
+     * Detalle del usuario (v1.4.0 Fase 3, patrón Infolist — /filament-show):
+     * perfil, rol y permisos efectivos por módulo (los del rol + los adicionales).
+     */
+    public function show(User $user)
+    {
+        $user->load(['roles.permissions', 'permissions']);
+
+        $role = $user->roles->first();
+        $direct = $user->permissions;
+        $effective = $user->roles->flatMap->permissions->merge($direct)->unique('id')->values();
+
+        return view('users.show', [
+            'user' => $user,
+            'role' => $role,
+            'groups' => PermissionGroup::groupPermissions($effective),
+            'extraNames' => $direct->pluck('name')->all(),
+            'effectiveCount' => $effective->count(),
+            'isProtectedAdmin' => $user->hasRole(self::PROTECTED_ROLE),
+        ]);
     }
 
     public function edit(User $user)

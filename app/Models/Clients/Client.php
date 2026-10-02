@@ -8,12 +8,14 @@ use App\Models\Accounting\ClientCollection;
 use App\Models\Accounting\Receivable;
 use App\Models\Geo\Municipality;
 use App\Models\Geo\Province;
+use App\Models\Sales\Invoice;
 use App\Models\Sales\Quotes\Quote;
 use App\Models\Sales\Sale;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Client extends Model
@@ -93,6 +95,14 @@ class Client extends Model
     public function quotes(): HasMany
     {
         return $this->hasMany(Quote::class, 'customer_id');
+    }
+
+    /**
+     * Facturas del cliente (una por venta) — pestaña "Facturas" de su show.
+     */
+    public function invoices(): HasManyThrough
+    {
+        return $this->hasManyThrough(Invoice::class, Sale::class);
     }
 
     /* ===========================

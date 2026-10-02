@@ -194,4 +194,9 @@ return [
         'cancel' => ['label' => 'Cancelar cotizaciones', 'description' => 'Cancelar cotizaciones existentes.'],
     ],
 
+    'returns' => [
+        'create' => ['label' => 'Hacer devoluciones', 'description' => 'Registrar devoluciones y cambios de productos de una venta.'],
+        'void' => ['label' => 'Anular devoluciones', 'description' => 'Anular una devolución ya registrada.'],
+    ],
+
 ];

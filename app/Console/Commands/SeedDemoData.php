@@ -384,7 +384,7 @@ class SeedDemoData extends Command
             return;
         }
 
-        $tipoPagos = TipoPago::activo()->get();
+        $tipoPagos = TipoPago::seleccionable()->get();
 
         foreach ($receivables as $receivable) {
             // No todas las facturas a crédito demo tienen abono — algunas quedan

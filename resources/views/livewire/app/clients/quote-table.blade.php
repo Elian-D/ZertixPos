@@ -60,8 +60,8 @@
         @forelse($quotes as $quote)
             <tr class="hover:bg-slate-50 transition-colors duration-150">
 
-                <x-data-table.cell column="id" :visible="$visibleColumns">
-                    <span class="font-mono font-bold text-zertix-primary">#{{ $quote->id }}</span>
+                <x-data-table.cell column="number" :visible="$visibleColumns">
+                    <a href="{{ route('clients.quotes.show', $quote) }}" class="font-mono font-bold text-zertix-primary-700 hover:underline">{{ $quote->number }}</a>
                 </x-data-table.cell>
 
                 <x-data-table.cell column="created_at" :visible="$visibleColumns">

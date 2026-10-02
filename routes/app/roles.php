@@ -21,6 +21,11 @@ Route::prefix('config/roles')->as('config.roles.')->group(function () {
         ->middleware('permission:roles.create')
         ->name('store');
 
+    Route::get('/{role}', [RoleController::class, 'show'])
+        ->whereNumber('role')
+        ->middleware('permission:roles.view')
+        ->name('show');
+
     Route::get('/{role}/edit', [RoleController::class, 'edit'])
         ->middleware('permission:roles.edit')
         ->name('edit');

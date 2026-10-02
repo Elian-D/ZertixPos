@@ -82,8 +82,8 @@
         @forelse($sessions as $session)
             <tr class="hover:bg-slate-50 transition-colors duration-150">
 
-                <x-data-table.cell column="id" :visible="$visibleColumns">
-                    <span class="font-mono text-slate-400">#{{ str_pad($session->id, 5, '0', STR_PAD_LEFT) }}</span>
+                <x-data-table.cell column="number" :visible="$visibleColumns">
+                    <a href="{{ route('sales.pos.sessions.show', $session) }}" class="font-mono font-bold text-zertix-primary-700 hover:underline">{{ $session->number }}</a>
                 </x-data-table.cell>
 
                 <x-data-table.cell column="terminal_id" :visible="$visibleColumns">

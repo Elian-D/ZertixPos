@@ -29,26 +29,26 @@ class StoreProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'category_id'  => 'required|exists:categories,id',
-            'unit_id'      => 'required|exists:units,id',
-            'name'         => 'required|string|max:150',
-            'sku'          => 'nullable|string|max:50|unique:products,sku',
-            'description'  => 'nullable|string|max:1000',
-            'image'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'category_id' => 'required|exists:categories,id',
+            'unit_id' => 'required|exists:units,id',
+            'name' => 'required|string|max:150',
+            'sku' => 'nullable|string|max:50|unique:products,sku',
+            'description' => 'nullable|string|max:1000',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
 
             // Precios: min 0 para no permitir valores negativos
-            'price'        => 'required|numeric|min:0',
-            'cost'         => 'required|numeric|min:0',
+            'price' => 'required|numeric|min:0',
+            'cost' => 'required|numeric|min:0',
 
             // Impuestos (Fase 5, REQ-5.4) — apilable, puede venir vacío (producto sin
             // ningún impuesto asignado es un estado válido, no un error: en RD no todo
             // lleva ITBIS). Solo claves scope 'product' de config('impuestos').
-            'tax_keys'     => 'nullable|array',
-            'tax_keys.*'   => ['string', Rule::in($this->validProductTaxKeys())],
+            'tax_keys' => 'nullable|array',
+            'tax_keys.*' => ['string', Rule::in($this->validProductTaxKeys())],
 
             // Flags
-            'is_active'    => 'boolean',
-            'is_stockable' => 'boolean',
+            'is_active' => 'boolean',
+            'type' => ['required', Rule::in([Product::TYPE_PRODUCT, Product::TYPE_SERVICE])],
         ];
     }
 

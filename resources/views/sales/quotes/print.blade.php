@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>COT - {{ str_pad($quote->id, 8, '0', STR_PAD_LEFT) }}</title>
+    <title>{{ $quote->number }}</title>
     <style>
         @media print {
             .no-print { display: none !important; }

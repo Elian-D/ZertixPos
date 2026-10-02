@@ -31,6 +31,12 @@ class InventoryStockTable extends DataTable
         ];
     }
 
+    /** En qué busca el filtro 'search' de abajo — debe coincidir con su closure. */
+    protected function searchFields(): array
+    {
+        return ['producto', 'SKU'];
+    }
+
     protected function filterMap(): array
     {
         return [

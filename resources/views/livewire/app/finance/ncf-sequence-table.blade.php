@@ -124,27 +124,23 @@
                     <div class="flex items-center justify-end gap-1">
                         <x-ui.button
                             appearance="ghost" variant="secondary" size="sm" icon="heroicon-s-eye"
-                            x-data @click="$dispatch('open-modal', 'view-sequence-{{ $sequence->id }}')"
-                            aria-label="Ver detalle" title="Ver Detalle y Estadísticas" />
+                            href="{{ route('finance.ncf.sequences.show', $sequence) }}"
+                            aria-label="Ver secuencia" title="Ver secuencia" />
 
                         @can('ncf_sequences.manage')
-                            <x-ui.action-menu>
-                                <x-ui.action-menu.item
-                                    x-data @click="$dispatch('open-modal', 'extend-sequence-{{ $sequence->id }}')"
-                                    icon="heroicon-o-arrow-trending-up">
-                                    Ampliar Rango
-                                </x-ui.action-menu.item>
-
-                                {{-- Eliminar solo si no se ha usado ni un solo número (Lote virgen) —
-                                     mismo guard que NcfSequenceService::delete(). --}}
-                                @if($sequence->current < $sequence->from)
-                                    <x-ui.action-menu.item
-                                        x-data @click="$dispatch('open-modal', 'confirm-sequence-deletion-{{ $sequence->id }}')"
-                                        icon="heroicon-o-trash" variant="danger">
-                                        Eliminar Lote
-                                    </x-ui.action-menu.item>
-                                @endif
-                            </x-ui.action-menu>
+                            @if($sequence->current < $sequence->from)
+                                <x-ui.action-menu>
+                                    {{-- Eliminar solo si no se ha usado ni un solo número (Lote virgen) —
+                                        mismo guard que NcfSequenceService::delete(). --}}
+                                    
+                                        <x-ui.action-menu.item
+                                            x-data @click="$dispatch('open-modal', 'confirm-sequence-deletion-{{ $sequence->id }}')"
+                                            icon="heroicon-o-trash" variant="danger">
+                                            Eliminar Lote
+                                        </x-ui.action-menu.item>
+                                    
+                                </x-ui.action-menu>
+                            @endif
                         @endcan
                     </div>
                 </td>

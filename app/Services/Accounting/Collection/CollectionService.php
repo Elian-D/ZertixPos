@@ -76,7 +76,7 @@ class CollectionService
                             'accounting_account_id' => $receivable->accounting_account_id,
                             'debit' => 0,
                             'credit' => $data['amount'],
-                            'note' => "Aplicación a factura {$receivable->document_number}",
+                            'note' => "Aplicación a {$receivable->number} (venta {$receivable->document_number})",
                         ],
                     ],
                 ]);

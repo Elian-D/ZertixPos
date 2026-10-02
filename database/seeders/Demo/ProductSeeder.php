@@ -40,7 +40,7 @@ class ProductSeeder extends Seeder
                 'price' => 150.00,
                 'cost' => 45.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
             [
                 'category_id' => $catHielo,
@@ -51,7 +51,7 @@ class ProductSeeder extends Seeder
                 'price' => 15.00,
                 'cost' => 5.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
             [
                 'category_id' => $catHielo,
@@ -62,7 +62,7 @@ class ProductSeeder extends Seeder
                 'price' => 80.00,
                 'cost' => 25.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
             [
                 'category_id' => $catHielo,
@@ -73,7 +73,7 @@ class ProductSeeder extends Seeder
                 'price' => 350.00,
                 'cost' => 110.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
 
             // Agua
@@ -86,7 +86,7 @@ class ProductSeeder extends Seeder
                 'price' => 120.00,
                 'cost' => 40.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
             [
                 'category_id' => $catAgua,
@@ -97,7 +97,7 @@ class ProductSeeder extends Seeder
                 'price' => 25.00,
                 'cost' => 8.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
             [
                 'category_id' => $catAgua,
@@ -108,7 +108,7 @@ class ProductSeeder extends Seeder
                 'price' => 480.00,
                 'cost' => 160.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
             [
                 'category_id' => $catAgua,
@@ -119,7 +119,7 @@ class ProductSeeder extends Seeder
                 'price' => 60.00,
                 'cost' => 20.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
 
             // Accesorios
@@ -132,7 +132,7 @@ class ProductSeeder extends Seeder
                 'price' => 250.00,
                 'cost' => 90.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
             [
                 'category_id' => $catAccesorios,
@@ -143,7 +143,7 @@ class ProductSeeder extends Seeder
                 'price' => 3500.00,
                 'cost' => 2200.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
             [
                 'category_id' => $catAccesorios,
@@ -154,7 +154,7 @@ class ProductSeeder extends Seeder
                 'price' => 1200.00,
                 'cost' => 750.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
             [
                 'category_id' => $catAccesorios,
@@ -165,7 +165,7 @@ class ProductSeeder extends Seeder
                 'price' => 180.00,
                 'cost' => 70.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
 
             // Bebidas
@@ -178,7 +178,7 @@ class ProductSeeder extends Seeder
                 'price' => 45.00,
                 'cost' => 22.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
             [
                 'category_id' => $catBebidas,
@@ -189,7 +189,7 @@ class ProductSeeder extends Seeder
                 'price' => 90.00,
                 'cost' => 45.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
             [
                 'category_id' => $catBebidas,
@@ -200,7 +200,7 @@ class ProductSeeder extends Seeder
                 'price' => 110.00,
                 'cost' => 60.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
             [
                 'category_id' => $catBebidas,
@@ -211,7 +211,7 @@ class ProductSeeder extends Seeder
                 'price' => 85.00,
                 'cost' => 40.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
 
             // Snacks
@@ -224,7 +224,7 @@ class ProductSeeder extends Seeder
                 'price' => 35.00,
                 'cost' => 15.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
             [
                 'category_id' => $catSnacks,
@@ -235,7 +235,7 @@ class ProductSeeder extends Seeder
                 'price' => 55.00,
                 'cost' => 28.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
             [
                 'category_id' => $catSnacks,
@@ -246,7 +246,7 @@ class ProductSeeder extends Seeder
                 'price' => 60.00,
                 'cost' => 30.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
             [
                 'category_id' => $catSnacks,
@@ -257,7 +257,7 @@ class ProductSeeder extends Seeder
                 'price' => 40.00,
                 'cost' => 18.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
 
             // Limpieza
@@ -270,7 +270,7 @@ class ProductSeeder extends Seeder
                 'price' => 150.00,
                 'cost' => 70.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
             [
                 'category_id' => $catLimpieza,
@@ -281,7 +281,7 @@ class ProductSeeder extends Seeder
                 'price' => 180.00,
                 'cost' => 85.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
             [
                 'category_id' => $catLimpieza,
@@ -292,7 +292,7 @@ class ProductSeeder extends Seeder
                 'price' => 120.00,
                 'cost' => 55.00,
                 'is_active' => true,
-                'is_stockable' => true,
+                'type' => Product::TYPE_PRODUCT,
             ],
         ];
 

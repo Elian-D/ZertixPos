@@ -128,10 +128,19 @@ class ProductTable extends DataTable
         ];
     }
 
+    // Obligatorio si filterMap() tiene 'search' (v1.4.0 REQ-3.20 e): el buscador
+    // muestra "Buscar por nombre o SKU…" en vez de un "Buscar..." mudo.
+    protected function searchFields(): array
+    {
+        return ['nombre', 'SKU'];
+    }
+
     protected function filterMap(): array
     {
         return [
-            'search'    => fn ($q, $v) => $q->where('name', 'like', "%{$v}%"),
+            'search'    => fn ($q, $v) => $q->where(fn ($qq) => $qq
+                ->where('name', 'like', "%{$v}%")
+                ->orWhere('sku', 'like', "%{$v}%")),
             'is_active' => fn ($q, $v) => $q->where('is_active', (bool) $v),
             'category'  => fn ($q, $v) => $q->where('category_id', $v),
         ];

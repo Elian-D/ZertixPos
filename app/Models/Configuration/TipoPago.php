@@ -18,6 +18,10 @@ class TipoPago extends Model
     const CHEQUE = 'cheque';
     const CREDITO = 'credito'; // Para ventas que generan CxC
 
+    // Valor a favor de una devolución usado como pago de la venta de un cambio
+    // (v1.4.0 Fase 2). Solo lo usa ReturnService — nunca se ofrece en TPV/ventas.
+    const DEVOLUCION = 'devolucion';
+
     // Pseudo-clave: no existe fila de TipoPago para "Mixto" (una venta con pago
     // dividido no tiene un solo método), pero las vistas sí necesitan mostrarlo
     // como badge — se le da su propio diseño para no caer en el estilo genérico.
@@ -88,6 +92,7 @@ class TipoPago extends Model
             self::CHEQUE          => '#475569', // slate-600
             self::CREDITO         => '#D97706', // amber-600
             self::MIXTO           => '#C026D3', // fuchsia-600
+            self::DEVOLUCION      => '#E11D48', // rose-600
         ];
     }
 
@@ -106,6 +111,7 @@ class TipoPago extends Model
             self::CHEQUE          => 'heroicon-s-document-text',
             self::CREDITO         => 'heroicon-s-clock',
             self::MIXTO           => 'heroicon-s-squares-2x2',
+            self::DEVOLUCION      => 'heroicon-s-arrow-uturn-left',
         ];
     }
 
@@ -127,13 +133,22 @@ class TipoPago extends Model
      */
     public function isSystemProtected(): bool
     {
-        return $this->slug === self::EFECTIVO;
+        return in_array($this->slug, [self::EFECTIVO, self::DEVOLUCION], true);
     }
 
     // Scopes para filtrar por estado
     public function scopeActivo($query)
     {
         return $query->where('estado', true);
+    }
+
+    /**
+     * Métodos que un usuario puede elegir al cobrar: activos, sin "Devolución"
+     * (esa la asigna ReturnService, no el cajero).
+     */
+    public function scopeSeleccionable($query)
+    {
+        return $query->activo()->where('slug', '!=', self::DEVOLUCION);
     }
 
     public function scopeInactivo($query)

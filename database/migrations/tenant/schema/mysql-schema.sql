@@ -288,6 +288,7 @@ DROP TABLE IF EXISTS `invoices`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `invoices` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `document_type_id` bigint unsigned DEFAULT NULL,
   `sale_id` bigint unsigned NOT NULL,
   `invoice_number` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -302,6 +303,8 @@ CREATE TABLE `invoices` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `invoices_invoice_number_unique` (`invoice_number`),
   KEY `invoices_sale_id_foreign` (`sale_id`),
+  KEY `invoices_document_type_id_foreign` (`document_type_id`),
+  CONSTRAINT `invoices_document_type_id_foreign` FOREIGN KEY (`document_type_id`) REFERENCES `document_types` (`id`),
   CONSTRAINT `invoices_sale_id_foreign` FOREIGN KEY (`sale_id`) REFERENCES `sales` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -632,6 +635,8 @@ DROP TABLE IF EXISTS `pos_sessions`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `pos_sessions` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `document_type_id` bigint unsigned DEFAULT NULL,
+  `number` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `terminal_id` bigint unsigned NOT NULL,
   `user_id` bigint unsigned NOT NULL,
   `opened_by_user_id` bigint unsigned DEFAULT NULL,
@@ -650,11 +655,14 @@ CREATE TABLE `pos_sessions` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `pos_sessions_number_unique` (`number`),
   KEY `pos_sessions_terminal_id_foreign` (`terminal_id`),
   KEY `pos_sessions_user_id_foreign` (`user_id`),
   KEY `pos_sessions_opened_by_user_id_foreign` (`opened_by_user_id`),
   KEY `pos_sessions_closed_by_user_id_foreign` (`closed_by_user_id`),
+  KEY `pos_sessions_document_type_id_foreign` (`document_type_id`),
   CONSTRAINT `pos_sessions_closed_by_user_id_foreign` FOREIGN KEY (`closed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `pos_sessions_document_type_id_foreign` FOREIGN KEY (`document_type_id`) REFERENCES `document_types` (`id`),
   CONSTRAINT `pos_sessions_opened_by_user_id_foreign` FOREIGN KEY (`opened_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `pos_sessions_terminal_id_foreign` FOREIGN KEY (`terminal_id`) REFERENCES `pos_terminals` (`id`) ON DELETE CASCADE,
   CONSTRAINT `pos_sessions_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
@@ -738,7 +746,7 @@ CREATE TABLE `products` (
   `price` decimal(12,2) NOT NULL DEFAULT '0.00',
   `cost` decimal(12,2) NOT NULL DEFAULT '0.00',
   `is_active` tinyint(1) NOT NULL DEFAULT '1',
-  `is_stockable` tinyint(1) NOT NULL DEFAULT '1',
+  `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'product',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
@@ -791,6 +799,8 @@ DROP TABLE IF EXISTS `quotes`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `quotes` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `document_type_id` bigint unsigned DEFAULT NULL,
+  `number` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `customer_id` bigint unsigned NOT NULL,
   `user_id` bigint unsigned NOT NULL,
   `pos_terminal_id` bigint unsigned DEFAULT NULL,
@@ -809,12 +819,15 @@ CREATE TABLE `quotes` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `quotes_number_unique` (`number`),
   KEY `quotes_customer_id_foreign` (`customer_id`),
   KEY `quotes_user_id_foreign` (`user_id`),
   KEY `quotes_pos_terminal_id_foreign` (`pos_terminal_id`),
   KEY `quotes_pos_session_id_foreign` (`pos_session_id`),
   KEY `quotes_sale_id_foreign` (`sale_id`),
+  KEY `quotes_document_type_id_foreign` (`document_type_id`),
   CONSTRAINT `quotes_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `clients` (`id`),
+  CONSTRAINT `quotes_document_type_id_foreign` FOREIGN KEY (`document_type_id`) REFERENCES `document_types` (`id`),
   CONSTRAINT `quotes_pos_session_id_foreign` FOREIGN KEY (`pos_session_id`) REFERENCES `pos_sessions` (`id`),
   CONSTRAINT `quotes_pos_terminal_id_foreign` FOREIGN KEY (`pos_terminal_id`) REFERENCES `pos_terminals` (`id`),
   CONSTRAINT `quotes_sale_id_foreign` FOREIGN KEY (`sale_id`) REFERENCES `sales` (`id`),
@@ -826,6 +839,8 @@ DROP TABLE IF EXISTS `receivables`;
 /*!50503 SET character_set_client = utf8mb4 */;
 CREATE TABLE `receivables` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `document_type_id` bigint unsigned DEFAULT NULL,
+  `number` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `client_id` bigint unsigned NOT NULL,
   `journal_entry_id` bigint unsigned DEFAULT NULL,
   `accounting_account_id` bigint unsigned DEFAULT NULL,
@@ -842,14 +857,71 @@ CREATE TABLE `receivables` (
   `reference_type` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `reference_id` bigint unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
+  UNIQUE KEY `receivables_number_unique` (`number`),
   KEY `receivables_client_id_foreign` (`client_id`),
   KEY `receivables_journal_entry_id_foreign` (`journal_entry_id`),
   KEY `receivables_accounting_account_id_foreign` (`accounting_account_id`),
   KEY `receivables_document_number_index` (`document_number`),
   KEY `receivables_reference_type_reference_id_index` (`reference_type`,`reference_id`),
+  KEY `receivables_document_type_id_foreign` (`document_type_id`),
   CONSTRAINT `receivables_accounting_account_id_foreign` FOREIGN KEY (`accounting_account_id`) REFERENCES `accounting_accounts` (`id`),
   CONSTRAINT `receivables_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `receivables_document_type_id_foreign` FOREIGN KEY (`document_type_id`) REFERENCES `document_types` (`id`),
   CONSTRAINT `receivables_journal_entry_id_foreign` FOREIGN KEY (`journal_entry_id`) REFERENCES `journal_entries` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `return_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `return_items` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `return_id` bigint unsigned NOT NULL,
+  `sale_item_id` bigint unsigned NOT NULL,
+  `quantity` decimal(12,2) NOT NULL,
+  `unit_subtotal` decimal(15,4) NOT NULL,
+  `unit_tax` decimal(15,4) NOT NULL DEFAULT '0.0000',
+  `restock` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `return_items_return_id_foreign` (`return_id`),
+  KEY `return_items_sale_item_id_foreign` (`sale_item_id`),
+  CONSTRAINT `return_items_return_id_foreign` FOREIGN KEY (`return_id`) REFERENCES `returns` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `return_items_sale_item_id_foreign` FOREIGN KEY (`sale_item_id`) REFERENCES `sale_items` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `returns`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `returns` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `document_type_id` bigint unsigned NOT NULL,
+  `number` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `sale_id` bigint unsigned NOT NULL,
+  `user_id` bigint unsigned NOT NULL,
+  `reason` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `refund_method` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `refund_value` decimal(15,2) NOT NULL,
+  `cash_amount` decimal(15,2) DEFAULT NULL,
+  `exchange_sale_id` bigint unsigned DEFAULT NULL,
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `status` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'completed',
+  `voided_by` bigint unsigned DEFAULT NULL,
+  `voided_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `returns_number_unique` (`number`),
+  KEY `returns_document_type_id_foreign` (`document_type_id`),
+  KEY `returns_user_id_foreign` (`user_id`),
+  KEY `returns_exchange_sale_id_foreign` (`exchange_sale_id`),
+  KEY `returns_voided_by_foreign` (`voided_by`),
+  KEY `returns_sale_id_status_index` (`sale_id`,`status`),
+  CONSTRAINT `returns_document_type_id_foreign` FOREIGN KEY (`document_type_id`) REFERENCES `document_types` (`id`),
+  CONSTRAINT `returns_exchange_sale_id_foreign` FOREIGN KEY (`exchange_sale_id`) REFERENCES `sales` (`id`),
+  CONSTRAINT `returns_sale_id_foreign` FOREIGN KEY (`sale_id`) REFERENCES `sales` (`id`),
+  CONSTRAINT `returns_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
+  CONSTRAINT `returns_voided_by_foreign` FOREIGN KEY (`voided_by`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `role_has_permissions`;
@@ -942,6 +1014,9 @@ CREATE TABLE `sales` (
   `cash_received` decimal(12,2) NOT NULL DEFAULT '0.00',
   `cash_change` decimal(12,2) NOT NULL DEFAULT '0.00',
   `status` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `cancellation_reason` text COLLATE utf8mb4_unicode_ci,
+  `canceled_by` bigint unsigned DEFAULT NULL,
+  `canceled_at` datetime DEFAULT NULL,
   `notes` text COLLATE utf8mb4_unicode_ci,
   `deleted_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -959,6 +1034,8 @@ CREATE TABLE `sales` (
   KEY `sales_tipo_pago_id_foreign` (`tipo_pago_id`),
   KEY `sales_pos_session_fk` (`pos_session_id`),
   KEY `sales_pos_terminal_fk` (`pos_terminal_id`),
+  KEY `sales_canceled_by_foreign` (`canceled_by`),
+  CONSTRAINT `sales_canceled_by_foreign` FOREIGN KEY (`canceled_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `sales_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`),
   CONSTRAINT `sales_document_type_id_foreign` FOREIGN KEY (`document_type_id`) REFERENCES `document_types` (`id`),
   CONSTRAINT `sales_pos_session_fk` FOREIGN KEY (`pos_session_id`) REFERENCES `pos_sessions` (`id`) ON DELETE SET NULL,
@@ -1145,3 +1222,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (81,'2026_08_28_100
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (82,'2026_08_28_100500_add_module_key_to_permissions_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (83,'2026_08_30_100000_add_gateway_plan_id_to_plans_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (84,'2026_09_01_110000_drop_plan_catalog_from_tenant',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (85,'2026_09_26_100000_add_type_to_products_table',2);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (86,'2026_09_26_100001_drop_is_stockable_from_products_table',2);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (92,'2026_09_30_100000_create_returns_tables',3);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (93,'2026_10_02_100000_add_cancellation_fields_to_sales_table',4);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (94,'2026_10_02_110000_add_document_numbers',5);

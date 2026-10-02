@@ -36,6 +36,12 @@ class InventoryMovementTable extends DataTable
         ];
     }
 
+    /** En qué busca el filtro 'search' de abajo — debe coincidir con su closure. */
+    protected function searchFields(): array
+    {
+        return ['producto', 'descripción'];
+    }
+
     protected function filterMap(): array
     {
         return [

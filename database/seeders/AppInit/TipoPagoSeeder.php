@@ -24,6 +24,10 @@ class TipoPagoSeeder extends Seeder
             // Cheque: desactivado por defecto. Muchos negocios ya no lo aceptan;
             // el admin lo activa desde Configuración > Tipos de Pago si lo necesita.
             ['nombre' => 'Cheque', 'account_id' => $cajaId, 'estado' => false],
+            // Devolución (v1.4.0 Fase 2): valor a favor usado como pago de la venta
+            // de un cambio. No es dinero real, sin cuenta contable. Nunca se ofrece
+            // al cobrar (TipoPago::scopeSeleccionable()).
+            ['nombre' => 'Devolución', 'account_id' => null, 'estado' => true],
         ];
 
         foreach ($tiposPago as $tipo) {

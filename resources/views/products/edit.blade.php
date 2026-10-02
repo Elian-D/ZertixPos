@@ -2,7 +2,7 @@
     <div class="max-w-7xl mx-auto py-8 px-4"
         x-cloak
         x-data="{
-            isService: {{ old('is_stockable') !== null ? (old('is_stockable') == '0' ? 'true' : 'false') : ($product->is_stockable ? 'false' : 'true') }},
+            isService: {{ old('type', $product->type) === 'service' ? 'true' : 'false' }},
             categoryId: '{{ old('category_id', $product->category_id) }}',
             unitId: '{{ old('unit_id', $product->unit_id) }}',
             servicesCategoryId: @js($categories->firstWhere('name', 'Servicios')?->id),
@@ -93,7 +93,7 @@
                         {{-- Tipo de Ítem --}}
                         <div>
                             <label class="text-xs font-bold text-slate-400 uppercase mb-2 block tracking-wider">Tipo de Ítem</label>
-                            <input type="hidden" name="is_stockable" :value="isService ? 0 : 1">
+                            <input type="hidden" name="type" :value="isService ? 'service' : 'product'">
                             <div class="grid grid-cols-2 gap-2 p-1 bg-slate-100 rounded-2xl">
                                 <button type="button" @click="selectType(false)"
                                     :class="!isService ? 'bg-white shadow-sm text-zertix-primary-dark' : 'text-slate-500 hover:text-slate-700'"
