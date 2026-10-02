@@ -28,11 +28,12 @@ Route::prefix('inventory')->as('inventory.')->group(function () {
             // warehouses.eliminados/restaurar/borrarDefinitivo/estado reemplazadas por
             // el tab "Papelera" + WarehouseTable::restore()/forceDelete()/toggleActivo()
             // del mismo índice — ver App\Livewire\App\Inventory\WarehouseTable y
-            // docs/analisis/politica-soft-deletes.md §6. Sin create/edit/show reales
-            // (CRUD por modal) — solo index/store/update/destroy.
+            // docs/analisis/politica-soft-deletes.md §6. Crear/editar siguen por modal
+            // (sin create/edit); show es la vista de detalle (v1.4.0 REQ-3.10).
             Route::resource('warehouses', WarehouseController::class)
                 ->parameters(['warehouses' => 'warehouse'])
-                ->only(['index', 'store', 'update', 'destroy'])
+                ->only(['index', 'show', 'store', 'update', 'destroy'])
+                ->whereNumber('warehouse')
                 ->names('warehouses');
         });
 
@@ -92,6 +93,11 @@ Route::prefix('inventory')->as('inventory.')->group(function () {
             Route::post('/', [ProductController::class, 'store'])
                 ->middleware('permission:products.create')
                 ->name('store');
+
+            Route::get('/{product}', [ProductController::class, 'show'])
+                ->whereNumber('product')
+                ->middleware('permission:products.view')
+                ->name('show');
 
             Route::get('/{product}/editar', [ProductController::class, 'edit'])
                 ->middleware('permission:products.edit')

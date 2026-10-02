@@ -168,6 +168,23 @@ class Product extends Model
         return $query->where('type', self::TYPE_PRODUCT);
     }
 
+    /**
+     * Condición de stock para badges (show del producto, stock por almacén):
+     * agotado (≤ 0), bajo (≤ mínimo, si hay mínimo), disponible. Un servicio no
+     * maneja stock.
+     *
+     * @return array{key: string, label: string, variant: string}
+     */
+    public function stockCondition(float $quantity, float $min = 0): array
+    {
+        return match (true) {
+            $this->isService() => ['key' => 'service', 'label' => 'No maneja stock', 'variant' => 'slate'],
+            $quantity <= 0 => ['key' => 'out', 'label' => 'Agotado', 'variant' => 'error'],
+            $min > 0 && $quantity <= $min => ['key' => 'low', 'label' => 'Stock bajo', 'variant' => 'warning'],
+            default => ['key' => 'available', 'label' => 'Disponible', 'variant' => 'success'],
+        };
+    }
+
     // Para obtener la suma total de stock de este producto (el que borramos de la tabla)
     public function getTotalStockAttribute()
     {

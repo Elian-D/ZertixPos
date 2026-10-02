@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use App\Models\User;
 use App\Models\Inventory\Warehouse;
 use App\Models\Products\Product;
+use App\Models\Sales\Returns\SaleReturn;
+use App\Models\Sales\Sale;
 
 class InventoryMovement extends Model
 {
@@ -45,6 +47,39 @@ class InventoryMovement extends Model
             self::TYPE_TRANSFER => 'Transferencia',
             self::TYPE_RETURN => 'Devolución',
         ];
+    }
+
+    /**
+     * Origen legible del movimiento para la UI ("Venta #12", "Devolución #40"),
+     * con enlace a su show si existe. Solo usa reference_type/reference_id — no
+     * carga el registro, así no hay una consulta por fila en el listado.
+     *
+     * @return array{label: string, url: ?string}
+     */
+    public function getOriginAttribute(): array
+    {
+        $id = $this->reference_id;
+
+        return match ($this->reference_type) {
+            null, '' => ['label' => 'Registro manual', 'url' => null],
+            Sale::class => ['label' => "Venta #{$id}", 'url' => route('sales.show', $id)],
+            SaleReturn::class => ['label' => "Devolución #{$id}", 'url' => route('sales.returns.show', $id)],
+            self::class => ['label' => "Transferencia (movimiento #{$id})", 'url' => null],
+            'Production' => ['label' => 'Producción', 'url' => null],
+            default => ['label' => class_basename($this->reference_type)." #{$id}", 'url' => null],
+        };
+    }
+
+    /** Variante de x-ui.badge por tipo de movimiento (vistas show, patrón Infolist). */
+    public function getTypeVariantAttribute(): string
+    {
+        return match ($this->type) {
+            self::TYPE_INPUT => 'success',
+            self::TYPE_OUTPUT => 'info',
+            self::TYPE_TRANSFER => 'primary',
+            self::TYPE_RETURN => 'warning',
+            default => 'slate',
+        };
     }
 
     public function getTypeLabelAttribute(): string
