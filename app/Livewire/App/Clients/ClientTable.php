@@ -49,6 +49,12 @@ class ClientTable extends DataTable
         ];
     }
 
+    /** En qué busca el filtro 'search' de abajo — debe coincidir con su closure. */
+    protected function searchFields(): array
+    {
+        return ['nombre', 'RNC/cédula', 'correo'];
+    }
+
     protected function filterMap(): array
     {
         return [

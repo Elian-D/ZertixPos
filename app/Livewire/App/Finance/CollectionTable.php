@@ -46,6 +46,12 @@ class CollectionTable extends DataTable
         ];
     }
 
+    /** En qué busca el filtro 'search' de abajo — debe coincidir con su closure. */
+    protected function searchFields(): array
+    {
+        return ['recibo', 'referencia', 'nota'];
+    }
+
     protected function filterMap(): array
     {
         return [

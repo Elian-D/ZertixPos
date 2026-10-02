@@ -59,6 +59,35 @@ abstract class DataTable extends Component
     }
 
     /**
+     * En qué busca el filtro 'search' de filterMap(), en palabras del usuario
+     * (v1.4.0 REQ-3.20 e). Se declara justo encima de filterMap() y debe
+     * coincidir con su closure 'search': si cambia uno, cambia el otro.
+     * Formato: ['número', 'cliente'] — en minúsculas salvo siglas (RNC, SKU, NCF).
+     * Sin declarar, el buscador muestra solo "Buscar...".
+     */
+    protected function searchFields(): array
+    {
+        return [];
+    }
+
+    /**
+     * Placeholder del buscador armado desde searchFields() — lo lee
+     * x-data-table.search vía Livewire::current(), sin props en cada vista.
+     */
+    public function searchPlaceholder(): string
+    {
+        $fields = $this->searchFields();
+
+        if ($fields === []) {
+            return 'Buscar...';
+        }
+
+        $last = array_pop($fields);
+
+        return 'Buscar por '.($fields ? implode(', ', $fields).' o ' : '').$last.'…';
+    }
+
+    /**
      * Opciones para los selects de filtros.
      * El render() del hijo lo pasa a la vista.
      */
