@@ -87,15 +87,30 @@ Route::prefix('sales')->as('sales.')->group(function () {
             ->controller(PosTerminalController::class)
             ->group(function () {
 
-                Route::get('/', 'index')->name('index');
+                // Permiso en cada ruta (v1.4.0 REQ-3.7): antes solo store/update
+                // estaban cubiertas (por su FormRequest) — index/create/edit/destroy
+                // quedaban abiertas a cualquier usuario autenticado.
+                Route::get('/', 'index')
+                    ->middleware('permission:pos_terminals.view')
+                    ->name('index');
 
-                Route::get('/create', 'create')->name('create');
-                Route::post('/', 'store')->name('store');
+                Route::get('/create', 'create')
+                    ->middleware('permission:pos_terminals.create')
+                    ->name('create');
+                Route::post('/', 'store')
+                    ->middleware('permission:pos_terminals.create')
+                    ->name('store');
 
-                Route::get('/{pos_terminal}/edit', 'edit')->name('edit');
-                Route::put('/{pos_terminal}', 'update')->name('update');
+                Route::get('/{pos_terminal}/edit', 'edit')
+                    ->middleware('permission:pos_terminals.edit')
+                    ->name('edit');
+                Route::put('/{pos_terminal}', 'update')
+                    ->middleware('permission:pos_terminals.edit')
+                    ->name('update');
 
-                Route::delete('/{pos_terminal}', 'destroy')->name('destroy');
+                Route::delete('/{pos_terminal}', 'destroy')
+                    ->middleware('permission:pos_terminals.delete')
+                    ->name('destroy');
 
                 // terminals.eliminados/restore/force-delete reemplazadas por el tab
                 // "Papelera" del mismo índice — ver App\Livewire\App\Sales\PosTerminalTable
