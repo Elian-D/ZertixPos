@@ -1,6 +1,7 @@
 <?php
 namespace App\Models\Accounting;
 
+use App\Traits\HasDocumentNumber;
 use App\Models\Clients\Client;
 use App\Models\Sales\Returns\SaleReturn;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes, Relations\BelongsTo, Relations\HasMany, Relations\MorphTo};
@@ -9,7 +10,10 @@ use Carbon\Carbon;
 
 class Receivable extends Model
 {
-    use SoftDeletes, HasFactory;
+    use SoftDeletes, HasFactory, HasDocumentNumber;
+
+    // Correlativo interno CXC-000001 (v1.4.0 REQ-3.19)
+    const DOCUMENT_CODE = 'CXC';
 
     protected $fillable = [
         'client_id',
@@ -89,6 +93,23 @@ class Receivable extends Model
         $due = Carbon::parse($this->due_date)->startOfDay();
 
         return $today->gt($due);
+    }
+
+    /** Variante de x-ui.badge por estado (vistas show, patrón Infolist). */
+    public function getStatusVariantAttribute(): string
+    {
+        return match ($this->status) {
+            self::STATUS_PAID => 'success',
+            self::STATUS_PARTIAL => 'info',
+            self::STATUS_CANCELLED => 'slate',
+            default => 'warning',
+        };
+    }
+
+    /** Lo realmente cobrado: la devolución baja total_amount, así que no cuenta aquí. */
+    public function getPaidAmountAttribute(): float
+    {
+        return max(0, (float) $this->total_amount - (float) $this->current_balance);
     }
 
     /**

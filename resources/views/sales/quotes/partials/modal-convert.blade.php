@@ -17,7 +17,7 @@
             </div>
             <div>
                 <h3 class="text-lg font-bold text-gray-900">Finalizar Venta</h3>
-                <p class="text-xs text-gray-500">Convertir Cotizacion #{{ $quote->id }}</p>
+                <p class="text-xs text-gray-500">Convertir cotización {{ $quote->number }}</p>
             </div>
         </div>
 

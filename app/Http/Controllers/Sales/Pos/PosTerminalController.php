@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Sales\Pos;
 use App\Http\Controllers\Controller;
 use App\Models\Sales\Pos\PosTerminal;
 use App\Models\Sales\Pos\PosSession;
+use App\Models\Sales\Sale;
 use App\Http\Requests\Sales\Pos\PosTerminals\StorePosTerminalRequest;
 use App\Http\Requests\Sales\Pos\PosTerminals\UpdatePosTerminalRequest;
 use App\Services\Sales\Pos\PosTerminals\PosTerminalService;
@@ -15,6 +16,9 @@ use Exception;
 class PosTerminalController extends Controller
 {
     use SoftDeletesTrait;
+
+    /** Registros por pestaña en el show de la terminal (el resto, en su listado). */
+    private const TAB_LIMIT = 25;
 
     public function __construct(
         protected PosTerminalService $service,
@@ -27,6 +31,47 @@ class PosTerminalController extends Controller
     public function index()
     {
         return view('sales.pos.terminals.index');
+    }
+
+    /**
+     * Detalle de la terminal (v1.4.0 Fase 3, patrón Infolist con pestañas —
+     * /filament-show). Reemplaza el modal "view-terminal" del listado.
+     */
+    public function show(PosTerminal $posTerminal)
+    {
+        $posTerminal->load([
+            'warehouse:id,name',
+            'defaultClient:id,name,commercial_name',
+            'defaultNcfType:id,name,code',
+            'cashAccount:id,code,name',
+        ]);
+
+        $user = auth()->user();
+        $showSessions = $user->canany(['pos_sessions.history', 'pos_sessions.manage']);
+        $showSales = $user->can('sales.view');
+
+        $today = $posTerminal->sales()
+            ->where('status', Sale::STATUS_COMPLETED)
+            ->whereDate('sale_date', today())
+            ->selectRaw('COUNT(*) as count, COALESCE(SUM(net_amount + tax_amount), 0) as total')
+            ->first();
+
+        return view('sales.pos.terminals.show', [
+            'terminal' => $posTerminal,
+            'openSession' => $posTerminal->sessions()->open()->with('openedBy:id,name')->latest('opened_at')->first(),
+            'lastClosed' => $posTerminal->sessions()->where('status', PosSession::STATUS_CLOSED)->latest('closed_at')->first(),
+            'todaySalesCount' => (int) $today->count,
+            'todaySalesTotal' => (float) $today->total,
+            'tabLimit' => self::TAB_LIMIT,
+            'sessions' => $showSessions
+                ? $posTerminal->sessions()->with(['openedBy:id,name', 'closedBy:id,name'])->latest('opened_at')->limit(self::TAB_LIMIT)->get()
+                : null,
+            'sessionsCount' => $showSessions ? $posTerminal->sessions()->count() : 0,
+            'sales' => $showSales
+                ? $posTerminal->sales()->with(['client:id,name,commercial_name', 'user:id,name'])->latest('sale_date')->limit(self::TAB_LIMIT)->get()
+                : null,
+            'salesCount' => $showSales ? $posTerminal->sales()->count() : 0,
+        ]);
     }
 
     /**

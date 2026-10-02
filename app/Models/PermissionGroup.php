@@ -40,6 +40,31 @@ class PermissionGroup extends Model
      * `pos_cash_movements.create` se excluye a mano (REQ-2.2) — ruta dormida,
      * no debe aparecer ni poder asignarse mientras siga apagada.
      */
+    /**
+     * Agrupa una lista de permisos YA otorgados por su grupo/módulo, en el orden
+     * de los grupos — para las vistas show de Rol y Usuario (v1.4.0 Fase 3). A
+     * diferencia de groupedForAssignment(), no filtra nada: muestra lo que la
+     * cuenta tiene de verdad. Los permisos sin grupo van al final como "Otros".
+     *
+     * @return Collection<int, array{label: string, permissions: Collection}>
+     */
+    public static function groupPermissions(Collection $permissions): Collection
+    {
+        $byGroup = $permissions->groupBy('permission_group_id');
+
+        $groups = static::query()->orderBy('sort_order')->get(['id', 'label'])
+            ->map(fn (self $group) => [
+                'label' => $group->label,
+                'permissions' => $byGroup->get($group->id, collect())->sortBy('name')->values(),
+            ]);
+
+        if ($byGroup->has('')) {
+            $groups->push(['label' => 'Otros', 'permissions' => $byGroup->get('')->sortBy('name')->values()]);
+        }
+
+        return $groups->filter(fn (array $g) => $g['permissions']->isNotEmpty())->values();
+    }
+
     public static function groupedForAssignment(): Collection
     {
         return static::query()

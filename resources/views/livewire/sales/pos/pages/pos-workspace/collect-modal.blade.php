@@ -74,7 +74,7 @@
                                 :class="index === 0 ? 'border-gray-200 hover:border-[#58c03f] hover:bg-emerald-50 cursor-pointer' : 'border-gray-100 bg-gray-50 cursor-not-allowed opacity-70'">
                             <span class="min-w-0">
                                 <span class="flex items-center gap-1.5">
-                                    <span class="text-sm font-bold text-gray-800" x-text="receivable.document_number"></span>
+                                    <span class="text-sm font-bold text-gray-800" x-text="receivable.number"></span>
                                     <x-heroicon-s-lock-closed class="w-3.5 h-3.5 text-gray-400" x-show="index > 0" />
                                 </span>
                                 <span class="block text-xs font-semibold text-gray-500 mt-0.5" x-text="'Vence: ' + (receivable.due_date ?? 'N/A')"></span>
@@ -98,7 +98,7 @@
                 </button>
 
                 <div class="bg-emerald-50 rounded-lg p-3.5 flex justify-between items-center border border-emerald-100">
-                    <span class="text-xs font-bold text-gray-600" x-text="selectedReceivable?.document_number"></span>
+                    <span class="text-xs font-bold text-gray-600" x-text="selectedReceivable?.number"></span>
                     <span class="text-xl font-mono font-black text-[#58c03f]" x-text="formatMoney(selectedReceivable?.current_balance)"></span>
                 </div>
 

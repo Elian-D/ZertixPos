@@ -16,7 +16,7 @@
 | :--- | :--- | :--- |
 | v1.2.0 | **Completada.** Detalle completo en [`v1.2.0.md`](v1.2.0.md): limpieza de deuda técnica menor (estados muertos, `unique`/doble-submit, Consumidor Final, código de almacén, depuración geográfica a solo RD), reestructuración de rutas/sidebar (`admin`→`app`, `accounting.*`→`finance.*`), rename "Pagos"→"Cobros", Impuestos (bug de raíz), Cobros CxC desde el TPV, Identidad Corporativa (logo vectorizado) + tokens de color + componentes Orvian ligeros | Impuestos es la dependencia raíz de todo lo que mueve dinero de aquí en adelante. La limpieza y la reestructuración de navegación van primero para no construir lo nuevo sobre rutas/vistas que van a cambiar de nombre o de lugar a mitad de camino. Los componentes de marca (y el logo, que se integró en la misma pasada) se adoptan antes de construir módulos nuevos para no repintarlos después |
 | v1.3.0 | **Completada.** **(Adelantada desde v1.5.0 original)** Multi-tenant vía `stancl/tenancy`, modo **database-per-tenant sobre MySQL** (sin migrar motor): separación landlord/tenant, wizard de aprovisionamiento (reusa el Install Wizard de v1.1.0 Fase 8), panel de Súper Admin liviano, DNS comodín `*.zertixpos.com`, límites por Plan, Roles/Permisos renombrados a `recurso.accion`, y migración completa de las 22 tablas del sistema al motor Livewire (`App\Livewire\Base\DataTable`) — absorbió de una sola vez lo que originalmente se planeó como migración gradual sin versión fija | Ya no depende de que Devoluciones/Compras existan primero — esa dependencia era específica de un modelo con PostgreSQL+esquema compartido, descartado. Sí depende de que la Fase 3 de v1.2.0 (rutas `admin`→`app`) ya haya cerrado, para no provisionar tenants nuevos sobre rutas que están por moverse. Se prioriza sobre Devoluciones/Compras porque hay clientes reales esperando poder entrar por su propio subdominio, y la infraestructura base (`installation_modules`, `Plan`, Wizard) ya está lista desde v1.1.0. La migración del motor de tablas se adelantó a Fase 0 de esta misma versión porque el Panel de Súper Admin y cualquier vista nueva de multi-tenant nacían directo en el motor nuevo — construirlas en el motor viejo hubiera significado migrarlas después de todos modos |
-| v1.4.0 | **(Antes v1.3.0)** Devoluciones y Cambios de producto — flujo Solicitar (TPV) → Aprobar/Ejecutar (opcional por negocio), rename Producto/Servicio, vista `show` real de Ventas/Cotizaciones. Nota de Crédito (B04) baja de prioridad a base reservada, no construida a fondo | Depende del monto de impuesto correcto (v1.2.0) para saber cuánto revertir |
+| v1.4.0 | **(Antes v1.3.0)** Detalle en [`v1.4.0.md`](v1.4.0.md). Hecho:<br>• Rename Producto/Servicio y guard de Anulación por turno.<br>• **Devoluciones y Cambios solo desde backoffice** con ejecución inmediata. El flujo Solicitar/Aprobar del TPV se diseñó, se descartó y no se construyó.<br>• Vistas `show` estilo Filament de casi todos los módulos.<br>• Numeración propia por documento: `VTA`/`FAC`/`CXC`/`COT`/`TRN`.<br>• Anulación con motivo en la venta.<br>• Rediseño de los PDF carta.<br>• Ajustes de UI de las tablas.<br><br>Nota de Crédito (B04) descartada en esta versión | Depende del monto de impuesto correcto (v1.2.0) para saber cuánto revertir |
 | v1.5.0 | **(Antes v1.4.0)** Ciclo de compra: Proveedores/Órdenes de Compra, Inventario avanzado (Transferencias, Tomas Físicas/Mermas) | Depende de CxP operativa (ya base desde v1.1.0) y del modelo de impuestos correcto para no duplicar el mismo bug en Compras |
 | v1.6.0 | **(Sin pedido confirmado — no empezar hasta que un cliente real lo pida, ver sección propia).** Variantes de producto (talla/color/etc.) — `product_variants` con SKU/código de barras/stock propios, `Product` pasa a ser el estilo padre | No depende de nada anterior técnicamente, pero **si se confirma antes de que v1.4.0/v1.5.0 arranquen, hay que adelantarla** (mismo criterio que adelantó Multi-tenant) — `SaleItem`/`QuoteItem`/`InventoryStock` hoy asumen `product_id` único, y Devoluciones/Compras/Transferencias construidas sobre esa asunción tendrían que reabrirse para agregar la dimensión de variante |
 
@@ -101,14 +101,62 @@ Razones, en orden de peso:
 
 **Detalle completo, fase por fase (tabla de Requerimientos + desglose, incluyendo el hallazgo real de que el guard de Anulación hoy no cubre una venta de contado con turno cerrado, y por qué no se reactiva `PosCashMovement`), en [`v1.4.0.md`](v1.4.0.md).** Resumen:
 
-**Realidad de negocio que gobierna el diseño:** en un colmado/surtidora dominicana, 97-99% de una devolución es un **cambio de producto dañado**, casi nunca reembolso de dinero puro — el diseño prioriza eso, no un reembolso genérico. El flujo de aprobación (Solicitar en el TPV → Aprobar/Ejecutar) es **opcional por negocio** vía un toggle — con un solo operador, solicitar y aprobar son el mismo clic; con supervisor, son dos pasos reales.
+**Realidad de negocio que gobierna el diseño:** en un colmado/surtidora dominicana, 97-99% de una devolución es un **cambio de producto dañado**, casi nunca reembolso de dinero puro — el diseño prioriza eso, no un reembolso genérico.
+
+### Lo que se hizo realmente
+
+El plan original de abajo ("Alcance") se dejó como registro. Lo construido difiere en puntos importantes:
+
+- **Fase 1 — Prerequisitos:**
+  - `is_stockable` pasó a `type` (Producto/Servicio).
+  - Anular ahora solo es posible mientras el turno de la venta sigue abierto (`Sale::canBeCanceled()`).
+  - Se quitó el gate `invoices.print`, que nunca se había sembrado y bloqueaba toda impresión.
+- **Fase 2 — Devoluciones y Cambios (replanteada):**
+  - **Primer intento descartado:** era un motor pensado para el TPV (aprobaciones, ventana de días, selección de caja y almacén, ajuste del efectivo del turno). Se respaldó en un stash y se revirtió.
+  - **Lo construido** sigue las reglas reales del negocio:
+    - Solo backoffice, con ejecución inmediata.
+    - "Anular" o "Devolver" según el turno.
+    - Reembolso en efectivo (monto fijo) o cambio de producto. Si el reemplazo cuesta más, se crea una venta nueva pagada con "Devolución" + efectivo.
+    - Varias líneas por devolución, aunque el cambio se hace de a una.
+    - Toggle de reingreso a inventario.
+    - En una venta a crédito, la devolución baja la CxC (no es un abono).
+  - **Lo que lo acompaña:**
+    - Numeración `DEV`.
+    - Ticket corto con PDF.
+    - Tabla Livewire propia.
+    - Badges "Devuelta" / "Devuelta parcial" en Ventas.
+    - Permisos `returns.create` y `returns.void`.
+- **Fase 3 — Vistas show y ajustes:**
+  - **Vistas `show` estilo Filament**, sin instalar Filament (`x-ui.infolist.*`, skill `/filament-show`), en lugar de modales e iframes. Cubre clientes, cotizaciones, ventas, devoluciones, terminales, turnos, productos, almacenes, CxC, cobros, facturas, secuencias NCF, roles y usuarios.
+  - **Configuración General** rehecha con `/filament-form`.
+  - **Fix de seguridad:** las rutas de Terminales POS no tenían permisos.
+  - **Anulación de ventas:** motivo obligatorio, quién anuló y cuándo, guardados en la venta. Antes el motivo se perdía si la venta no tenía NCF.
+  - **Numeración por tipo de documento:** cada uno con su correlativo atómico (trait `HasDocumentNumber`).
+    - `VTA` para la venta.
+    - `FAC` para la factura, ahora con secuencia propia.
+    - `CXC` para la cuenta por cobrar.
+    - `COT` para la cotización.
+    - `TRN` para el turno.
+  - **Ajustes de UI:**
+    - Paginación adaptable.
+    - Menú de acciones en móvil.
+    - Badges que no se parten.
+    - Modales cortos dentro de su tabla.
+    - El buscador de cada tabla dice en qué busca (`searchFields()`).
+  - **Rediseño de los 4 PDF carta** (turno, factura, recibo y cotización) sobre componentes `x-pdf.*` (skill `/filament-pdf`).
+- **Descartado:**
+  - Devoluciones desde el TPV y su flujo de aprobación.
+  - Nota de Crédito Fiscal (B04).
+  - Saldo a favor (store credit).
+  - Asientos contables de la devolución.
+  - Mermas formales, que pasan a v1.5.0.
 
 ### Dependencias
 
 - Depende de **Impuestos (v1.2.0)** — sin el monto de impuesto real persistido en la venta original, no hay forma correcta de calcular cuánto revertir en una devolución.
 - `sales.ncf` y su infraestructura de módulos (v1.1.0 Fase 4) ya están listas para cuando se active el B04 — ver nota de prioridad abajo.
 
-### Alcance
+### Alcance (plan original, antes de construir)
 
 1. **Rename `is_stockable` → campo `type` enum** (Producto/Servicio) — barato, y corrige de paso un bug conocido (revierte stock de un servicio que nunca tuvo stock real).
 2. **Endurecer el guard de Anulación** — hallazgo real de auditoría: hoy una venta 100% en efectivo se puede anular sin restricción aunque su turno de caja ya haya cerrado.
@@ -133,7 +181,7 @@ Razones, en orden de peso:
 1. **Proveedores y Órdenes de Compra** (`purchases.vendors`) — pantallas y lógica completa.
 2. **Transferencias entre Almacenes** — submódulo con estados `Creación`/`Recepción`, documentos firmables no editables tras aprobar. Es el mismo modelo que ya sostiene "sucursales dentro de un tenant" en v1.3.0 — se profundiza acá, no se rediseña.
 3. **Tomas Físicas (auditorías de stock) y Pérdidas/Mermas.**
-4. **Bugs de validación servicio-stock** (mismo área de código): no permitir asignar stock a un producto tipo Servicio, no permitir transferir un Servicio, y corregir la cancelación de venta para que no intente devolver stock de un Servicio.
+4. **Bugs de validación servicio-stock** (mismo área de código): no permitir asignar stock a un producto tipo Servicio y no permitir transferir un Servicio. La cancelación de venta que devolvía stock de un Servicio ya se corrigió en v1.4.0 (REQ-1.1).
 5. Estos módulos nacen directo en el motor Livewire (`App\Livewire\Base\DataTable`) — ya es el único motor vigente para tablas nuevas desde que v1.3.0 Fase 0 migró el sistema completo, no hay motor viejo que evitar.
 
 ---

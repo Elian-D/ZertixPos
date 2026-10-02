@@ -52,8 +52,18 @@
                     </span>
                 </x-data-table.cell>
 
+                <x-data-table.cell column="number" :visible="$visibleColumns">
+                    <a href="{{ route('finance.receivables.show', $item) }}" class="font-mono font-bold text-zertix-primary-700 hover:underline">{{ $item->number }}</a>
+                </x-data-table.cell>
+
                 <x-data-table.cell column="document_number" :visible="$visibleColumns">
-                    <span class="font-mono font-bold text-zertix-primary-700">{{ $item->document_number }}</span>
+                    {{-- El número del documento es el de la venta origen: enlaza a la venta por
+                         reference_id (no por el id de la CxC, que no tiene relación con el de la venta). --}}
+                    @if($item->reference_type === \App\Models\Sales\Sale::class && $item->reference_id && auth()->user()->can('sales.view'))
+                        <a href="{{ route('sales.show', $item->reference_id) }}" class="font-mono text-slate-600 hover:underline">{{ $item->document_number }}</a>
+                    @else
+                        <span class="font-mono text-slate-600">{{ $item->document_number }}</span>
+                    @endif
                 </x-data-table.cell>
 
                 <x-data-table.cell column="client" :visible="$visibleColumns">
@@ -119,8 +129,8 @@
                              de deuda, nunca se borra ni se archiva. Solo lectura. --}}
                         <x-ui.button
                             appearance="ghost" variant="secondary" size="sm" icon="heroicon-s-eye"
-                            x-data @click="$dispatch('open-modal', 'view-receivable-{{ $item->id }}')"
-                            aria-label="Ver detalle" title="Ver Detalle" />
+                            href="{{ route('finance.receivables.show', $item) }}"
+                            aria-label="Ver cuenta" title="Ver cuenta" />
                     </div>
                 </td>
             </tr>
@@ -135,5 +145,4 @@
 
     </x-data-table.base-table>
 
-    @include('accounting.receivables.partials.modals', ['items' => $items])
 </div>

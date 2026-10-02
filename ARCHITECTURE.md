@@ -19,6 +19,7 @@ Este proyecto utiliza una arquitectura desacoplada basada en servicios y capas d
    - [7. Rutas](#7-rutas)
    - [8. Papelera como tab, no como vista aparte](#8-papelera-como-tab-no-como-vista-aparte)
    - [9. Feedback de acciones (toasts)](#9-feedback-de-acciones-toasts)
+   - [10. Vistas de detalle y formularios: show, form o modal](#10-vistas-de-detalle-y-formularios-show-form-o-modal)
 3. [Checklist de Implementación para Nuevos Módulos](#checklist-de-implementación-para-nuevos-módulos)
 4. [Ejemplo de Flujo Estándar (Store)](#ejemplo-de-flujo-estándar-store)
 5. [Migraciones de tenant y el schema dump](#migraciones-de-tenant-y-el-schema-dump)
@@ -78,6 +79,17 @@ Este proyecto utiliza una arquitectura desacoplada basada en servicios y capas d
 - **Solo se queda como clase** (`app/Filters/[Grupo]/[Module]/XxxFilter.php`, implementa `FilterInterface::apply(Builder $query, mixed $value): Builder`) un filtro con joins o lógica condicional real que ensuciaría el `filterMap()`. Si **todos** los filtros de un módulo colapsan a closures, se borra el directorio `app/Filters/[Grupo]/[Module]/` completo — no queda como referencia muerta.
 - `App\Filters\Base\QueryFilter` (el orquestador AJAX viejo) sigue existiendo para los módulos todavía no migrados — no se toca al migrar un módulo nuevo, solo se deja de usar para ese módulo.
 - El buscador (`<x-data-table.search>`) se renderiza siempre en el toolbar del motor nuevo, aunque el módulo viejo no tuviera ninguno — si no había un campo obvio que buscar, se agrega uno básico (ej. por `name`/`notes`) en vez de dejar la barra de búsqueda visualmente presente pero sin efecto.
+- **El buscador dice en qué busca (v1.4.0 REQ-3.20 e).**
+  - Toda tabla con `search` en `filterMap()` declara `searchFields()` justo encima, con los campos de ese closure en palabras del usuario.
+  - El placeholder queda, por ejemplo, "Buscar por número o cliente…", sin pasar nada desde la vista: el componente lo lee del motor (`DataTable::searchPlaceholder()` vía `Livewire::current()`).
+  - Sin `searchFields()` el buscador dice solo "Buscar..." y el usuario no sabe si busca por código, por nombre u otra cosa.
+  - Los dos se mantienen juntos: si cambia el closure, cambia `searchFields()`.
+  ```php
+  protected function searchFields(): array
+  {
+      return ['nombre', 'SKU']; // minúsculas salvo siglas
+  }
+  ```
 
 ### 4. Capa de Validación y Seguridad (Form Requests)
 
@@ -154,6 +166,34 @@ $this->notify('success', "Módulo \"{$item->name}\" actualizado correctamente.")
 
 Regla adicional: un toggle activar/desactivar siempre vive **dentro de `x-ui.action-menu`** como item, nunca como botón suelto en la fila.
 
+### 10. Vistas de detalle y formularios: show, form o modal
+
+Desde v1.4.0 Fase 3, el detalle de un registro es una **vista show estilo Filament**, sin instalar Filament: se arma con los componentes del proyecto. Los modales quedan reservados para lo corto.
+
+| Caso | Qué usar | Cómo |
+|---|---|---|
+| Registro con contenido real: varias secciones, líneas, historial relacionado o un documento (venta, cotización, cliente, producto, CxC, cobro, factura, rol, usuario…) | **Vista show** | Skill `/filament-show` + `x-ui.infolist.*` (`section`, `entry`, `repeatable`, `tabs`). Referencia: `docs/ui/infolist.md` |
+| Crear/editar con más de un puñado de campos | **Vista de formulario** | Skill `/filament-form`: secciones `x-ui.infolist.section :cols="0"` apiladas a ancho completo, con ícono outline gris y título en oración; el grid va dentro de la sección |
+| Algo corto: alta/edición de 2-4 campos, una confirmación, una acción puntual (umbral de secuencia, movimiento de caja, detalle de bitácora NCF) | **Modal** (`x-modal`, abierto con `$dispatch('open-modal', 'nombre')`) | En `partials/modals.blade.php` del módulo |
+| Catálogo pequeño (unidades, tipos de negocio, tipos de equipo…) donde la fila ya lo dice todo | **Ni show ni formulario aparte** | Tabla + modal de crear/editar |
+| Documento imprimible tamaño carta generado con DomPDF (factura, recibo, cotización, reporte de turno) | **Documento PDF** | Skill `/filament-pdf` + componentes `x-pdf.*` (`docs/ui/pdf-documents.md`). Anchos de columna en el `<th>`, nunca en `<colgroup>` (DomPDF lo ignora) |
+
+**Reglas de la vista show:**
+- **Ruta:** `GET /{modelo}` con `->whereNumber('modelo')`, para que no capture `/create` ni `/import`, y el mismo middleware `permission:<recurso>.view` que el índice. El controlador hace eager loading de todo lo que la vista pinta.
+- **Enlaces desde la tabla:** el nombre o número del registro lleva al show, y se agrega "Ver" en `x-ui.action-menu`. Cuando un módulo gana su show, el modal de detalle viejo **se borra**; no conviven los dos.
+- **Cabecera:** en el `page-header`, "Volver" va siempre primero en las acciones. El slot secundario no se renderiza si queda vacío.
+- **Distribución:**
+  - Grid `lg:grid-cols-3`, con la información principal en 2/3 y el resumen o estado en 1/3.
+  - Las líneas y el historial van abajo, a ancho completo.
+  - Usar tabs (`x-ui.infolist.tabs`) solo cuando hay historiales relacionados grandes (cotizaciones y facturas del cliente, sesiones de la terminal).
+- **Grid de secciones:** `:cols="0"` significa sin grid; nunca pasar `null`, porque Blade lo trata como "no pasado" y aplica el default.
+- **Partials reutilizados:** si el show incluye un partial del módulo (modales, ticket), el controlador debe pasar **todas** sus variables. Tinker en CLI no falla con una variable indefinida; el request web sí (caso real: `$ncf_types_prefixes` en el show de secuencias NCF).
+
+**Reglas del formulario:**
+- Ver el skill `/filament-form`: un partial `partials/form.blade.php` compartido por create y edit, solo componentes `x-ui.forms.*`.
+- Para un `col-span` hay que envolver el campo en un `div`: el `class` de `x-ui.forms.*` cae en el `<input>`.
+- Un `<select>` armado con `x-for` necesita `:selected` en cada opción, o pierde el valor inicial.
+
 ---
 
 ## Checklist de Implementación para Nuevos Módulos
@@ -170,6 +210,7 @@ Regla adicional: un toggle activar/desactivar siempre vive **dentro de `x-ui.act
 
 - [ ] `App\Livewire\App\[Grupo]\[Modulo]Table` con `columns()`/`filterMap()`/`filterOptions()`/`baseQuery()`/`render()`.
 - [ ] Filtros: closures en `filterMap()` salvo joins/lógica real (clase aparte, `FilterInterface` nuevo con `apply(Builder $query, mixed $value)`).
+- [ ] `searchFields()` declarado, con exactamente los campos del closure `search` (§3).
 - [ ] CatalogService implementado (`getForFilters()`, `getForForm()`).
 - [ ] Service de negocio con `create()`, `update()` (y `performBulkAction()` solo si el módulo va a tener selección masiva, confirmado con el usuario).
 - [ ] Si es Categoría A: `restore()`/`forceDelete()` en el componente, con `abort_unless(auth()->user()->can('...'), 403)` replicando el permiso que antes tenía la ruta.
@@ -185,7 +226,8 @@ Regla adicional: un toggle activar/desactivar siempre vive **dentro de `x-ui.act
 - [ ] Vista wrapper `[modulo]/index.blade.php` con `<livewire:app.[grupo].[modulo]-table />`.
 - [ ] Vista del componente sobre `<x-data-table.base-table>` + `<x-data-table.cell>`, tab Papelera si aplica (§8), `<x-ui.action-menu>` para acciones de fila (nunca botones sueltos para editar/eliminar/toggle).
 - [ ] Toda acción Livewire con feedback usa `$this->notify(...)`, nunca `session()->flash()`.
-- [ ] Formularios de Create/Edit alimentados por el CatalogService — sin cambios respecto al patrón viejo.
+- [ ] Formularios de Create/Edit alimentados por el CatalogService — vista con `/filament-form`, o modal si son 2-4 campos (§10).
+- [ ] Detalle: vista show con `/filament-show` (ruta `whereNumber` + permiso `.view`, link desde la tabla) salvo que sea un catálogo pequeño o algo corto que cabe en un modal (§10).
 
 ---
 

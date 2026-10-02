@@ -59,7 +59,7 @@
                 <x-data-table.cell column="invoice_number" :visible="$visibleColumns">
                     <div class="flex items-center font-mono font-bold text-slate-900">
                         <x-heroicon-s-document-check class="w-4 h-4 mr-2 text-emerald-600" />
-                        {{ $invoice->invoice_number }}
+                        <a href="{{ route('finance.invoices.show', $invoice) }}" class="hover:text-zertix-primary-700 hover:underline">{{ $invoice->invoice_number }}</a>
                     </div>
                 </x-data-table.cell>
 

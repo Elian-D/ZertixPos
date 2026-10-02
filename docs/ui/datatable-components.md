@@ -32,13 +32,40 @@ Todos los componentes asumen que el Livewire padre extiende `App\Livewire\Base\D
 
 ## x-data-table.search
 
-Input de búsqueda con debounce de 300ms y botón para limpiar.
+Input de búsqueda con debounce de 300ms y botón para limpiar. `base-table` lo renderiza solo, sin props.
+
+### Qué dice el placeholder (v1.4.0 REQ-3.20 e)
+
+El buscador **dice en qué busca**: "Buscar por número o cliente…". El texto no se escribe en la vista; sale de la tabla.
+
+- Cada tabla declara `searchFields()` justo encima de su `filterMap()`, con los campos de su closure `search` en palabras del usuario: minúsculas salvo siglas (`'RNC/cédula'`, `'SKU'`, `'NCF'`).
+- `DataTable::searchPlaceholder()` arma la frase.
+- El componente la lee de `Livewire::current()`, que es la tabla en render. `base-table` es un componente Blade anónimo y no ve las variables de la vista Livewire; por eso no hace falta pasar nada desde las 24 vistas.
+- El mismo texto va en `title` y `aria-label`, para cuando el input es angosto y el placeholder se corta.
+- Una tabla sin `searchFields()` muestra "Buscar...". **No se deja así:** si `filterMap()` tiene `search`, la tabla declara `searchFields()`.
+- **Si cambia el closure `search`, cambia `searchFields()` en el mismo commit.** Son dos fuentes que deben coincidir; un campo de más o de menos engaña al usuario igual que un buscador mudo.
+
+```php
+protected function searchFields(): array
+{
+    return ['número', 'cliente'];
+}
+
+protected function filterMap(): array
+{
+    return [
+        'search' => fn (Builder $q, $v) => $q->where(fn (Builder $qq) => $qq
+            ->where('number', 'like', "%{$v}%")
+            ->orWhereHas('customer', fn (Builder $sq) => $sq->where('name', 'like', "%{$v}%"))),
+    ];
+}
+```
 
 ### Props
 
 | Prop | Tipo | Default | Descripción |
 |---|---|---|---|
-| `placeholder` | `string` | `'Buscar...'` | Texto del placeholder |
+| `placeholder` | `string\|null` | `null` | Fuerza un texto y gana sobre el del motor. Solo para casos fuera del motor Livewire (buscadores del AJAX viejo) |
 | `filterKey` | `string` | `'search'` | Clave en `$filters` del componente Livewire |
 
 ### Comportamiento
@@ -46,13 +73,6 @@ Input de búsqueda con debounce de 300ms y botón para limpiar.
 - `wire:model.live.debounce.300ms` — espera 300ms tras el último keystroke antes de disparar
 - El botón × limpia el filtro con `$wire.set('filters.search', '')`
 - El botón × usa Alpine `x-show` para aparecer solo si hay texto
-
-### Ejemplo
-
-```html
-<x-data-table.search placeholder="Buscar por nombre o email..." />
-<x-data-table.search filterKey="query" placeholder="Buscar factura..." />
-```
 
 ---
 
@@ -397,3 +417,10 @@ init() {
 ```
 
 En mobile (`< 768px`) el dropdown se reemplaza por un **drawer/bottom sheet** desde abajo, con overlay y botón de cierre. En desktop es un dropdown estándar con `@click.away`. Este comportamiento es automático — no requiere configuración por módulo.
+
+**`action-menu` ya no usa este patrón (v1.4.0 REQ-3.20).** En móvil salían el dropdown y el sheet a la vez, y los menús se quedaban abiertos. Se cambió a:
+- **Un solo panel teletransportado** a `<body>`, que es dropdown desde `md` y bottom sheet abajo. El slot se pinta una sola vez.
+- **Un solo criterio de móvil:** `window.matchMedia('(min-width: 768px)')`, que cierra el menú al cambiar de breakpoint.
+- **Listeners con limpieza:** los de `window` se quitan en `destroy()`. Sin eso, cada re-render de la tabla los acumulaba.
+
+`filter-container` y `column-selector` siguen con el patrón de arriba (un listener de `resize` sin limpieza). Si muestran el mismo síntoma, se corrigen igual.

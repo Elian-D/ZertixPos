@@ -84,6 +84,11 @@ Route::prefix('finance')->as('finance.')->group(function () {
                 ->middleware('permission:receivables.view')
                 ->name('index');
 
+            Route::get('/{receivable}', [ReceivableController::class, 'show'])
+                ->whereNumber('receivable')
+                ->middleware('permission:receivables.view')
+                ->name('show');
+
             // Sin destroy/eliminados/restaurar/borrarDefinitivo — Receivable es
             // Categoría C (docs/analisis/politica-soft-deletes.md): bitácora de
             // deuda del cliente, nunca se borra ni se archiva. El `status` de la
@@ -124,6 +129,11 @@ Route::prefix('finance')->as('finance.')->group(function () {
         // eliminó del seeder en v1.3.0 REQ-2.2 pero esta ruta lo siguió exigiendo.
         // Puede imprimir quien ve o registra cobros, y el cajero del TPV
         // (pos_sessions.manage), que abre este recibo solo al cobrar desde el Workspace.
+        Route::get('collections/{payment}', [CollectionController::class, 'show'])
+            ->whereNumber('payment')
+            ->middleware('permission:collections.view')
+            ->name('collections.show');
+
         Route::get('collections/{payment}/print', [CollectionController::class, 'print'])
             ->middleware('permission:collections.view|collections.create|pos_sessions.manage')
             ->name('collections.print');
@@ -214,6 +224,7 @@ Route::prefix('finance')->as('finance.')->group(function () {
             Route::prefix('sequences')->name('sequences.')->group(function () {
                 Route::get('/', [NcfSequenceController::class, 'index'])->name('index');
                 Route::post('/', [NcfSequenceController::class, 'store'])->name('store');
+                Route::get('/{sequence}', [NcfSequenceController::class, 'show'])->whereNumber('sequence')->name('show');
                 Route::delete('/{sequence}', [NcfSequenceController::class, 'destroy'])->name('destroy');
                 Route::patch('/{sequence}/threshold', [NcfSequenceController::class, 'updateThreshold'])->name('update-threshold');
                 Route::patch('/{sequence}/extend', [NcfSequenceController::class, 'extend'])->name('extend');

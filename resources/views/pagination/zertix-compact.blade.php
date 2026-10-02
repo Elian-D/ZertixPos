@@ -1,6 +1,6 @@
 @if ($paginator->hasPages())
     <nav role="navigation" aria-label="{{ __('Pagination Navigation') }}"
-         class="flex items-center justify-between">
+         class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
 
         <div class="hidden sm:block">
             <p class="text-xs text-slate-500">
@@ -36,7 +36,13 @@
                 </button>
             @endif
 
-            <div class="flex items-center gap-1 mx-1">
+            {{-- Bajo md: solo "X / Y" — la tira de números no cabe y desbordaba la página
+                 (v1.4.0 REQ-3.20). La ventana viene recortada con onEachSide(1) desde base-table. --}}
+            <span class="md:hidden px-2 text-sm font-semibold text-slate-600 whitespace-nowrap">
+                {{ $paginator->currentPage() }} <span class="text-slate-400 font-normal">de</span> {{ $paginator->lastPage() }}
+            </span>
+
+            <div class="hidden md:flex items-center gap-1 mx-1">
                 @foreach ($elements as $element)
                     @if (is_string($element))
                         <span class="w-8 h-10 flex items-center justify-center

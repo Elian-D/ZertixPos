@@ -34,7 +34,12 @@
                 </button>
             @endif
 
-            <div class="flex items-center gap-1 mx-2">
+            {{-- Bajo md: solo "X / Y" (v1.4.0 REQ-3.20), igual que zertix-compact. --}}
+            <span class="md:hidden px-2 text-sm font-semibold text-slate-600 whitespace-nowrap">
+                {{ $paginator->currentPage() }} <span class="text-slate-400 font-normal">de</span> {{ $paginator->lastPage() }}
+            </span>
+
+            <div class="hidden md:flex items-center gap-1 mx-2">
                 @foreach ($elements as $element)
                     @if (is_string($element))
                         <span class="w-10 h-10 flex items-center justify-center text-sm

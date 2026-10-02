@@ -13,9 +13,13 @@ class QuotePrintService
      */
     public function generateLetterPDF(Quote $quote)
     {
-        $quote->load(['items.product', 'customer', 'user']);
-        
-        return Pdf::loadView('sales.quotes.formats.pdf', compact('quote'))
+        $quote->load(['items.product', 'customer', 'user', 'sale:id,number']);
+
+        // DomPDF necesita el logo como ruta local, no como URL (REQ-1.14).
+        $config = general_config();
+        $logoSrc = $config->logo ? storage_path('app/public/'.$config->logo) : null;
+
+        return Pdf::loadView('sales.quotes.formats.pdf', compact('quote', 'logoSrc'))
             ->setPaper('letter', 'portrait');
     }
 

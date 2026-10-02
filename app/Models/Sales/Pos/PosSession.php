@@ -7,6 +7,7 @@ use App\Models\Configuration\TipoPago;
 use App\Models\Sales\Sale;
 use App\Models\Sales\SalePayment;
 use App\Models\User;
+use App\Traits\HasDocumentNumber;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,7 +16,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class PosSession extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasDocumentNumber;
+
+    // Correlativo interno TRN-000001 (v1.4.0 REQ-3.19)
+    const DOCUMENT_CODE = 'TRN';
 
     protected $fillable = [
         'terminal_id',

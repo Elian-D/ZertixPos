@@ -207,7 +207,7 @@
                             <tr class="hover:bg-gray-50/60 transition-colors">
                                 <td class="px-6 py-3 whitespace-nowrap">
                                     <span class="font-mono text-xs font-medium text-gray-700">
-                                        {{ $receivable->document_number }}
+                                        {{ $receivable->number }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-3 text-gray-800">

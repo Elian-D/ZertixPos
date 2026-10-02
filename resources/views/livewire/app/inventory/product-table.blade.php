@@ -67,7 +67,11 @@
             <tr class="hover:bg-slate-50 transition-colors duration-150">
 
                 <x-data-table.cell column="name" :visible="$visibleColumns">
-                    <span class="font-medium text-slate-900">{{ $item->name }}</span>
+                    @if($item->trashed())
+                        <span class="font-medium text-slate-900">{{ $item->name }}</span>
+                    @else
+                        <a href="{{ route('inventory.products.show', $item) }}" class="font-medium text-slate-900 hover:text-zertix-primary-700 hover:underline">{{ $item->name }}</a>
+                    @endif
                     @if($item->sku)
                         <span class="block text-[10px] font-mono text-slate-400 mt-0.5">{{ $item->sku }}</span>
                     @endif
@@ -145,8 +149,8 @@
                         @else
                             <x-ui.button
                                 appearance="ghost" variant="secondary" size="sm" icon="heroicon-s-eye"
-                                x-data @click="$dispatch('open-modal', 'view-product-{{ $item->id }}')"
-                                aria-label="Ver detalles" title="Ver detalles" />
+                                href="{{ route('inventory.products.show', $item) }}"
+                                aria-label="Ver ficha" title="Ver ficha" />
 
                             <x-ui.action-menu>
                                 @can('products.edit')
@@ -177,5 +181,32 @@
 
     </x-data-table.base-table>
 
-    @include('products.partials.modals', ['products' => $products])
+    {{-- MODALES DE CONFIRMACIÓN --}}
+    @foreach($products as $item)
+        {{-- Modal de Confirmación --}}
+        @if($item->trashed())
+            {{-- Papelera (docs/analisis/politica-soft-deletes.md §6) — borrado
+                 definitivo vía wireConfirm, dispara ProductTable::forceDelete(). --}}
+            <x-ui.confirm-deletion-modal
+                :id="$item->id"
+                :title="'¿Eliminar Permanentemente?'"
+                :itemName="$item->name"
+                :type="'el producto'"
+                :wireConfirm="'forceDelete(' . $item->id . ')'"
+                :description="'Estás a punto de borrar definitivamente el producto <strong>' . e($item->name) . '</strong>. Esta acción eliminará su historial de stock y precios.'"
+            >
+                <strong>Aviso Crítico:</strong> Esta operación no se puede deshacer. El producto desaparecerá de todos los reportes históricos.
+            </x-ui.confirm-deletion-modal>
+        @else
+            <x-ui.confirm-deletion-modal
+                :id="$item->id"
+                :title="'¿Eliminar Producto?'"
+                :itemName="$item->name"
+                :type="'el producto'"
+                :route="route('inventory.products.destroy', $item)"
+            >
+                <strong>Atención:</strong> Esta acción marcará el producto como inactivo. El historial de sus movimientos de inventario pasados se mantendrá por integridad contable.
+            </x-ui.confirm-deletion-modal>
+        @endif
+    @endforeach
 </div>

@@ -55,7 +55,7 @@ class SaleCancelTest extends TestCase
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('backoffice');
 
-        app(SaleService::class)->cancel($sale);
+        app(SaleService::class)->cancel($sale, 'Prueba de anulación');
     }
 
     public function test_no_se_puede_anular_una_venta_de_un_turno_ya_cerrado(): void
@@ -78,7 +78,7 @@ class SaleCancelTest extends TestCase
         $this->expectException(Exception::class);
         $this->expectExceptionMessage('turno de caja ya cerrado');
 
-        app(SaleService::class)->cancel($sale);
+        app(SaleService::class)->cancel($sale, 'Prueba de anulación');
     }
 
     public function test_se_puede_anular_una_venta_con_turno_abierto_y_revierte_el_stock(): void
@@ -104,10 +104,13 @@ class SaleCancelTest extends TestCase
             ->where('product_id', $this->product->id)
             ->decrement('quantity', 3);
 
-        app(SaleService::class)->cancel($sale);
+        app(SaleService::class)->cancel($sale, 'Prueba de anulación');
 
         $sale->refresh();
         $this->assertEquals(Sale::STATUS_CANCELED, $sale->status);
+        // REQ-3.18 — el motivo queda en la venta aunque no tenga NCF.
+        $this->assertEquals('Prueba de anulación', $sale->cancellation_reason);
+        $this->assertNotNull($sale->canceled_at);
 
         $stock = InventoryStock::where('warehouse_id', $this->warehouse->id)
             ->where('product_id', $this->product->id)
@@ -148,7 +151,7 @@ class SaleCancelTest extends TestCase
         // Sin fila de InventoryStock para el servicio a propósito — si el guard de
         // tipo fallara e intentara reingresar stock, esto crearía una fila espuria
         // para algo que nunca tuvo cantidad física real.
-        app(SaleService::class)->cancel($sale);
+        app(SaleService::class)->cancel($sale, 'Prueba de anulación');
 
         $sale->refresh();
         $this->assertEquals(Sale::STATUS_CANCELED, $sale->status);

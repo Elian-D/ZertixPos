@@ -96,7 +96,7 @@
                 </x-data-table.cell>
 
                 <x-data-table.cell column="number" :visible="$visibleColumns">
-                    <span class="font-mono font-bold text-zertix-primary-700">{{ $sale->number }}</span>
+                    <a href="{{ route('sales.show', $sale) }}" class="font-mono font-bold text-zertix-primary-700 hover:underline">{{ $sale->number }}</a>
                 </x-data-table.cell>
 
                 <x-data-table.cell column="client_id" :visible="$visibleColumns">
@@ -127,7 +127,7 @@
                 <x-data-table.cell column="pos_session_id" :visible="$visibleColumns" class="px-4 py-3.5 text-center">
                     @if($sale->pos_session_id)
                         <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[10px] font-mono font-bold ring-1 ring-inset ring-slate-200">
-                            #{{ $sale->pos_session_id }}
+                            {{ $sale->posSession?->number }}
                         </span>
                     @else
                         <span class="text-slate-300">-</span>
@@ -223,9 +223,7 @@
                 <td class="px-4 py-3.5 text-right">
                     <div class="flex items-center justify-end gap-1">
                         <x-ui.action-menu>
-                            <x-ui.action-menu.item
-                                x-data @click="$dispatch('open-modal', 'view-sale-{{ $sale->id }}')"
-                                icon="heroicon-o-eye">
+                            <x-ui.action-menu.item href="{{ route('sales.show', $sale) }}" icon="heroicon-o-eye">
                                 Ver Detalle
                             </x-ui.action-menu.item>
 

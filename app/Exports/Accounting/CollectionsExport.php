@@ -48,7 +48,7 @@ class CollectionsExport implements FromQuery, WithHeadings, WithMapping, WithSty
             $payment->payment_date->format('d/m/Y'),
             $payment->receipt_number,
             $payment->client->name,
-            $payment->receivable->document_number ?? 'N/A',
+            $payment->receivable->number ?? 'N/A',
             $payment->tipoPago->nombre ?? 'N/A',
             $payment->reference ?? 'Sin referencia',
             $payment->amount,

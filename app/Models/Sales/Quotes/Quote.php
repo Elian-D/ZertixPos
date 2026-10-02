@@ -2,6 +2,7 @@
 
 namespace App\Models\Sales\Quotes;
 
+use App\Traits\HasDocumentNumber;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,7 +15,10 @@ use App\Models\Sales\Sale;
 
 class Quote extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasDocumentNumber;
+
+    // Correlativo interno COT-000001 (v1.4.0 REQ-3.19)
+    const DOCUMENT_CODE = 'COT';
 
     protected $fillable = [
         'customer_id',
@@ -88,6 +92,23 @@ class Quote extends Model
      * cliente realmente paga si aprueba y convierte esta cotización. Mismo
      * patrón que Sale::getGrandTotalAttribute() (Fase 5, REQ-5.12).
      */
+    /** Variante de x-ui.badge por estado (vistas show, patrón Infolist). */
+    public function getStatusVariantAttribute(): string
+    {
+        return match ($this->status) {
+            self::STATUS_APPROVED => 'info',
+            self::STATUS_CONVERTED => 'success',
+            self::STATUS_EXPIRED => 'warning',
+            self::STATUS_CANCELLED => 'error',
+            default => 'slate',
+        };
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return self::getStatuses()[$this->status] ?? $this->status;
+    }
+
     public function getGrandTotalAttribute(): float
     {
         return (float) $this->net_amount + (float) $this->tax_amount;

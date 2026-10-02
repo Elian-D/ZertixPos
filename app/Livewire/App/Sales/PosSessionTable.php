@@ -25,7 +25,7 @@ class PosSessionTable extends DataTable
     protected function columns(): array
     {
         return [
-            'id'                => ['label' => 'ID Turno'],
+            'number'            => ['label' => 'Número', 'default' => true, 'mobile' => true],
             'terminal_id'       => ['label' => 'Terminal/Caja', 'default' => true, 'mobile' => true],
             'opened_by_user_id' => ['label' => 'Abierto Por', 'default' => true, 'mobile' => true],
             'closed_by_user_id' => ['label' => 'Cerrado Por', 'default' => true],
@@ -41,10 +41,16 @@ class PosSessionTable extends DataTable
         ];
     }
 
+    /** En qué busca el filtro 'search' de abajo — debe coincidir con su closure. */
+    protected function searchFields(): array
+    {
+        return ['número', 'notas'];
+    }
+
     protected function filterMap(): array
     {
         return [
-            'search'            => fn (Builder $q, $v) => $q->where('notes', 'like', "%{$v}%"),
+            'search'            => fn (Builder $q, $v) => $q->where(fn (Builder $qq) => $qq->where('number', 'like', "%{$v}%")->orWhere('notes', 'like', "%{$v}%")),
             'terminal_id'       => fn (Builder $q, $v) => $q->where('terminal_id', $v),
             'user_id'           => fn (Builder $q, $v) => $q->where('user_id', $v),
             'opened_by_user_id' => fn (Builder $q, $v) => $q->where('opened_by_user_id', $v),

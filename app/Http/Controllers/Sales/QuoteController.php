@@ -50,7 +50,7 @@ class QuoteController extends Controller
 
             return redirect()
                 ->route('clients.quotes.show', $quote)
-                ->with('success', "Cotización #{$quote->id} generada con éxito.");
+                ->with('success', "Cotización {$quote->number} generada con éxito.");
         } catch (Exception $e) {
             Log::error('Error creando cotización: '.$e->getMessage());
 
@@ -86,7 +86,7 @@ class QuoteController extends Controller
 
             return redirect()
                 ->route('clients.quotes.show', $quote)
-                ->with('success', "Cotización #{$quote->id} actualizada correctamente.");
+                ->with('success', "Cotización {$quote->number} actualizada correctamente.");
         } catch (Exception $e) {
             Log::error("Error actualizando cotización {$quote->id}: ".$e->getMessage());
 
@@ -99,7 +99,7 @@ class QuoteController extends Controller
      */
     public function show(Quote $quote)
     {
-        $quote->load(['items.product', 'customer', 'user', 'sale']);
+        $quote->load(['items.product', 'customer', 'user', 'sale', 'terminal']);
 
         // Obtener catálogos para el modal de conversión
         $saleCatalogs = $this->saleCatalogService->getForForm();
@@ -126,7 +126,7 @@ class QuoteController extends Controller
 
             $quote->update(['status' => Quote::STATUS_APPROVED]);
 
-            return back()->with('success', "Cotización #{$quote->id} marcada como Aprobada.");
+            return back()->with('success', "Cotización {$quote->number} marcada como Aprobada.");
         } catch (Exception $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -222,6 +222,6 @@ class QuoteController extends Controller
         }
 
         return $this->printService->generateLetterPDF($quote)
-            ->stream("Cotizacion-{$quote->id}.pdf");
+            ->stream("{$quote->number}.pdf");
     }
 }

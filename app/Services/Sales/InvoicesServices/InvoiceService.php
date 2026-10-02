@@ -15,7 +15,7 @@ class InvoiceService
     {
         return Invoice::create([
             'sale_id' => $sale->id,
-            'invoice_number' => $sale->number, // Usamos el mismo folio de la venta por consistencia legal
+            // invoice_number (FAC-…) lo asigna HasDocumentNumber al crear (v1.4.0 REQ-3.19).
             'type' => $sale->payment_type,
             'format_type' => $this->determineFormat($sale),
             'status' => Invoice::STATUS_ACTIVE,

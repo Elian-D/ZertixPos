@@ -54,12 +54,34 @@ class CollectionController extends Controller
                 return view('finance.collections.pdf', compact('payment'));
             }
 
+            // ?preview=1 → solo el ticket, sin wrapper ni impresión automática (iframe del show).
+            if ($request->boolean('preview')) {
+                return $this->printService->getTicketView($payment);
+            }
+
             $view = $this->printService->getTicketView($payment)->render();
 
             return view('finance.collections.print', compact('payment', 'view'));
         } catch (\Exception $e) {
             return back()->with('error', 'No se pudo cargar el formato: '.$e->getMessage());
         }
+    }
+
+    /**
+     * Detalle del cobro (v1.4.0 Fase 3, patrón Infolist — /filament-show), con la
+     * vista previa del recibo al lado. Reemplaza el modal "view-payment" del listado.
+     */
+    public function show(ClientCollection $payment)
+    {
+        $payment->load([
+            'client:id,name,commercial_name,tax_id',
+            'tipoPago',
+            'creator:id,name',
+            'receivable',
+            'posSession.terminal:id,name',
+        ]);
+
+        return view('finance.collections.show', ['payment' => $payment]);
     }
 
     public function create()

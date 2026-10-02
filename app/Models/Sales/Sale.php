@@ -48,10 +48,15 @@ class Sale extends Model
         'pos_terminal_id',
         'sale_origin',
         'is_walkin_customer',
+        // Anulación (v1.4.0 REQ-3.18)
+        'cancellation_reason',
+        'canceled_by',
+        'canceled_at',
     ];
 
     protected $casts = [
         'sale_date' => 'datetime',
+        'canceled_at' => 'datetime',
         'is_walkin_customer' => 'boolean',
     ];
 
@@ -126,6 +131,8 @@ class Sale extends Model
             'quote:id,discount_total', // <--- NUEVO (Para mostrar descuentos de cotizacion)
         ])
             // Badge "Devuelta"/"Devuelta parcial" (v1.4.0 REQ-2.7) sin N+1.
+            // El modal de anular muestra la lista DGII solo si hay NCF (REQ-3.18).
+            ->withExists('ncfLog as has_ncf')
             ->withSum('items as sold_quantity', 'quantity')
             ->withSum(['returnItems as returned_quantity' => fn ($q) => $q->where('returns.status', SaleReturn::STATUS_COMPLETED)], 'return_items.quantity');
     }
@@ -241,6 +248,11 @@ class Sale extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function canceledBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'canceled_by');
     }
 
     public function warehouse(): BelongsTo
