@@ -22,6 +22,11 @@ Route::prefix('config/users')->as('config.users.')->group(function () {
         ->post('/', [UserController::class, 'store'])
         ->name('store');
 
+    Route::middleware('permission:users.view')
+        ->get('/{user}', [UserController::class, 'show'])
+        ->whereNumber('user')
+        ->name('show');
+
     Route::middleware('permission:users.edit')
         ->get('/{user}/edit', [UserController::class, 'edit'])
         ->name('edit');

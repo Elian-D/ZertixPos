@@ -27,7 +27,7 @@
                 </x-data-table.cell>
 
                 <x-data-table.cell column="name" :visible="$visibleColumns">
-                    <span class="font-bold text-slate-900">{{ $role->name }}</span>
+                    <a href="{{ route('config.roles.show', $role) }}" class="font-bold text-slate-900 hover:text-zertix-primary-700 hover:underline">{{ $role->name }}</a>
                 </x-data-table.cell>
 
                 <x-data-table.cell column="created_at" :visible="$visibleColumns">
@@ -41,6 +41,9 @@
                 <td class="px-4 py-3.5 text-right">
                     <div class="flex items-center justify-end gap-1">
                         <x-ui.action-menu>
+                            <x-ui.action-menu.item href="{{ route('config.roles.show', $role) }}" icon="heroicon-o-eye">
+                                Ver
+                            </x-ui.action-menu.item>
                             <x-ui.action-menu.item href="{{ route('config.roles.edit', $role) }}" icon="heroicon-o-pencil-square">
                                 Editar
                             </x-ui.action-menu.item>
