@@ -81,8 +81,12 @@ class PosSessionController extends Controller
             return view('sales.pos.sessions.print', array_merge($data, ['view' => $view]));
         }
 
+        // DomPDF necesita el logo como ruta local, no como URL (REQ-1.14).
+        $config = general_config();
+        $data['logoSrc'] = $config->logo ? storage_path('app/public/'.$config->logo) : null;
+
         $pdf = Pdf::loadView('sales.pos.sessions.formats.full', $data)->setPaper('letter', 'portrait');
-        $fileName = "Turno-{$posSession->id}.pdf";
+        $fileName = "{$posSession->number}.pdf";
 
         return $request->boolean('download')
             ? $pdf->download($fileName)

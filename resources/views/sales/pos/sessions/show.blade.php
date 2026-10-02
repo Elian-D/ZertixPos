@@ -1,286 +1,174 @@
-<x-app-layout title="Detalle de Turno: {{ $posSession->terminal->name ?? 'Terminal eliminada' }}">
-    <div class="py-8">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-            
-            {{-- Header Principal --}}
-            <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b border-gray-100 pb-6">
-                <div>
-                    <nav class="flex mb-2" aria-label="Breadcrumb">
-                        <ol class="inline-flex items-center space-x-1 md:space-x-2 text-[10px] uppercase tracking-wider font-bold">
-                            <li class="inline-flex items-center text-gray-400">
-                                <a href="{{ route('sales.pos.sessions.index') }}" class="hover:text-zertix-primary-600 transition">Turnos POS</a>
-                            </li>
-                            <x-heroicon-s-chevron-right class="w-3 h-3 text-gray-300" />
-                            <li class="text-gray-500">Turno #{{ $posSession->id }}</li>
-                        </ol>
-                    </nav>
-                    <h2 class="font-black text-3xl text-gray-800 tracking-tight">
-                        Detalle de Turno: <span class="text-zertix-primary-600">{{ $posSession->terminal->name ?? 'Terminal eliminada' }}</span>
-                    </h2>
-                </div>
+{{-- Detalle del turno — patrón Infolist (/filament-show, docs/ui/infolist.md).
+     Fila 1: datos del turno | arqueo de caja (50/50). Fila 2: resumen por forma de
+     pago. Fila 3: ventas del turno. Los datos del reporte (salesDetail, columns,
+     breakdownRows, creditTotal…) salen de PosSessionReportService — misma fuente
+     que el PDF/ticket del turno. --}}
+@use('App\Models\Sales\Pos\PosSession')
+@php
+    $currency = config('regional.currency_symbol');
+    $money = fn ($v) => $currency.number_format((float) $v, 2);
+    $isOpen = $posSession->isOpen();
+    // Cerrado: la cifra grabada al cierre. Abierto: calculada en vivo.
+    $expected = $isOpen ? $posSession->calculateExpected() : $posSession->expected_balance;
+    $diff = (float) $posSession->difference;
+    $methodCols = min(count($columns) + 2, 7);
+    $canSeeSales = auth()->user()->can('sales.view');
+@endphp
 
-                <div class="flex items-center gap-3">
-                    <a href="{{ route('sales.pos.sessions.print', $posSession) }}" target="_blank"
-                       class="bg-white text-gray-700 border border-gray-200 px-5 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 hover:bg-gray-50 transition shadow-sm active:scale-95">
-                        <x-heroicon-s-printer class="w-4 h-4 text-gray-500" />
-                        Imprimir Reporte
-                    </a>
-                    <a href="{{ route('sales.pos.sessions.print', ['pos_session' => $posSession, 'format' => 'ticket']) }}" target="_blank"
-                       class="bg-white text-gray-500 border border-gray-200 px-3 py-2.5 rounded-xl text-xs font-bold hover:bg-gray-50 transition shadow-sm active:scale-95"
-                       title="Versión ticket 80mm">
-                        Ticket
-                    </a>
-                    {{-- Botón "Movimiento Manual": oculto, ver Fase 9.1 en docs/features/POS-Interfaz.md --}}
-                    {{-- @if($posSession->status === 'open')
-                        <x-primary-button x-data="" x-on:click.prevent="$dispatch('open-modal', 'register-cash-movement')">
-                            <x-heroicon-s-plus class="w-4 h-4 mr-2" />
-                            Movimiento Manual
-                        </x-primary-button>
-                    @endif --}}
+<x-app-layout :title="'Turno '.$posSession->number">
+    <div class="p-4 md:p-6 flex flex-col gap-6">
 
-                    {{-- Mismo botón/estilo "Cerrar Turno" que ya existe en el navbar del Workspace --}}
-                    @if($posSession->isOpen() && auth()->user()->can('pos_sessions.manage'))
-                        <a href="{{ route('sales.pos.sessions.close-form', $posSession) }}"
-                           title="Cerrar Turno"
-                           class="flex items-center gap-1.5 text-sm font-bold text-white bg-gray-800 hover:bg-gray-900 px-4 py-2.5 rounded-xl transition-colors shadow-sm active:scale-95">
-                            <x-heroicon-s-lock-closed class="w-4 h-4" />
-                            <span>Cerrar Turno</span>
-                        </a>
+        <x-ui.page-header :title="'Turno '.$posSession->number" :description="'Ver turno · '.($posSession->terminal->name ?? 'Terminal eliminada')">
+            <x-slot:actions>
+                <x-ui.button href="{{ route('sales.pos.sessions.index') }}" variant="secondary" appearance="outline" iconLeft="heroicon-s-arrow-left">
+                    Volver
+                </x-ui.button>
+                <x-ui.button href="{{ route('sales.pos.sessions.print', $posSession) }}" target="_blank"
+                    variant="secondary" appearance="outline" iconLeft="heroicon-s-printer">
+                    Imprimir reporte
+                </x-ui.button>
+                <x-ui.button href="{{ route('sales.pos.sessions.print', ['pos_session' => $posSession, 'format' => 'ticket']) }}" target="_blank"
+                    variant="secondary" appearance="outline" iconLeft="heroicon-s-receipt-percent">
+                    Ticket
+                </x-ui.button>
+                @if($isOpen)
+                    @can('pos_sessions.manage')
+                        <x-ui.button href="{{ route('sales.pos.sessions.close-form', $posSession) }}" variant="primary" iconLeft="heroicon-s-lock-closed">
+                            Cerrar turno
+                        </x-ui.button>
+                    @endcan
+                @endif
+            </x-slot:actions>
+        </x-ui.page-header>
+
+        @if($isOpen)
+            <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-5 py-3 flex items-center gap-2 text-sm text-emerald-800">
+                <x-heroicon-s-lock-open class="w-5 h-5 shrink-0" />
+                Turno en curso desde el {{ $posSession->opened_at->format('d/m/Y h:i A') }} — el arqueo final estará disponible al cerrarlo.
+            </div>
+        @endif
+
+        {{-- Fila 1: datos | arqueo --}}
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+
+            <x-ui.infolist.section title="Datos del turno" icon="heroicon-o-clock" :cols="2">
+                <x-ui.infolist.entry label="Turno" :value="$posSession->number" strong />
+                <x-ui.infolist.entry label="Estado">
+                    <x-ui.badge :variant="$isOpen ? 'success' : 'slate'" size="sm"
+                        :icon="$isOpen ? 'heroicon-s-lock-open' : 'heroicon-s-lock-closed'">
+                        {{ PosSession::getStatuses()[$posSession->status] ?? $posSession->status }}
+                    </x-ui.badge>
+                </x-ui.infolist.entry>
+                <x-ui.infolist.entry label="Terminal" :value="$posSession->terminal?->name" strong
+                    :href="$posSession->terminal && auth()->user()->can('pos_terminals.view') ? route('sales.pos.terminals.show', $posSession->terminal) : null" />
+                <x-ui.infolist.entry label="Duración">
+                    {{ $posSession->opened_at->diffForHumans($posSession->closed_at ?? now(), ['syntax' => \Carbon\CarbonInterface::DIFF_ABSOLUTE, 'parts' => 2]) }}
+                    @if($isOpen)
+                        <span class="text-xs text-emerald-600">(en curso)</span>
                     @endif
-                </div>
-            </div>
+                </x-ui.infolist.entry>
+                <x-ui.infolist.entry label="Apertura">
+                    {{ $posSession->opened_at->format('d/m/Y h:i A') }}
+                    <span class="block text-xs text-gray-400">{{ $posSession->openedBy->name ?? $posSession->user->name ?? '' }}</span>
+                </x-ui.infolist.entry>
+                <x-ui.infolist.entry label="Cierre">
+                    @if($posSession->closed_at)
+                        {{ $posSession->closed_at->format('d/m/Y h:i A') }}
+                        <span class="block text-xs text-gray-400">{{ $posSession->closedBy->name ?? '' }}</span>
+                    @endif
+                </x-ui.infolist.entry>
+                <x-ui.infolist.entry label="Notas del turno" :value="$posSession->notes" full />
+            </x-ui.infolist.section>
 
-            {{-- Cards de Auditoría (Abrió, Cerró, Periodo, Estado) --}}
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition duration-300">
-                    <div class="p-3 bg-emerald-50 rounded-xl text-emerald-600">
-                        <x-heroicon-s-arrow-up-circle class="w-6 h-6" />
-                    </div>
-                    <div>
-                        <p class="text-[10px] uppercase font-black text-gray-400 tracking-widest">Abrió</p>
-                        <p class="text-sm font-bold text-gray-800">{{ $posSession->openedBy->name ?? $posSession->user->name ?? 'N/A' }}</p>
-                    </div>
-                </div>
+            <x-ui.infolist.section title="Arqueo de caja" icon="heroicon-o-calculator" :cols="2">
+                <x-ui.infolist.entry label="(+) Fondo inicial" :value="$money($posSession->opening_balance)" />
+                <x-ui.infolist.entry label="(+) Ventas en efectivo">
+                    <span class="text-emerald-700">{{ $money($posSession->cash_sales ?? 0) }}</span>
+                </x-ui.infolist.entry>
+                @if(($posSession->cash_collections ?? 0) > 0)
+                    <x-ui.infolist.entry label="(+) Cobros CxC en efectivo">
+                        <span class="text-emerald-700">{{ $money($posSession->cash_collections) }}</span>
+                    </x-ui.infolist.entry>
+                @endif
+                <x-ui.infolist.entry label="(=) Esperado en caja">
+                    <span class="text-xl font-bold text-zertix-primary-700">{{ $money($expected) }}</span>
+                </x-ui.infolist.entry>
 
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition duration-300">
-                    <div class="p-3 bg-amber-50 rounded-xl text-amber-600">
-                        <x-heroicon-s-arrow-down-circle class="w-6 h-6" />
-                    </div>
-                    <div>
-                        <p class="text-[10px] uppercase font-black text-gray-400 tracking-widest">Cerró</p>
-                        <p class="text-sm font-bold text-gray-800">{{ $posSession->closedBy->name ?? ($posSession->isOpen() ? 'Turno en curso' : 'N/A') }}</p>
-                    </div>
-                </div>
+                <x-ui.infolist.entry label="Contado al cierre">
+                    @if(! $isOpen)
+                        <span class="text-xl font-bold text-gray-900">{{ $money($posSession->closing_balance) }}</span>
+                    @endif
+                </x-ui.infolist.entry>
+                <x-ui.infolist.entry label="Resultado">
+                    @if(! $isOpen)
+                        <x-ui.badge :variant="$diff == 0 ? 'success' : ($diff > 0 ? 'info' : 'error')" size="sm"
+                            :icon="$diff == 0 ? 'heroicon-s-check-circle' : 'heroicon-s-exclamation-triangle'">
+                            {{ $diff == 0 ? 'Caja cuadrada' : ($diff > 0 ? 'Sobrante' : 'Faltante').' de '.$money(abs($diff)) }}
+                        </x-ui.badge>
+                    @else
+                        <span class="text-gray-400">Pendiente de cierre</span>
+                    @endif
+                </x-ui.infolist.entry>
 
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition duration-300">
-                    <div class="p-3 bg-blue-50 rounded-xl text-blue-600">
-                        <x-heroicon-s-clock class="w-6 h-6" />
-                    </div>
-                    <div>
-                        <p class="text-[10px] uppercase font-black text-gray-400 tracking-widest">Periodo</p>
-                        <p class="text-xs font-bold text-gray-800">
-                            {{ $posSession->opened_at->format('d/m/Y H:i') }} - 
-                            <span class="{{ $posSession->closed_at ? '' : 'text-green-600' }}">
-                                {{ $posSession->closed_at ? $posSession->closed_at->format('H:i') : 'En curso...' }}
-                            </span>
-                        </p>
-                    </div>
-                </div>
-
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 flex items-center gap-4 hover:shadow-md transition duration-300">
-                    @php $styles = \App\Models\Sales\Pos\PosSession::getStatusStyles(); @endphp
-                    <div class="p-3 {{ $styles[$posSession->status] }} rounded-xl">
-                        <x-heroicon-s-shield-check class="w-6 h-6" />
-                    </div>
-                    <div>
-                        <p class="text-[10px] uppercase font-black text-gray-400 tracking-widest">Estado Actual</p>
-                        <p class="text-sm font-black uppercase">{{ \App\Models\Sales\Pos\PosSession::getStatuses()[$posSession->status] ?? $posSession->status }}</p>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Notas del turno: observación general del cierre + motivo de descuadre
-                 (Fase 9.4, `difference_reason`/`difference_notes`) — dos cosas distintas
-                 que pueden aparecer independientemente una de la otra (puede haber
-                 descuadre sin notas generales, o notas generales sin descuadre). Va antes
-                 del arqueo a propósito — es contexto que hay que leer antes de interpretar
-                 la diferencia, no un detalle secundario para el final de la página. --}}
-            @if($posSession->notes || $posSession->difference_reason)
-                <div class="bg-amber-50 border border-amber-200 rounded-2xl p-5 flex items-start gap-3">
-                    <x-heroicon-s-chat-bubble-left-ellipsis class="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
-                    <div class="space-y-2">
-                        @if($posSession->difference_reason)
-                            <div>
-                                <p class="text-[10px] uppercase font-black text-amber-600 tracking-widest mb-1">Motivo del Descuadre</p>
-                                <p class="text-sm text-amber-800 font-semibold">{{ \App\Models\Sales\Pos\PosSession::getReasons()[$posSession->difference_reason] ?? $posSession->difference_reason }}</p>
-                                @if($posSession->difference_notes)
-                                    <p class="text-sm text-amber-800 mt-1">{{ $posSession->difference_notes }}</p>
-                                @endif
-                            </div>
+                @if($posSession->difference_reason)
+                    <x-ui.infolist.entry label="Motivo del descuadre" full>
+                        <span class="font-medium text-amber-700">{{ PosSession::getReasons()[$posSession->difference_reason] ?? $posSession->difference_reason }}</span>
+                        @if($posSession->difference_notes)
+                            <span class="block text-gray-600">{{ $posSession->difference_notes }}</span>
                         @endif
-                        @if($posSession->notes)
-                            <div>
-                                <p class="text-[10px] uppercase font-black text-amber-600 tracking-widest mb-1">Notas del Turno</p>
-                                <p class="text-sm text-amber-800">{{ $posSession->notes }}</p>
-                            </div>
-                        @endif
-                    </div>
-                </div>
-            @endif
-
-            {{-- Resumen Financiero Dinámico --}}
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-3xl border border-gray-100">
-                <div class="p-8">
-                    <h3 class="text-lg font-black text-gray-800 mb-6 flex items-center gap-2">
-                        <x-heroicon-s-calculator class="w-5 h-5 text-zertix-primary-500" />
-                        Resumen de Arqueo
-                    </h3>
-
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-12">
-                        <div class="space-y-3">
-                            <div class="flex justify-between p-3 bg-gray-50 rounded-xl border border-gray-100">
-                                <span class="text-xs text-gray-600 font-medium">(+) Fondo Inicial</span>
-                                <span class="text-xs font-mono font-bold">{{ config('regional.currency_symbol') }}{{ number_format($posSession->opening_balance, 2) }}</span>
-                            </div>
-                            <div class="flex justify-between p-3 bg-green-50/50 rounded-xl border border-green-100 text-green-700">
-                                <span class="text-xs font-medium">(+) Ventas en Efectivo</span>
-                                <span class="text-xs font-mono font-bold">{{ config('regional.currency_symbol') }}{{ number_format($posSession->cash_sales ?? 0, 2) }}</span>
-                            </div>
-
-                            {{-- Fase 6, REQ-6.7: sin esta línea, "Monto Esperado" incluía los
-                                 Cobros CxC en efectivo en el cálculo pero no lo explicaba en el
-                                 desglose — Fondo + Ventas no sumaba el total mostrado, y parecía
-                                 un error. Solo se muestra si hubo cobros, para no ensuciar el
-                                 desglose de una terminal que nunca cobra CxC. --}}
-                            @if(($posSession->cash_collections ?? 0) > 0)
-                                <div class="flex justify-between p-3 bg-green-50/50 rounded-xl border border-green-100 text-green-700">
-                                    <span class="text-xs font-medium">(+) Cobros CxC en Efectivo</span>
-                                    <span class="text-xs font-mono font-bold">{{ config('regional.currency_symbol') }}{{ number_format($posSession->cash_collections, 2) }}</span>
-                                </div>
-                            @endif
-
-                            @php
-                                // Si está cerrada, usamos la verdad grabada. Si está abierta, calculamos.
-                                $displayExpected = $posSession->isOpen()
-                                    ? $posSession->calculateExpected()
-                                    : $posSession->expected_balance;
-                            @endphp
-
-                            <div class="flex justify-between p-5 bg-zertix-primary-600 rounded-xl text-white shadow-lg shadow-zertix-primary-100 mt-4">
-                                <span class="font-bold">(=) Monto Esperado en Caja</span>
-                                <span class="text-lg font-mono font-black">{{ config('regional.currency_symbol') }}{{ number_format($displayExpected, 2) }}</span>
-                            </div>
-                        </div>
-
-                        {{-- Resultado del Arqueo --}}
-                        <div class="flex flex-col justify-center items-center p-8 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-                            @if($posSession->isClosed())
-                                <p class="text-[10px] uppercase font-black text-gray-400 mb-2">Monto Real Reportado</p>
-                                <h4 class="text-4xl font-black text-gray-900 mb-4">{{ config('regional.currency_symbol') }}{{ number_format($posSession->closing_balance, 2) }}</h4>
-                                
-                                {{-- ¡USAMOS LA COLUMNA DIRECTA! --}}
-                                <x-ui.badge :variant="$posSession->difference >= 0 ? 'success' : 'error'" :dot="false" class="uppercase tracking-widest">
-                                    {{ $posSession->difference == 0 ? 'Caja Cuadrada' : ($posSession->difference > 0 ? 'Sobrante' : 'Faltante') }} de {{ config('regional.currency_symbol') }}{{ number_format(abs($posSession->difference), 2) }}
-                                </x-ui.badge>
-                            @else
-                                <div class="text-center">
-                                    <x-heroicon-o-lock-closed class="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                                    <p class="text-sm text-gray-500 font-medium italic">El arqueo final estará disponible una vez cerrada la sesión.</p>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Detalle de Ventas --}}
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <h3 class="text-sm font-black text-gray-800 mb-4 flex items-center gap-2">
-                    <x-heroicon-s-shopping-cart class="w-4 h-4 text-zertix-primary-500" />
-                    Detalle de Ventas
-                </h3>
-
-                @if(count($salesDetail))
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full text-sm">
-                            <thead>
-                                <tr class="text-left text-[10px] uppercase text-gray-400 border-b border-gray-100">
-                                    <th class="py-2 pr-4">Hora</th>
-                                    <th class="py-2 pr-4">#</th>
-                                    <th class="py-2 pr-4">Cliente</th>
-                                    <th class="py-2 pr-4">Cajero</th>
-                                    <th class="py-2 pr-4 text-right">Cant.</th>
-                                    <th class="py-2 pr-4">Método de Pago</th>
-                                    <th class="py-2 text-right">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($salesDetail as $row)
-                                    <tr class="border-b border-gray-50">
-                                        <td class="py-2 pr-4 text-gray-500">{{ $row['hora'] }}</td>
-                                        <td class="py-2 pr-4 font-mono text-gray-500">{{ $row['numero'] }}</td>
-                                        <td class="py-2 pr-4 font-medium text-gray-700">{{ $row['cliente'] }}</td>
-                                        <td class="py-2 pr-4 text-gray-600">{{ $row['cajero'] }}</td>
-                                        <td class="py-2 pr-4 text-right text-gray-600">{{ rtrim(rtrim(number_format($row['cantidad'], 2), '0'), '.') }}</td>
-                                        <td class="py-2 pr-4 text-gray-600">{{ $row['metodo'] }}</td>
-                                        <td class="py-2 text-right font-mono font-bold text-gray-800">{{ config('regional.currency_symbol') }}{{ number_format($row['total'], 2) }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    <p class="text-xs text-gray-400 italic">Sin ventas registradas en este turno todavía.</p>
+                    </x-ui.infolist.entry>
                 @endif
-            </div>
-
-            {{-- Resumen de ventas por forma de pago --}}
-            <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-                <h3 class="text-sm font-black text-gray-800 mb-4 flex items-center gap-2">
-                    <x-heroicon-s-banknotes class="w-4 h-4 text-zertix-primary-500" />
-                    Resumen por Forma de Pago
-                </h3>
-
-                @if(count($columns))
-                    <div class="overflow-x-auto">
-                        <table class="min-w-full text-sm">
-                            <thead>
-                                <tr class="text-left text-[10px] uppercase text-gray-400 border-b border-gray-100">
-                                    <th class="py-2 pr-4">Concepto</th>
-                                    @foreach($columns as $col)
-                                        <th class="py-2 pr-4 text-right">{{ $col }}</th>
-                                    @endforeach
-                                    <th class="py-2 text-right">Total</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach($breakdownRows as $row)
-                                    <tr class="border-b border-gray-50">
-                                        <td class="py-2 pr-4 font-medium text-gray-700">{{ $row['concepto'] }}</td>
-                                        @foreach($columns as $col)
-                                            <td class="py-2 pr-4 text-right font-mono text-gray-600">{{ config('regional.currency_symbol') }}{{ number_format($row['methods'][$col] ?? 0, 2) }}</td>
-                                        @endforeach
-                                        <td class="py-2 text-right font-mono font-bold text-gray-800">{{ config('regional.currency_symbol') }}{{ number_format($row['total'], 2) }}</td>
-                                    </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
-                    </div>
-                @else
-                    <p class="text-xs text-gray-400 italic">Sin ventas en efectivo/tarjeta/transferencia registradas en este turno todavía.</p>
-                @endif
-
-                @if($creditTotal > 0)
-                    <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mt-4">
-                        Ventas totales del turno: <span class="font-bold">{{ config('regional.currency_symbol') }}{{ number_format($totalSalesWithCredit, 2) }}</span>
-                        — de las cuales <span class="font-bold">{{ config('regional.currency_symbol') }}{{ number_format($creditTotal, 2) }}</span> fueron a
-                        <span class="font-bold">Crédito (CxC)</span>, no exigible en caja (no forma parte del arqueo).
-                    </p>
-                @endif
-            </div>
+            </x-ui.infolist.section>
         </div>
+
+        {{-- Fila 2: resumen por forma de pago --}}
+        <x-ui.infolist.section title="Resumen por forma de pago" icon="heroicon-o-banknotes" :cols="0">
+            <x-ui.infolist.repeatable :empty="empty($columns)" emptyIcon="heroicon-o-banknotes"
+                emptyTitle="Sin cobros todavía" emptyDescription="Aún no hay ventas de contado ni cobros en este turno.">
+                @foreach($breakdownRows as $row)
+                    <x-ui.infolist.repeatable-item :cols="$methodCols">
+                        <x-ui.infolist.entry label="Concepto" :value="$row['concepto']" strong />
+                        @foreach($columns as $col)
+                            <x-ui.infolist.entry :label="$col" :value="$money($row['methods'][$col] ?? 0)" />
+                        @endforeach
+                        <x-ui.infolist.entry label="Total" class="sm:text-right">
+                            <span class="font-semibold text-zertix-primary-700">{{ $money($row['total']) }}</span>
+                        </x-ui.infolist.entry>
+                    </x-ui.infolist.repeatable-item>
+                @endforeach
+            </x-ui.infolist.repeatable>
+
+            @if($creditTotal > 0)
+                <p class="mt-4 text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                    Ventas totales del turno: <strong>{{ $money($totalSalesWithCredit) }}</strong> — de las cuales
+                    <strong>{{ $money($creditTotal) }}</strong> fueron a crédito (CxC) y no forman parte del arqueo.
+                </p>
+            @endif
+        </x-ui.infolist.section>
+
+        {{-- Fila 3: ventas del turno --}}
+        <x-ui.infolist.section title="Ventas del turno" icon="heroicon-o-shopping-cart" :cols="0"
+            :description="count($salesDetail).' '.(count($salesDetail) === 1 ? 'venta' : 'ventas')">
+            <x-ui.infolist.repeatable :empty="empty($salesDetail)" emptyIcon="heroicon-o-shopping-cart"
+                emptyTitle="Sin ventas" emptyDescription="Aún no hay ventas registradas en este turno.">
+                @foreach($salesDetail as $row)
+                    <x-ui.infolist.repeatable-item :cols="7">
+                        <x-ui.infolist.entry label="Número" :value="$row['numero']" strong
+                            :href="$canSeeSales && ! empty($row['id']) ? route('sales.show', $row['id']) : null" />
+                        <x-ui.infolist.entry label="Hora" :value="$row['hora']" />
+                        <x-ui.infolist.entry label="Cliente" :value="$row['cliente']" class="col-span-2" />
+                        <x-ui.infolist.entry label="Cant.">
+                            <x-ui.badge variant="slate" size="sm" :dot="false">{{ rtrim(rtrim(number_format($row['cantidad'], 2), '0'), '.') }}</x-ui.badge>
+                        </x-ui.infolist.entry>
+                        <x-ui.infolist.entry label="Método" :value="$row['metodo']" />
+                        <x-ui.infolist.entry label="Total" class="sm:text-right">
+                            <span class="font-semibold text-zertix-primary-700">{{ $money($row['total']) }}</span>
+                        </x-ui.infolist.entry>
+                    </x-ui.infolist.repeatable-item>
+                @endforeach
+            </x-ui.infolist.repeatable>
+        </x-ui.infolist.section>
     </div>
 
-    {{-- Modal de Registro: oculto, ver Fase 9.1 en docs/features/POS-Interfaz.md --}}
-    {{-- @include('sales.pos.cash-movements.partials.modal-movement', ['sessionId' => $posSession->id]) --}}
+    {{-- Movimiento manual de caja: oculto, ver Fase 9.1 en docs/features/POS-Interfaz.md --}}
 </x-app-layout>

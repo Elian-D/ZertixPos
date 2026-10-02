@@ -107,6 +107,11 @@ Route::prefix('sales')->as('sales.')->group(function () {
                     ->middleware('permission:pos_terminals.create')
                     ->name('store');
 
+                Route::get('/{pos_terminal}', 'show')
+                    ->whereNumber('pos_terminal')
+                    ->middleware('permission:pos_terminals.view')
+                    ->name('show');
+
                 Route::get('/{pos_terminal}/edit', 'edit')
                     ->middleware('permission:pos_terminals.edit')
                     ->name('edit');
