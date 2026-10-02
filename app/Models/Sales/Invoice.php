@@ -2,13 +2,18 @@
 
 namespace App\Models\Sales;
 
+use App\Traits\HasDocumentNumber;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Invoice extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasDocumentNumber;
+
+    // Correlativo interno FAC-000001 (v1.4.0 REQ-3.19)
+    const DOCUMENT_CODE = 'FAC';
+    const DOCUMENT_NUMBER_COLUMN = 'invoice_number';
 
     protected $fillable = [
         'sale_id', 

@@ -128,7 +128,7 @@ class PosWorkspace extends Component
             ->whereHas('receivables', fn ($q) => $q->whereIn('status', [Receivable::STATUS_UNPAID, Receivable::STATUS_PARTIAL]))
             ->with(['receivables' => function ($q) {
                 $q->whereIn('status', [Receivable::STATUS_UNPAID, Receivable::STATUS_PARTIAL])
-                    ->select('id', 'client_id', 'document_number', 'total_amount', 'current_balance', 'due_date')
+                    ->select('id', 'client_id', 'number', 'document_number', 'total_amount', 'current_balance', 'due_date')
                     // Orden = FIFO real (la más vieja primero) — el frontend solo deja
                     // seleccionar la primera de la lista, el resto queda bloqueada
                     // (Fase 6, REQ-6.3 extra: no se puede cobrar una factura nueva
@@ -146,6 +146,7 @@ class PosWorkspace extends Component
                 'balance' => (float) $client->balance,
                 'receivables' => $client->receivables->map(fn ($r) => [
                     'id' => $r->id,
+                    'number' => $r->number,
                     'document_number' => $r->document_number,
                     'total_amount' => (float) $r->total_amount,
                     'current_balance' => (float) $r->current_balance,

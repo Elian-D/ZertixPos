@@ -2,6 +2,7 @@
 
 namespace App\Models\Sales\Quotes;
 
+use App\Traits\HasDocumentNumber;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -14,7 +15,10 @@ use App\Models\Sales\Sale;
 
 class Quote extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, HasDocumentNumber;
+
+    // Correlativo interno COT-000001 (v1.4.0 REQ-3.19)
+    const DOCUMENT_CODE = 'COT';
 
     protected $fillable = [
         'customer_id',

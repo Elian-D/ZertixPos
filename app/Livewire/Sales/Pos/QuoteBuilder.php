@@ -189,10 +189,10 @@ class QuoteBuilder extends Component
         try {
             if ($this->quoteModel) {
                 $quoteService->update($this->quoteModel, $data);
-                session()->flash('success', 'Cotización #'.$this->quoteModel->id.' actualizada.');
+                session()->flash('success', 'Cotización '.$this->quoteModel->number.' actualizada.');
             } else {
                 $quote = $quoteService->store($data);
-                session()->flash('success', 'Cotización #'.$quote->id.' creada.');
+                session()->flash('success', 'Cotización '.$quote->number.' creada.');
             }
 
             return redirect()->route('clients.quotes.index');

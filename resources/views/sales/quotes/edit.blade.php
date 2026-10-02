@@ -1,10 +1,10 @@
-<x-app-layout title="Editar Cotización #{{ $quote->id }}">
+<x-app-layout title="Editar cotización {{ $quote->number }}">
     <div class="max-w-5xl mx-auto py-8 px-4">
         <div class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
             
             
             <x-form-header 
-                :title="'Editar Cotización #' . $quote->id" 
+                :title="'Editar cotización ' . $quote->number" 
                 :subtitle="'Cliente: ' . $quote->customer->name"
                 :back-route="route('clients.quotes.index')" />
 

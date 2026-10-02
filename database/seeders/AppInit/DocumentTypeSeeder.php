@@ -9,11 +9,35 @@ class DocumentTypeSeeder extends Seeder
 {
     public function run(): void
     {
+        // v1.4.0 REQ-3.19 — cada documento lleva su propio correlativo: la venta
+        // (VTA) es la operación, la factura (FAC) el comprobante entregado al
+        // cliente y la CxC (CXC) la deuda si fue a crédito. El NCF sigue siendo
+        // el número fiscal; estos son internos.
         $docs = [
             [
-                'name' => 'Factura de Venta',
+                'name' => 'Venta',
+                'code' => 'VTA',
+                'prefix' => 'VTA',
+            ],
+            [
+                'name' => 'Factura',
                 'code' => 'FAC',
                 'prefix' => 'FAC',
+            ],
+            [
+                'name' => 'Cuenta por Cobrar',
+                'code' => 'CXC',
+                'prefix' => 'CXC',
+            ],
+            [
+                'name' => 'Cotización',
+                'code' => 'COT',
+                'prefix' => 'COT',
+            ],
+            [
+                'name' => 'Turno POS',
+                'code' => 'TRN',
+                'prefix' => 'TRN',
             ],
             [
                 // REQ-4.2, Opción A: el code/prefix 'PAG' se mantiene tal cual — es

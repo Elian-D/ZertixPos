@@ -51,7 +51,7 @@ class CollectionCatalogService
 
             // Solo facturas con saldo pendiente (para el selector de factura a pagar)
             'pendingReceivables' => Receivable::whereIn('status', [Receivable::STATUS_UNPAID, Receivable::STATUS_PARTIAL])
-                ->select('id', 'client_id', 'document_number', 'current_balance', 'total_amount')
+                ->select('id', 'client_id', 'number', 'document_number', 'current_balance', 'total_amount')
                 ->get()
         ];
     }

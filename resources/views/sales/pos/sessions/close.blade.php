@@ -8,7 +8,7 @@
                         <a href="{{ route('sales.pos.sessions.index') }}" class="hover:text-zertix-primary-600 transition">Turnos POS</a>
                     </li>
                     <x-heroicon-s-chevron-right class="w-3 h-3 text-gray-300" />
-                    <li class="text-gray-500">Cierre de Turno #{{ $session->id }}</li>
+                    <li class="text-gray-500">Cierre de turno {{ $session->number }}</li>
                 </ol>
             </nav>
 
@@ -16,7 +16,7 @@
             <div class="lg:col-span-2 bg-white shadow-sm rounded-3xl border border-gray-100 overflow-hidden">
                 <x-form-header
                     title="Arqueo y Cierre de Caja"
-                    subtitle="Turno #{{ $session->id }} - {{ $session->terminal->name ?? 'Terminal eliminada' }}" />
+                    subtitle="Turno {{ $session->number }} - {{ $session->terminal->name ?? 'Terminal eliminada' }}" />
 
                 <form action="{{ route('sales.pos.sessions.close', $session) }}"
                     method="POST"

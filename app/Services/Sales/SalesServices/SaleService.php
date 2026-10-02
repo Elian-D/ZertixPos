@@ -67,10 +67,9 @@ class SaleService
         // falla, no se alteren inventarios ni se creen cabeceras de ventas huérfanas.
         return DB::transaction(function () use ($data, $context) {
 
-            // Consumo y formateo secuencial de numeración interna por tipo de documento (Factura de Venta)
-            $docType = DocumentType::where('code', 'FAC')->firstOrFail();
-            $saleNumber = $docType->getNextNumberFormatted();
-            $docType->increment('current_number');
+            // Correlativo interno de la venta (VTA). La factura (FAC) y la CxC (CXC)
+            // llevan el suyo propio al crearse (v1.4.0 REQ-3.19).
+            [$docType, $saleNumber] = DocumentType::issueNext('VTA');
 
             $saleDate = now();
             if (isset($data['sale_date'])) {
