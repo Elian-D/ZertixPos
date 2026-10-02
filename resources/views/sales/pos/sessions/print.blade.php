@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>Reporte de Turno #{{ $session->id }}</title>
+    <title>Reporte de turno {{ $session->number }}</title>
     <style>
         @media print {
             .no-print { display: none !important; }
