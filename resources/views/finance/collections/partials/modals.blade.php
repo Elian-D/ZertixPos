@@ -157,9 +157,7 @@
 
             <div class="mt-8 flex justify-center gap-3">
                 <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">No, mantener</x-ui.button>
-                <button type="submit" class="px-6 py-2 bg-red-600 text-white text-xs font-bold uppercase rounded-lg hover:bg-red-700 shadow-lg shadow-red-200">
-                    Sí, Anular Cobro
-                </button>
+                <x-ui.button type="submit" variant="error">Sí, anular cobro</x-ui.button>
             </div>
         </form>
     </x-modal>

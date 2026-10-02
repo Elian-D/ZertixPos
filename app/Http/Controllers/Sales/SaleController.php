@@ -73,22 +73,18 @@ class SaleController extends Controller
             return back()->with('error', "Esta venta ya ha sido anulada previamente.");
         }
 
-        // 2. Validación (Considera extraer esto a un FormRequest si crece mucho)
-        $rules = [];
-        if (!empty($sale->ncf)) {
-            $rules['cancellation_reason'] = 'required|string|min:5|max:255';
-        }
-
-        $validated = $request->validate($rules, [
-            'cancellation_reason.required' => 'El motivo de anulación es requerido para reportar a la DGII (608).'
+        // 2. Validación — el motivo es obligatorio siempre (REQ-3.18): antes solo se
+        // pedía con NCF y en las ventas sin NCF se descartaba sin guardarse.
+        $validated = $request->validate([
+            'cancellation_reason' => 'required|string|min:5|max:255',
+        ], [
+            'cancellation_reason.required' => 'Indica el motivo de la anulación.',
+            'cancellation_reason.min' => 'El motivo debe tener al menos 5 caracteres.',
         ]);
 
         try {
             // 3. Ejecución vía Servicio
-            // Usamos null coalescing por si la venta no tiene NCF y no entró en la validación
-            $reason = $validated['cancellation_reason'] ?? 'Anulación administrativa';
-
-            $this->service->cancel($sale, $reason);
+            $this->service->cancel($sale, $validated['cancellation_reason']);
 
             return back()->with('success', "Venta {$sale->number} anulada y stock retornado.");
         } catch (Exception $e) {

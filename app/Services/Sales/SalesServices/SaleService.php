@@ -475,9 +475,9 @@ class SaleService
      * Devuelve mercancía al stock, cancela CxC (si no tienen cobros previos), invalida NCF y contabilidad.
      *
      * * @param Sale $sale Instancia de la venta a anular.
-     * @param  string|null  $reason  Motivo justificado de la cancelación.
+     * @param  string  $reason  Motivo de la anulación; se guarda en la venta (REQ-3.18) y, si tiene NCF, también en su log fiscal.
      */
-    public function cancel(Sale $sale, ?string $reason = null): bool
+    public function cancel(Sale $sale, string $reason): bool
     {
         return DB::transaction(function () use ($sale, $reason) {
             // Guard de turno (v1.4.0 Fase 1, REQ-1.2) — anular solo es seguro mientras
@@ -504,7 +504,7 @@ class SaleService
             NcfLog::where('sale_id', $sale->id)
                 ->update([
                     'status' => NcfLog::STATUS_VOIDED,
-                    'cancellation_reason' => $reason ?? 'Anulación de venta manual',
+                    'cancellation_reason' => $reason,
                 ]);
 
             // Revierte de forma contable el asiento de diario original mediante un contra-asiento de diario automático.
@@ -542,7 +542,12 @@ class SaleService
             // Cancela el estado de la entidad Invoice vinculada de forma interna.
             $this->invoiceService->cancelInvoice($sale);
 
-            return $sale->update(['status' => Sale::STATUS_CANCELED]);
+            return $sale->update([
+                'status' => Sale::STATUS_CANCELED,
+                'cancellation_reason' => $reason,
+                'canceled_by' => auth()->id(),
+                'canceled_at' => now(),
+            ]);
         });
     }
 
