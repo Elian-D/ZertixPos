@@ -67,10 +67,9 @@ class SaleService
         // falla, no se alteren inventarios ni se creen cabeceras de ventas huérfanas.
         return DB::transaction(function () use ($data, $context) {
 
-            // Consumo y formateo secuencial de numeración interna por tipo de documento (Factura de Venta)
-            $docType = DocumentType::where('code', 'FAC')->firstOrFail();
-            $saleNumber = $docType->getNextNumberFormatted();
-            $docType->increment('current_number');
+            // Correlativo interno de la venta (VTA). La factura (FAC) y la CxC (CXC)
+            // llevan el suyo propio al crearse (v1.4.0 REQ-3.19).
+            [$docType, $saleNumber] = DocumentType::issueNext('VTA');
 
             $saleDate = now();
             if (isset($data['sale_date'])) {
@@ -117,11 +116,11 @@ class SaleService
             ]);
 
             // 4. PROCESAMIENTO DE ÍTEMS, IMPUESTOS Y MOVIMIENTOS DE INVENTARIO
-            // Precargado en una sola query: un "servicio" (is_stockable=false) no debe
-            // generar movimiento de inventario ni asiento de Costo de Ventas — no tiene
-            // cantidad física real que descontar de ningún almacén.
+            // Precargado en una sola query: un "servicio" (type=service, v1.4.0 Fase 1)
+            // no debe generar movimiento de inventario ni asiento de Costo de Ventas —
+            // no tiene cantidad física real que descontar de ningún almacén.
             $products = Product::whereIn('id', collect($data['items'])->pluck('product_id'))
-                ->get(['id', 'is_stockable'])
+                ->get(['id', 'type'])
                 ->keyBy('id');
 
             // Impuestos multi-tasa por línea (Fase 5, REQ-5.3) — ya no una tasa global
@@ -159,7 +158,7 @@ class SaleService
                 $netAccum += $lineSubtotal;
                 $taxAccum += $lineTax;
 
-                $isStockable = $product?->is_stockable ?? true;
+                $isStockable = ($product?->type ?? Product::TYPE_PRODUCT) === Product::TYPE_PRODUCT;
 
                 // inventory.tracking es núcleo flexible (REQ-10.5) — apagado, la venta
                 // sigue funcionando pero no se escribe ningún InventoryMovement ni se
@@ -475,13 +474,17 @@ class SaleService
      * Devuelve mercancía al stock, cancela CxC (si no tienen cobros previos), invalida NCF y contabilidad.
      *
      * * @param Sale $sale Instancia de la venta a anular.
-     * @param  string|null  $reason  Motivo justificado de la cancelación.
+     * @param  string  $reason  Motivo de la anulación; se guarda en la venta (REQ-3.18) y, si tiene NCF, también en su log fiscal.
      */
-    public function cancel(Sale $sale, ?string $reason = null): bool
+    public function cancel(Sale $sale, string $reason): bool
     {
         return DB::transaction(function () use ($sale, $reason) {
-            if ($sale->status === Sale::STATUS_CANCELED) {
-                throw new Exception('La venta ya se encuentra anulada.');
+            // Guard de turno (v1.4.0 Fase 1, REQ-1.2) — anular solo es seguro mientras
+            // la venta pertenece a un turno abierto; turno cerrado o venta de backoffice
+            // se resuelven con Devolución. La regla vive en Sale::cancellationBlockReason()
+            // para que la UI (botón Anular vs Devolver) y este guard no diverjan.
+            if ($blocked = $sale->cancellationBlockReason()) {
+                throw new Exception($blocked);
             }
 
             // Regla de Negocio Crítica: Si la factura fue a crédito, no se puede anular si el cliente ya
@@ -500,7 +503,7 @@ class SaleService
             NcfLog::where('sale_id', $sale->id)
                 ->update([
                     'status' => NcfLog::STATUS_VOIDED,
-                    'cancellation_reason' => $reason ?? 'Anulación de venta manual',
+                    'cancellation_reason' => $reason,
                 ]);
 
             // Revierte de forma contable el asiento de diario original mediante un contra-asiento de diario automático.
@@ -513,7 +516,16 @@ class SaleService
             // NOTA ARQUITECTÓNICA: Se usa TYPE_ADJUSTMENT en lugar de TYPE_INPUT para no inflar artificialmente las
             // métricas de compras/entradas ordinarias en los reportes analíticos de inventario.
             if (module_enabled('inventory.tracking')) {
+                $sale->loadMissing('items.product:id,type');
+
                 foreach ($sale->items as $item) {
+                    // v1.4.0 Fase 1, REQ-1.1 — bug real corregido: antes esto reingresaba
+                    // stock para TODOS los ítems sin distinguir tipo, "devolviendo"
+                    // cantidad física a un servicio que nunca tuvo ninguna.
+                    if ($item->product?->isService()) {
+                        continue;
+                    }
+
                     $this->inventoryService->register([
                         'warehouse_id' => $sale->warehouse_id,
                         'product_id' => $item->product_id,
@@ -529,7 +541,12 @@ class SaleService
             // Cancela el estado de la entidad Invoice vinculada de forma interna.
             $this->invoiceService->cancelInvoice($sale);
 
-            return $sale->update(['status' => Sale::STATUS_CANCELED]);
+            return $sale->update([
+                'status' => Sale::STATUS_CANCELED,
+                'cancellation_reason' => $reason,
+                'canceled_by' => auth()->id(),
+                'canceled_at' => now(),
+            ]);
         });
     }
 

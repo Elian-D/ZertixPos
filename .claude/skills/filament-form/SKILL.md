@@ -21,33 +21,40 @@ Nunca asumas nombres de columna ni reglas de validación. Antes de escribir un s
 
 La pregunta es "¿qué decisión está tomando el usuario acá?", no "¿en qué orden están las columnas en la tabla". Agrupa por tema: datos de identificación va junto, configuración/comportamiento va junto, relaciones/permisos van en su propia sección. Dos-cuatro secciones es lo normal; si te salen más de cinco, probablemente dos de ellas en realidad son una sola.
 
-## Paso 3 — Cada sección es una tarjeta con ícono + título
+## Paso 3 — Cada sección es la misma tarjeta que usan las vistas show
 
-Este es el patrón visual completo — todas las secciones de todos los formularios del sistema lo siguen, cópialo tal cual, no lo reinventes por formulario:
+Formulario y show comparten **un solo lenguaje visual** (el de `/filament-show`): ícono **outline gris**, título en **tipo oración** (no mayúsculas), encabezado separado del contenido por un borde. Se usa el mismo componente, `x-ui.infolist.section`, con `:cols="0"` (el contenido es libre) y la grilla de campos adentro:
 
 ```blade
-<section class="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 sm:p-6">
-    <div class="flex items-center gap-2 mb-6 border-b border-gray-100 pb-3">
-        <x-heroicon-s-{icono} class="w-5 h-5 text-zertix-secondary" />
-        <h3 class="font-bold text-gray-800 uppercase text-xs tracking-wider">{Título de la Sección}</h3>
+<x-ui.infolist.section title="Identidad y datos fiscales" icon="heroicon-o-identification" :cols="0"
+    description="Opcional: una línea que explique para qué sirve la sección.">
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
+        <div class="sm:col-span-2">
+            <x-ui.forms.input label="Nombre comercial" name="nombre_empresa" required />
+        </div>
+        <x-ui.forms.input label="RNC" name="tax_id" />
+        {{-- … --}}
     </div>
-
-    {{-- campos de la sección --}}
-</section>
+</x-ui.infolist.section>
 ```
 
-El ícono se elige por **tema real de la sección**, no al azar ni siempre el mismo: `heroicon-s-identification`/`heroicon-s-user` para datos de identificación, `heroicon-s-cog-6-tooth`/`heroicon-s-adjustments-horizontal` para configuración, `heroicon-s-key` para permisos/seguridad, `heroicon-s-currency-dollar`/`heroicon-s-building-library` para finanzas, `heroicon-s-printer` para hardware, `heroicon-s-tag` para descuentos/precios — si ninguno de estos calza, busca el heroicon sólido (`heroicon-s-*`) más literal al concepto de la sección antes de conformarte con uno genérico.
+Ojo: `x-ui.forms.*` pasa `class` al `<input>`/`<select>` interno, no a su contenedor — un `class="sm:col-span-2"` puesto en el componente no ensancha el campo. Para que ocupe varias columnas, envolverlo en un `<div class="sm:col-span-2">`.
 
-Referencias reales ya en el repo, revisalas antes de improvisar algo distinto:
-- `resources/views/sales/pos/terminals/partials/form-fields.blade.php` — formulario grande y pesado, toggles con tarjetas clickeables completas.
-- `resources/views/roles/partials/form.blade.php` y `resources/views/users/partials/form.blade.php` — formularios chicos, con un componente Livewire embebido dentro de una sección.
+- **No** al ícono sólido de color (`heroicon-s-* text-zertix-secondary`) ni al título `uppercase tracking-wider` — era el estilo anterior de este skill y no combina con los show.
+- `:cols="0"` es obligatorio: sin él la sección envuelve el contenido en un `<dl>` de 4 columnas (pensado para pares etiqueta/valor), no en un contenedor libre. Ver `docs/ui/infolist.md`.
+- El ícono se elige por **tema real de la sección**, versión outline (`heroicon-o-*`): `identification`/`user` (identificación), `phone` (contacto), `map-pin` (ubicación), `cog-6-tooth`/`adjustments-horizontal` (configuración), `key`/`shield-check` (permisos/seguridad), `currency-dollar`/`banknotes` (finanzas, precios), `printer` (hardware), `tag` (descuentos), `globe-americas` (parámetros regionales), `photo` (imágenes).
 
-## Paso 4 — Decidir columnas por peso real del formulario
+## Paso 4 — Distribución: secciones apiladas a lo ancho, campos en grilla adentro
 
-- **1-2 secciones cortas** (pocos campos, nada que amerite scroll largo) → una sola columna, secciones apiladas con `space-y-6`. Es el caso de Roles/Usuarios.
-- **4+ secciones, con toggles/relaciones pesadas** → grid de 3 columnas en desktop (`grid-cols-1 lg:grid-cols-3 gap-6`), 2/3 para las secciones grandes a la izquierda, 1/3 para las cortas apiladas a la derecha. Es el caso de Terminales POS.
+Así se ve un formulario Filament: **una sola columna de secciones**, cada sección a todo el ancho, y la grilla está **dentro** de la sección, no entre secciones.
 
-No hay una tercera opción por default — si el formulario está en el medio, contá los campos reales antes de decidir, no adivines.
+- Secciones apiladas con `flex flex-col gap-6`, cada una a todo el ancho.
+- Dentro de cada sección: `grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5` por defecto; `lg:grid-cols-3` si los campos son cortos (números, fechas, selects pequeños). Un campo largo (nombre, dirección, notas, imagen) ocupa la fila con `sm:col-span-2`/`col-span-full`.
+- Orden: lo que identifica el registro primero, configuración/comportamiento después, lo informativo o raramente editado al final.
+- **No** partir el formulario en columnas 2/3 + 1/3 por defecto: hace que secciones de distinto alto queden desalineadas y la página se lee "rara". Solo se justifica con una columna lateral de verdad secundaria (ej. resumen en vivo de lo que se está creando) — si no hay eso, una columna.
+- Acciones al final, alineadas a la derecha: cancelar/descartar (`appearance="ghost" variant="secondary"`) y guardar (`variant="primary"`, `type="submit"`).
+
+Referencias reales: `resources/views/configuration/general/edit.blade.php` (este patrón). Los formularios de Terminales POS, Roles y Usuarios usan todavía el estilo anterior (íconos sólidos de color, títulos en mayúsculas) — no copiarlos; se irán migrando.
 
 ## Paso 5 — El partial reusable: `resources/views/<módulo>/partials/form.blade.php`
 
@@ -71,7 +78,8 @@ Si un campo necesita recalcular algo consultando la base de datos según lo que 
 
 ## Checklist antes de dar el formulario por terminado
 
-- [ ] ¿Cada sección tiene un ícono que corresponde a su tema real, no genérico?
+- [ ] ¿Cada sección es `x-ui.infolist.section :cols="0"` con ícono outline gris por tema real y título en tipo oración?
+- [ ] ¿Las secciones van apiladas a lo ancho, con la grilla de campos dentro de cada una (no columnas 2/3 + 1/3 sin motivo)?
 - [ ] ¿El partial funciona tal cual en create Y en edit, sin ningún `@if($esEdit)` que debería ser simplemente `isset($modelo)`?
 - [ ] ¿Ningún campo usa `<input>`/`<select>` nativo sin haber revisado antes si `x-ui.forms.*` ya lo cubre?
 - [ ] ¿`create.blade.php`/`edit.blade.php` son solo cáscara, sin campos sueltos fuera del `@include`?

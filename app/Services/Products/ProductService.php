@@ -88,7 +88,8 @@ class ProductService
     private function generateSku(): string
     {
         $lastId = Product::withTrashed()->max('id') ?? 0;
-        return 'PRD-' . str_pad($lastId + 1, 5, '0', STR_PAD_LEFT);
+
+        return 'PRD-'.str_pad($lastId + 1, 5, '0', STR_PAD_LEFT);
     }
 
     /**
@@ -101,11 +102,11 @@ class ProductService
             $count = count($ids);
 
             match ($action) {
-                'change_active'     => $query->update(['is_active' => $value]),
-                'change_stockable'  => $query->update(['is_stockable' => $value]),
-                'change_category'   => $query->update(['category_id' => $value]),
-                'change_unit'       => $query->update(['unit_id' => $value]),
-                default => throw new \InvalidArgumentException("Acción no soportada"),
+                'change_active' => $query->update(['is_active' => $value]),
+                'change_type' => $query->update(['type' => $value]),
+                'change_category' => $query->update(['category_id' => $value]),
+                'change_unit' => $query->update(['unit_id' => $value]),
+                default => throw new \InvalidArgumentException('Acción no soportada'),
             };
 
             return $count;
@@ -115,11 +116,11 @@ class ProductService
     public function getActionLabel(string $action): string
     {
         return match ($action) {
-            'change_active'     => 'actualizado el estado operativo',
-            'change_stockable'  => 'actualizado la gestión de stock',
-            'change_category'   => 'cambiado de categoría',
-            'change_unit'       => 'cambiado de unidad',
-            default             => 'procesado',
+            'change_active' => 'actualizado el estado operativo',
+            'change_type' => 'actualizado el tipo (producto/servicio)',
+            'change_category' => 'cambiado de categoría',
+            'change_unit' => 'cambiado de unidad',
+            default => 'procesado',
         };
     }
 }

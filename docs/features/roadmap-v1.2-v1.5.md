@@ -1,7 +1,8 @@
-# ZertixPOS — Roadmap v1.2.0 → v1.5.0
+# ZertixPOS — Roadmap v1.2.0 → v1.6.0
 
-**Fecha:** 2026-08-06
 **Contexto:** Este documento ordena lo que sigue **después** de `v1.1.0.md` (desacople de Contabilidad + arquitectura de módulos base/satélite). Nace porque `docs/promts.md` es la libreta de trabajo del día a día — cambia constantemente y no es el lugar para fijar un orden de versiones. Este archivo sí lo es: una vez escrito, no debería reordenarse salvo que cambie una dependencia real, no una prioridad de humor.
+
+**Trabajo previo, ya completado antes de v1.2.0 (fuera del alcance de este documento, mencionado solo como contexto):** el sistema de POS/Terminales completo (diseño responsivo, sesiones multi-usuario, PIN y bloqueo de terminal, independencia de configuración/descuentos por caja, integración DGII para RNC/Cédula) está construido y documentado fase por fase en `docs/features/POS-Interfaz.md` — ese documento es la referencia de ese trabajo, no se repite acá.
 
 > **Principio del orden:** no es una lista de prioridades de negocio, es un mapa de dependencias reales. Cada versión existe donde está porque algo de una versión anterior la bloquea técnicamente — no porque "es lo más importante". Donde dos cosas no se bloquean entre sí, se agrupan por área de código tocada, para no reabrir los mismos archivos en versiones separadas.
 
@@ -13,11 +14,11 @@
 
 | Versión | Qué resuelve | Por qué va ahí y no antes/después |
 | :--- | :--- | :--- |
-| v1.2.0 | Detalle completo en [`v1.2.0.md`](v1.2.0.md): limpieza confirmada de `docs/promts.md` (estados muertos, `unique`/doble-submit, Consumidor Final, código de almacén), reestructuración de rutas/sidebar (`admin`→`app`, `accounting.*`→`finance.*`), rename "Pagos"→"Cobros", Impuestos (bug de raíz), Cobros CxC desde el TPV, tokens de color + componentes Orvian ligeros | Impuestos es la dependencia raíz de todo lo que mueve dinero de aquí en adelante. La limpieza y la reestructuración de navegación van primero para no construir lo nuevo sobre rutas/vistas que van a cambiar de nombre o de lugar a mitad de camino. Los componentes de marca se adoptan antes de construir módulos nuevos para no repintarlos después |
-| v1.3.0 | **(Adelantada desde v1.5.0 original)** Multi-tenant vía `stancl/tenancy`, modo **database-per-tenant sobre MySQL** (sin migrar motor): separación landlord/tenant, wizard de aprovisionamiento (reusa el Install Wizard de v1.1.0 Fase 8), panel de Súper Admin liviano, DNS comodín `*.zertixpos.com`, límites por Plan, y Roles/Permisos pendientes de `docs/promts.md` | Ya no depende de que Devoluciones/Compras existan primero — esa dependencia era específica de un modelo con PostgreSQL+esquema compartido, descartado. Sí depende de que la Fase 3 de v1.2.0 (rutas `admin`→`app`) ya haya cerrado, para no provisionar tenants nuevos sobre rutas que están por moverse. Se prioriza sobre Devoluciones/Compras porque hay clientes reales esperando poder entrar por su propio subdominio, y la infraestructura base (`installation_modules`, `Plan`, Wizard) ya está lista desde v1.1.0 |
-| v1.4.0 | **(Antes v1.3.0)** Ciclo de venta completo: Devoluciones + Nota de Crédito (B04), rename Producto/Servicio | Depende del monto de impuesto correcto (v1.2.0) para saber cuánto revertir |
+| v1.2.0 | **Completada.** Detalle completo en [`v1.2.0.md`](v1.2.0.md): limpieza de deuda técnica menor (estados muertos, `unique`/doble-submit, Consumidor Final, código de almacén, depuración geográfica a solo RD), reestructuración de rutas/sidebar (`admin`→`app`, `accounting.*`→`finance.*`), rename "Pagos"→"Cobros", Impuestos (bug de raíz), Cobros CxC desde el TPV, Identidad Corporativa (logo vectorizado) + tokens de color + componentes Orvian ligeros | Impuestos es la dependencia raíz de todo lo que mueve dinero de aquí en adelante. La limpieza y la reestructuración de navegación van primero para no construir lo nuevo sobre rutas/vistas que van a cambiar de nombre o de lugar a mitad de camino. Los componentes de marca (y el logo, que se integró en la misma pasada) se adoptan antes de construir módulos nuevos para no repintarlos después |
+| v1.3.0 | **Completada.** **(Adelantada desde v1.5.0 original)** Multi-tenant vía `stancl/tenancy`, modo **database-per-tenant sobre MySQL** (sin migrar motor): separación landlord/tenant, wizard de aprovisionamiento (reusa el Install Wizard de v1.1.0 Fase 8), panel de Súper Admin liviano, DNS comodín `*.zertixpos.com`, límites por Plan, Roles/Permisos renombrados a `recurso.accion`, y migración completa de las 22 tablas del sistema al motor Livewire (`App\Livewire\Base\DataTable`) — absorbió de una sola vez lo que originalmente se planeó como migración gradual sin versión fija | Ya no depende de que Devoluciones/Compras existan primero — esa dependencia era específica de un modelo con PostgreSQL+esquema compartido, descartado. Sí depende de que la Fase 3 de v1.2.0 (rutas `admin`→`app`) ya haya cerrado, para no provisionar tenants nuevos sobre rutas que están por moverse. Se prioriza sobre Devoluciones/Compras porque hay clientes reales esperando poder entrar por su propio subdominio, y la infraestructura base (`installation_modules`, `Plan`, Wizard) ya está lista desde v1.1.0. La migración del motor de tablas se adelantó a Fase 0 de esta misma versión porque el Panel de Súper Admin y cualquier vista nueva de multi-tenant nacían directo en el motor nuevo — construirlas en el motor viejo hubiera significado migrarlas después de todos modos |
+| v1.4.0 | **(Antes v1.3.0)** Detalle en [`v1.4.0.md`](v1.4.0.md). Hecho:<br>• Rename Producto/Servicio y guard de Anulación por turno.<br>• **Devoluciones y Cambios solo desde backoffice** con ejecución inmediata. El flujo Solicitar/Aprobar del TPV se diseñó, se descartó y no se construyó.<br>• Vistas `show` estilo Filament de casi todos los módulos.<br>• Numeración propia por documento: `VTA`/`FAC`/`CXC`/`COT`/`TRN`.<br>• Anulación con motivo en la venta.<br>• Rediseño de los PDF carta.<br>• Ajustes de UI de las tablas.<br><br>Nota de Crédito (B04) descartada en esta versión | Depende del monto de impuesto correcto (v1.2.0) para saber cuánto revertir |
 | v1.5.0 | **(Antes v1.4.0)** Ciclo de compra: Proveedores/Órdenes de Compra, Inventario avanzado (Transferencias, Tomas Físicas/Mermas) | Depende de CxP operativa (ya base desde v1.1.0) y del modelo de impuestos correcto para no duplicar el mismo bug en Compras |
-| Sin versión fija | Identidad Corporativa (logo), migración gradual de las 24 `x-data-table` a `Orvian\Kit\Livewire\Base\DataTable` | Ninguna depende de código propio ni bloquea nada — se hacen cuando corresponda, en paralelo |
+| v1.6.0 | **(Sin pedido confirmado — no empezar hasta que un cliente real lo pida, ver sección propia).** Variantes de producto (talla/color/etc.) — `product_variants` con SKU/código de barras/stock propios, `Product` pasa a ser el estilo padre | No depende de nada anterior técnicamente, pero **si se confirma antes de que v1.4.0/v1.5.0 arranquen, hay que adelantarla** (mismo criterio que adelantó Multi-tenant) — `SaleItem`/`QuoteItem`/`InventoryStock` hoy asumen `product_id` único, y Devoluciones/Compras/Transferencias construidas sobre esa asunción tendrían que reabrirse para agregar la dimensión de variante |
 
 ---
 
@@ -40,9 +41,9 @@ Todo lo que se construya después hereda este hueco si no se corrige antes:
 2. **Reestructuración de rutas y sidebar** (Fase 3): agrupación CRM/Ventas/Inventario/Finanzas/Reportes/Sistema, prefijo `admin`→`app`, rename `accounting.*`→`finance.*` y `clients.pos.*`→`clients.delivery_points.*`. Va antes de lo demás para no construir código nuevo sobre nombres de ruta que están por cambiar.
 3. **Rename "Pagos"→"Cobros"** (Fase 4), fase propia con verificación dedicada — `Payment` es exclusivamente el abono de CxC, nunca dinero saliendo del negocio; el nombre correcto libera "Pagos" para cuando exista CxP operativa.
 4. **Impuestos** (Fase 5) — modelo multi-tasa por línea (`config/impuestos.php` + pivote `product_taxes`), persistir `net_amount`/`tax_amount` en `sales`/`sale_items`, corregir `generateSaleAccountingEntry()` para que credite por el neto+impuesto real, y que `ticket.blade.php`/`full.blade.php` lean la columna real.
-5. **Cobros CxC desde el TPV** (Fase 6) — depende directo de REQ-02.8 (abono operativo separado del asiento contable, ya construido en v1.1.0). Es la pieza que falta para que "pagar en caja" y "el sistema" cuadren, tal como lo pide `docs/promts.md`.
-6. **Tokens de color + componentes Orvian ligeros** (Fase 7) — deliberadamente al final, no antes. Son de bajo costo y adoptarlos *antes* de construir Multi-tenant/Devoluciones/Compras evita que esos módulos nuevos nazcan en la paleta vieja y haya que repintarlos después.
-7. Excluido deliberadamente de esta versión: la migración de `DataTable` (ver sección "Sin versión fija" — requiere Livewire y es un proyecto propio).
+5. **Cobros CxC desde el TPV** (Fase 6) — depende directo de REQ-02.8 (abono operativo separado del asiento contable, ya construido en v1.1.0). Es la pieza que falta para que "pagar en caja" y "el sistema" cuadren.
+6. **Identidad Corporativa (logo vectorizado en Figma) + Tokens de color y componentes Orvian ligeros** (Fase 7) — deliberadamente al final, no antes. Son de bajo costo y adoptarlos *antes* de construir Multi-tenant/Devoluciones/Compras evita que esos módulos nuevos nazcan en la marca/paleta vieja y haya que repintarlos después.
+7. Excluido deliberadamente de esta versión: la migración de `DataTable` a Livewire — requiere un motor propio, se termina adelantando a Fase 0 de v1.3.0 (ver esa sección).
 
 ---
 
@@ -76,7 +77,8 @@ Razones, en orden de peso:
 3. **Panel de Súper Admin liviano** — alta/baja de tenants, plan asignado, límites por plan (ya identificado como faltante en `v1.1.0.md` §Fase 5: "nada delimita cuántos usuarios puede crear una instalación según su plan"), estado de cada instalación. Reusa `installation_modules`/`Plan` tal cual, sin rediseño — esas tablas ya nacieron pensadas para este momento (`modulos-base-satelite.md:160`).
 4. **DNS comodín** `*.zertixpos.com` — un registro `A`/`CNAME`, un certificado wildcard vía DNS-01 challenge (no HTTP-01, no valida wildcards), y una lista de subdominios reservados (`admin`, `app`, `api`, `www`) que el wizard rechaza antes de crear un tenant.
 5. **Fix obligatorio, no opcional:** activar `CacheTenancyBootstrapper` de `stancl/tenancy` para que el caché de permisos de `spatie/laravel-permission` (24h por defecto, clave global si no se ajusta) no se filtre entre tenants que comparten el mismo store de caché. Aplica sin importar el modo de aislamiento elegido — no es una ventaja exclusiva de database-per-tenant, hay que resolverlo igual.
-6. **Roles y Permisos** (pendientes de `docs/promts.md`: rol obligatorio al crear usuario, permisos extra seleccionables, traducción de permisos, organización en tabs/categorías) — se mantiene agrupado acá porque el panel de Súper Admin introduce por primera vez el concepto de roles a nivel landlord, aunque ya no depende técnicamente de la migración a Postgres como se pensaba originalmente. Evaluar al llegar a esta fase si conviene desacoplarlo en una sub-fase propia según el volumen de trabajo ya acumulado.
+6. **Roles y Permisos** — rol obligatorio al crear usuario (con permisos extra seleccionables), renombrado completo a la convención `recurso.accion`, traducción de permisos y organización en tabs/categorías. Se mantiene agrupado acá porque el panel de Súper Admin introduce por primera vez el concepto de roles a nivel landlord, aunque ya no depende técnicamente de la migración a Postgres como se pensaba originalmente.
+7. **Migración del motor de tablas a Livewire** (`App\Livewire\Base\DataTable`) — 22 módulos migrados en total. Originalmente planeada sin versión fija, migración módulo por módulo "cuando tocara". Se adelantó a Fase 0, antes de todo lo demás, porque el Panel de Súper Admin y cualquier vista nueva de esta versión nacían directo en el motor nuevo — construirlas primero en el motor AJAX viejo hubiera significado migrarlas después de todos modos. Con esto, la migración gradual que originalmente no tenía versión fija quedó completamente absorbida acá, de una sola vez.
 
 ### Descartado explícitamente, y por qué
 
@@ -93,21 +95,75 @@ Razones, en orden de peso:
 
 ---
 
-## v1.4.0 — Ciclo de Venta Completo: Devoluciones + Nota de Crédito (B04)
+## v1.4.0 — Devoluciones y Cambios (Ciclo de Venta Completo)
 
 *(Antes v1.3.0 — corre un número hacia atrás por el adelanto de Multi-tenant, ver corrección al inicio del documento)*
+
+**Detalle completo, fase por fase (tabla de Requerimientos + desglose, incluyendo el hallazgo real de que el guard de Anulación hoy no cubre una venta de contado con turno cerrado, y por qué no se reactiva `PosCashMovement`), en [`v1.4.0.md`](v1.4.0.md).** Resumen:
+
+**Realidad de negocio que gobierna el diseño:** en un colmado/surtidora dominicana, 97-99% de una devolución es un **cambio de producto dañado**, casi nunca reembolso de dinero puro — el diseño prioriza eso, no un reembolso genérico.
+
+### Lo que se hizo realmente
+
+El plan original de abajo ("Alcance") se dejó como registro. Lo construido difiere en puntos importantes:
+
+- **Fase 1 — Prerequisitos:**
+  - `is_stockable` pasó a `type` (Producto/Servicio).
+  - Anular ahora solo es posible mientras el turno de la venta sigue abierto (`Sale::canBeCanceled()`).
+  - Se quitó el gate `invoices.print`, que nunca se había sembrado y bloqueaba toda impresión.
+- **Fase 2 — Devoluciones y Cambios (replanteada):**
+  - **Primer intento descartado:** era un motor pensado para el TPV (aprobaciones, ventana de días, selección de caja y almacén, ajuste del efectivo del turno). Se respaldó en un stash y se revirtió.
+  - **Lo construido** sigue las reglas reales del negocio:
+    - Solo backoffice, con ejecución inmediata.
+    - "Anular" o "Devolver" según el turno.
+    - Reembolso en efectivo (monto fijo) o cambio de producto. Si el reemplazo cuesta más, se crea una venta nueva pagada con "Devolución" + efectivo.
+    - Varias líneas por devolución, aunque el cambio se hace de a una.
+    - Toggle de reingreso a inventario.
+    - En una venta a crédito, la devolución baja la CxC (no es un abono).
+  - **Lo que lo acompaña:**
+    - Numeración `DEV`.
+    - Ticket corto con PDF.
+    - Tabla Livewire propia.
+    - Badges "Devuelta" / "Devuelta parcial" en Ventas.
+    - Permisos `returns.create` y `returns.void`.
+- **Fase 3 — Vistas show y ajustes:**
+  - **Vistas `show` estilo Filament**, sin instalar Filament (`x-ui.infolist.*`, skill `/filament-show`), en lugar de modales e iframes. Cubre clientes, cotizaciones, ventas, devoluciones, terminales, turnos, productos, almacenes, CxC, cobros, facturas, secuencias NCF, roles y usuarios.
+  - **Configuración General** rehecha con `/filament-form`.
+  - **Fix de seguridad:** las rutas de Terminales POS no tenían permisos.
+  - **Anulación de ventas:** motivo obligatorio, quién anuló y cuándo, guardados en la venta. Antes el motivo se perdía si la venta no tenía NCF.
+  - **Numeración por tipo de documento:** cada uno con su correlativo atómico (trait `HasDocumentNumber`).
+    - `VTA` para la venta.
+    - `FAC` para la factura, ahora con secuencia propia.
+    - `CXC` para la cuenta por cobrar.
+    - `COT` para la cotización.
+    - `TRN` para el turno.
+  - **Ajustes de UI:**
+    - Paginación adaptable.
+    - Menú de acciones en móvil.
+    - Badges que no se parten.
+    - Modales cortos dentro de su tabla.
+    - El buscador de cada tabla dice en qué busca (`searchFields()`).
+  - **Rediseño de los 4 PDF carta** (turno, factura, recibo y cotización) sobre componentes `x-pdf.*` (skill `/filament-pdf`).
+- **Descartado:**
+  - Devoluciones desde el TPV y su flujo de aprobación.
+  - Nota de Crédito Fiscal (B04).
+  - Saldo a favor (store credit).
+  - Asientos contables de la devolución.
+  - Mermas formales, que pasan a v1.5.0.
 
 ### Dependencias
 
 - Depende de **Impuestos (v1.2.0)** — sin el monto de impuesto real persistido en la venta original, no hay forma correcta de calcular cuánto revertir en una devolución.
-- `sales.ncf` y su infraestructura de módulos (v1.1.0 Fase 4) ya están listas — el B04 se construye como parte de Devoluciones, sin un flag propio (revisión v1.1.0 §10.9, ver nota abajo).
+- `sales.ncf` y su infraestructura de módulos (v1.1.0 Fase 4) ya están listas para cuando se active el B04 — ver nota de prioridad abajo.
 
-### Alcance
+### Alcance (plan original, antes de construir)
 
-1. **Rename `is_stockable` → campo `type` enum** (Producto/Servicio) en el modelo, clases, rutas y UI — se hace primero dentro de esta versión porque es barato y Devoluciones ya tiene un bug conocido (revierte stock de un servicio que nunca tuvo stock real, ver `docs/promts.md` sección Logística) que se resuelve limpio si el enum existe antes de tocar esa lógica.
-2. **Flujo de Devoluciones y Reembolsos** — módulo base (confirmado en `modulos-base-satelite.md`), funciona con o sin NCF activo.
-3. **Nota de Crédito Fiscal (B04)** — **ya no es el satélite `sales.credit_notes_b04`** (esa entrada se eliminó de `config/modules.php` en v1.1.0 §10.9: no es una funcionalidad independiente, es el comprobante fiscal de esta misma acción de Devoluciones). Se construye como una rama de este mismo flujo — "emitir devolución con B04" — que valida `module_enabled('sales.ncf')` directo, sin flag intermedio.
-4. Vistas `show` específicas para desglose de venta (ítems, pagos, descuentos aplicados) — pedido explícito en `docs/promts.md`, mismo módulo.
+1. **Rename `is_stockable` → campo `type` enum** (Producto/Servicio) — barato, y corrige de paso un bug conocido (revierte stock de un servicio que nunca tuvo stock real).
+2. **Endurecer el guard de Anulación** — hallazgo real de auditoría: hoy una venta 100% en efectivo se puede anular sin restricción aunque su turno de caja ya haya cerrado.
+3. **Flujo de Devoluciones y Cambios** — módulo base (confirmado en `modulos-base-satelite.md`), con un cambio de producto modelado como una entrada (producto dañado) y una salida (reemplazo) en el mismo registro. Reembolso en efectivo exige una `PosSession` abierta en el negocio (sin contabilidad, es la única fuente de verdad de que hay efectivo real disponible) — se registra desacoplado de `PosCashMovement` (ese módulo está parado a medias, no se reactiva en esta versión).
+4. **Flujo Solicitar (TPV) → Aprobar/Ejecutar** — opcional por negocio vía toggle, con permiso propio de aprobación separado de solicitar, y posibilidad de anular una devolución ya ejecutada mientras su sesión siga abierta.
+5. **Nota de Crédito Fiscal (B04)** — **bajada de prioridad a propósito** (el objetivo inmediato es vender el sistema; puede no pedirse nunca). Se deja la base reservada (columna NCF, gate ya resuelto), pero no se construye el consumo real de secuencia/reporte 607 en esta versión.
+6. Vista `show` real de Ventas/Facturas (reemplaza el modal, ahora solo como historial informativo — ya no es el punto de entrada de Devolución) y el mismo arreglo para Cotizaciones (sus líneas hoy solo existen dentro del iframe de preview, no como contenido real de la página).
 
 ---
 
@@ -122,20 +178,64 @@ Razones, en orden de peso:
 
 ### Alcance
 
-1. **Proveedores y Órdenes de Compra** (`purchases.vendors`) — pantallas y lógica completa, según `docs/promts.md`.
+1. **Proveedores y Órdenes de Compra** (`purchases.vendors`) — pantallas y lógica completa.
 2. **Transferencias entre Almacenes** — submódulo con estados `Creación`/`Recepción`, documentos firmables no editables tras aprobar. Es el mismo modelo que ya sostiene "sucursales dentro de un tenant" en v1.3.0 — se profundiza acá, no se rediseña.
 3. **Tomas Físicas (auditorías de stock) y Pérdidas/Mermas.**
-4. **Bugs de validación servicio-stock** (mismo área de código): no permitir asignar stock a un producto tipo Servicio, no permitir transferir un Servicio, y corregir la cancelación de venta para que no intente devolver stock de un Servicio.
-5. Estos módulos son candidatos naturales para nacer directo en `Orvian\Kit\Livewire\Base\DataTable` en vez del `x-data-table` viejo — son pantallas 100% nuevas, cero legado que migrar. Es el punto de partida real de la migración gradual del DataTable, sin que sea su propia versión dedicada.
+4. **Bugs de validación servicio-stock** (mismo área de código): no permitir asignar stock a un producto tipo Servicio y no permitir transferir un Servicio. La cancelación de venta que devolvía stock de un Servicio ya se corrigió en v1.4.0 (REQ-1.1).
+5. Estos módulos nacen directo en el motor Livewire (`App\Livewire\Base\DataTable`) — ya es el único motor vigente para tablas nuevas desde que v1.3.0 Fase 0 migró el sistema completo, no hay motor viejo que evitar.
 
 ---
 
-## Sin versión fija — en paralelo, sin dependencias de código
+## v1.6.0 — Variantes de Producto (Talla/Color)
 
-| Tarea | Por qué no tiene versión dedicada |
-| :--- | :--- |
-| **Identidad Corporativa** — vectorizar el logo oficial en Figma | Es trabajo de diseño, no de código. No bloquea ni depende de nada — se integra a los tokens de color el día que esté listo, sin importar qué versión esté en curso |
-| **Migración gradual de las 24 tablas `x-data-table` existentes** a `Orvian\Kit\Livewire\Base\DataTable` | El propio paquete está diseñado para convivencia gradual (namespaces separados `x-data-table.*` vs `x-orvian.data-table.*`). Migrar las 24 de una es un proyecto en sí mismo — se migra módulo por módulo cuando se toque por otra razón, empezando naturalmente por los módulos nuevos de v1.5.0 |
+**Sin pedido confirmado todavía.** Origen: reenvío de un tercero (2026-09-21) sobre un posible cliente de tienda de ropa — no es un requerimiento activo, es reconocimiento de terreno para no llegar desprevenido si se confirma. **No empezar a construir hasta que haya un cliente real esperando esto**, mismo criterio que el resto del documento.
+
+### Por qué el sistema no lo soporta hoy, ni parcialmente
+
+Auditoría del código confirma que ZertixPOS es "single-SKU" de punta a punta, no solo le falta un campo:
+
+- **`Product`** (`app/Models/Products/Product.php`, migración `2026_01_30_192804_create_products_table.php`): `sku` único **por producto**. Cero columna `barcode`. Cero tabla de atributos (Talla, Color) en ningún lado del sistema.
+- **`InventoryStock`**: constraint único `(warehouse_id, product_id)` — estructuralmente imposible separar stock por talla/color sin migrar el schema, no es un límite de UI.
+- **`SaleItem`/`QuoteItem`**: `foreignId('product_id')` directo, sin tabla intermedia de variante.
+- **POS Workspace**: tocar la tarjeta del producto lo agrega al carrito de una vez — no hay paso de "elegir opciones" en el flujo.
+- **Código de barras**: no existe en absoluto, ni para producto simple.
+- Grep completo de `docs/analisis/*.md` y `docs/features/*.md` por "variante"/"talla"/"atributo" (de producto): cero menciones. Nunca se discutió ni de pasada.
+
+### Alcance (si se confirma)
+
+1. **Modelo nuevo:** `product_variants` (SKU propio, código de barras propio, precio override opcional, imagen propia opcional) + sistema de atributos (`attributes`/`attribute_values`, o algo más simple tipo `option1`/`option2` si no hace falta un sistema genérico completo). `Product` pasa a ser el "estilo padre" (nombre, categoría, imagen base).
+2. **Migración de `inventory_stocks`** de `product_id` a `product_variant_id` — rompe el constraint único actual, requiere migración de datos real para todo lo que ya existe en producción.
+3. **`SaleItem`/`QuoteItem`** pasan a referenciar la variante, no el producto — con cascada a `SaleService::create()`, el cálculo de COGS (`$product->cost` hoy, tendría que resolver `$variant->cost ?? $product->cost`), tickets/PDFs (mostrar "Camisa Azul — Talla M"), y el reporte 607 de NCF.
+4. **POS:** selector de variante (matriz talla×color) antes de agregar al carrito — cambio de flujo, no cosmético. Escaneo de código de barras por variante.
+5. **Import/export de productos** (hoy no existe ningún importador real — confirmado, `app/Exports/` no tiene `ProductsImport`) nacería ya variant-aware si se construye después de esto.
+
+### Dependencias reales — por qué el orden importa más que en otros módulos
+
+Mismo patrón que Impuestos (v1.2.0): **todo lo que se construya después hereda el hueco si esto no se resuelve primero.**
+
+- **v1.4.0 (Devoluciones)** construida antes, asumiendo `product_id` — una devolución no sabría de qué variante devolver stock. Retrabajo garantizado si Variantes llega después.
+- **v1.5.0 (Compras + Transferencias + Tomas Físicas)** — una orden de compra, una transferencia, un conteo físico, todos necesitan la variante exacta, no el producto padre.
+
+**Si se confirma un cliente real de variantes antes de que v1.4.0/v1.5.0 arranquen en serio, esta versión debe adelantarse** (mismo tipo de decisión, con la misma evidencia por escrito, que adelantó Multi-tenant de v1.5.0 a v1.3.0 — ver corrección al inicio del documento). Si se confirma **después** de que esas dos ya estén construidas, hay que aceptar el retrabajo de agregarles la dimensión de variante — no es gratis en ningún orden, pero es más barato adelantarlo que parcharlo después.
+
+### Descartado explícitamente, y por qué
+
+- **Construirlo "por si acaso" sin cliente confirmado** — no hay evidencia de demanda real todavía (un solo reenvío de tercero, no un cliente en conversación activa). Es trabajo de arquitectura de catálogo grande (toca `Product`, `InventoryStock`, `SaleItem`, `QuoteItem`, POS, exports, NCF) para especular sobre un perfil de cliente que hoy no existe en la base.
+
+---
+
+## Radar — módulos con evidencia real de que faltan, pero sin pedido confirmado (no construir todavía)
+
+**Distinto de v1.6.0 de arriba:** esto no son versiones comprometidas, es una lista de vigilancia — cosas que en algún momento se identificaron como necesarias (en código, en docs, o en la naturaleza del cliente actual) y quedaron sin construir. Se documentan acá para no perderlas de vista, no para empezar a construirlas.
+
+| Candidato | Evidencia real (no especulación) | Para quién sería |
+| :--- | :--- | :--- |
+| **Ventas Pausadas ("Parked Sales")** | `docs/features/POS-Interfaz.md` Fase 8 — diseño completo con checklist, todo sin marcar (`[ ]`). Confirmado: no existe tabla `parked_sales` en ninguna migración | Cualquier negocio de mostrador — cliente va a buscar dinero, compara precios, sin tener que cancelar el carrito completo |
+| **Modo offline + sincronización posterior** | `docs/features/POS-Interfaz.md:864` — listado en la cola futura (`feat/pos-offline-mode`) desde siempre, cero código | El vendedor ambulante (cliente real ya en cartera, ver `docs/analisis/modulos-base-satelite.md`) — conexión inestable en la calle |
+| **Fidelización/puntos de cliente** | `docs/features/POS-Interfaz.md:865` — listado en la misma cola (`feat/pos-loyalty-system`), cero código | Retail con clientes recurrentes — pedido común de tiendas de ropa/electrodomésticos |
+| **Listas de precio por tipo de cliente (mayorista vs. detalle)** | Confirmado que no existe — distinto del motor de descuentos (`docs/analisis/politica-descuentos.md`, ya bien construido, pero es %-off puntual, no un precio base distinto por segmento) | Distribución con clientes mayoristas y minoristas a la vez — el perfil que ya tiene ZertixPOS hoy (embasadora de agua) |
+| **Rutas y Entregas** | `docs/analisis/modulos-base-satelite.md:64` — el link del sidebar **no tiene ruta real detrás** (`/rutas` no registrada en `routes/`), placeholder de la época del hielo | **El cliente que ya se tiene ahora mismo** (embasadora de agua, reparto a domicilio) — el propio doc lo señala explícitamente, es el más urgente de esta lista |
+| **CxP operativa** (gastos del día a día — luz, agua, alquiler) | `docs/analisis/modulos-base-satelite.md:50` — módulo pendiente de construir, ya nace con su flag reservado (`sales.payables`) | Cualquier negocio, es infraestructura base del núcleo flexible, no un satélite de nicho |
 
 ---
 
@@ -143,6 +243,6 @@ Razones, en orden de peso:
 
 - **El orden de este documento asume que `v1.1.0.md` se completa primero.** Ninguna fase de aquí empieza antes de que el registro de módulos, `Plan`, y el desacople de Contabilidad estén cerrados — son la base sobre la que se apoya todo lo demás (CxC/CxP operativas sin Contabilidad, `sales.ncf` como flag, y ahora también `installation_modules`/`Plan` como el dato que Multi-tenant reutiliza 1:1 en v1.3.0).
 - **Impuestos (v1.2.0) sigue siendo el único punto real de bloqueo duro** sobre Devoluciones y Compras — nada de eso cambia con el adelanto de Multi-tenant. Multi-tenant, en cambio, ya no bloquea ni es bloqueado por ninguna versión de negocio (v1.4.0/v1.5.0) — es infraestructura ortogonal, adelantada por presión real de clientes esperando, no por prioridad de humor (ver corrección al inicio del documento, con la evidencia técnica que la sostiene).
-- **Los componentes Orvian pesados (DataTable) se excluyen a propósito de cualquier versión con fecha fija** — es deuda técnica real, pero forzarla a un sprint específico rompe el criterio de "migración gradual" que el propio paquete fue diseñado para permitir.
+- **La migración de `DataTable` se planeó originalmente sin versión fija (gradual, módulo por módulo), pero terminó absorbida de una sola vez en v1.3.0 Fase 0** — cambio real de plan, no un error de este documento: una vez que el Panel de Súper Admin necesitó el motor nuevo desde el día uno, migrar solo eso y dejar las 24 tablas viejas conviviendo en dos motores era peor que migrar todo junto (ver v1.3.0 §7).
 - **PostgreSQL queda descartado como prerequisito de Multi-tenant, no descartado para siempre.** Si en el futuro aparece una razón concreta y específica (no "se ve más profesional") — full-text search avanzado, un tipo de dato que MySQL no cubra bien — esa conversación se da en ese momento, con esa justificación puntual, no como parte de esta decisión.
-- Este documento no reemplaza `docs/promts.md` — ahí siguen viviendo los hallazgos nuevos, bugs sueltos y notas de trabajo diario. Cuando algo de `promts.md` madure lo suficiente para tener una versión asignada, se refleja aquí; `promts.md` no se vacía por eso, sigue siendo la libreta.
+- **`docs/promts.md` es solo la libreta personal de trabajo diario** (bugs sueltos, ideas sin madurar) — cualquier cosa ahí que llegue a tener alcance y versión asignada se documenta acá, no en los dos lugares a la vez.

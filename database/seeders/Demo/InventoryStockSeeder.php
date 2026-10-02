@@ -16,7 +16,7 @@ class InventoryStockSeeder extends Seeder
     public function run(): void
     {
         $warehouses = Warehouse::whereIn('type', [Warehouse::TYPE_POS, Warehouse::TYPE_STATIC])->get();
-        $products = Product::where('is_stockable', true)->get();
+        $products = Product::where('type', Product::TYPE_PRODUCT)->get();
 
         foreach ($warehouses as $warehouse) {
             foreach ($products as $product) {

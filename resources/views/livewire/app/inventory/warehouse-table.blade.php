@@ -62,7 +62,11 @@
             <tr class="hover:bg-slate-50 transition-colors duration-150">
 
                 <x-data-table.cell column="name" :visible="$visibleColumns">
-                    <span class="font-medium text-slate-900">{{ $item->name }}</span>
+                    @if($item->trashed())
+                        <span class="font-medium text-slate-900">{{ $item->name }}</span>
+                    @else
+                        <a href="{{ route('inventory.warehouses.show', $item) }}" class="font-medium text-slate-900 hover:text-zertix-primary-700 hover:underline">{{ $item->name }}</a>
+                    @endif
                 </x-data-table.cell>
 
                 <x-data-table.cell column="types" :visible="$visibleColumns">
@@ -133,8 +137,8 @@
                         @else
                             <x-ui.button
                                 appearance="ghost" variant="secondary" size="sm" icon="heroicon-s-eye"
-                                x-data @click="$dispatch('open-modal', 'view-warehouse-{{ $item->id }}')"
-                                aria-label="Ver detalles" title="Ver detalles" />
+                                href="{{ route('inventory.warehouses.show', $item) }}"
+                                aria-label="Ver almacén" title="Ver almacén" />
 
                             <x-ui.action-menu>
                                 <x-ui.action-menu.item

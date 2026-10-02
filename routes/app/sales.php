@@ -8,6 +8,7 @@ use App\Http\Controllers\Sales\Pos\PosConfigController;
 use App\Http\Controllers\Sales\Pos\PosSessionController;
 use App\Http\Controllers\Sales\Pos\PosTerminalController;
 use App\Http\Controllers\Sales\Pos\PosTerminalLockController;
+use App\Http\Controllers\Sales\ReturnController;
 use App\Http\Controllers\Sales\SaleController;
 use Illuminate\Support\Facades\Route;
 
@@ -38,9 +39,26 @@ Route::prefix('sales')->as('sales.')->group(function () {
         // sales.export reemplazado por SaleTable::export() (wire:click) — ver
         // App\Livewire\App\Sales\SaleTable.
 
+        // Sin permiso propio de impresión — ver nota en routes/app/finance.php
+        // junto a finance.invoices.print (mismo fix, misma razón).
         Route::get('sales/{sale}/print-invoice', [SaleController::class, 'printInvoice'])
             ->name('print-invoice')
-            ->middleware('permission:invoices.print');
+            ->middleware('permission:sales.view');
+
+        // Devoluciones (v1.4.0 Fase 2). Crear = modal Livewire ReturnForm (sin ruta).
+        // Ver/imprimir: quien puede hacer o anular devoluciones.
+        Route::prefix('returns')->as('returns.')->controller(ReturnController::class)->group(function () {
+            Route::get('/', 'index')->middleware('permission:returns.create|returns.void')->name('index');
+            Route::get('/{return}', 'show')->middleware('permission:returns.create|returns.void')->name('show');
+            Route::get('/{return}/print', 'print')->middleware('permission:returns.create|returns.void')->name('print');
+            Route::patch('/{return}/void', 'void')->middleware('permission:returns.void')->name('void');
+        });
+
+        // whereNumber: sin él, {sale} capturaría /sales/create, /sales/returns, etc.
+        Route::get('/{sale}', [SaleController::class, 'show'])
+            ->whereNumber('sale')
+            ->middleware('permission:sales.view')
+            ->name('show');
     });
 
     // routes/app/sales/pos.php
@@ -75,15 +93,35 @@ Route::prefix('sales')->as('sales.')->group(function () {
             ->controller(PosTerminalController::class)
             ->group(function () {
 
-                Route::get('/', 'index')->name('index');
+                // Permiso en cada ruta (v1.4.0 REQ-3.7): antes solo store/update
+                // estaban cubiertas (por su FormRequest) — index/create/edit/destroy
+                // quedaban abiertas a cualquier usuario autenticado.
+                Route::get('/', 'index')
+                    ->middleware('permission:pos_terminals.view')
+                    ->name('index');
 
-                Route::get('/create', 'create')->name('create');
-                Route::post('/', 'store')->name('store');
+                Route::get('/create', 'create')
+                    ->middleware('permission:pos_terminals.create')
+                    ->name('create');
+                Route::post('/', 'store')
+                    ->middleware('permission:pos_terminals.create')
+                    ->name('store');
 
-                Route::get('/{pos_terminal}/edit', 'edit')->name('edit');
-                Route::put('/{pos_terminal}', 'update')->name('update');
+                Route::get('/{pos_terminal}', 'show')
+                    ->whereNumber('pos_terminal')
+                    ->middleware('permission:pos_terminals.view')
+                    ->name('show');
 
-                Route::delete('/{pos_terminal}', 'destroy')->name('destroy');
+                Route::get('/{pos_terminal}/edit', 'edit')
+                    ->middleware('permission:pos_terminals.edit')
+                    ->name('edit');
+                Route::put('/{pos_terminal}', 'update')
+                    ->middleware('permission:pos_terminals.edit')
+                    ->name('update');
+
+                Route::delete('/{pos_terminal}', 'destroy')
+                    ->middleware('permission:pos_terminals.delete')
+                    ->name('destroy');
 
                 // terminals.eliminados/restore/force-delete reemplazadas por el tab
                 // "Papelera" del mismo índice — ver App\Livewire\App\Sales\PosTerminalTable

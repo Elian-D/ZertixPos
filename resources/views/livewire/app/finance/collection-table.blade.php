@@ -69,7 +69,7 @@
                 </x-data-table.cell>
 
                 <x-data-table.cell column="receipt_number" :visible="$visibleColumns">
-                    <span class="font-mono font-bold text-zertix-primary-700">{{ $payment->receipt_number }}</span>
+                    <a href="{{ route('finance.collections.show', $payment) }}" class="font-mono font-bold text-zertix-primary-700 hover:underline">{{ $payment->receipt_number }}</a>
                 </x-data-table.cell>
 
                 <x-data-table.cell column="client" :visible="$visibleColumns">
@@ -79,7 +79,7 @@
 
                 <x-data-table.cell column="receivable" :visible="$visibleColumns">
                     @if($payment->receivable)
-                        <span class="text-slate-700 font-medium">{{ $payment->receivable->document_number }}</span>
+                        <span class="text-slate-700 font-medium">{{ $payment->receivable->number }}</span>
                     @else
                         <span class="text-slate-400 italic">Anticipo / General</span>
                     @endif
@@ -131,10 +131,8 @@
                         {{-- Categoría C (docs/analisis/politica-soft-deletes.md) — un Cobro es
                              bitácora de dinero recibido, nunca se borra ni se archiva. --}}
                         <x-ui.action-menu>
-                            <x-ui.action-menu.item
-                                x-data @click="$dispatch('open-modal', 'view-payment-{{ $payment->id }}')"
-                                icon="heroicon-o-eye">
-                                Ver Recibo
+                            <x-ui.action-menu.item href="{{ route('finance.collections.show', $payment) }}" icon="heroicon-o-eye">
+                                Ver cobro
                             </x-ui.action-menu.item>
 
                             <x-ui.action-menu.item

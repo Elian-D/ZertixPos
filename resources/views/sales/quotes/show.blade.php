@@ -1,299 +1,161 @@
-<x-app-layout title="Cotización #{{ str_pad($quote->id, 8, '0', STR_PAD_LEFT) }}">
-    <div class="py-6">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-                <div class="flex-1">
-                    <a href="{{ route('clients.quotes.index') }}" class="inline-flex items-center text-zertix-primary-600 hover:text-zertix-primary-800 text-sm font-semibold transition mb-3">
-                        <x-heroicon-s-arrow-left class="w-4 h-4 mr-1.5" />
-                        Regresar al Historial
-                    </a>
-                    <div class="flex items-center gap-3">
-                        <h2 class="text-3xl font-extrabold text-gray-900 tracking-tight">
-                            Cotizacion <span class="text-amber-600">#{{ str_pad($quote->id, 8, '0', STR_PAD_LEFT) }}</span>
-                        </h2>
-                        <x-ui.badge :variant="match($quote->status) {
-                                'draft' => 'slate',
-                                'approved' => 'success',
-                                'converted' => 'info',
-                                'expired' => 'error',
-                                default => 'slate',
-                            }" :dot="false">
-                            {{
-                                $quote->status === 'draft' ? 'Borrador'
-                                : ($quote->status === 'approved' ? 'Aprobada'
-                                : ($quote->status === 'converted' ? 'Convertida'
-                                : ($quote->status === 'expired' ? 'Expirada'
-                                : ($quote->status === 'cancelled' ? 'Cancelada' : ucfirst($quote->status)))))
-                            }}
-                        </x-ui.badge>
-                    </div>
-                </div>
+{{-- Detalle de la cotización — patrón Infolist de una columna (/filament-show,
+     docs/ui/infolist.md). Recibe $quote (items.product, customer, user, sale,
+     terminal cargados) y los catálogos del modal de convertir ($tipo_pagos,
+     $ncf_types, $warehouses). --}}
+@use('App\Models\Sales\Quotes\Quote')
+@php
+    $currency = config('regional.currency_symbol');
+    $money = fn ($v) => $currency.number_format((float) $v, 2);
+    $number = $quote->number;
+    $isOpen = in_array($quote->status, [Quote::STATUS_DRAFT, Quote::STATUS_APPROVED], true);
+    $isExpired = $quote->expires_at?->isPast();
+    // Mismas reglas que las acciones de fila del listado (quote-table).
+    $actionable = ! $quote->sale_id && ! $isExpired;
+    $fmtQty = fn ($q) => rtrim(rtrim(number_format((float) $q, 2), '0'), '.');
+@endphp
 
-                <div class="flex items-center gap-3">
-                    <x-ui.forms.select id="formatSelector" placeholder="">
-                        <option value="letter">Carta (PDF)</option>
-                        <option value="ticket">Ticket (Termica)</option>
-                    </x-ui.forms.select>
+<x-app-layout :title="'Cotización '.$number">
+    <div class="p-4 md:p-6 flex flex-col gap-6">
 
-                    <a id="printBtn" 
-                       href="{{ route('clients.quotes.print', ['quote' => $quote, 'format' => 'letter']) }}" 
-                       target="_blank" 
-                       class="inline-flex items-center px-5 py-2.5 bg-gray-900 border border-transparent rounded-lg font-bold text-xs text-white uppercase tracking-widest hover:bg-gray-800 shadow-lg active:scale-95 transition-all">
-                        <x-heroicon-s-printer class="w-4 h-4 mr-2" />
-                        Imprimir
-                    </a>
-                    
-                    <a id="downloadBtn"
-                       href="{{ route('clients.quotes.print', ['quote' => $quote, 'format' => 'letter']) }}?download=1" 
-                       class="inline-flex items-center px-5 py-2.5 bg-white border border-gray-300 rounded-lg font-bold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 active:scale-95 transition-all"
-                       target="blank">
-                        <x-heroicon-s-arrow-down-tray class="w-4 h-4 mr-2" />
-                        Descargar PDF
-                    </a>
-                </div>
+        <x-ui.page-header :title="'Cotización '.$number" description="Ver cotización">
+            <x-slot:actions>
+                <x-ui.button href="{{ route('clients.quotes.index') }}"
+                    appearance="outline" variant="secondary" iconLeft="heroicon-s-arrow-left">
+                    Volver al listado
+                </x-ui.button>
+
+                @if($actionable)
+                    @can('quotes.convert')
+                        @if($quote->status === Quote::STATUS_DRAFT)
+                            <x-ui.button variant="success" iconLeft="heroicon-s-check-circle"
+                                x-data @click="$dispatch('open-modal', 'confirm-approve-quote-{{ $quote->id }}')">
+                                Aprobar
+                            </x-ui.button>
+                        @elseif($quote->status === Quote::STATUS_APPROVED)
+                            <x-ui.button variant="success" iconLeft="heroicon-s-shopping-cart"
+                                x-data @click="$dispatch('open-modal', 'confirm-convert-quote-{{ $quote->id }}')">
+                                Convertir a venta
+                            </x-ui.button>
+                        @endif
+                    @endcan
+                    @can('quotes.cancel')
+                        @if($quote->status !== Quote::STATUS_CANCELLED)
+                            <x-ui.button variant="error" appearance="outline" iconLeft="heroicon-s-x-circle"
+                                x-data @click="$dispatch('open-modal', 'confirm-cancel-quote-{{ $quote->id }}')">
+                                Cancelar
+                            </x-ui.button>
+                        @endif
+                    @endcan
+                    @can('quotes.edit')
+                        @if($quote->status === Quote::STATUS_DRAFT)
+                            <x-ui.button href="{{ route('clients.quotes.edit', $quote) }}" variant="primary" iconLeft="heroicon-s-pencil-square">
+                                Editar
+                            </x-ui.button>
+                        @endif
+                    @endcan
+                @endif
+            </x-slot:actions>
+
+            <x-slot:secondary>
+                <x-ui.button href="{{ route('clients.quotes.print', ['quote' => $quote, 'format' => 'ticket']) }}" target="_blank"
+                    appearance="ghost" variant="secondary" class="w-full justify-start" iconLeft="heroicon-s-receipt-percent">
+                    Imprimir ticket
+                </x-ui.button>
+                <x-ui.button href="{{ route('clients.quotes.print', ['quote' => $quote, 'format' => 'a4']) }}" target="_blank"
+                    appearance="ghost" variant="secondary" class="w-full justify-start" iconLeft="heroicon-s-printer">
+                    Imprimir PDF
+                </x-ui.button>
+            </x-slot:secondary>
+        </x-ui.page-header>
+
+        @if($isExpired && $isOpen)
+            <div class="rounded-xl border border-state-warning/30 bg-state-warning/10 px-5 py-3 flex items-center gap-2 text-sm text-amber-700">
+                <x-heroicon-s-clock class="w-5 h-5 shrink-0" />
+                Venció el {{ $quote->expires_at->format('d/m/Y') }} — ya no se puede aprobar, editar ni convertir.
             </div>
+        @endif
 
-            <div class="grid grid-cols-1 xl:grid-cols-4 gap-8">
-                
-                <div class="xl:col-span-1 space-y-6">
+        {{-- Encabezado de la cotización --}}
+        <x-ui.infolist.section title="Encabezado de la cotización" icon="heroicon-o-document-text" :cols="3">
+            <x-ui.infolist.entry label="Número" :value="$number" strong />
+            <x-ui.infolist.entry label="Estado">
+                <x-ui.badge :variant="$quote->status_variant" size="sm" :dot="false">{{ $quote->status_label }}</x-ui.badge>
+            </x-ui.infolist.entry>
+            <x-ui.infolist.entry label="Cliente" :value="$quote->customer?->display_name" strong
+                :href="$quote->customer && auth()->user()->can('clients.view') ? route('clients.show', $quote->customer) : null" />
+            <x-ui.infolist.entry label="Creada" :value="$quote->created_at->format('d/m/Y h:i A')" />
+            <x-ui.infolist.entry label="Creada por" :value="$quote->user?->name" />
+            <x-ui.infolist.entry label="Válida hasta">
+                @if($quote->expires_at)
+                    <span @class(['text-state-error font-medium' => $isExpired && $isOpen])>{{ $quote->expires_at->format('d/m/Y') }}</span>
+                @endif
+            </x-ui.infolist.entry>
+            <x-ui.infolist.entry label="Origen"
+                :value="(Quote::getOrigins()[$quote->origin] ?? $quote->origin).($quote->terminal ? ' · '.$quote->terminal->name : '')" />
+            @if($quote->sale)
+                <x-ui.infolist.entry label="Venta generada" :value="$quote->sale->number" />
+            @endif
+        </x-ui.infolist.section>
 
-                    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                        <div class="bg-gray-50 px-5 py-4 border-b border-gray-100">
-                            <h3 class="text-xs font-black text-gray-500 uppercase tracking-widest">Informacion General</h3>
-                        </div>
-                        <div class="p-5 space-y-5">
-                            <div>
-                                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1">Cliente</label>
-                                <p class="text-sm font-bold text-gray-800 leading-tight">{{ $quote->customer->name }}</p>
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1">Contacto</label>
-                                <p class="text-xs text-gray-600">{{ $quote->customer->phone ?? 'S/N' }}</p>
-                            </div>
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-[10px] font-black text-gray-400 uppercase mb-1">Origen</label>
-                                    <p class="text-xs font-bold text-gray-600 capitalize">{{ $quote->origin }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-black text-gray-400 uppercase mb-1">Vendedor</label>
-                                    <p class="text-xs font-bold text-gray-600">{{ $quote->user->name }}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-amber-50 rounded-2xl border border-amber-200 overflow-hidden">
-                        <div class="bg-amber-100 px-5 py-3 border-b border-amber-200">
-                            <h3 class="text-xs font-black text-amber-700 uppercase tracking-widest">Vigencia</h3>
-                        </div>
-                        <div class="p-5 space-y-3">
-                            <div>
-                                <label class="block text-[10px] font-black text-amber-600 uppercase mb-1">Fecha de Emision</label>
-                                <p class="text-sm font-bold text-amber-900">{{ $quote->created_at->format('d/m/Y H:i') }}</p>
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-black text-amber-600 uppercase mb-1">Valida Hasta</label>
-                                <p class="text-sm font-bold text-amber-900">{{ $quote->expires_at->format('d/m/Y') }}</p>
-                            </div>
-                            <div class="pt-2">
-                                @php
-                                    $now = now();
-                                    $expiresAt = $quote->expires_at;
-                                    
-                                    $daysRemaining = (int) $now->diffInDays($expiresAt, false);
-                                    $isExpired = $daysRemaining < 0;
-                                @endphp
-                                
-                                <x-ui.badge :variant="$isExpired ? 'error' : 'success'" :dot="false" size="sm">
-                                    @if($isExpired)
-                                        Expirada hace {{ abs($daysRemaining) }} dia{{ abs($daysRemaining) !== 1 ? 's' : '' }}
-                                    @else
-                                        {{ $daysRemaining }} dia{{ $daysRemaining !== 1 ? 's' : '' }} disponible{{ $daysRemaining !== 1 ? 's' : '' }}
-                                    @endif
-                                </x-ui.badge>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="bg-zertix-primary-600 rounded-2xl p-5 shadow-md text-white">
-                        <h4 class="text-[10px] font-black uppercase tracking-widest mb-4 opacity-80">Resumen Financiero</h4>
-                        <div class="space-y-3 border-b border-zertix-primary-400 pb-3 mb-3">
-                            <div class="flex justify-between items-center">
-                                <span class="text-[11px] opacity-70">Subtotal:</span>
-                                <span class="text-sm font-bold">{{ config('regional.currency_symbol') }}{{ number_format($quote->subtotal, 2) }}</span>
-                            </div>
-                            @if($quote->discount_total > 0)
-                            <div class="flex justify-between items-center text-amber-300">
-                                <span class="text-[11px] opacity-90">Descuento:</span>
-                                <span class="text-sm font-bold">-{{ config('regional.currency_symbol') }}{{ number_format($quote->discount_total, 2) }}</span>
-                            </div>
+        {{-- Líneas --}}
+        <x-ui.infolist.section title="Líneas de la cotización" icon="heroicon-o-queue-list" :cols="0"
+            :description="$quote->items->count().' '.($quote->items->count() === 1 ? 'producto' : 'productos')">
+            <x-ui.infolist.repeatable :empty="$quote->items->isEmpty()" emptyIcon="heroicon-o-queue-list" emptyTitle="Sin líneas">
+                @foreach($quote->items as $item)
+                    @php $taxes = collect($item->tax_breakdown ?? []); @endphp
+                    <x-ui.infolist.repeatable-item :cols="7">
+                        <x-ui.infolist.entry label="Producto" class="col-span-2" strong>
+                            {{ $item->product->name ?? 'Producto eliminado' }}
+                        </x-ui.infolist.entry>
+                        <x-ui.infolist.entry label="Cant.">
+                            <x-ui.badge variant="slate" size="sm" :dot="false">{{ $fmtQty($item->quantity) }}</x-ui.badge>
+                        </x-ui.infolist.entry>
+                        <x-ui.infolist.entry label="P. unitario" :value="$money($item->price)" />
+                        <x-ui.infolist.entry label="Dto.">
+                            @if($item->discount_amount > 0)
+                                <span class="text-amber-600">-{{ $money($item->discount_amount) }}</span>
                             @endif
-                            {{-- Desglose real por tipo de impuesto (Fase 5, REQ-5.12) — mismo
-                                 patrón que la factura (REQ-5.6). --}}
-                            @foreach($quote->items->pluck('tax_breakdown')->filter()->flatten(1)->groupBy('key') as $key => $lines)
-                                <div class="flex justify-between items-center">
-                                    <span class="text-[11px] opacity-70">{{ $lines->first()['label'] }}:</span>
-                                    <span class="text-sm font-bold">{{ config('regional.currency_symbol') }}{{ number_format($lines->sum('amount'), 2) }}</span>
-                                </div>
-                            @endforeach
-                        </div>
-                        <div class="flex justify-between items-center">
-                            <span class="text-sm font-black">TOTAL:</span>
-                            <span class="text-2xl font-black">{{ config('regional.currency_symbol') }}{{ number_format($quote->grand_total, 2) }}</span>
-                        </div>
-                    </div>
+                        </x-ui.infolist.entry>
+                        <x-ui.infolist.entry label="Impuestos">
+                            <span class="inline-flex flex-wrap gap-1">
+                                @forelse($taxes as $tax)
+                                    <x-ui.badge variant="info" size="sm" :dot="false">{{ $tax['label'] }}</x-ui.badge>
+                                @empty
+                                    <x-ui.badge variant="slate" size="sm" :dot="false">Sin impuesto</x-ui.badge>
+                                @endforelse
+                            </span>
+                        </x-ui.infolist.entry>
+                        <x-ui.infolist.entry label="Subtotal" class="sm:text-right">
+                            <span class="font-semibold text-zertix-primary-700">{{ $money($item->subtotal) }}</span>
+                        </x-ui.infolist.entry>
+                    </x-ui.infolist.repeatable-item>
+                @endforeach
+            </x-ui.infolist.repeatable>
+        </x-ui.infolist.section>
 
-                    <div class="bg-gray-50 rounded-2xl p-5 border border-gray-200">
-                        <h4 class="text-[10px] font-black text-gray-600 uppercase tracking-widest mb-3">Auditoria del Sistema</h4>
-                        <div class="space-y-2 text-xs">
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">Creada:</span>
-                                <span class="font-bold text-gray-700">{{ $quote->created_at->format('d/m/Y H:i') }}</span>
-                            </div>
-                            @if($quote->updated_at !== $quote->created_at)
-                            <div class="flex justify-between">
-                                <span class="text-gray-500">Actualizada:</span>
-                                <span class="font-bold text-gray-700">{{ $quote->updated_at->format('d/m/Y H:i') }}</span>
-                            </div>
-                            @endif
-                        </div>
-                    </div>
+        {{-- Totales --}}
+        <x-ui.infolist.section title="Totales" icon="heroicon-o-calculator">
+            <x-ui.infolist.entry label="Subtotal" :value="$money($quote->subtotal)" />
+            <x-ui.infolist.entry label="Descuento">
+                <span @class(['text-amber-600' => $quote->discount_total > 0])>
+                    {{ $quote->discount_total > 0 ? '-' : '' }}{{ $money($quote->discount_total) }}
+                </span>
+            </x-ui.infolist.entry>
+            <x-ui.infolist.entry label="Impuestos" :value="$money($quote->tax_amount)" />
+            <x-ui.infolist.entry label="Total">
+                <span class="text-xl font-bold text-zertix-primary-700">{{ $money($quote->grand_total) }}</span>
+            </x-ui.infolist.entry>
+        </x-ui.infolist.section>
 
-                </div>
-
-                <div class="xl:col-span-3">
-                    <div class="bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl p-4 md:p-8 border border-gray-300 shadow-inner flex flex-col items-center justify-start min-h-[800px] overflow-auto">
-                        
-                        <div id="previewContainer" class="quote-frame-container is-letter">
-                            <div class="bg-white shadow-2xl ring-1 ring-black/5 rounded-lg overflow-hidden h-full">
-                                <iframe 
-                                    id="quoteIframe"
-                                    src="{{ route('clients.quotes.preview', $quote) }}" 
-                                    class="w-full h-full border-0 bg-white"
-                                    loading="lazy"
-                                    title="Preview de Cotizacion">
-                                </iframe>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-                <style>
-                    .quote-frame-container {
-                        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                        background: white;
-                    }
-
-                    .is-letter {
-                        width: 21.59cm;
-                        height: 27.94cm;
-                        transform: scale(0.7);
-                        transform-origin: top center;
-                    }
-
-                    .is-ticket {
-                        width: 85mm; 
-                        min-height: 150mm;
-                        height: 600px;
-                    }
-
-                    @media (max-width: 1280px) {
-                        .is-letter { transform: scale(0.5); }
-                        .is-ticket { transform: scale(0.9); }
-                    }
-
-                    @media (min-width: 1536px) {
-                        .is-letter { transform: scale(0.85); }
-                        .is-ticket { transform: scale(1.2); }
-                    }
-
-                    .floating-action-btn {
-                        position: fixed;
-                        bottom: 30px;
-                        right: 30px;
-                        z-index: 40;
-                        width: 60px;
-                        height: 60px;
-                        border-radius: 50%;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-                        cursor: pointer;
-                        transition: all 0.3s ease;
-                    }
-
-                    .floating-action-btn:hover {
-                        transform: scale(1.1);
-                        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
-                    }
-
-                    .floating-action-btn:active {
-                        transform: scale(0.95);
-                    }
-
-                    @media (max-width: 768px) {
-                        .floating-action-btn {
-                            bottom: 20px;
-                            right: 20px;
-                            width: 56px;
-                            height: 56px;
-                        }
-                    }
-                </style>
-            </div>
-        </div>
+        {{-- Notas --}}
+        <x-ui.infolist.section title="Notas" icon="heroicon-o-chat-bubble-left-ellipsis" :cols="0" collapsible collapsed>
+            @if($quote->notes)
+                <p class="text-sm text-gray-600 whitespace-pre-line">{{ $quote->notes }}</p>
+            @else
+                <p class="text-sm text-gray-400">Sin notas.</p>
+            @endif
+        </x-ui.infolist.section>
     </div>
 
-    {{-- BOTON FLOTANTE PARA CONVERTIR A VENTA --}}
-    @if($quote->status === 'approved' && !$quote->sale_id)
-    <button x-data @click="$dispatch('open-modal', 'confirm-convert-quote-{{ $quote->id }}')" 
-            class="floating-action-btn bg-emerald-600 text-white hover:bg-emerald-700">
-        <x-heroicon-s-arrow-down-circle class="w-6 h-6" />
-    </button>
-    @endif
-
-    {{-- INCLUIR EL MODAL DE CONVERTIR A VENTA --}}
-    @php
-        $config = general_config();
-    @endphp
-    
-    @include('sales.quotes.partials.modal-convert', [
-        'quote' => $quote,
-        'config' => $config,
-        'tipo_pagos' => $tipo_pagos ?? [],
-        'ncf_types' => $ncf_types ?? [],
-        'warehouses' => $warehouses ?? []
-    ])
-
-    <script>
-        const config = {
-            letter: "{{ route('clients.quotes.print', ['quote' => $quote, 'format' => 'letter']) }}",
-            ticket: "{{ route('clients.quotes.print', ['quote' => $quote, 'format' => 'ticket']) }}"
-        };
-
-        const formatSelector = document.getElementById('formatSelector');
-        const printBtn = document.getElementById('printBtn');
-        const downloadBtn = document.getElementById('downloadBtn');
-        const previewContainer = document.getElementById('previewContainer');
-        const quoteIframe = document.getElementById('quoteIframe');
-
-        formatSelector.addEventListener('change', function() {
-            const format = this.value;
-            const url = config[format];
-            
-            printBtn.href = url;
-            downloadBtn.href = url + '?download=1';
-            downloadBtn.style.display = format === 'letter' ? 'inline-flex' : 'none';
-            
-            previewContainer.classList.remove('is-letter', 'is-ticket');
-            previewContainer.classList.add(`is-${format}`);
-            
-            quoteIframe.src = "{{ route('clients.quotes.preview', $quote) }}?format=" + format;
-        });
-    </script>
-
+    @include('sales.quotes.partials.actions-modals', ['items' => collect([$quote])])
 </x-app-layout>

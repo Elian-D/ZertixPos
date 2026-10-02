@@ -20,11 +20,44 @@ class ClientController extends Controller
 {
     use SoftDeletesTrait;
 
+    /** Registros por pestaña en el show del cliente (el resto, en su listado). */
+    private const TAB_LIMIT = 25;
+
     public function index()
     {
         // REQ-0.7: la tabla vive ahora en App\Livewire\App\Clients\ClientTable
         // (motor Livewire, Fase 0) — este método solo renderiza el layout.
         return view('clients.index');
+    }
+
+    /**
+     * Detalle del cliente (v1.4.0 Fase 3, estilo Infolist — ver /filament-show).
+     * Reemplaza el modal "view-client" del listado.
+     */
+    public function show(Client $client)
+    {
+        $client->load(['provincia:id,name', 'municipio:id,name', 'accountingAccount:id,code,name']);
+
+        // Pestañas: los últimos TAB_LIMIT registros + el conteo total. Cada pestaña
+        // solo se consulta si el usuario puede verla.
+        $showQuotes = module_enabled('sales.quotes') && auth()->user()->can('quotes.view');
+        $showInvoices = auth()->user()->can('invoices.view');
+
+        return view('clients.show', [
+            'client' => $client,
+            'isMoroso' => $client->esMoroso(),
+            'tabLimit' => self::TAB_LIMIT,
+            'quotes' => $showQuotes ? $client->quotes()->latest()->limit(self::TAB_LIMIT)->get() : null,
+            'quotesCount' => $showQuotes ? $client->quotes()->count() : 0,
+            'invoices' => $showInvoices
+                ? $client->invoices()
+                    ->with(['sale:id,number,sale_date,payment_type,net_amount,tax_amount', 'sale.receivable'])
+                    ->latest('invoices.created_at')
+                    ->limit(self::TAB_LIMIT)
+                    ->get()
+                : null,
+            'invoicesCount' => $showInvoices ? $client->invoices()->count() : 0,
+        ]);
     }
 
     /**

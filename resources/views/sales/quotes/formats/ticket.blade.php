@@ -27,7 +27,7 @@
         </div>
 
         <div class="border-top">
-            NO. COTIZACIÓN: {{ str_pad($quote->id, 8, '0', STR_PAD_LEFT) }}<br>
+            NO. COTIZACIÓN: {{ $quote->number }}<br>
             FECHA: {{ $quote->created_at->format('d/m/Y H:i') }}<br>
             VENCE: {{ $quote->expires_at->format('d/m/Y') }}
         </div>

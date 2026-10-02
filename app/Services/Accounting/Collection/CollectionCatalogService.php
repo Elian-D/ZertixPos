@@ -21,7 +21,7 @@ class CollectionCatalogService
                 ->orderBy('name')
                 ->get(),
 
-            'paymentMethods' => TipoPago::activo()
+            'paymentMethods' => TipoPago::seleccionable()
                 ->select('id', 'nombre')
                 ->orderBy('nombre')
                 ->get(),
@@ -44,14 +44,14 @@ class CollectionCatalogService
 
             // 'slug' se agrega acá (Fase 6, REQ-6.9) — el form necesita distinguir
             // Efectivo/Tarjeta en el frontend para ocultar el campo de referencia.
-            'paymentMethods' => TipoPago::activo()
+            'paymentMethods' => TipoPago::seleccionable()
                 ->select('id', 'nombre', 'slug')
                 ->orderBy('nombre')
                 ->get(),
 
             // Solo facturas con saldo pendiente (para el selector de factura a pagar)
             'pendingReceivables' => Receivable::whereIn('status', [Receivable::STATUS_UNPAID, Receivable::STATUS_PARTIAL])
-                ->select('id', 'client_id', 'document_number', 'current_balance', 'total_amount')
+                ->select('id', 'client_id', 'number', 'document_number', 'current_balance', 'total_amount')
                 ->get()
         ];
     }

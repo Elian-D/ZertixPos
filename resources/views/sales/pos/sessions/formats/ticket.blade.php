@@ -41,7 +41,7 @@
         </div>
 
         <div class="spacer center bold" style="font-size: 13px;">
-            REPORTE DE TURNO #{{ $session->id }}
+            REPORTE DE TURNO {{ $session->number }}
         </div>
 
         <div class="spacer" style="border-top: 1px solid #000; padding-top: 4px;">

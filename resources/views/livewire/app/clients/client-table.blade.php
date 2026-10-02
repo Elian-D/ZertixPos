@@ -106,7 +106,11 @@
                 </x-data-table.cell>
 
                 <x-data-table.cell column="name" :visible="$visibleColumns">
-                    <span class="text-slate-800 font-medium">{{ $client->commercial_name ?: $client->name }}</span>
+                    @if($client->trashed())
+                        <span class="text-slate-800 font-medium">{{ $client->commercial_name ?: $client->name }}</span>
+                    @else
+                        <a href="{{ route('clients.show', $client) }}" class="text-slate-800 font-medium hover:text-zertix-primary-700 hover:underline">{{ $client->commercial_name ?: $client->name }}</a>
+                    @endif
                 </x-data-table.cell>
 
                 <x-data-table.cell column="tax_identifier_types" :visible="$visibleColumns">
@@ -190,8 +194,8 @@
                         @else
                             <x-ui.button
                                 appearance="ghost" variant="secondary" size="sm" icon="heroicon-s-eye"
-                                x-data @click="$dispatch('open-modal', 'view-client-{{ $client->id }}')"
-                                aria-label="Ver detalles completos" title="Ver detalles completos" />
+                                href="{{ route('clients.show', $client) }}"
+                                aria-label="Ver cliente" title="Ver cliente" />
 
                             @unless($client->isConsumidorFinal())
                                 <x-ui.action-menu>
@@ -220,5 +224,32 @@
 
     </x-data-table.base-table>
 
-    @include('clients.partials.modals', ['clients' => $clients])
+    {{-- MODALES DE CONFIRMACIÓN --}}
+    @foreach($clients as $client)
+        @if($client->trashed())
+            {{-- Papelera (docs/analisis/politica-soft-deletes.md §6) — borrado
+                 definitivo vía wireConfirm, dispara ClientTable::forceDelete()
+                 en vez de una ruta HTTP dedicada. --}}
+            <x-ui.confirm-deletion-modal
+            :id="$client->id"
+            :title="'¿Eliminar Permanentemente?'"
+            :itemName="$client->name"
+            :type="'el cliente'"
+            :wireConfirm="'forceDelete(' . $client->id . ')'"
+            :description="'Estás a punto de borrar definitivamente el cliente <strong>' . e($client->name) . '</strong>.'"
+            >
+            <strong>Aviso Crítico:</strong> Esta operación borrará todos los datos asociados y no se puede deshacer.
+            </x-ui.confirm-deletion-modal>
+        @elseif(! $client->isConsumidorFinal())
+            <x-ui.confirm-deletion-modal
+            :id="$client->id"
+            :title="'¿Eliminar Cliente?'"
+            :itemName="$client->name"
+            :type="'el cliente'"
+            :route="route('clients.destroy', $client)"
+            >
+            <strong>Aviso:</strong> Esta operación se puede deshacer desde la papelera.
+            </x-ui.confirm-deletion-modal>
+        @endif
+        @endforeach
 </div>

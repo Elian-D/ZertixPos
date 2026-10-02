@@ -3,18 +3,40 @@
 namespace App\Http\Controllers;
 
 use App\Models\Permission;
+use App\Models\PermissionGroup;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 
 class RoleController extends Controller
 {
+    /** Usuarios listados en el show del rol (el resto, en el listado de usuarios). */
+    private const USERS_LIMIT = 30;
+
     /**
      * Listado migrado a Livewire — ver App\Livewire\App\Config\RoleTable.
      */
     public function index()
     {
         return view('roles.index');
+    }
+
+    /**
+     * Detalle del rol (v1.4.0 Fase 3, patrón Infolist — /filament-show): datos,
+     * usuarios que lo tienen y permisos agrupados por módulo.
+     */
+    public function show(Role $role)
+    {
+        $role->load('permissions');
+        $users = User::role($role->name);
+
+        return view('roles.show', [
+            'role' => $role,
+            'groups' => PermissionGroup::groupPermissions($role->permissions),
+            'users' => (clone $users)->orderBy('name')->limit(self::USERS_LIMIT)->get(['id', 'name', 'email']),
+            'usersCount' => (clone $users)->count(),
+            'usersLimit' => self::USERS_LIMIT,
+        ]);
     }
 
     /**

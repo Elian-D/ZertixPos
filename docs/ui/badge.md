@@ -120,6 +120,8 @@ El prop `hex` acepta códigos hexadecimales con o sin el símbolo `#`:
 
 El tamaño `sm` es adecuado para espacios reducidos como celdas de tabla o líneas de texto. El tamaño `md` es el valor por defecto y el recomendado para uso general.
 
+**El texto del badge nunca salta de línea** (`whitespace-nowrap`, v1.4.0 REQ-3.20). Una píldora `rounded-full` partida en dos líneas se ve rota. Si un badge no cabe, se arregla el ancho del contenedor (columnas de la grilla), no el badge, y nunca se trunca con "…".
+
 ---
 
 ## Indicador: Punto o Ícono

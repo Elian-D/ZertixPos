@@ -132,11 +132,12 @@ class StoreSaleRequest extends FormRequest
             $descuentoTotalCalculado = 0;
             $taxAccum = 0;
 
-            // Precargado en una sola query (evita N+1): un "servicio" (is_stockable=false)
-            // no tiene por qué tener nunca una fila de InventoryStock, así que se salta el
-            // chequeo de stock por completo en vez de rechazar la venta con "insuficiente".
+            // Precargado en una sola query (evita N+1): un "servicio" (type=service,
+            // v1.4.0 Fase 1) no tiene por qué tener nunca una fila de InventoryStock,
+            // así que se salta el chequeo de stock por completo en vez de rechazar la
+            // venta con "insuficiente".
             $products = Product::whereIn('id', collect($this->items)->pluck('product_id'))
-                ->get(['id', 'is_stockable'])
+                ->get(['id', 'type'])
                 ->keyBy('id');
 
             // Impuestos por producto (Fase 5, REQ-5.3) — mismo cálculo multi-tasa que
@@ -165,7 +166,7 @@ class StoreSaleRequest extends FormRequest
                 // rechazaría ventas reales por un dato que ya no significa nada. Si el
                 // producto no está en el catálogo cargado (no debería pasar, ya se validó
                 // `exists` arriba) se valida igual, por seguridad.
-                $isStockable = $products->get($item['product_id'])?->is_stockable ?? true;
+                $isStockable = ($products->get($item['product_id'])?->type ?? Product::TYPE_PRODUCT) === Product::TYPE_PRODUCT;
 
                 if ($isStockable && module_enabled('inventory.tracking')) {
                     $stock = InventoryStock::where('warehouse_id', $this->warehouse_id)

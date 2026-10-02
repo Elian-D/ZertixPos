@@ -54,7 +54,7 @@ class PosWorkspace extends Component
     {
         $products = Product::query()
             ->where('is_active', true)
-            ->select('id', 'category_id', 'name', 'sku', 'price', 'image_path', 'is_stockable')
+            ->select('id', 'category_id', 'name', 'sku', 'price', 'image_path', 'type')
             ->with(['stocks' => function ($query) {
                 $query->where('warehouse_id', $this->terminal->warehouse_id)
                     ->select('id', 'product_id', 'warehouse_id', 'quantity', 'min_stock');
@@ -83,7 +83,11 @@ class PosWorkspace extends Component
                     'tax_rate' => (float) ($taxRates->get($product->id) ?? 0),
                     'stock' => (float) ($stock?->quantity ?? 0),
                     'min_stock' => (float) ($stock?->min_stock ?? 0),
-                    'is_stockable' => (bool) $product->is_stockable,
+                    // v1.4.0 Fase 1: la columna `is_stockable` ya no existe (se reemplazó
+                    // por `type`), pero el contrato del Alpine del Workspace (cart-item,
+                    // desktop/mobile.blade.php) sigue esperando este booleano — se deriva
+                    // acá en vez de reescribir cada template que lo consume.
+                    'is_stockable' => $product->isProduct(),
                     'category_id' => $product->category_id,
                     'image' => $product->image_url,
                 ];
@@ -124,7 +128,7 @@ class PosWorkspace extends Component
             ->whereHas('receivables', fn ($q) => $q->whereIn('status', [Receivable::STATUS_UNPAID, Receivable::STATUS_PARTIAL]))
             ->with(['receivables' => function ($q) {
                 $q->whereIn('status', [Receivable::STATUS_UNPAID, Receivable::STATUS_PARTIAL])
-                    ->select('id', 'client_id', 'document_number', 'total_amount', 'current_balance', 'due_date')
+                    ->select('id', 'client_id', 'number', 'document_number', 'total_amount', 'current_balance', 'due_date')
                     // Orden = FIFO real (la más vieja primero) — el frontend solo deja
                     // seleccionar la primera de la lista, el resto queda bloqueada
                     // (Fase 6, REQ-6.3 extra: no se puede cobrar una factura nueva
@@ -142,6 +146,7 @@ class PosWorkspace extends Component
                 'balance' => (float) $client->balance,
                 'receivables' => $client->receivables->map(fn ($r) => [
                     'id' => $r->id,
+                    'number' => $r->number,
                     'document_number' => $r->document_number,
                     'total_amount' => (float) $r->total_amount,
                     'current_balance' => (float) $r->current_balance,
@@ -188,7 +193,7 @@ class PosWorkspace extends Component
             'clients' => $this->getClients(),
             'debtors' => $canCollect ? $this->getDebtors() : [],
             'canCollect' => $canCollect,
-            'tipoPagos' => TipoPago::sortByPriority(TipoPago::activo()->select('id', 'nombre', 'slug')->get()),
+            'tipoPagos' => TipoPago::sortByPriority(TipoPago::seleccionable()->select('id', 'nombre', 'slug')->get()),
             'ncfTypes' => $usaNcf ? NcfType::where('is_active', true)->select('id', 'name', 'code', 'requires_rnc')->get() : collect(),
             'usaNcf' => $usaNcf,
             'posConfig' => pos_config(),

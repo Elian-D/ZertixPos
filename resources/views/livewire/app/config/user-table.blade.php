@@ -74,7 +74,7 @@
                 </x-data-table.cell>
 
                 <x-data-table.cell column="name" :visible="$visibleColumns">
-                    <div class="font-bold text-slate-900">{{ $user->name }}</div>
+                    <a href="{{ route('config.users.show', $user) }}" class="font-bold text-slate-900 hover:text-zertix-primary-700 hover:underline">{{ $user->name }}</a>
                     <div class="text-xs text-slate-500">{{ $user->email }}</div>
                 </x-data-table.cell>
 
@@ -106,6 +106,9 @@
                                 $canDelete = $user->id !== auth()->id() && $user->id !== $protectedUserId;
                             @endphp
                             <x-ui.action-menu>
+                                <x-ui.action-menu.item href="{{ route('config.users.show', $user) }}" icon="heroicon-o-eye">
+                                    Ver
+                                </x-ui.action-menu.item>
                                 <x-ui.action-menu.item href="{{ route('config.users.edit', $user) }}" icon="heroicon-o-pencil-square">
                                     Editar
                                 </x-ui.action-menu.item>

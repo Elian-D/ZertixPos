@@ -29,7 +29,7 @@ class Badge extends Component
 
     private function getBaseClasses(): string
     {
-        $base = "inline-flex items-center font-semibold rounded-full border transition-colors duration-200";
+        $base = "inline-flex items-center whitespace-nowrap font-semibold rounded-full border transition-colors duration-200";
 
         $sizes = [
             'sm' => 'px-2.5 py-0.5 text-[10px] gap-1.5',

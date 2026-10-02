@@ -66,6 +66,12 @@
                     <div class="flex-1 min-w-0">
                         <h3 class="text-sm font-bold text-gray-900 leading-tight" x-text="toast.title"></h3>
                         <p class="mt-1 text-xs text-gray-600 font-medium leading-relaxed" x-text="toast.message"></p>
+                        {{-- Enlace opcional: notify(..., link: ['url' => ..., 'label' => ...]) --}}
+                        <template x-if="toast.link">
+                            <a :href="toast.link.url" target="_blank"
+                               class="mt-2 inline-flex items-center gap-1 text-xs font-bold text-zertix-primary-700 hover:underline"
+                               x-text="toast.link.label"></a>
+                        </template>
                     </div>
 
                     <button @click="close()" class="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors">

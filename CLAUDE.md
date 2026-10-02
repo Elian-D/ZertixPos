@@ -144,7 +144,8 @@ The codebase follows a "Skinny Controllers" pattern with clear separation of con
    - `SoftDeletes` is added only when the model is a real catalog with a borrowable identity (Categoría A per `docs/analisis/politica-soft-deletes.md`) — not on models with their own status lifecycle (`Sale`, `Quote`) or ledger rows (`InventoryMovement`, `PosSession`, `PosCashMovement`)
 
 2. **Listing UI** — two coexisting patterns, see "Before touching any table/listing screen" above:
-   - **Migrated modules:** `App\Livewire\App\<Grupo>\<Modulo>Table extends App\Livewire\Base\DataTable`, implementing `columns()`/`filterMap()`/`filterOptions()`/`baseQuery()`/`render()`. Namespace/folder mirrors the module's real route prefix, not the old sidebar grouping.
+   - **Migrated modules:** `App\Livewire\App\<Grupo>\<Modulo>Table extends App\Livewire\Base\DataTable`, implementing `columns()`/`searchFields()`/`filterMap()`/`filterOptions()`/`baseQuery()`/`render()`. Namespace/folder mirrors the module's real route prefix, not the old sidebar grouping.
+   - **`searchFields()` is mandatory whenever `filterMap()` has a `search` key.** It lists, in user words, what that closure searches (`['número', 'cliente']`), and the search box shows "Buscar por número o cliente…". Without it the box only says "Buscar..." and users can't tell what it searches. Keep the two in sync: if the `search` closure changes, `searchFields()` changes in the same commit (`docs/ui/datatable-components.md` §x-data-table.search).
    - **Not-yet-migrated modules (Finanzas, Sistema):** `app/Tables/*Table.php` static classes (`allColumns()`/`defaultDesktop()`/`defaultMobile()`) + `app/Filters/*` (one class per filter, pipeline via `QueryFilter`) + a controller `index()` that builds the AJAX response.
 
 3. **Request Validation & Authorization (`app/Http/Requests/`)**
@@ -175,6 +176,25 @@ The codebase follows a "Skinny Controllers" pattern with clear separation of con
    - Migrated module: a thin wrapper (`<livewire:app.<grupo>.<modulo>-table />`) plus `resources/views/livewire/app/<grupo>/<modulo>-table.blade.php` for the actual table
    - Un-migrated module: Blade templates with the AJAX table + `partials/filters.blade.php`/`partials/table.blade.php` + a `resources/js/pages/<modulo>.js` wiring `AjaxDataTable({...})`
    - Modal-based create/edit/detail partials (`partials/modals.blade.php`) are reused as-is by both patterns — they don't need rewriting when a module migrates, just an `@include`
+   - Detail and create/edit screens follow the rule in "Show views, forms and when a modal is enough" below
+
+### Show views, forms and when a modal is enough
+
+Since v1.4.0 Fase 3 the record detail is a **full show page in Filament style**, not a modal. When to use what:
+
+| Case | Use | How |
+|---|---|---|
+| A record with real content: several sections, lines, related history, a document (sale, quote, client, product, receivable, role, user…) | **Show view** | `/filament-show` skill + `x-ui.infolist.*` components (`docs/ui/infolist.md`) |
+| A create/edit with more than a handful of fields | **Form view** | `/filament-form` skill (sections with `x-ui.infolist.section :cols="0"`, gray outline icon) |
+| Something short: a quick create/edit with 2–4 fields, a confirmation, a one-off action (threshold, cash movement, NCF log detail) | **Modal** (`x-modal`) | Inside the module's `partials/modals.blade.php` |
+| A small catalog (units, business types, equipment types…) where the row already says everything | **Neither show nor separate form** | Table + create/edit modal |
+| A letter-size printable document generated with DomPDF (invoice, receipt, quote, shift report) | **PDF document** | `/filament-pdf` skill + `x-pdf.*` components (`docs/ui/pdf-documents.md`); never a hand-written `<html>` with its own `<style>` |
+
+Rules that come with the show views:
+- Show route: `GET /{model}` with `->whereNumber('model')` (so it doesn't capture `/create`, `/import`…) and the same `permission:<resource>.view` middleware as the index.
+- The table links to the show (the record's name/number plus "Ver" in `x-ui.action-menu`); when a module gets its show, its old detail modal is deleted, not kept in parallel.
+- In the `page-header`, "Volver" always goes first; the secondary slot isn't rendered if it has nothing.
+- If the show reuses a module partial (modals, ticket), check that the controller passes **every** variable that partial uses. Tinker in the CLI doesn't fail on an undefined variable; the web request does.
 
 ### Feedback pattern (toasts)
 

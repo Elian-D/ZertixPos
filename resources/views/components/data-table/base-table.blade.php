@@ -140,7 +140,9 @@
          FOOTER — contador + paginación
     ═══════════════════════════════════════════════════ --}}
     @if($items && ($items->hasPages() || $items->total() > 0))
-        {{ $items->links() }}
+        {{-- onEachSide(1): ventana corta de páginas (el default de Laravel, 3, pinta
+             hasta ~13 botones y desbordaba el ancho — v1.4.0 REQ-3.20). --}}
+        {{ $items->onEachSide(1)->links() }}
     @endif
 
     {{-- BARRA DE SELECCIÓN MASIVA (REQ-0.5) --}}

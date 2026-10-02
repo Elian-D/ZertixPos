@@ -65,7 +65,11 @@
                         @else
                             <x-heroicon-s-computer-desktop class="w-4 h-4 mr-2 text-slate-400" title="Terminal Fija" />
                         @endif
-                        {{ $item->name }}
+                        @if(! $item->trashed() && auth()->user()->can('pos_terminals.view'))
+                            <a href="{{ route('sales.pos.terminals.show', $item) }}" class="hover:text-zertix-primary-700 hover:underline">{{ $item->name }}</a>
+                        @else
+                            {{ $item->name }}
+                        @endif
                     </div>
                 </x-data-table.cell>
 
@@ -142,8 +146,8 @@
                             @can('pos_terminals.view')
                                 <x-ui.button
                                     appearance="ghost" variant="secondary" size="sm" icon="heroicon-s-eye"
-                                    x-data @click="$dispatch('open-modal', 'view-terminal-{{ $item->id }}')"
-                                    aria-label="Ver detalles" title="Ver detalles" />
+                                    href="{{ route('sales.pos.terminals.show', $item) }}"
+                                    aria-label="Ver terminal" title="Ver terminal" />
                             @endcan
 
                             <x-ui.action-menu>
@@ -175,5 +179,32 @@
 
     </x-data-table.base-table>
 
-    @include('sales.pos.terminals.partials.modals', ['items' => $terminals])
+    {{-- MODALES DE CONFIRMACIÓN --}}
+    @foreach($terminals as $item)
+        {{-- Modal de Confirmación --}}
+        @if($item->trashed())
+            {{-- Papelera (docs/analisis/politica-soft-deletes.md §6) — borrado
+                 definitivo vía wireConfirm, dispara PosTerminalTable::forceDelete(). --}}
+            <x-ui.confirm-deletion-modal
+                :id="$item->id"
+                :title="'¿Eliminar Permanentemente?'"
+                :itemName="$item->name"
+                :type="'la terminal'"
+                :wireConfirm="'forceDelete(' . $item->id . ')'"
+                :description="'Estás a punto de borrar definitivamente la terminal <strong>' . e($item->name) . '</strong>.'"
+            >
+                <strong>Aviso Crítico:</strong> Esta operación borrará todos los datos asociados y no se puede deshacer.
+            </x-ui.confirm-deletion-modal>
+        @else
+            <x-ui.confirm-deletion-modal
+                :id="$item->id"
+                :title="'¿Desactivar Terminal?'"
+                :itemName="$item->name"
+                :type="'la terminal'"
+                :route="route('sales.pos.terminals.destroy', $item)"
+            >
+                <strong>Advertencia:</strong> Si esta terminal tiene sesiones abiertas, no podrá ser eliminada. Al desactivarla, los cajeros ya no podrán iniciar sesión en este punto de venta.
+            </x-ui.confirm-deletion-modal>
+        @endif
+    @endforeach
 </div>

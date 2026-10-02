@@ -38,6 +38,13 @@ Route::prefix('clients')->as('clients.')->group(function () {
         Route::post('/import', [ClientController::class, 'import'])->name('import.process');
         Route::get('/import-template', [ClientController::class, 'downloadTemplate'])->name('template');
 
+        // whereNumber: sin él, {client} capturaría /clients/quotes, /clients/import
+        // y cualquier otra ruta de un segmento bajo clients/ según el orden de registro.
+        Route::get('/{client}', [ClientController::class, 'show'])
+            ->whereNumber('client')
+            ->middleware('permission:clients.view')
+            ->name('show');
+
         Route::delete('/{client}', [ClientController::class, 'destroy'])
             ->middleware('permission:clients.delete')
             ->name('destroy');

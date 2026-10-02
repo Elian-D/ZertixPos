@@ -2,9 +2,14 @@
 
 namespace App\Models\Accounting;
 
+use App\Models\Sales\Invoice;
+use App\Models\Sales\Pos\PosSession;
+use App\Models\Sales\Quotes\Quote;
+use App\Models\Sales\Returns\SaleReturn;
 use App\Models\Sales\Sale;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class DocumentType extends Model
 {
@@ -16,7 +21,7 @@ class DocumentType extends Model
      * Códigos que el propio sistema consulta por texto (SaleService, CollectionService...).
      * Cambiar el 'code' de uno de estos rompería esas búsquedas hardcodeadas.
      */
-    const SYSTEM_PROTECTED_CODES = ['FAC', 'PAG'];
+    const SYSTEM_PROTECTED_CODES = ['VTA', 'FAC', 'CXC', 'COT', 'TRN', 'PAG', 'DEV'];
 
     protected static function booted()
     {
@@ -57,9 +62,14 @@ class DocumentType extends Model
     public function hasIssuedDocuments(): bool
     {
         return match ($this->code) {
-            'FAC' => Sale::where('document_type_id', $this->id)->exists(),
+            'VTA' => Sale::where('document_type_id', $this->id)->exists(),
+            'FAC' => Invoice::where('document_type_id', $this->id)->exists(),
+            'CXC' => Receivable::where('document_type_id', $this->id)->exists(),
+            'COT' => Quote::where('document_type_id', $this->id)->exists(),
+            'TRN' => PosSession::where('document_type_id', $this->id)->exists(),
             // ClientCollection no guarda document_type_id; se identifica por el prefijo de su receipt_number.
             'PAG' => ClientCollection::where('receipt_number', 'like', $this->prefix.'-%')->exists(),
+            'DEV' => SaleReturn::where('document_type_id', $this->id)->exists(),
             default => false,
         };
     }
@@ -77,6 +87,24 @@ class DocumentType extends Model
             strtoupper($this->prefix),
             $next
         );
+    }
+
+    /**
+     * Emite el siguiente correlativo del tipo `$code` de forma atómica (fila
+     * bloqueada mientras dure la transacción externa, si la hay) — dos documentos
+     * creados a la vez nunca reciben el mismo número.
+     *
+     * @return array{0: self, 1: string} [tipo de documento, número formateado]
+     */
+    public static function issueNext(string $code): array
+    {
+        return DB::transaction(function () use ($code) {
+            $type = static::where('code', $code)->lockForUpdate()->firstOrFail();
+            $number = $type->getNextNumberFormatted();
+            $type->increment('current_number');
+
+            return [$type, $number];
+        });
     }
 
     public function scopeWithIndexRelations($query)

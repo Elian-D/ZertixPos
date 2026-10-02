@@ -76,6 +76,47 @@ class ReceivableService
     }
 
     /**
+     * Baja la deuda por una devolución de venta a crédito (v1.4.0 Fase 2).
+     * Rechaza si el monto excede el saldo pendiente — no se contempla devolver
+     * el excedente.
+     */
+    public function reduceBalance(Receivable $receivable, float $amount): void
+    {
+        if ($receivable->status === Receivable::STATUS_CANCELLED) {
+            throw new Exception('La cuenta por cobrar de esta venta está anulada.');
+        }
+
+        if (round($amount, 2) > round((float) $receivable->current_balance, 2)) {
+            throw new Exception('El monto a devolver (RD$'.number_format($amount, 2).') excede la deuda pendiente del cliente (RD$'.number_format($receivable->current_balance, 2).').');
+        }
+
+        // La venta vale menos: baja la deuda original y el saldo juntos, así
+        // "Total Abonado" (total - saldo) sigue reflejando solo cobros reales.
+        $receivable->total_amount = round($receivable->total_amount - $amount, 2);
+        $receivable->current_balance = round($receivable->current_balance - $amount, 2);
+
+        // Devuelta toda la deuda sin ningún abono: no se "pagó", se anuló.
+        if ($receivable->current_balance <= 0 && ! $receivable->collections()->exists()) {
+            $receivable->status = Receivable::STATUS_CANCELLED;
+            $receivable->save();
+
+            return;
+        }
+
+        $this->updateStatusBasedOnBalance($receivable);
+    }
+
+    /**
+     * Reversa de reduceBalance() al anular una devolución.
+     */
+    public function increaseBalance(Receivable $receivable, float $amount): void
+    {
+        $receivable->total_amount = round($receivable->total_amount + $amount, 2);
+        $receivable->current_balance = round($receivable->current_balance + $amount, 2);
+        $this->updateStatusBasedOnBalance($receivable);
+    }
+
+    /**
      * ACTUALIZA EL ESTADO BASADO EN EL SALDO
      * Este método es REQUERIDO por CollectionService al registrar abonos.
      */

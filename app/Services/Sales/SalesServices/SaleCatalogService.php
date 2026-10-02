@@ -114,7 +114,7 @@ class SaleCatalogService
             })(),
 
             // 4. Configuración de Documento (Para previsualizar el siguiente folio)
-            'document_config' => DocumentType::where('code', 'FAC')
+            'document_config' => DocumentType::where('code', 'VTA')
                 ->select('id', 'prefix', 'current_number')
                 ->first(),
 
@@ -141,7 +141,7 @@ class SaleCatalogService
                 }),
 
             'tipo_pagos' => TipoPago::sortByPriority(
-                TipoPago::activo()->select('id', 'nombre', 'slug', 'accounting_account_id')->get()
+                TipoPago::seleccionable()->select('id', 'nombre', 'slug', 'accounting_account_id')->get()
             ),
         ];
     }
