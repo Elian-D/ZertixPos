@@ -99,7 +99,7 @@ class QuoteController extends Controller
      */
     public function show(Quote $quote)
     {
-        $quote->load(['items.product', 'customer', 'user', 'sale']);
+        $quote->load(['items.product', 'customer', 'user', 'sale', 'terminal']);
 
         // Obtener catálogos para el modal de conversión
         $saleCatalogs = $this->saleCatalogService->getForForm();

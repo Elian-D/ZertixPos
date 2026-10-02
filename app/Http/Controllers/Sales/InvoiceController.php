@@ -33,16 +33,16 @@ class InvoiceController extends Controller
     {
         // CARGA PROFUNDA: Entramos hasta la secuencia para obtener la fecha de vencimiento
         $invoice->load([
-            'sale.items.product',
-            'sale.client',
-            'sale.quote', // <--- Para mostrar descuentos de cotización
+            'sale.items.product:id,name,sku',
+            'sale.client:id,name,commercial_name,tax_id',
+            'sale.user:id,name',
+            'sale.payments.tipoPago',
+            'sale.receivable',
             'sale.ncfLog.type',
-            'sale.ncfLog.sequence', // <--- FUNDAMENTAL
+            'sale.ncfLog.sequence',
         ]);
 
-        $formats = Invoice::getFormats();
-
-        return view('sales.invoices.show', compact('invoice', 'formats'));
+        return view('sales.invoices.show', ['invoice' => $invoice]);
     }
 
     public function preview(Invoice $invoice, Request $request)

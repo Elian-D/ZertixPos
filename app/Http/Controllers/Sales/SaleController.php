@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Sales;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Sales\StoreSaleRequest;
+use App\Models\Sales\Returns\ReturnItem;
 use App\Models\Sales\Sale;
 use App\Services\Sales\SalesServices\SaleService;
 use App\Services\Sales\SalesServices\SaleCatalogService;
@@ -24,6 +25,43 @@ class SaleController extends Controller
     public function index()
     {
         return view('sales.index');
+    }
+
+    /**
+     * Detalle de la venta (v1.4.0 Fase 3, patrón Infolist — /filament-show).
+     * Reemplaza el modal "view-sale" del listado.
+     */
+    public function show(Sale $sale)
+    {
+        $sale->load([
+            'items.product:id,name,sku,type',
+            'client:id,name,commercial_name,tax_id',
+            'user:id,name',
+            'canceledBy:id,name',
+            'warehouse:id,name',
+            'posTerminal:id,name',
+            'posSession',
+            'payments.tipoPago',
+            'receivable',
+            'ncfLog',
+            'invoice:id,sale_id,invoice_number',
+            'quote:id,sale_id,number',
+            'posSession:id,number',
+            'returns' => fn ($q) => $q->with('user:id,name')->latest(),
+        ]);
+
+        // Unidades devueltas por línea (devoluciones no anuladas), para mostrarlas
+        // junto a la cantidad vendida sin una consulta por línea.
+        $returnedByItem = ReturnItem::whereIn('sale_item_id', $sale->items->pluck('id'))
+            ->whereHas('saleReturn', fn ($q) => $q->active())
+            ->selectRaw('sale_item_id, SUM(quantity) as qty')
+            ->groupBy('sale_item_id')
+            ->pluck('qty', 'sale_item_id');
+
+        return view('sales.show', [
+            'sale' => $sale,
+            'returnedByItem' => $returnedByItem,
+        ]);
     }
 
     /**

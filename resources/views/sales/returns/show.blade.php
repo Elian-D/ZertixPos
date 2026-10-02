@@ -1,28 +1,39 @@
+{{-- Detalle de la devolución — patrón Infolist (/filament-show, docs/ui/infolist.md)
+     con columna lateral: la vista previa del ticket (iframe en modo preview). --}}
 @use('App\Models\Sales\Returns\SaleReturn')
+@use('App\Models\Configuration\TipoPago')
 @php
     $currency = config('regional.currency_symbol');
+    $money = fn ($v) => $currency.number_format((float) $v, 2);
+    $fmtQty = fn ($q) => rtrim(rtrim(number_format((float) $q, 2), '0'), '.');
     $sale = $return->sale;
     $exchangeSale = $return->exchangeSale;
-    $fmtQty = fn ($q) => rtrim(rtrim(number_format((float) $q, 2), '0'), '.');
+    $methodVariant = match ($return->refund_method) {
+        SaleReturn::METHOD_CASH => 'info',
+        SaleReturn::METHOD_EXCHANGE => 'primary',
+        default => 'warning',
+    };
 @endphp
 
-<x-app-layout title="Devolución {{ $return->number }}">
+<x-app-layout :title="'Devolución '.$return->number">
     <div class="p-4 md:p-6 flex flex-col gap-6">
 
-        <x-ui.page-header :title="'Devolución '.$return->number" description="Detalle de la devolución y su resultado.">
+        <x-ui.page-header :title="'Devolución '.$return->number" description="Ver devolución">
             <x-slot:actions>
                 <x-ui.button href="{{ route('sales.returns.index') }}" variant="secondary" appearance="outline" iconLeft="heroicon-s-arrow-left">
                     Volver
                 </x-ui.button>
-                <x-ui.button href="{{ route('sales.returns.print', ['return' => $return, 'download' => 1]) }}" variant="secondary" appearance="outline" iconLeft="heroicon-s-arrow-down-tray">
-                    Descargar PDF
+                <x-ui.button href="{{ route('sales.returns.print', ['return' => $return, 'download' => 1]) }}"
+                    variant="secondary" appearance="outline" iconLeft="heroicon-s-arrow-down-tray">
+                    PDF
                 </x-ui.button>
-                <x-ui.button href="{{ route('sales.returns.print', $return) }}" target="_blank" variant="primary" iconLeft="heroicon-s-printer">
+                <x-ui.button href="{{ route('sales.returns.print', $return) }}" target="_blank"
+                    variant="secondary" appearance="outline" iconLeft="heroicon-s-printer">
                     Imprimir ticket
                 </x-ui.button>
                 @can('returns.void')
                     @unless($return->isVoided())
-                        <x-ui.button variant="error" appearance="outline" iconLeft="heroicon-s-x-circle"
+                        <x-ui.button variant="error" iconLeft="heroicon-s-x-circle"
                             x-data @click="$dispatch('open-modal', 'confirm-deletion-return-{{ $return->id }}')">
                             Anular
                         </x-ui.button>
@@ -39,155 +50,106 @@
         @endif
 
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
-        <div class="lg:col-span-2 flex flex-col gap-6 min-w-0">
+            <div class="lg:col-span-2 flex flex-col gap-6 min-w-0">
 
-        {{-- Cabecera --}}
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 md:p-6 grid grid-cols-2 md:grid-cols-4 gap-5">
-            <div>
-                <span class="block text-[10px] font-bold uppercase tracking-widest text-slate-400">Estado</span>
-                <x-ui.badge :variant="$return->isVoided() ? 'error' : 'success'" size="sm" class="mt-1">
-                    {{ SaleReturn::getStatuses()[$return->status] ?? $return->status }}
-                </x-ui.badge>
-            </div>
-            <div>
-                <span class="block text-[10px] font-bold uppercase tracking-widest text-slate-400">Fecha</span>
-                <p class="text-sm font-semibold text-slate-800">{{ $return->created_at->format('d/m/Y h:i A') }}</p>
-            </div>
-            <div>
-                <span class="block text-[10px] font-bold uppercase tracking-widest text-slate-400">Realizada por</span>
-                <p class="text-sm font-semibold text-slate-800">{{ $return->user->name ?? 'N/A' }}</p>
-            </div>
-            <div>
-                <span class="block text-[10px] font-bold uppercase tracking-widest text-slate-400">Método</span>
-                <p class="text-sm font-semibold text-slate-800">{{ $return->refund_method_label }}</p>
-            </div>
-            <div>
-                <span class="block text-[10px] font-bold uppercase tracking-widest text-slate-400">Venta origen</span>
-                <p class="text-sm font-mono font-bold text-zertix-primary-700">{{ $sale->number }}</p>
-            </div>
-            <div>
-                <span class="block text-[10px] font-bold uppercase tracking-widest text-slate-400">Cliente</span>
-                <p class="text-sm font-semibold text-slate-800">{{ $sale->client->name ?? 'Consumidor Final' }}</p>
-            </div>
-            <div class="col-span-2">
-                <span class="block text-[10px] font-bold uppercase tracking-widest text-slate-400">Motivo</span>
-                <p class="text-sm font-semibold text-slate-800">{{ $return->reason_label }}</p>
-            </div>
-            @if($return->notes)
-                <div class="col-span-2 md:col-span-4 bg-amber-50 p-3 rounded-lg border border-dashed border-amber-200">
-                    <span class="text-[10px] font-bold text-amber-500 uppercase tracking-widest block mb-1">Observaciones</span>
-                    <p class="text-xs text-amber-800 italic">"{{ $return->notes }}"</p>
-                </div>
-            @endif
-        </div>
+                {{-- Datos de la devolución --}}
+                <x-ui.infolist.section title="Datos de la devolución" icon="heroicon-o-arrow-uturn-left" :cols="3">
+                    <x-ui.infolist.entry label="Número" :value="$return->number" strong />
+                    <x-ui.infolist.entry label="Estado">
+                        <x-ui.badge :variant="$return->isVoided() ? 'error' : 'success'" size="sm" :dot="false">
+                            {{ SaleReturn::getStatuses()[$return->status] ?? $return->status }}
+                        </x-ui.badge>
+                    </x-ui.infolist.entry>
+                    <x-ui.infolist.entry label="Fecha y hora" :value="$return->created_at->format('d/m/Y h:i A')" />
+                    <x-ui.infolist.entry label="Venta origen" :value="$sale->number" strong
+                        :href="auth()->user()->can('sales.view') ? route('sales.show', $sale) : null" />
+                    <x-ui.infolist.entry label="Cliente" :value="$sale->client?->display_name"
+                        :href="$sale->client && auth()->user()->can('clients.view') ? route('clients.show', $sale->client) : null" />
+                    <x-ui.infolist.entry label="Realizada por" :value="$return->user?->name" />
+                    <x-ui.infolist.entry label="Método">
+                        <x-ui.badge :variant="$methodVariant" size="sm" :dot="false">{{ $return->refund_method_label }}</x-ui.badge>
+                    </x-ui.infolist.entry>
+                    <x-ui.infolist.entry label="Motivo" :value="$return->reason_label" />
+                    <x-ui.infolist.entry label="Observaciones" :value="$return->notes" full />
+                </x-ui.infolist.section>
 
-        {{-- Línea devuelta --}}
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <div class="px-5 py-3 border-b bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-500">Productos devueltos</div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm">
-                    <thead class="border-b">
-                        <tr>
-                            <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400">Producto</th>
-                            <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 text-center">Cant.</th>
-                            <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 text-right">Neto unit.</th>
-                            <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 text-right">ITBIS unit.</th>
-                            <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 text-right">Total</th>
-                            <th class="px-4 py-3 text-[10px] font-black uppercase text-slate-400 text-center">Inventario</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y">
+                {{-- Productos devueltos --}}
+                <x-ui.infolist.section title="Productos devueltos" icon="heroicon-o-queue-list" :cols="0"
+                    :description="$return->items->count().' '.($return->items->count() === 1 ? 'línea' : 'líneas').' · total '.$money($return->refund_value)">
+                    <x-ui.infolist.repeatable>
                         @foreach($return->items as $item)
                             @php $product = $item->saleItem->product; @endphp
-                            <tr>
-                                <td class="px-4 py-3">
-                                    <div class="font-medium text-slate-900">{{ $product->name ?? 'Producto eliminado' }}</div>
-                                    <div class="text-[10px] text-slate-400 font-mono">{{ $product->sku ?? '' }}</div>
-                                </td>
-                                <td class="px-4 py-3 text-center font-bold text-slate-700">{{ $fmtQty($item->quantity) }}</td>
-                                <td class="px-4 py-3 text-right font-mono text-slate-600">{{ $currency }}{{ number_format($item->unit_subtotal, 2) }}</td>
-                                <td class="px-4 py-3 text-right font-mono text-slate-600">{{ $currency }}{{ number_format($item->unit_tax, 2) }}</td>
-                                <td class="px-4 py-3 text-right font-mono font-bold text-slate-900">{{ $currency }}{{ number_format($item->total, 2) }}</td>
-                                <td class="px-4 py-3 text-center">
+                            <x-ui.infolist.repeatable-item :cols="7">
+                                <x-ui.infolist.entry label="Producto" class="col-span-2" strong>
+                                    {{ $product->name ?? 'Producto eliminado' }}
+                                    @if($product?->sku)
+                                        <span class="block text-xs font-normal text-gray-400 font-mono">{{ $product->sku }}</span>
+                                    @endif
+                                </x-ui.infolist.entry>
+                                <x-ui.infolist.entry label="Cant.">
+                                    <x-ui.badge variant="slate" size="sm" :dot="false">{{ $fmtQty($item->quantity) }}</x-ui.badge>
+                                </x-ui.infolist.entry>
+                                <x-ui.infolist.entry label="Neto unit." :value="$money($item->unit_subtotal)" />
+                                <x-ui.infolist.entry label="ITBIS unit." :value="$money($item->unit_tax)" />
+                                <x-ui.infolist.entry label="Inventario">
                                     @if($product?->isService())
                                         <x-ui.badge variant="slate" size="sm" :dot="false">Servicio</x-ui.badge>
                                     @elseif($item->restock)
-                                        <x-ui.badge variant="success" size="sm">Regresó</x-ui.badge>
+                                        <x-ui.badge variant="success" size="sm" :dot="false">Regresó</x-ui.badge>
                                     @else
-                                        <x-ui.badge variant="warning" size="sm">No regresó (dañado)</x-ui.badge>
+                                        <x-ui.badge variant="warning" size="sm" :dot="false">No regresó</x-ui.badge>
                                     @endif
-                                </td>
-                            </tr>
+                                </x-ui.infolist.entry>
+                                <x-ui.infolist.entry label="Total" class="sm:text-right">
+                                    <span class="font-semibold text-zertix-primary-700">{{ $money($item->total) }}</span>
+                                </x-ui.infolist.entry>
+                            </x-ui.infolist.repeatable-item>
                         @endforeach
-                    </tbody>
-                    <tfoot class="border-t bg-slate-50">
-                        <tr>
-                            <td colspan="4" class="px-4 py-3 text-right text-[10px] font-black uppercase text-slate-500">Total devuelto</td>
-                            <td class="px-4 py-3 text-right font-mono font-black text-slate-900">{{ $currency }}{{ number_format($return->refund_value, 2) }}</td>
-                            <td></td>
-                        </tr>
-                    </tfoot>
-                </table>
+                    </x-ui.infolist.repeatable>
+                </x-ui.infolist.section>
+
+                {{-- Resultado --}}
+                <x-ui.infolist.section title="Resultado" icon="heroicon-o-banknotes" :cols="2">
+                    <x-ui.infolist.entry label="Valor devuelto">
+                        <span class="text-xl font-bold text-zertix-primary-700">{{ $money($return->refund_value) }}</span>
+                    </x-ui.infolist.entry>
+
+                    @switch($return->refund_method)
+                        @case(SaleReturn::METHOD_CASH)
+                            <x-ui.infolist.entry label="Efectivo entregado" :value="$money($return->cash_amount)" strong />
+                            @break
+
+                        @case(SaleReturn::METHOD_RECEIVABLE)
+                            <x-ui.infolist.entry label="Deuda reducida en" :value="$money($return->refund_value)" strong />
+                            @break
+
+                        @default
+                            @if($exchangeSale)
+                                @php
+                                    $newLine = $exchangeSale->items->first();
+                                    $cashIn = (float) $exchangeSale->payments->filter(fn ($p) => $p->tipoPago?->slug === TipoPago::EFECTIVO)->sum('amount');
+                                @endphp
+                                <x-ui.infolist.entry label="Reemplazo entregado"
+                                    :value="($newLine->product->name ?? 'N/A').' × '.$fmtQty($newLine->quantity)" strong />
+                                <x-ui.infolist.entry label="Venta del cambio" :value="$exchangeSale->number"
+                                    :href="auth()->user()->can('sales.view') ? route('sales.show', $exchangeSale) : null" />
+                                <x-ui.infolist.entry label="Diferencia cobrada" :value="$cashIn > 0 ? $money($cashIn) : null" />
+                                <x-ui.infolist.entry label="Diferencia entregada" :value="$return->cash_amount > 0 ? $money($return->cash_amount) : null" />
+                            @else
+                                <x-ui.infolist.entry label="Cambio" value="Otra unidad del mismo producto, sin costo" />
+                            @endif
+                    @endswitch
+                </x-ui.infolist.section>
             </div>
-        </div>
 
-        {{-- Resultado --}}
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-5 md:p-6">
-            <span class="block text-[10px] font-black uppercase tracking-widest text-slate-500 mb-3">Resultado</span>
-
-            @switch($return->refund_method)
-                @case(SaleReturn::METHOD_CASH)
-                    <p class="text-sm text-slate-700">Efectivo entregado:
-                        <span class="font-mono font-black text-lg text-slate-900">{{ $currency }}{{ number_format($return->cash_amount, 2) }}</span>
-                    </p>
-                    @break
-
-                @case(SaleReturn::METHOD_RECEIVABLE)
-                    <p class="text-sm text-slate-700">Deuda del cliente reducida en
-                        <span class="font-mono font-black text-lg text-slate-900">{{ $currency }}{{ number_format($return->refund_value, 2) }}</span>
-                    </p>
-                    @break
-
-                @default
-                    @if($exchangeSale)
-                        @php
-                            $newLine = $exchangeSale->items->first();
-                            $cashIn = (float) $exchangeSale->payments->filter(fn ($p) => $p->tipoPago?->slug === \App\Models\Configuration\TipoPago::EFECTIVO)->sum('amount');
-                        @endphp
-                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                            <div>
-                                <span class="block text-[10px] text-slate-500">Reemplazo entregado</span>
-                                <span class="font-semibold text-slate-800">{{ $newLine->product->name ?? 'N/A' }} × {{ $fmtQty($newLine->quantity) }}</span>
-                            </div>
-                            <div>
-                                <span class="block text-[10px] text-slate-500">Venta del cambio</span>
-                                <span class="font-mono font-bold text-zertix-primary-700">{{ $exchangeSale->number }}</span>
-                            </div>
-                            <div>
-                                <span class="block text-[10px] text-slate-500">Diferencia cobrada</span>
-                                <span class="font-mono font-bold text-slate-900">{{ $currency }}{{ number_format($cashIn, 2) }}</span>
-                            </div>
-                            <div>
-                                <span class="block text-[10px] text-slate-500">Diferencia entregada</span>
-                                <span class="font-mono font-bold text-slate-900">{{ $currency }}{{ number_format((float) $return->cash_amount, 2) }}</span>
-                            </div>
-                        </div>
-                    @else
-                        <p class="text-sm text-slate-700">Cambio por otra unidad de cada producto devuelto, sin costo.</p>
-                    @endif
-            @endswitch
-        </div>
-        </div>
-
-        {{-- Vista previa del ticket --}}
-        <aside class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden lg:sticky lg:top-6">
-            <div class="px-5 py-3 border-b bg-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-500">Ticket</div>
-            <div class="bg-slate-100 p-4 flex justify-center">
-                <iframe src="{{ route('sales.returns.print', ['return' => $return, 'preview' => 1]) }}"
-                        title="Ticket {{ $return->number }}"
-                        class="w-full max-w-[320px] h-[520px] bg-white rounded shadow"></iframe>
-            </div>
-        </aside>
+            {{-- Columna lateral: vista previa del ticket --}}
+            <x-ui.infolist.section title="Ticket" icon="heroicon-o-printer" :cols="0" class="lg:sticky lg:top-6">
+                <div class="-m-5 sm:-m-6 bg-slate-100 p-4 flex justify-center rounded-b-2xl">
+                    <iframe src="{{ route('sales.returns.print', ['return' => $return, 'preview' => 1]) }}"
+                            title="Ticket {{ $return->number }}"
+                            class="w-full max-w-[320px] h-[520px] bg-white rounded shadow"></iframe>
+                </div>
+            </x-ui.infolist.section>
         </div>
     </div>
 

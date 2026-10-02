@@ -24,7 +24,7 @@ class ReturnController extends Controller
     public function show(SaleReturn $return)
     {
         $return->load([
-            'sale.client:id,name,tax_id',
+            'sale.client:id,name,commercial_name,tax_id',
             'user:id,name',
             'voidedBy:id,name',
             'items.saleItem.product:id,name,sku,type',

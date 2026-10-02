@@ -23,7 +23,7 @@ class QuoteTable extends DataTable
     protected function columns(): array
     {
         return [
-            'id'              => ['label' => 'ID', 'mobile' => true],
+            'number'          => ['label' => 'Número', 'default' => true, 'mobile' => true],
             'created_at'      => ['label' => 'Fecha Emisión', 'default' => true],
             'customer_id'     => ['label' => 'Cliente', 'default' => true, 'mobile' => true],
             'user_id'         => ['label' => 'Vendedor'],
@@ -38,11 +38,17 @@ class QuoteTable extends DataTable
         ];
     }
 
+    /** En qué busca el filtro 'search' de abajo — debe coincidir con su closure. */
+    protected function searchFields(): array
+    {
+        return ['número', 'cliente'];
+    }
+
     protected function filterMap(): array
     {
         return [
             'search' => fn (Builder $q, $v) => $q->where(fn (Builder $qq) => $qq
-                ->where('id', 'like', "%{$v}%")
+                ->where('number', 'like', "%{$v}%")
                 ->orWhereHas('customer', fn (Builder $sq) => $sq->where('name', 'like', "%{$v}%"))),
             'customer_id' => fn (Builder $q, $v) => $q->where('customer_id', $v),
             'status'      => fn (Builder $q, $v) => $q->where('status', $v),

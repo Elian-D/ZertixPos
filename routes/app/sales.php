@@ -53,6 +53,12 @@ Route::prefix('sales')->as('sales.')->group(function () {
             Route::get('/{return}/print', 'print')->middleware('permission:returns.create|returns.void')->name('print');
             Route::patch('/{return}/void', 'void')->middleware('permission:returns.void')->name('void');
         });
+
+        // whereNumber: sin él, {sale} capturaría /sales/create, /sales/returns, etc.
+        Route::get('/{sale}', [SaleController::class, 'show'])
+            ->whereNumber('sale')
+            ->middleware('permission:sales.view')
+            ->name('show');
     });
 
     // routes/app/sales/pos.php

@@ -101,6 +101,17 @@ class Invoice extends Model
     /**
      * Relación con la Venta
      */
+    /** Variante de x-ui.badge por estado (vistas show, patrón Infolist). */
+    public function getStatusVariantAttribute(): string
+    {
+        return $this->status === self::STATUS_CANCELLED ? 'error' : 'success';
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return self::getStatuses()[$this->status] ?? $this->status;
+    }
+
     public function sale(): BelongsTo
     {
         return $this->belongsTo(Sale::class);

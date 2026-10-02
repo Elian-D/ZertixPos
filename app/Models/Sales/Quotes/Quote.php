@@ -92,6 +92,23 @@ class Quote extends Model
      * cliente realmente paga si aprueba y convierte esta cotización. Mismo
      * patrón que Sale::getGrandTotalAttribute() (Fase 5, REQ-5.12).
      */
+    /** Variante de x-ui.badge por estado (vistas show, patrón Infolist). */
+    public function getStatusVariantAttribute(): string
+    {
+        return match ($this->status) {
+            self::STATUS_APPROVED => 'info',
+            self::STATUS_CONVERTED => 'success',
+            self::STATUS_EXPIRED => 'warning',
+            self::STATUS_CANCELLED => 'error',
+            default => 'slate',
+        };
+    }
+
+    public function getStatusLabelAttribute(): string
+    {
+        return self::getStatuses()[$this->status] ?? $this->status;
+    }
+
     public function getGrandTotalAttribute(): float
     {
         return (float) $this->net_amount + (float) $this->tax_amount;
