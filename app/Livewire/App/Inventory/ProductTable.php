@@ -40,7 +40,7 @@ class ProductTable extends DataTable
     /** En qué busca el filtro 'search' de abajo — debe coincidir con su closure. */
     protected function searchFields(): array
     {
-        return ['nombre', 'SKU'];
+        return ['nombre', 'SKU', 'código de barras'];
     }
 
     protected function filterMap(): array
@@ -48,7 +48,8 @@ class ProductTable extends DataTable
         return [
             'search' => fn (Builder $q, $v) => $q->where(fn (Builder $qq) => $qq
                 ->where('name', 'like', "%{$v}%")
-                ->orWhere('sku', 'like', "%{$v}%")),
+                ->orWhere('sku', 'like', "%{$v}%")
+                ->orWhere('barcode', 'like', "%{$v}%")),
             'category_id' => fn (Builder $q, $v) => $q->where('category_id', $v),
             'unit_id' => fn (Builder $q, $v) => $q->where('unit_id', $v),
             'is_active' => fn (Builder $q, $v) => $q->where('is_active', (bool) $v),

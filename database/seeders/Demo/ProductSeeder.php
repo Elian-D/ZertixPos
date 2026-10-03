@@ -297,6 +297,10 @@ class ProductSeeder extends Seeder
         ];
 
         foreach ($products as $product) {
+            // v1.5.0 REQ-1.2: código de barras EAN-13 de prueba (prefijo 746, RD), derivado
+            // del número del SKU para que sea estable entre corridas del seeder.
+            $product['barcode'] ??= self::demoBarcode((int) substr($product['sku'], 4));
+
             $created = Product::updateOrCreate(
                 ['sku' => $product['sku']], // Buscamos por SKU para no duplicar
                 array_merge($product, ['slug' => Str::slug($product['name'])])
@@ -314,5 +318,17 @@ class ProductSeeder extends Seeder
                 ]);
             }
         }
+    }
+
+    /** EAN-13 válido: 746 + 9 dígitos + dígito verificador. */
+    public static function demoBarcode(int $n): string
+    {
+        $base = '746'.str_pad((string) $n, 9, '0', STR_PAD_LEFT);
+        $sum = 0;
+        foreach (str_split($base) as $i => $d) {
+            $sum += (int) $d * ($i % 2 ? 3 : 1);
+        }
+
+        return $base.((10 - $sum % 10) % 10);
     }
 }

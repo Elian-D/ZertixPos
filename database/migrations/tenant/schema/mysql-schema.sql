@@ -274,6 +274,7 @@ CREATE TABLE `inventory_stocks` (
   `product_id` bigint unsigned NOT NULL,
   `quantity` decimal(12,2) NOT NULL DEFAULT '0.00',
   `min_stock` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `max_stock` decimal(12,2) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -741,10 +742,11 @@ CREATE TABLE `products` (
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `slug` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `sku` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `barcode` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `description` text COLLATE utf8mb4_unicode_ci,
   `image_path` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `price` decimal(12,2) NOT NULL DEFAULT '0.00',
-  `cost` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `cost` decimal(12,4) NOT NULL DEFAULT '0.0000',
   `is_active` tinyint(1) NOT NULL DEFAULT '1',
   `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'product',
   `created_at` timestamp NULL DEFAULT NULL,
@@ -753,6 +755,7 @@ CREATE TABLE `products` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `products_slug_unique` (`slug`),
   UNIQUE KEY `products_sku_unique` (`sku`),
+  UNIQUE KEY `products_barcode_unique` (`barcode`),
   KEY `products_category_id_foreign` (`category_id`),
   KEY `products_unit_id_foreign` (`unit_id`),
   CONSTRAINT `products_category_id_foreign` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE CASCADE,
@@ -1227,3 +1230,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (86,'2026_09_26_100
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (92,'2026_09_30_100000_create_returns_tables',3);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (93,'2026_10_02_100000_add_cancellation_fields_to_sales_table',4);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (94,'2026_10_02_110000_add_document_numbers',5);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (96,'2026_10_03_100000_v150_inventory_base',6);

@@ -32,7 +32,9 @@ class StoreProductRequest extends FormRequest
             'category_id' => 'required|exists:categories,id',
             'unit_id' => 'required|exists:units,id',
             'name' => 'required|string|max:150',
+            // v1.5.0 REQ-1.2: SKU opcional (ya no se autogenera) y código de barras propio.
             'sku' => 'nullable|string|max:50|unique:products,sku',
+            'barcode' => 'nullable|string|max:50|unique:products,barcode',
             'description' => 'nullable|string|max:1000',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
 
@@ -49,6 +51,23 @@ class StoreProductRequest extends FormRequest
             // Flags
             'is_active' => 'boolean',
             'type' => ['required', Rule::in([Product::TYPE_PRODUCT, Product::TYPE_SERVICE])],
+
+            // Sección Inventario (v1.5.0 REQ-1.3). Un servicio la ignora (ProductService).
+            'inventory' => 'nullable|array',
+            'inventory.warehouse_id' => 'nullable|exists:warehouses,id',
+            'inventory.quantity' => 'nullable|numeric|min:0',
+            'inventory.min_stock' => 'nullable|numeric|min:0',
+            'inventory.max_stock' => 'nullable|numeric|min:0',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'inventory.warehouse_id' => 'almacén',
+            'inventory.quantity' => 'cantidad inicial',
+            'inventory.min_stock' => 'mínimo',
+            'inventory.max_stock' => 'máximo',
         ];
     }
 
@@ -79,6 +98,18 @@ class StoreProductRequest extends FormRequest
             if ($itbisSelected->count() > 1) {
                 $validator->errors()->add('tax_keys', 'Solo se puede seleccionar un tipo de ITBIS por producto (18%, 16%, Exento o Sin ITBIS).');
             }
+
+            if ($this->input('type') === Product::TYPE_PRODUCT) {
+                $inventory = (array) $this->input('inventory', []);
+
+                if ((float) ($inventory['quantity'] ?? 0) > 0 && empty($inventory['warehouse_id'])) {
+                    $validator->errors()->add('inventory.warehouse_id', 'Elige el almacén donde está la cantidad inicial.');
+                }
+
+                if (! $this->maxCoversMin($inventory['min_stock'] ?? null, $inventory['max_stock'] ?? null)) {
+                    $validator->errors()->add('inventory.max_stock', 'El máximo no puede ser menor que el mínimo.');
+                }
+            }
         });
     }
 
@@ -93,6 +124,12 @@ class StoreProductRequest extends FormRequest
             ->filter(fn ($tax) => is_array($tax) && ($tax['scope'] ?? null) === 'product')
             ->keys()
             ->all();
+    }
+
+    /** Un máximo vacío es "sin tope"; con valor, no puede quedar por debajo del mínimo. */
+    private function maxCoversMin($min, $max): bool
+    {
+        return $max === null || $max === '' || (float) $max >= (float) ($min ?? 0);
     }
 
     /**

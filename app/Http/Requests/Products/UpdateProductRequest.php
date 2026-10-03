@@ -36,6 +36,7 @@ class UpdateProductRequest extends FormRequest
             'unit_id' => 'required|exists:units,id',
             'name' => 'required|string|max:150',
             'sku' => "nullable|string|max:50|unique:products,sku,{$productId}",
+            'barcode' => "nullable|string|max:50|unique:products,barcode,{$productId}",
             'description' => 'nullable|string|max:1000',
             'image' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
 
@@ -50,6 +51,20 @@ class UpdateProductRequest extends FormRequest
 
             'is_active' => 'boolean',
             'type' => ['required', Rule::in([Product::TYPE_PRODUCT, Product::TYPE_SERVICE])],
+
+            // Sección Inventario (v1.5.0 REQ-1.3): solo mínimo y máximo por almacén,
+            // indexado por id de inventory_stocks. La existencia no se edita aquí.
+            'stocks' => 'nullable|array',
+            'stocks.*.min_stock' => 'nullable|numeric|min:0',
+            'stocks.*.max_stock' => 'nullable|numeric|min:0',
+        ];
+    }
+
+    public function attributes(): array
+    {
+        return [
+            'stocks.*.min_stock' => 'mínimo',
+            'stocks.*.max_stock' => 'máximo',
         ];
     }
 
@@ -75,6 +90,21 @@ class UpdateProductRequest extends FormRequest
             $itbisSelected = collect($this->input('tax_keys', []))->intersect($this->itbisGroupKeys());
             if ($itbisSelected->count() > 1) {
                 $validator->errors()->add('tax_keys', 'Solo se puede seleccionar un tipo de ITBIS por producto (18%, 16%, Exento o Sin ITBIS).');
+            }
+
+            // REQ-1.6: un servicio no tiene existencias. Pasar a servicio un producto que
+            // todavía tiene unidades dejaría stock huérfano — primero hay que sacarlas.
+            $product = $this->route('product');
+            if ($this->input('type') === Product::TYPE_SERVICE && $product->isProduct()
+                && $product->stocks()->where('quantity', '!=', 0)->exists()) {
+                $validator->errors()->add('type', 'Este producto todavía tiene existencias. Para convertirlo en servicio, primero llévalas a 0 con una toma física o una merma.');
+            }
+
+            foreach ((array) $this->input('stocks', []) as $id => $stock) {
+                $max = $stock['max_stock'] ?? null;
+                if ($max !== null && $max !== '' && (float) $max < (float) ($stock['min_stock'] ?? 0)) {
+                    $validator->errors()->add("stocks.{$id}.max_stock", 'El máximo no puede ser menor que el mínimo.');
+                }
             }
         });
     }

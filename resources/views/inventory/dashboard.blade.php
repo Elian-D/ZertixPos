@@ -10,10 +10,10 @@
                     <h2 class="text-3xl font-bold text-gray-900 tracking-tight">Centro de Inventario</h2>
                     <p class="text-sm text-gray-500 mt-1">Gestión de existencias y flujo logístico</p>
                 </div>
-                
-                {{-- Botón Registrar Entrada --}}
-                <x-ui.button x-on:click="$dispatch('open-modal', 'register-input')" variant="primary" :hoverEffect="true" iconLeft="heroicon-s-plus-circle" class="whitespace-nowrap">
-                    Registrar Entrada
+
+                {{-- v1.5.0 REQ-1.5: sin "Registrar Entrada" — el stock solo cambia por un documento con nombre. --}}
+                <x-ui.button href="{{ route('inventory.movements.index') }}" variant="secondary" appearance="outline" iconLeft="heroicon-s-queue-list" class="whitespace-nowrap">
+                    Ver kardex
                 </x-ui.button>
             </div>
 
@@ -157,8 +157,8 @@
                     <div class="space-y-3">
                         @forelse($recentMovements as $mv)
                             <div class="flex items-start gap-3 pb-3 border-b border-gray-50 last:border-0 last:pb-0">
-                                <div class="flex-shrink-0 p-2 rounded-lg {{ $mv->type === 'input' ? 'bg-green-50' : 'bg-red-50' }}">
-                                    @if($mv->type === 'input')
+                                <div class="flex-shrink-0 p-2 rounded-lg {{ $mv->quantity > 0 ? 'bg-green-50' : 'bg-red-50' }}">
+                                    @if($mv->quantity > 0)
                                         <x-heroicon-s-arrow-up-circle class="w-5 h-5 text-green-600"/>
                                     @else
                                         <x-heroicon-s-arrow-down-circle class="w-5 h-5 text-red-600"/>
@@ -169,17 +169,18 @@
                                     <p class="text-sm font-semibold text-gray-900 truncate">
                                         {{ $mv->product->name }}
                                     </p>
-                                    <p class="text-xs text-gray-500 mt-0.5">
-                                        {{ $mv->warehouse->name }}
-                                    </p>
+                                    <div class="flex items-center gap-1.5 mt-0.5 min-w-0">
+                                        <x-ui.badge :hex="$mv->type_hex" size="sm" :dot="false">{{ $mv->type_label }}</x-ui.badge>
+                                        <span class="text-xs text-gray-500 truncate">{{ $mv->warehouse->name }}</span>
+                                    </div>
                                     <p class="text-[10px] text-gray-400 uppercase mt-1">
                                         {{ $mv->created_at->diffForHumans() }}
                                     </p>
                                 </div>
                                 
                                 <div class="flex-shrink-0 text-right">
-                                    <span class="font-mono font-bold text-sm {{ $mv->type === 'input' ? 'text-green-600' : 'text-red-600' }}">
-                                        {{ $mv->type === 'input' ? '+' : '-' }}{{ number_format(abs($mv->quantity), 0) }}
+                                    <span class="font-mono font-bold text-sm {{ $mv->quantity > 0 ? 'text-green-600' : 'text-red-600' }}">
+                                        {{ $mv->quantity > 0 ? '+' : '-' }}{{ number_format(abs($mv->quantity), 0) }}
                                     </span>
                                 </div>
                             </div>
@@ -232,8 +233,8 @@
                             @endforeach
                         </div>
 
-                        <x-ui.button x-on:click="$dispatch('open-modal', 'register-input')" variant="error" iconLeft="heroicon-s-plus-circle" size="sm" :fullWidth="true">
-                            Reponer inventario ahora
+                        <x-ui.button href="{{ route('inventory.stocks.index') }}" variant="error" iconLeft="heroicon-s-archive-box" size="sm" :fullWidth="true">
+                            Ver stock actual
                         </x-ui.button>
                     </div>
                 @endif
@@ -391,71 +392,4 @@
     </script>
     @endpush
 
-    {{-- Modal de Entrada de Inventario --}}
-    <x-modal name="register-input" maxWidth="md">
-        <x-form-header 
-            title="Registrar Entrada de Inventario" 
-            subtitle="Incrementar stock por compra, producción o devolución" />
-
-        <form action="{{ route('inventory.movements.store') }}" method="POST" class="p-6">
-            @csrf
-            <input type="hidden" name="type" value="input">
-
-            <div class="space-y-4">
-                <x-ui.forms.select
-                    label="Producto"
-                    name="product_id"
-                    id="input_product_id"
-                    placeholder="Seleccione el producto..."
-                    :error="$errors->first('product_id')"
-                    required
-                >
-                    @foreach($products as $product)
-                        <option value="{{ $product->id }}">{{ $product->name }}</option>
-                    @endforeach
-                </x-ui.forms.select>
-
-                <x-ui.forms.select
-                    label="Almacén de Destino"
-                    name="warehouse_id"
-                    id="input_warehouse_id"
-                    placeholder="Seleccione almacén..."
-                    :error="$errors->first('warehouse_id')"
-                    required
-                >
-                    @foreach($warehouses as $wh)
-                        <option value="{{ $wh->id }}">{{ $wh->name }}</option>
-                    @endforeach
-                </x-ui.forms.select>
-
-                <x-ui.forms.input
-                    label="Cantidad"
-                    id="input_quantity"
-                    name="quantity"
-                    type="number"
-                    step="0.01"
-                    min="0.01"
-                    placeholder="0.00"
-                    hint="Se sumará al stock actual del almacén"
-                    :error="$errors->first('quantity')"
-                    required
-                />
-
-                <x-ui.forms.textarea
-                    label="Notas"
-                    name="description"
-                    id="input_description"
-                    :rows="2"
-                    placeholder="Ej: Compra factura #1234, Producción lote #105"
-                    :error="$errors->first('description')"
-                    required
-                ></x-ui.forms.textarea>
-            </div>
-
-            <div class="mt-6 flex justify-end gap-3">
-                <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
-                <x-ui.button type="submit" variant="primary">Registrar Entrada</x-ui.button>
-            </div>
-        </form>
-    </x-modal>
 </x-app-layout>

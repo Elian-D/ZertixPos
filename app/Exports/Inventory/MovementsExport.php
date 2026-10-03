@@ -75,17 +75,11 @@ class MovementsExport implements FromQuery, WithHeadings, WithMapping, WithStyle
      */
     public function map($movement): array
     {
-        // Lógica para determinar qué mostrar en la columna de Destino
+        // Columna de Destino: solo transferencias (el otro almacén del documento)
         $destino = '---';
-        
-        if ($movement->type === 'transfer') {
-            if ($movement->to_warehouse_id) {
-                // Es el registro de SALIDA (tiene to_warehouse_id)
-                $destino = $this->warehousesCache[$movement->to_warehouse_id] ?? 'N/A';
-            } elseif ($movement->reference_type === 'App\Models\Inventory\InventoryMovement') {
-                // Es el registro de ENTRADA (espejo)
-                $destino = '(Recepción de Transferencia)';
-            }
+
+        if (in_array($movement->type, ['transfer_out', 'transfer_in']) && $movement->to_warehouse_id) {
+            $destino = $this->warehousesCache[$movement->to_warehouse_id] ?? 'N/A';
         }
 
         return [

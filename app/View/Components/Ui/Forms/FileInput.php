@@ -30,6 +30,8 @@ class FileInput extends Component
          * siendo `false` por defecto. Ver docs/ui/forms.md.
          */
         public bool    $dropzone  = false,
+        /** Texto del cuadro dropzone mientras no hay archivo (v1.5.0: el form de producto dice "Subir imagen"). */
+        public string  $dropzoneLabel = 'Subir logo',
         /**
          * Tamaño de la caja `dropzone` — mismo nombre de escala que
          * `x-ui.button` (`sm`/`md`/`lg`/`xl`, más `xs`). Ignorado si

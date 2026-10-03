@@ -2,6 +2,7 @@
     x-ui.forms.textarea
     -------------------
     Props: label, name, id, placeholder, rows, error, hint, required, disabled, readonly, resize
+    Valor: el contenido del componente — <x-ui.forms.textarea name="notes">{{ old('notes', $m->notes) }}</x-ui.forms.textarea>
 
     v1.3.0 Fase 7.9 (fix CSS): con error, `focused` neutraliza el borde/ring
     rojo mientras el textarea está enfocado — mismo fix que x-ui.forms.input,
@@ -39,7 +40,9 @@
             :class="focused ? '!border-zertix-primary !ring-zertix-primary/20 !bg-white !text-slate-800' : ''"
         @endif
         {{ $attributes->merge(['class' => $textareaClasses()]) }}
-    ></textarea>
+    >{!! trim($slot) !!}</textarea>{{-- v1.5.0 fix: el valor llega como contenido
+         (`>{{ old('x', $m->x) }}</x-ui.forms.textarea>`, ya escapado por quien lo usa) y antes
+         no se imprimía — un edit mostraba el campo vacío y lo borraba al guardar. --}}
 
     {{-- Mensaje de error o hint --}}
     @if ($error)

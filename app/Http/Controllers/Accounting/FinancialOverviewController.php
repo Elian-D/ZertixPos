@@ -120,15 +120,23 @@ class FinancialOverviewController extends Controller
      * Costo de lo vendido en el periodo: salidas físicas de inventario (kardex),
      * valoradas al costo ACTUAL del producto — igual criterio que ya usa
      * InventoryMovementService, sin depender de que exista un asiento contable.
+     *
+     * Neto (v1.5.0 REQ-1.1): las ventas (−) restan y sus anulaciones (+) suman, así
+     * que una venta anulada no infla el costo.
      */
+    private const COST_OF_SALES_TYPES = [
+        InventoryMovement::TYPE_SALE,
+        InventoryMovement::TYPE_SALE_VOID,
+    ];
+
     private function getCostOfSales(Carbon $start, Carbon $end): float
     {
         return (float) InventoryMovement::query()
             ->join('products', 'inventory_movements.product_id', '=', 'products.id')
-            ->where('inventory_movements.type', InventoryMovement::TYPE_OUTPUT)
+            ->whereIn('inventory_movements.type', self::COST_OF_SALES_TYPES)
             ->whereBetween('inventory_movements.created_at', [$start, $end])
             ->whereNull('inventory_movements.deleted_at')
-            ->selectRaw('SUM(ABS(inventory_movements.quantity) * products.cost) as total')
+            ->selectRaw('SUM(-inventory_movements.quantity * products.cost) as total')
             ->value('total') ?? 0;
     }
 
@@ -142,10 +150,10 @@ class FinancialOverviewController extends Controller
 
         $costByDay = InventoryMovement::query()
             ->join('products', 'inventory_movements.product_id', '=', 'products.id')
-            ->where('inventory_movements.type', InventoryMovement::TYPE_OUTPUT)
+            ->whereIn('inventory_movements.type', self::COST_OF_SALES_TYPES)
             ->whereBetween('inventory_movements.created_at', [$start, $end])
             ->whereNull('inventory_movements.deleted_at')
-            ->selectRaw('DATE(inventory_movements.created_at) as day, SUM(ABS(inventory_movements.quantity) * products.cost) as cost')
+            ->selectRaw('DATE(inventory_movements.created_at) as day, SUM(-inventory_movements.quantity * products.cost) as cost')
             ->groupBy('day')
             ->pluck('cost', 'day');
 

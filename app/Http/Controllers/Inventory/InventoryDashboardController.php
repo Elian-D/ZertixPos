@@ -48,11 +48,13 @@ class InventoryDashboardController extends Controller
         $startDate = $filters['start'];
         $endDate = $filters['end'];
 
-        // 1. Datos para gráfico de Flujo (agrupados por fecha)
+        // 1. Datos para gráfico de Flujo (agrupados por fecha). Entradas y salidas se
+        // cuentan por el signo de la cantidad, no por el tipo: así entran todos los
+        // tipos (venta, compra, merma, transferencia...) y el histórico (v1.5.0 REQ-1.1).
         $history = InventoryMovement::select(
                 DB::raw('DATE(created_at) as date'),
-                DB::raw("SUM(CASE WHEN type = 'input' THEN quantity ELSE 0 END) as inputs"),
-                DB::raw("SUM(CASE WHEN type = 'output' THEN ABS(quantity) ELSE 0 END) as outputs")
+                DB::raw('SUM(CASE WHEN quantity > 0 THEN quantity ELSE 0 END) as inputs'),
+                DB::raw('SUM(CASE WHEN quantity < 0 THEN ABS(quantity) ELSE 0 END) as outputs')
             )
             ->whereBetween('created_at', [$startDate, $endDate])
             ->groupBy('date')
@@ -91,11 +93,11 @@ class InventoryDashboardController extends Controller
             ->take(5)
             ->get();
 
-        $totalInputs = InventoryMovement::where('type', 'input')
+        $totalInputs = InventoryMovement::where('quantity', '>', 0)
             ->whereBetween('created_at', [$startDate, $endDate])
             ->sum('quantity');
 
-        $totalOutputs = InventoryMovement::where('type', 'output')
+        $totalOutputs = InventoryMovement::where('quantity', '<', 0)
             ->whereBetween('created_at', [$startDate, $endDate])
             ->sum(DB::raw('ABS(quantity)'));
 
@@ -139,10 +141,6 @@ class InventoryDashboardController extends Controller
                 ->orderBy('quantity', 'asc')
                 ->take(5)
                 ->get(),
-            
-            // Variables para el modal
-            'products' => Product::orderBy('name')->get(),
-            'warehouses' => Warehouse::orderBy('name')->get(),
         ]);
     }
 }

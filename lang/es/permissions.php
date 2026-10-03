@@ -117,7 +117,7 @@ return [
 
     'inventory_movements' => [
         'view' => ['label' => 'Ver movimientos de inventario', 'description' => 'Ver el historial de movimientos de inventario.'],
-        'create_adjustment' => ['label' => 'Crear ajuste de inventario', 'description' => 'Registrar un movimiento de ajuste de inventario.'],
+        'create_adjustment' => ['label' => 'Crear ajuste de inventario', 'description' => 'Agregar o sacar existencias a mano para corregir un error, con motivo y comentario.'],
     ],
 
     'accounting' => [

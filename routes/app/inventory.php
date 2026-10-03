@@ -55,6 +55,11 @@ Route::prefix('inventory')->as('inventory.')->group(function () {
                 ->middleware('permission:inventory_movements.view')
                 ->name('movements.index');
 
+            // Ajuste manual (v1.5.0 REQ-1.5): vista propia en vez del modal libre de antes.
+            Route::get('movements/adjustment', [InventoryMovementController::class, 'create'])
+                ->middleware('permission:inventory_movements.create_adjustment')
+                ->name('movements.create');
+
             Route::post('movements', [InventoryMovementController::class, 'store'])
                 ->middleware('permission:inventory_movements.create_adjustment')
                 ->name('movements.store');
