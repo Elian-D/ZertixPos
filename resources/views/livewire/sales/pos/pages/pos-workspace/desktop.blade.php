@@ -14,7 +14,8 @@
                    x-model="search"
                    x-ref="searchInput"
                    @keydown.enter.prevent="onScan()"
-                   placeholder="Buscar por nombre o SKU… (Enter para lectura de código de barras)"
+                   @input="onSearchInput($event)"
+                   placeholder="Busca por nombre, SKU o código de barras, o escanea…"
                    autofocus
                    class="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-medium shadow-sm focus:ring-2 focus:ring-[#58c03f] focus:border-[#58c03f] transition-all">
         </div>
@@ -58,7 +59,7 @@
                             </template>
                         </div>
                         <div class="p-2">
-                            <div class="text-[9px] font-mono text-gray-400 mb-0.5 truncate" x-text="product.sku || '—'"></div>
+                            <div class="text-[9px] font-mono text-gray-400 mb-0.5 truncate" x-text="product.sku || product.barcode || '—'"></div>
                             <div class="text-xs font-bold text-gray-800 leading-snug line-clamp-2 mb-1.5 min-h-[2rem] group-hover:text-[#58c03f]" x-text="product.name"></div>
                             <div class="flex items-center justify-between gap-1">
                                 <span class="text-sm font-black text-gray-900" x-text="formatMoney(grossPrice(product))"></span>

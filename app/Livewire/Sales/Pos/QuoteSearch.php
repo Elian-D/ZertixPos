@@ -21,7 +21,8 @@ class QuoteSearch extends Component
         // Buscamos productos que tengan stock > 0
         $this->results = InventoryStock::whereHas('product', function($q) {
                 $q->where('name', 'like', '%' . $this->search . '%')
-                  ->orWhere('sku', 'like', '%' . $this->search . '%');
+                  ->orWhere('sku', 'like', '%' . $this->search . '%')
+                  ->orWhere('barcode', 'like', '%' . $this->search . '%');
             })
             ->with('product:id,name,price,sku')
             ->where('quantity', '>', 0)
