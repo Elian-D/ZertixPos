@@ -433,6 +433,7 @@ Interruptor visual con Alpine.js. Internamente usa un `<input type="checkbox">` 
 | `preview` | `bool` | `false` | Miniatura del archivo elegido (si es imagen) — ver abajo |
 | `dropzone` | `bool` | `false` | Variante cuadrada de arrastrar/soltar (logo/foto) — ver abajo |
 | `size` | `string` | `'md'` | Tamaño de la caja `dropzone` — `xs`/`sm`/`md`/`lg`/`xl`. Ignorado si `dropzone` es `false` |
+| `dropzoneLabel` | `string` | `'Subir logo'` | Texto del cuadro `dropzone` mientras no hay archivo (ej. `"Subir imagen"` en el form de producto) |
 
 ### Comportamiento
 

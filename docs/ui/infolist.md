@@ -14,6 +14,8 @@ resources/views/components/ui/infolist/
 ├── entry.blade.php            # Par etiqueta/valor
 ├── repeatable.blade.php       # Contenedor de filas-tarjeta (+ empty-state)
 ├── repeatable-item.blade.php  # Una fila-tarjeta
+├── repeater.blade.php         # Líneas editables de un formulario (contraer/expandir todo + agregar)
+├── repeater-item.blade.php    # Una línea editable (tarjeta gris contraíble)
 ├── tabs.blade.php             # Tarjeta contenedora con barra de pestañas
 └── tab.blade.php              # Panel de una pestaña
 ```
@@ -94,11 +96,63 @@ Filas-tarjeta (RepeatableEntry de Filament) para líneas de un documento o regis
 
 ---
 
+## `x-ui.infolist.repeater` + `repeater-item`
+
+Líneas **editables** de un formulario, como el Repeater de Filament. Para ver líneas en solo lectura en un show, usa `repeatable`, no este. Primer uso: el ajuste de inventario (`resources/views/inventory/movements/create.blade.php`). Es la base para las líneas de compras, mermas y transferencias.
+
+**Qué hace:**
+- **Tarjetas:** cada línea es una tarjeta **gris** (`bg-gray-50`), que contrasta con el fondo blanco de la sección. Arranca abierta y se contrae o expande con un clic en su encabezado.
+- **Encabezado:** lleva el **título o resumen** de la línea, el botón de quitar y el chevron. El resumen se ve también con la línea contraída.
+- **Contraer todo / Expandir todo:** aparece solo con más de una línea. Solo afecta a las líneas de ese repeater, así que dos repeaters en la misma página no se pisan.
+- **Agregar:** el botón va **siempre debajo de la última línea**, para agregar otra sin volver a subir.
+
+`repeater`:
+
+| Prop | Tipo | Default | Descripción |
+|---|---|---|---|
+| `addAction` | `string\|null` | `null` | Expresión Alpine del botón de agregar (`'addLine()'`). Sin ella no hay botón |
+| `addLabel` | `string` | `'Agregar línea'` | Texto del botón |
+| `countExpr` | `string\|null` | `null` | Cantidad de líneas como expresión Alpine (`'lines.length'`), cuando salen de un `x-for` |
+| `count` | `int\|null` | `null` | Cantidad de líneas cuando se renderizan con un `@foreach` de Blade |
+
+`repeater-item`:
+
+| Prop / slot | Tipo | Default | Descripción |
+|---|---|---|---|
+| `title` | `string\|null` | `null` | Título fijo (`'Nueva línea'`) |
+| slot `title` | — | — | Resumen dinámico en lugar del prop: `<span x-text="summary(line)"></span>` |
+| `removeAction` | `string\|null` | `null` | Expresión Alpine del botón de quitar (`'removeLine(i)'`). Sin ella no hay botón |
+| `removeDisabled` | `string\|null` | `null` | Expresión Alpine que lo deshabilita (`'lines.length === 1'`) |
+| `collapsed` | `bool` | `false` | Arranca contraída |
+| slot | — | — | Los campos de la línea |
+
+Dentro de un `<template x-for>`, el `repeater-item` es el único elemento raíz del template, como exige Alpine. Cada línea guarda su estado abierta/contraída de forma local, y las expresiones (`line`, `i`) vienen del scope del `x-for`. Los campos usan `x-bind:name="'lines[' + i + '][campo]'"` y `x-bind:id`. Los radios funcionan sin `for` porque `x-ui.forms.radio` envuelve su input.
+
+```blade
+<x-ui.infolist.repeater countExpr="lines.length" addAction="addLine()">
+    <template x-for="(line, i) in lines" :key="i">
+        <x-ui.infolist.repeater-item removeAction="removeLine(i)" removeDisabled="lines.length === 1">
+            <x-slot:title>
+                <span x-text="summary(line)"></span>
+            </x-slot:title>
+
+            {{-- campos de la línea --}}
+        </x-ui.infolist.repeater-item>
+    </template>
+</x-ui.infolist.repeater>
+```
+
+---
+
 ## `x-ui.infolist.tabs` + `tab`
 
 Tarjeta contenedora con barra de pestañas, para un registro que tiene listados propios (un cliente con sus cotizaciones y facturas). La primera pestaña suele ser "Resumen" con las secciones del registro (usar `flat` en ellas, ya están dentro de la tarjeta).
 
 `tabs`: `tabs` (arreglo de `['name', 'label', 'icon', 'count' => opcional]`), `default` (pestaña inicial; default la primera).
+
+Claves opcionales para usarlo en un formulario (v1.5.0, form de producto):
+- **`show`:** expresión Alpine del scope padre que oculta la pestaña cuando es falsa (ej. `'!isService'`). Si la pestaña activa se oculta, vuelve a la primera.
+- **`error`:** `true` pinta un punto rojo junto a la etiqueta. Se combina con un `default` calculado en la vista para que, con validación fallida, el form abra en la pestaña que tiene el error.
 `tab`: `name` (igual al del arreglo).
 
 La pestaña activa se refleja en el hash de la URL (`/app/clients/5#invoices`): un enlace o un recargo abre directo en esa pestaña. Alpine local, sin Livewire.

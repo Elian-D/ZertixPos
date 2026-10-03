@@ -68,7 +68,7 @@
                     ])>
                         <x-heroicon-o-photo class="w-5 h-5" />
                     </span>
-                    <span class="text-xs font-semibold text-slate-700" x-text="fileName || 'Subir logo'"></span>
+                    <span class="text-xs font-semibold text-slate-700" x-text="fileName || @js($dropzoneLabel)"></span>
                     @if ($hint)
                         <span class="text-[10px] text-slate-400">{{ $hint }}</span>
                     @endif
