@@ -1,4 +1,6 @@
-# ZertixPOS — Roadmap v1.2.0 → v1.6.0
+# ZertixPOS — Roadmap de versiones
+
+**Nombre genérico a propósito (2026-10-02):** antes era `roadmap-v1.2-v1.5.md`. Es **el** roadmap vivo: cada versión nueva se agrega aquí, sin renombrar el archivo cada vez que el rango crece.
 
 **Contexto:** Este documento ordena lo que sigue **después** de `v1.1.0.md` (desacople de Contabilidad + arquitectura de módulos base/satélite). Nace porque `docs/promts.md` es la libreta de trabajo del día a día — cambia constantemente y no es el lugar para fijar un orden de versiones. Este archivo sí lo es: una vez escrito, no debería reordenarse salvo que cambie una dependencia real, no una prioridad de humor.
 
@@ -17,8 +19,9 @@
 | v1.2.0 | **Completada.** Detalle completo en [`v1.2.0.md`](v1.2.0.md): limpieza de deuda técnica menor (estados muertos, `unique`/doble-submit, Consumidor Final, código de almacén, depuración geográfica a solo RD), reestructuración de rutas/sidebar (`admin`→`app`, `accounting.*`→`finance.*`), rename "Pagos"→"Cobros", Impuestos (bug de raíz), Cobros CxC desde el TPV, Identidad Corporativa (logo vectorizado) + tokens de color + componentes Orvian ligeros | Impuestos es la dependencia raíz de todo lo que mueve dinero de aquí en adelante. La limpieza y la reestructuración de navegación van primero para no construir lo nuevo sobre rutas/vistas que van a cambiar de nombre o de lugar a mitad de camino. Los componentes de marca (y el logo, que se integró en la misma pasada) se adoptan antes de construir módulos nuevos para no repintarlos después |
 | v1.3.0 | **Completada.** **(Adelantada desde v1.5.0 original)** Multi-tenant vía `stancl/tenancy`, modo **database-per-tenant sobre MySQL** (sin migrar motor): separación landlord/tenant, wizard de aprovisionamiento (reusa el Install Wizard de v1.1.0 Fase 8), panel de Súper Admin liviano, DNS comodín `*.zertixpos.com`, límites por Plan, Roles/Permisos renombrados a `recurso.accion`, y migración completa de las 22 tablas del sistema al motor Livewire (`App\Livewire\Base\DataTable`) — absorbió de una sola vez lo que originalmente se planeó como migración gradual sin versión fija | Ya no depende de que Devoluciones/Compras existan primero — esa dependencia era específica de un modelo con PostgreSQL+esquema compartido, descartado. Sí depende de que la Fase 3 de v1.2.0 (rutas `admin`→`app`) ya haya cerrado, para no provisionar tenants nuevos sobre rutas que están por moverse. Se prioriza sobre Devoluciones/Compras porque hay clientes reales esperando poder entrar por su propio subdominio, y la infraestructura base (`installation_modules`, `Plan`, Wizard) ya está lista desde v1.1.0. La migración del motor de tablas se adelantó a Fase 0 de esta misma versión porque el Panel de Súper Admin y cualquier vista nueva de multi-tenant nacían directo en el motor nuevo — construirlas en el motor viejo hubiera significado migrarlas después de todos modos |
 | v1.4.0 | **(Antes v1.3.0)** Detalle en [`v1.4.0.md`](v1.4.0.md). Hecho:<br>• Rename Producto/Servicio y guard de Anulación por turno.<br>• **Devoluciones y Cambios solo desde backoffice** con ejecución inmediata. El flujo Solicitar/Aprobar del TPV se diseñó, se descartó y no se construyó.<br>• Vistas `show` estilo Filament de casi todos los módulos.<br>• Numeración propia por documento: `VTA`/`FAC`/`CXC`/`COT`/`TRN`.<br>• Anulación con motivo en la venta.<br>• Rediseño de los PDF carta.<br>• Ajustes de UI de las tablas.<br><br>Nota de Crédito (B04) descartada en esta versión | Depende del monto de impuesto correcto (v1.2.0) para saber cuánto revertir |
-| v1.5.0 | **(Antes v1.4.0)** Ciclo de compra: Proveedores/Órdenes de Compra, Inventario avanzado (Transferencias, Tomas Físicas/Mermas) | Depende de CxP operativa (ya base desde v1.1.0) y del modelo de impuestos correcto para no duplicar el mismo bug en Compras |
+| v1.5.0 | **(Antes v1.4.0)** Detalle en [`v1.5.0.md`](v1.5.0.md):<br>• Inventario sano: tipos de movimiento, código de barras, inventario inicial y costo promedio.<br>• Toma física, mermas y transferencias.<br>• **Tesorería** (cuentas de caja/banco y conciliación), adelantada desde v1.7.0.<br>• Proveedores, CxP genérica (compras y gastos directos) con reversión.<br>• Órdenes de compra y recepciones.<br><br>Compras pasa a núcleo en todos los planes | Depende de la numeración por documento y de los componentes de vista de v1.4.0. Hereda el modelo de impuestos de v1.2.0, aunque el ITBIS de compra queda fuera de esta versión |
 | v1.6.0 | **(Sin pedido confirmado — no empezar hasta que un cliente real lo pida, ver sección propia).** Variantes de producto (talla/color/etc.) — `product_variants` con SKU/código de barras/stock propios, `Product` pasa a ser el estilo padre | No depende de nada anterior técnicamente, pero **si se confirma antes de que v1.4.0/v1.5.0 arranquen, hay que adelantarla** (mismo criterio que adelantó Multi-tenant) — `SaleItem`/`QuoteItem`/`InventoryStock` hoy asumen `product_id` único, y Devoluciones/Compras/Transferencias construidas sobre esa asunción tendrían que reabrirse para agregar la dimensión de variante |
+| v1.7.0 | **(Propuesta, por validar).** Límites de almacenes y cajas por Plan, y operación multi-sucursal sobre los almacenes y terminales que ya existen:<br>• Identidad de sucursal en `Warehouse`.<br>• Usuarios ligados a una sucursal, con datos filtrados.<br>• Selector de sucursal activa.<br>• Cuentas de tesorería ligadas a una sucursal (la tesorería en sí ya se construye en v1.5.0).<br>• Reporte consolidado por sucursal. | Los **límites del Plan** no dependen de nada y pueden adelantarse solos: hoy se vende sin techo de almacenes ni cajas. La parte **multi-sucursal** depende de **Transferencias (v1.5.0)**, que es lo que conecta el inventario entre sucursales |
 
 ---
 
@@ -176,7 +179,19 @@ El plan original de abajo ("Alcance") se dejó como registro. Lo construido difi
 - **Compras (`purchases.vendors`)** depende de CxP operativa, que ya es base desde v1.1.0 (REQ-03.8) — y aquí hereda el modelo de impuestos correcto (v1.2.0) en vez de duplicar el mismo bug para el ITBIS de compra.
 - No depende de Devoluciones/B04 (v1.4.0), pero se agrupa después por área de código: ambas tocan `InventoryMovementService` y conviene no reabrirlo en versiones separadas sin necesidad.
 
-### Alcance
+**Especificación definitiva, fase por fase, en [`v1.5.0.md`](v1.5.0.md).** El alcance cambió respecto al plan original de abajo:
+
+- **Inventario:**
+  - Se quita la entrada manual libre.
+  - Se agrega el inventario inicial en el formulario del producto.
+  - Tipos de movimiento con nombre (`sale`, `purchase`, `count`, `waste`…).
+  - Código de barras y costo promedio ponderado.
+- **Tesorería adelantada desde v1.7.0:** cuentas de caja/banco, kardex inmutable y conciliación. El cierre de turno no se toca; los depósitos se hacen a mano y el turno queda marcado como "Depositado".
+- **CxP genérica:** una sola tabla para deudas de compras y gastos directos (luz, agua, alquiler), con pagos y anulación con reverso.
+- **Compras en todos los planes**, como núcleo `base_flexible` (antes satélite solo de Pro).
+- **Impuestos de compra (606) fuera** de esta versión: el precio de compra se registra tal como se pagó.
+
+### Alcance (plan original, antes de especificar)
 
 1. **Proveedores y Órdenes de Compra** (`purchases.vendors`) — pantallas y lógica completa.
 2. **Transferencias entre Almacenes** — submódulo con estados `Creación`/`Recepción`, documentos firmables no editables tras aprobar. Es el mismo modelo que ya sostiene "sucursales dentro de un tenant" en v1.3.0 — se profundiza acá, no se rediseña.
@@ -224,6 +239,115 @@ Mismo patrón que Impuestos (v1.2.0): **todo lo que se construya después hereda
 
 ---
 
+## v1.7.0 — Límites por Plan + Multi-sucursal y Tesorería
+
+**Propuesta (2026-10-02), por validar antes de construir.** Nace de un análisis externo (multi-sucursal tipo cadena, plan de $89, destino del dinero al cierre), adaptado aquí a lo que el código tiene de verdad. Se descartan las partes del análisis que no aplican.
+
+### Principio
+
+**Una sucursal no es una tabla nueva.** Es una agrupación con significado de lo que ya existe: almacenes (`Warehouse`), cajas (`PosTerminal`, ligadas a un almacén) y usuarios. Es la misma corrección de alcance que fijó v1.3.0: un negocio con sucursales es **un solo tenant**, nunca tenants anidados.
+
+**El Plan vende almacenes y cajas, no "sucursales".** El dueño decide cómo repartirlos: varios almacenes en un mismo local (multi-almacén puro) o repartidos en ciudades (multi-sucursal). Para la infraestructura cuesta lo mismo; el significado lo pone el cliente.
+
+### Qué hay hoy en el código (confirmado)
+
+- **`warehouses`:**
+  - `code`, `name`, `type` (`static` / `mobile` / `pos`), `address`, `description`, `is_active`, `softDeletes` y cuenta contable opcional.
+  - No hay nada que agrupe almacenes en un "local".
+- **`pos_terminals`:**
+  - Tienen `warehouse_id`, así que la caja ya pertenece a un almacén.
+  - Tienen `cash_account_id` (cuenta contable de caja, solo con `accounting.advanced`).
+  - Un almacén sin terminales ya funciona como **depósito**: recibe, mueve y audita stock, pero no se puede abrir turno ahí porque no hay caja.
+- **`users`:** sin `warehouse_id`. Todo usuario ve todos los almacenes, cajas y ventas del tenant.
+- **`Plan` (landlord):**
+  - Solo limita **usuarios** (`users_limit` + `Plan::canCreateMoreUsers()`, REQ-05.6: Emprendedor 1, PyME y Pro sin techo).
+  - **No hay límite de almacenes ni de cajas**: un plan de $29 puede crear 50 almacenes y 50 cajas.
+  - La landing (zertixpos.com) tampoco lo anuncia.
+- **Dinero al cerrar el turno:**
+  - `PosSession` guarda el arqueo (esperado, contado, diferencia), pero el efectivo **no tiene destino registrado**: el turno cierra y el dinero "desaparece" del sistema.
+  - `PosCashMovement` existe, pero está parado a medias desde v1.4.0. No se reactiva sin decidirlo.
+
+### Fase 1 — Límites de almacenes y cajas por Plan
+
+**Independiente del resto:** se puede adelantar y hacer sola, antes de v1.5.0 si hace falta. Copia el patrón de `users_limit`.
+
+| Plan | Usuarios (ya existe) | Almacenes | Cajas (terminales POS) |
+|---|---|---|---|
+| Emprendedor ($29) | 1 | 1 | 1 |
+| PyME ($59) | Sin límite | 3 | 3 |
+| Pro ($89) | Sin límite | Sin límite | Sin límite |
+
+- **Datos (landlord):**
+  - `plans.warehouses_limit` y `plans.terminals_limit`, nullable (`null` = sin techo), en una migración central (no de tenant).
+  - Se siembran con `PlanSeeder`.
+- **Modelo:** `Plan::canCreateMoreWarehouses()` y `canCreateMoreTerminals()`, junto a `canCreateMoreUsers()`. Cuentan solo los registros **no borrados** (la papelera no ocupa cupo).
+- **Dónde se bloquea:**
+  - **Crear:** `WarehouseController::store()`, y `PosTerminalController::create()` / `store()`. Mismo mensaje que usuarios: "Tu plan actual (X) permite un máximo de N…".
+  - **Restaurar de la papelera:** `WarehouseTable::restore()` y `PosTerminalTable::restore()`. Restaurar también suma al conteo; sin esto, el tope se salta borrando y restaurando.
+  - **En la tabla:** el botón "Crear" se deshabilita (no se oculta) con "Límite del plan alcanzado (N/N)", igual que `user-table.blade.php`.
+- **Dónde se muestra:**
+  - Líneas "Hasta N almacenes" y "Hasta N cajas" en el paso de plan del Wizard (`install/partials/step-plan`) y en Gestionar suscripción, como hoy "Hasta N usuarios".
+  - La landing externa se actualiza aparte.
+- **Negocios que ya superan el límite:** no se les borra ni desactiva nada; solo no pueden crear ni restaurar más hasta bajar o cambiar de plan.
+- **Pendiente de revisar al construirlo:**
+  - Si `UserTable::restore()` ya respeta `users_limit` (mismo hueco posible).
+  - Cómo cuenta el almacén que crea el Wizard por defecto: con Emprendedor, ese ya ocupa su único cupo.
+
+### Fase 2 — Identidad de sucursal y alcance por usuario
+
+- **Identidad en el almacén:**
+  - `warehouses` gana `branch_name` (nullable), el nombre del local o punto físico ("Bonao", "La Vega"). Los almacenes con el mismo `branch_name` forman **una sucursal**, sin tabla `branches`.
+  - `is_main` marca la casa matriz.
+  - `is_active` ya existe y no se duplica.
+- **Usuario ligado a una sucursal:**
+  - `users.branch_name` (o `warehouse_id`, a decidir al construir; con varios almacenes por local, el nombre de sucursal es más fiel) con alcance **opcional**:
+    - Con valor, el usuario solo ve los almacenes, cajas, ventas, cobros y stock de su sucursal.
+    - Vacío (dueño o admin central), lo ve todo.
+  - **Cómo se filtra:** con un scope por consulta en los `baseQuery()` de las tablas Livewire y en los servicios que listan, **no** con un global scope de Eloquent a ciegas. Un global scope también filtraría reportes, jobs y el propio cierre de turno donde no corresponde, y es difícil de depurar.
+  - **Permiso propio** para ver todas las sucursales (por ejemplo `branches.view_all`), en vez de depender solo de que el campo esté vacío.
+- **Sucursal activa en sesión (dueño):** un selector compacto en la cabecera del backoffice para cambiar de sucursal o ver "Todas".
+  - El cajero en el TPV ya opera sobre la caja y el almacén de su terminal; ahí solo se muestra el badge con la sucursal, sin selector.
+
+### Fase 3 — Tesorería: a dónde va el efectivo al cerrar
+
+> **Absorbida por v1.5.0 (2026-10-02).** Las cuentas de caja/banco, el kardex inmutable y la conciliación se construyen en `v1.5.0.md` Fase 3. El **destino automático del cierre de turno se descartó**: el depósito es manual desde tesorería, porque el cajero no debe elegir cuentas y muchos negocios dejan fondo en la gaveta. Lo de abajo queda como registro del planteamiento original; lo que sigue vigente para v1.7.0 es solo que las cuentas puedan ligarse a una sucursal (`branch_name`) cuando exista multi-sucursal.
+
+- **Cuentas de fondos** (`treasury_accounts`, nombre a definir sin chocar con `accounting_accounts`):
+  - Campos: nombre ("Caja fuerte Bonao", "Banco Popular"), tipo (`vault` o `bank`), saldo y `branch_name` opcional (vacío = cuenta central del dueño).
+  - **Sin asientos contables**, para mantener el desacople de Contabilidad de v1.1.0.
+  - Con `accounting.advanced` activo, más adelante se puede mapear cada cuenta a una cuenta contable. No en esta versión.
+- **Libro de movimientos inmutable:** entrada y salida, monto, origen (`pos_close` / `manual` / `return`), referencia polimórfica y usuario. Nunca se edita ni se borra; un error se corrige con un movimiento inverso.
+- **Cierre de turno con destino:**
+  - Al cerrar, el cajero (o supervisor) elige la cuenta de destino compatible con su sucursal, o una central.
+  - El monto **contado** (`closing_balance`, no el esperado) entra como movimiento `pos_close`; la diferencia sigue registrada en el turno, como hoy.
+  - Toca `PosSessionService::close()` y la vista de cierre (Fase 9.3).
+- **Reemplaza la necesidad de reactivar `PosCashMovement` para esto.** Si al construir resulta que ese módulo encaja, se evalúa en ese momento; no se asume.
+
+### Fase 4 — Consolidado por sucursal (dueño)
+
+- Vista `show`/dashboard con `x-ui.infolist.*`, solo para quien ve todas las sucursales.
+- **Disponibilidad:** saldo de cada cuenta de fondos.
+- **Rendimiento por sucursal:** ventas, costo, margen, efectivo en custodia y alertas de stock bajo, agrupado por sucursal.
+- Agrupa con consultas `groupBy` sobre el almacén y la sucursal, no con un `ReturnTable` / `SaleTable` "extendido".
+
+### Descartado explícitamente, y por qué
+
+- **Tabla `branches`:** la sucursal es la agrupación de almacenes por `branch_name`. Una tabla aparte duplicaría claves y obligaría a mantener dos fuentes de verdad. Se reevalúa solo si aparece un dato que no cabe en el almacén (horario, RNC propio por sucursal, etc.).
+- **Tenants anidados / sub-tenants:** fuera de modelo desde v1.3.0.
+- **Global scope de Eloquent por usuario:** demasiado amplio; ver Fase 2.
+- **Asientos contables de tesorería:** fuera de alcance (desacople de Contabilidad).
+- **Todo lo del análisis original que no aplica al código:** la tienda de ropa como cliente inmediato, "redactar v1.4.0" (ya hecha) y `financial_accounts` con UUID (el sistema usa ids incrementales en todas partes).
+
+### Dependencias reales
+
+- **Fase 1 (límites):** ninguna. Puede hacerse ya.
+- **Fases 2-4:**
+  - **Transferencias entre Almacenes (v1.5.0)** es lo que mueve inventario entre sucursales; sin eso, cada sucursal sería una isla de stock.
+  - **Compras (v1.5.0)** necesita saber a qué almacén o sucursal entra la mercancía.
+- **Variantes (v1.6.0):** no la bloquea, pero si se construye antes, el consolidado debe sumar por variante.
+
+---
+
 ## Radar — módulos con evidencia real de que faltan, pero sin pedido confirmado (no construir todavía)
 
 **Distinto de v1.6.0 de arriba:** esto no son versiones comprometidas, es una lista de vigilancia — cosas que en algún momento se identificaron como necesarias (en código, en docs, o en la naturaleza del cliente actual) y quedaron sin construir. Se documentan acá para no perderlas de vista, no para empezar a construirlas.
@@ -235,7 +359,7 @@ Mismo patrón que Impuestos (v1.2.0): **todo lo que se construya después hereda
 | **Fidelización/puntos de cliente** | `docs/features/POS-Interfaz.md:865` — listado en la misma cola (`feat/pos-loyalty-system`), cero código | Retail con clientes recurrentes — pedido común de tiendas de ropa/electrodomésticos |
 | **Listas de precio por tipo de cliente (mayorista vs. detalle)** | Confirmado que no existe — distinto del motor de descuentos (`docs/analisis/politica-descuentos.md`, ya bien construido, pero es %-off puntual, no un precio base distinto por segmento) | Distribución con clientes mayoristas y minoristas a la vez — el perfil que ya tiene ZertixPOS hoy (embasadora de agua) |
 | **Rutas y Entregas** | `docs/analisis/modulos-base-satelite.md:64` — el link del sidebar **no tiene ruta real detrás** (`/rutas` no registrada en `routes/`), placeholder de la época del hielo | **El cliente que ya se tiene ahora mismo** (embasadora de agua, reparto a domicilio) — el propio doc lo señala explícitamente, es el más urgente de esta lista |
-| **CxP operativa** (gastos del día a día — luz, agua, alquiler) | `docs/analisis/modulos-base-satelite.md:50` — módulo pendiente de construir, ya nace con su flag reservado (`sales.payables`) | Cualquier negocio, es infraestructura base del núcleo flexible, no un satélite de nicho |
+| ~~**CxP operativa** (gastos del día a día — luz, agua, alquiler)~~ | **Pasa a v1.5.0** (Fase 4, gasto directo sobre la CxP genérica) — ya no es radar | — |
 
 ---
 
