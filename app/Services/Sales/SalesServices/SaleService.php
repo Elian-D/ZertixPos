@@ -169,7 +169,7 @@ class SaleService
                         'warehouse_id' => $warehouseId,
                         'product_id' => $item['product_id'],
                         'quantity' => $item['quantity'],
-                        'type' => InventoryMovement::TYPE_OUTPUT,
+                        'type' => InventoryMovement::TYPE_SALE,
                         'description' => "Venta {$saleNumber}",
                         'reference_type' => Sale::class,
                         'reference_id' => $sale->id,
@@ -513,8 +513,7 @@ class SaleService
             // (REQ-10.5): si inventory.tracking estaba apagado cuando se vendió, no
             // existe ningún InventoryMovement que revertir; intentarlo igual
             // corrompería el stock con un ajuste sin contrapartida real.
-            // NOTA ARQUITECTÓNICA: Se usa TYPE_ADJUSTMENT en lugar de TYPE_INPUT para no inflar artificialmente las
-            // métricas de compras/entradas ordinarias en los reportes analíticos de inventario.
+            // v1.5.0 REQ-1.1: el reingreso es su propio tipo (sale_void), no un ajuste genérico.
             if (module_enabled('inventory.tracking')) {
                 $sale->loadMissing('items.product:id,type');
 
@@ -530,8 +529,8 @@ class SaleService
                         'warehouse_id' => $sale->warehouse_id,
                         'product_id' => $item->product_id,
                         'quantity' => $item->quantity,
-                        'type' => InventoryMovement::TYPE_ADJUSTMENT,
-                        'description' => "Reversión de costo por anulación {$sale->number}",
+                        'type' => InventoryMovement::TYPE_SALE_VOID,
+                        'description' => "Anulación de venta {$sale->number}",
                         'reference_type' => Sale::class,
                         'reference_id' => $sale->id,
                     ]);

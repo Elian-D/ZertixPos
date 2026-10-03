@@ -1,167 +1,29 @@
-{{-- MODAL CREAR AJUSTE --}}
-<x-modal name="create-adjustment" maxWidth="md">
-    <x-form-header 
-        title="Registro de Movimiento Manual" 
-        subtitle="Gestione entradas, salidas o transferencias de stock." />
-
-    {{-- Inicializamos Alpine.js para controlar el estado del formulario --}}
-    <form action="{{ route('inventory.movements.store') }}" 
-          method="POST" 
-          class="p-6"
-          x-data="{ 
-            type: 'adjustment',
-            originId: '',
-            quantity: '',
-            get helperText() {
-                if (this.type === 'input') return 'Solo se permiten números positivos para entradas.';
-                if (this.type === 'output') return 'Ingrese la cantidad positiva; el sistema realizará la resta.';
-                if (this.type === 'transfer') return 'La cantidad se restará del origen y se sumará al destino.';
-                return 'Use números negativos para restar stock y positivos para sumar.';
-            }
-          }">
-        @csrf
-        
-        <div class="space-y-4">
-            {{-- 1. Tipo de Movimiento (Primero para definir el flujo) --}}
-            <x-ui.forms.select
-                label="Tipo de Operación"
-                name="type"
-                id="type"
-                x-model="type"
-                placeholder=""
-                :error="$errors->first('type')"
-                required
-            >
-                <option value="adjustment">Ajuste Manual</option>
-                <option value="input">Entrada Adicional</option>
-                <option value="output">Salida / Merma</option>
-                <option value="transfer">Transferencia entre Almacenes</option>
-            </x-ui.forms.select>
-
-            {{-- 2. Producto --}}
-            <x-ui.forms.select
-                label="Producto"
-                name="product_id"
-                id="product_id"
-                placeholder="Seleccione un producto..."
-                :error="$errors->first('product_id')"
-                required
-            >
-                @foreach($products as $product)
-                    <option value="{{ $product->id }}">{{ $product->name }}</option>
-                @endforeach
-            </x-ui.forms.select>
-
-            <div class="grid grid-cols-1 gap-4" :class="type === 'transfer' ? 'sm:grid-cols-2' : ''">
-                {{-- 3. Almacén Origen --}}
-                <div>
-                    {{-- Label dinámico vía Alpine: x-ui.forms.select no soporta label reactivo,
-                         así que reproducimos su estilo manualmente y dejamos el select sin label propio. --}}
-                    <label for="warehouse_id" class="text-xs font-semibold mb-1.5 block transition-colors duration-200 text-slate-600" x-text="type === 'transfer' ? 'Almacén Origen' : 'Almacén'"></label>
-                    <x-ui.forms.select
-                        name="warehouse_id"
-                        id="warehouse_id"
-                        x-model="originId"
-                        placeholder="Seleccione..."
-                        :error="$errors->first('warehouse_id')"
-                        required
-                    >
-                        @foreach($warehouses as $wh)
-                            <option value="{{ $wh->id }}">{{ $wh->name }}</option>
-                        @endforeach
-                    </x-ui.forms.select>
-                </div>
-
-                {{-- 4. Almacén Destino (Dinámico para Transferencias) --}}
-                <template x-if="type === 'transfer'">
-                    <div x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95">
-                        <x-ui.forms.select
-                            label="Almacén Destino"
-                            name="to_warehouse_id"
-                            id="to_warehouse_id"
-                            placeholder="Seleccione destino..."
-                            :error="$errors->first('to_warehouse_id')"
-                            required
-                        >
-                            @foreach($warehouses as $wh)
-                                {{-- Validamos que no sea el mismo que el de origen usando Alpine --}}
-                                <option value="{{ $wh->id }}" x-show="originId != {{ $wh->id }}">{{ $wh->name }}</option>
-                            @endforeach
-                        </x-ui.forms.select>
-                    </div>
-                </template>
-            </div>
-
-            {{-- 5. Cantidad con validaciones dinámicas --}}
-            <x-ui.forms.input
-                label="Cantidad"
-                id="quantity"
-                name="quantity"
-                type="number"
-                step="0.01"
-                x-model="quantity"
-                ::min="type !== 'adjustment' ? '0.01' : ''"
-                placeholder="0.00"
-                :error="$errors->first('quantity')"
-                required
-            />
-            <p class="-mt-2 text-[10px] italic font-medium"
-               :class="type === 'adjustment' ? 'text-blue-500' : 'text-amber-600'"
-               x-text="helperText"></p>
-
-            {{-- 6. Descripción --}}
-            <x-ui.forms.textarea
-                label="Motivo / Descripción"
-                name="description"
-                id="description"
-                :rows="2"
-                placeholder="Ej: Ajuste por rotura o transferencia de stock excedente..."
-                :error="$errors->first('description')"
-                required
-            ></x-ui.forms.textarea>
-        </div>
-
-        <div class="mt-6 flex justify-end gap-3">
-            <x-ui.button appearance="ghost" variant="secondary" x-on:click="$dispatch('close')">Cancelar</x-ui.button>
-            <x-ui.button type="submit" variant="primary">Registrar Movimiento</x-ui.button>
-        </div>
-    </form>
-</x-modal>
-
+{{-- Modal de detalle por fila del kardex (solo lectura). El modal de ajuste manual se eliminó en v1.5.0 REQ-1.5. --}}
 @foreach($items as $item)
     <x-modal name="view-movement-{{ $item->id }}" maxWidth="lg">
         <div class="overflow-hidden rounded-xl">
-            {{-- Header con Color según Tipo --}}
+            {{-- Header con el color del tipo (InventoryMovement::TYPE_MAP) --}}
             @php
-                $headerColors = match($item->type) {
-                    'input' => 'from-green-50 to-white border-green-100 text-green-700',
-                    'output' => 'from-red-50 to-white border-red-100 text-red-700',
-                    'transfer' => 'from-blue-50 to-white border-blue-100 text-blue-700',
-                    default => 'from-gray-50 to-white border-gray-100 text-gray-700',
-                };
-
-                // Lógica para determinar el rol del almacén en una transferencia
-                $isTransfer = $item->type === 'transfer';
-                $isTransferOutput = $isTransfer && $item->quantity < 0;
-                $isTransferInput = $isTransfer && $item->quantity > 0;
+                $hex = $item->type_hex;
+                $isTransfer = in_array($item->type, ['transfer_out', 'transfer_in']);
             @endphp
-            
-            <div class="bg-gradient-to-r {{ $headerColors }} px-6 py-4 border-b relative">
+
+            <div class="px-6 py-4 border-b relative" style="background: linear-gradient(to right, {{ $hex }}14, #ffffff); border-color: {{ $hex }}33; color: {{ $hex }};">
                 <div class="flex justify-between items-center">
                     <div class="flex gap-3 items-center">
                         <div class="w-10 h-10 rounded-lg flex items-center justify-center bg-white shadow-sm border border-current opacity-80">
                             @if($isTransfer)
                                 <x-heroicon-s-arrows-right-left class="w-6 h-6"/>
-                            @elseif($item->type === 'input')
+                            @elseif($item->quantity > 0)
                                 <x-heroicon-s-arrow-trending-up class="w-6 h-6"/>
                             @else
-                                <x-heroicon-s-adjustments-horizontal class="w-6 h-6"/>
+                                <x-heroicon-s-arrow-trending-down class="w-6 h-6"/>
                             @endif
                         </div>
                         <div>
                             <h3 class="text-lg font-bold leading-tight">Movimiento #{{ $item->id }}</h3>
                             <p class="text-xs font-medium opacity-70 italic">
-                                {{ $isTransferOutput ? 'Transferencia (Salida)' : ($isTransferInput ? 'Transferencia (Entrada)' : ($types[$item->type] ?? $item->type)) }}
+                                {{ $item->type_label }}
                             </p>
                         </div>
                     </div>
@@ -180,26 +42,18 @@
                             <p class="text-sm font-semibold text-gray-800">{{ $item->product->name }}</p>
                         </div>
 
-                        {{-- Lógica de Almacenes Dinámica --}}
-                        @if($isTransfer)
-                            <div class="bg-blue-50 p-3 rounded-lg border border-blue-100">
-                                <span class="text-[10px] text-blue-400 uppercase font-bold block">
-                                    {{ $isTransferOutput ? 'Almacén Destino' : 'Almacén Origen' }}
+                        <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
+                            <span class="text-[10px] text-gray-400 uppercase font-bold block">Almacén</span>
+                            <p class="text-sm font-semibold text-gray-800">{{ $item->warehouse->name ?? '—' }}</p>
+                        </div>
+
+                        {{-- Transferencia: el otro almacén (destino al enviar, origen al recibir) --}}
+                        @if($isTransfer && $item->toWarehouse)
+                            <div class="col-span-2 bg-gray-50 p-3 rounded-lg border border-gray-100">
+                                <span class="text-[10px] text-gray-400 uppercase font-bold block">
+                                    {{ $item->type === 'transfer_out' ? 'Hacia' : 'Desde' }}
                                 </span>
-                                <p class="text-sm font-semibold text-blue-800">
-                                    {{-- Si es salida usamos to_warehouse, si es entrada buscamos la referencia del padre --}}
-                                    @if($isTransferOutput)
-                                        {{ $item->toWarehouse->name ?? 'No especificado' }}
-                                    @else
-                                        {{-- Intentamos extraer el nombre del almacén desde la descripción o relación si existe --}}
-                                        {{ str_replace('Entrada por transferencia desde: ', '', explode('.', $item->description)[0]) }}
-                                    @endif
-                                </p>
-                            </div>
-                        @else
-                            <div class="bg-gray-50 p-3 rounded-lg border border-gray-100">
-                                <span class="text-[10px] text-gray-400 uppercase font-bold block">Almacén Actual</span>
-                                <p class="text-sm font-semibold text-gray-800">{{ $item->warehouse->name }}</p>
+                                <p class="text-sm font-semibold text-gray-800">{{ $item->toWarehouse->name }}</p>
                             </div>
                         @endif
                     </div>
