@@ -120,6 +120,26 @@ return [
         'create_adjustment' => ['label' => 'Crear ajuste de inventario', 'description' => 'Agregar o sacar existencias a mano para corregir un error, con motivo y comentario.'],
     ],
 
+    'inventory_counts' => [
+        'view' => ['label' => 'Ver tomas físicas', 'description' => 'Ver las tomas físicas, su detalle y su PDF. En un conteo ciego sin aplicar no muestra las diferencias.'],
+        'create' => ['label' => 'Crear tomas físicas', 'description' => 'Crear una toma física y cancelar un borrador.'],
+        'count' => ['label' => 'Contar tomas físicas', 'description' => 'Entrar a la pantalla de conteo de una toma en borrador y guardar lo contado. Por sí solo no da acceso a la revisión ni a las diferencias.'],
+        'apply' => ['label' => 'Revisar y aplicar tomas físicas', 'description' => 'Ver las diferencias de cualquier toma (también las ciegas) y aplicarla: ajusta las existencias del almacén.'],
+    ],
+
+    'inventory_wastes' => [
+        'view' => ['label' => 'Ver mermas', 'description' => 'Ver las mermas, su detalle, su PDF y el valor perdido.'],
+        'create' => ['label' => 'Registrar mermas', 'description' => 'Dar de baja mercancía dañada, vencida, robada o consumida. Se aplica al guardar.'],
+        'void' => ['label' => 'Anular mermas', 'description' => 'Anular una merma: devuelve las existencias al almacén.'],
+    ],
+
+    'inventory_transfers' => [
+        'view' => ['label' => 'Ver transferencias', 'description' => 'Ver las transferencias entre almacenes, su detalle y su PDF de despacho.'],
+        'create' => ['label' => 'Crear transferencias', 'description' => 'Crear, editar y cancelar una transferencia en borrador.'],
+        'send' => ['label' => 'Enviar transferencias', 'description' => 'Despachar una transferencia: la mercancía sale del almacén de origen y queda en tránsito.'],
+        'receive' => ['label' => 'Recibir transferencias', 'description' => 'Confirmar lo que llegó al almacén de destino. Lo que falte queda como merma en tránsito.'],
+    ],
+
     'accounting' => [
         'dashboard' => ['label' => 'Ver panel de contabilidad', 'description' => 'Ver el panel de contabilidad e ingresos y gastos.'],
     ],

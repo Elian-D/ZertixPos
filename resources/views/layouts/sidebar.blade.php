@@ -122,6 +122,10 @@
         'products.view',
         'inventory_stocks.view',
         'inventory_movements.view',
+        'inventory_counts.view',
+        'inventory_counts.count',
+        'inventory_wastes.view',
+        'inventory_transfers.view',
         'warehouses.manage',
     ])
         <x-sidebar.dropdown
@@ -149,6 +153,24 @@
                 @can('inventory_movements.view')
                     <x-sidebar.subitem href="{{ route('inventory.movements.index') }}">
                         Movimientos
+                    </x-sidebar.subitem>
+                @endcan
+
+                @canany(['inventory_counts.view', 'inventory_counts.count'])
+                    <x-sidebar.subitem href="{{ route('inventory.counts.index') }}">
+                        Tomas físicas
+                    </x-sidebar.subitem>
+                @endcanany
+
+                @can('inventory_wastes.view')
+                    <x-sidebar.subitem href="{{ route('inventory.wastes.index') }}">
+                        Mermas
+                    </x-sidebar.subitem>
+                @endcan
+
+                @can('inventory_transfers.view')
+                    <x-sidebar.subitem href="{{ route('inventory.transfers.index') }}">
+                        Transferencias
                     </x-sidebar.subitem>
                 @endcan
 
@@ -190,7 +212,7 @@
 
                 @can('collections.view')
                     <x-sidebar.subitem href="{{ route('finance.collections.index') }}">
-                        Cobros
+                        Cobros y Pagos
                     </x-sidebar.subitem>
                 @endcan
             @endif

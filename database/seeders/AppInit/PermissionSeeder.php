@@ -131,6 +131,17 @@ class PermissionSeeder extends Seeder
         'inventory_stocks.export' => 'inventory.tracking',
         'inventory_movements.view' => 'inventory.tracking',
         'inventory_movements.create_adjustment' => 'inventory.tracking',
+        'inventory_counts.view' => 'inventory.tracking',
+        'inventory_counts.create' => 'inventory.tracking',
+        'inventory_counts.count' => 'inventory.tracking',
+        'inventory_counts.apply' => 'inventory.tracking',
+        'inventory_wastes.view' => 'inventory.tracking',
+        'inventory_wastes.create' => 'inventory.tracking',
+        'inventory_wastes.void' => 'inventory.tracking',
+        'inventory_transfers.view' => 'inventory.tracking',
+        'inventory_transfers.create' => 'inventory.tracking',
+        'inventory_transfers.send' => 'inventory.tracking',
+        'inventory_transfers.receive' => 'inventory.tracking',
 
         'receivables.view' => 'sales.receivables',
         'receivables.create' => 'sales.receivables',
@@ -229,6 +240,20 @@ class PermissionSeeder extends Seeder
 
                 'inventory_movements.view',
                 'inventory_movements.create_adjustment',
+
+                'inventory_counts.view',
+                'inventory_counts.create',
+                'inventory_counts.count',
+                'inventory_counts.apply',
+
+                'inventory_wastes.view',
+                'inventory_wastes.create',
+                'inventory_wastes.void',
+
+                'inventory_transfers.view',
+                'inventory_transfers.create',
+                'inventory_transfers.send',
+                'inventory_transfers.receive',
             ],
 
             'sales' => [

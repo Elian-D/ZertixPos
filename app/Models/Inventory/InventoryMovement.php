@@ -122,6 +122,9 @@ class InventoryMovement extends Model
             Sale::class => ['label' => "Venta {$ref}", 'url' => route('sales.show', $id)],
             SaleReturn::class => ['label' => "Devolución {$ref}", 'url' => route('sales.returns.show', $id)],
             Product::class => ['label' => 'Inventario inicial', 'url' => route('inventory.products.show', $id)],
+            InventoryCount::class => ['label' => "Toma física {$ref}", 'url' => route('inventory.counts.show', $id)],
+            InventoryWaste::class => ['label' => "Merma {$ref}", 'url' => route('inventory.wastes.show', $id)],
+            InventoryTransfer::class => ['label' => "Transferencia {$ref}", 'url' => route('inventory.transfers.show', $id)],
             default => ['label' => class_basename($this->reference_type)." {$ref}", 'url' => null],
         };
     }

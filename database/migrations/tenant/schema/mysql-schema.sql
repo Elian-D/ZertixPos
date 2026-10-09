@@ -234,6 +234,63 @@ CREATE TABLE `installation_modules` (
   UNIQUE KEY `installation_modules_module_key_unique` (`module_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `inventory_count_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `inventory_count_items` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `inventory_count_id` bigint unsigned NOT NULL,
+  `product_id` bigint unsigned NOT NULL,
+  `system_quantity` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `counted_quantity` decimal(12,2) DEFAULT NULL,
+  `difference` decimal(12,2) DEFAULT NULL,
+  `unit_cost` decimal(12,4) DEFAULT NULL,
+  `notes` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `inventory_count_items_inventory_count_id_product_id_unique` (`inventory_count_id`,`product_id`),
+  KEY `inventory_count_items_product_id_foreign` (`product_id`),
+  CONSTRAINT `inventory_count_items_inventory_count_id_foreign` FOREIGN KEY (`inventory_count_id`) REFERENCES `inventory_counts` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `inventory_count_items_product_id_foreign` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `inventory_counts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `inventory_counts` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `document_type_id` bigint unsigned DEFAULT NULL,
+  `number` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `warehouse_id` bigint unsigned NOT NULL,
+  `category_id` bigint unsigned DEFAULT NULL,
+  `blind` tinyint(1) NOT NULL DEFAULT '0',
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `status` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
+  `difference_value` decimal(14,2) NOT NULL DEFAULT '0.00',
+  `created_by` bigint unsigned DEFAULT NULL,
+  `applied_by` bigint unsigned DEFAULT NULL,
+  `applied_at` timestamp NULL DEFAULT NULL,
+  `canceled_by` bigint unsigned DEFAULT NULL,
+  `canceled_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `inventory_counts_number_unique` (`number`),
+  KEY `inventory_counts_document_type_id_foreign` (`document_type_id`),
+  KEY `inventory_counts_category_id_foreign` (`category_id`),
+  KEY `inventory_counts_created_by_foreign` (`created_by`),
+  KEY `inventory_counts_applied_by_foreign` (`applied_by`),
+  KEY `inventory_counts_canceled_by_foreign` (`canceled_by`),
+  KEY `inventory_counts_warehouse_id_status_index` (`warehouse_id`,`status`),
+  CONSTRAINT `inventory_counts_applied_by_foreign` FOREIGN KEY (`applied_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `inventory_counts_canceled_by_foreign` FOREIGN KEY (`canceled_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `inventory_counts_category_id_foreign` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `inventory_counts_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `inventory_counts_document_type_id_foreign` FOREIGN KEY (`document_type_id`) REFERENCES `document_types` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `inventory_counts_warehouse_id_foreign` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `inventory_movements`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -282,6 +339,120 @@ CREATE TABLE `inventory_stocks` (
   KEY `inventory_stocks_product_id_foreign` (`product_id`),
   CONSTRAINT `inventory_stocks_product_id_foreign` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE,
   CONSTRAINT `inventory_stocks_warehouse_id_foreign` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `inventory_transfer_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `inventory_transfer_items` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `inventory_transfer_id` bigint unsigned NOT NULL,
+  `product_id` bigint unsigned NOT NULL,
+  `quantity_sent` decimal(12,2) NOT NULL,
+  `quantity_received` decimal(12,2) DEFAULT NULL,
+  `notes` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `inventory_transfer_items_inventory_transfer_id_product_id_unique` (`inventory_transfer_id`,`product_id`),
+  KEY `inventory_transfer_items_product_id_foreign` (`product_id`),
+  CONSTRAINT `inventory_transfer_items_inventory_transfer_id_foreign` FOREIGN KEY (`inventory_transfer_id`) REFERENCES `inventory_transfers` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `inventory_transfer_items_product_id_foreign` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `inventory_transfers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `inventory_transfers` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `document_type_id` bigint unsigned DEFAULT NULL,
+  `number` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `from_warehouse_id` bigint unsigned NOT NULL,
+  `to_warehouse_id` bigint unsigned NOT NULL,
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `status` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
+  `created_by` bigint unsigned DEFAULT NULL,
+  `sent_by` bigint unsigned DEFAULT NULL,
+  `sent_at` timestamp NULL DEFAULT NULL,
+  `received_by` bigint unsigned DEFAULT NULL,
+  `received_at` timestamp NULL DEFAULT NULL,
+  `canceled_by` bigint unsigned DEFAULT NULL,
+  `canceled_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `inventory_transfers_number_unique` (`number`),
+  KEY `inventory_transfers_document_type_id_foreign` (`document_type_id`),
+  KEY `inventory_transfers_from_warehouse_id_foreign` (`from_warehouse_id`),
+  KEY `inventory_transfers_to_warehouse_id_foreign` (`to_warehouse_id`),
+  KEY `inventory_transfers_created_by_foreign` (`created_by`),
+  KEY `inventory_transfers_sent_by_foreign` (`sent_by`),
+  KEY `inventory_transfers_received_by_foreign` (`received_by`),
+  KEY `inventory_transfers_canceled_by_foreign` (`canceled_by`),
+  KEY `inventory_transfers_status_from_warehouse_id_index` (`status`,`from_warehouse_id`),
+  KEY `inventory_transfers_status_to_warehouse_id_index` (`status`,`to_warehouse_id`),
+  CONSTRAINT `inventory_transfers_canceled_by_foreign` FOREIGN KEY (`canceled_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `inventory_transfers_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `inventory_transfers_document_type_id_foreign` FOREIGN KEY (`document_type_id`) REFERENCES `document_types` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `inventory_transfers_from_warehouse_id_foreign` FOREIGN KEY (`from_warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `inventory_transfers_received_by_foreign` FOREIGN KEY (`received_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `inventory_transfers_sent_by_foreign` FOREIGN KEY (`sent_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `inventory_transfers_to_warehouse_id_foreign` FOREIGN KEY (`to_warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `inventory_waste_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `inventory_waste_items` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `inventory_waste_id` bigint unsigned NOT NULL,
+  `product_id` bigint unsigned NOT NULL,
+  `quantity` decimal(12,2) NOT NULL,
+  `reason` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `notes` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `unit_cost` decimal(12,4) NOT NULL DEFAULT '0.0000',
+  `total_value` decimal(14,2) NOT NULL DEFAULT '0.00',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `inventory_waste_items_inventory_waste_id_foreign` (`inventory_waste_id`),
+  KEY `inventory_waste_items_product_id_foreign` (`product_id`),
+  KEY `inventory_waste_items_reason_index` (`reason`),
+  CONSTRAINT `inventory_waste_items_inventory_waste_id_foreign` FOREIGN KEY (`inventory_waste_id`) REFERENCES `inventory_wastes` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `inventory_waste_items_product_id_foreign` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `inventory_wastes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `inventory_wastes` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `document_type_id` bigint unsigned DEFAULT NULL,
+  `number` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `warehouse_id` bigint unsigned NOT NULL,
+  `waste_date` date NOT NULL,
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `status` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'applied',
+  `total_value` decimal(14,2) NOT NULL DEFAULT '0.00',
+  `reference_type` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `reference_id` bigint unsigned DEFAULT NULL,
+  `created_by` bigint unsigned DEFAULT NULL,
+  `voided_by` bigint unsigned DEFAULT NULL,
+  `voided_at` timestamp NULL DEFAULT NULL,
+  `void_reason` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `inventory_wastes_number_unique` (`number`),
+  KEY `inventory_wastes_document_type_id_foreign` (`document_type_id`),
+  KEY `inventory_wastes_reference_type_reference_id_index` (`reference_type`,`reference_id`),
+  KEY `inventory_wastes_created_by_foreign` (`created_by`),
+  KEY `inventory_wastes_voided_by_foreign` (`voided_by`),
+  KEY `inventory_wastes_warehouse_id_status_waste_date_index` (`warehouse_id`,`status`,`waste_date`),
+  CONSTRAINT `inventory_wastes_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `inventory_wastes_document_type_id_foreign` FOREIGN KEY (`document_type_id`) REFERENCES `document_types` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `inventory_wastes_voided_by_foreign` FOREIGN KEY (`voided_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `inventory_wastes_warehouse_id_foreign` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `invoices`;
@@ -884,6 +1055,7 @@ CREATE TABLE `return_items` (
   `unit_subtotal` decimal(15,4) NOT NULL,
   `unit_tax` decimal(15,4) NOT NULL DEFAULT '0.0000',
   `restock` tinyint(1) NOT NULL DEFAULT '1',
+  `wasted` tinyint(1) NOT NULL DEFAULT '0',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -1231,3 +1403,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (92,'2026_09_30_100
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (93,'2026_10_02_100000_add_cancellation_fields_to_sales_table',4);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (94,'2026_10_02_110000_add_document_numbers',5);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (96,'2026_10_03_100000_v150_inventory_base',6);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (97,'2026_10_04_100000_v150_stock_docs',7);

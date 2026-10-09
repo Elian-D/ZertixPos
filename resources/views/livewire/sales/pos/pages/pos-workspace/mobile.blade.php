@@ -11,7 +11,7 @@
             <input type="text"
                    x-model="search"
                    @keydown.enter.prevent="onScan()"
-                   @input="onSearchInput($event)"
+                   data-scan-input
                    placeholder="Buscar por nombre, SKU o código de barras…"
                    class="w-full pl-11 pr-4 py-3 bg-white border border-gray-200 rounded-xl text-sm font-medium shadow-sm focus:ring-2 focus:ring-[#58c03f] focus:border-[#58c03f] transition-all">
         </div>

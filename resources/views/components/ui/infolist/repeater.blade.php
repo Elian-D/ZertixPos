@@ -33,6 +33,9 @@
             });
         },
     }"
+    {{-- Listo tras el primer render: desde aquí, una línea nueva abre cerrando las demás
+         (acordeón). Las líneas que llegan al cargar, como un old() con errores, no se cierran. --}}
+    x-init="setTimeout(() => { $el.dataset.ready = '1' }, 50)"
     data-repeater>
 
     {{-- Contraer / expandir todo (más de una línea) --}}
@@ -48,7 +51,7 @@
         </div>
     @endif
 
-    <div class="flex flex-col gap-3">
+    <div class="flex flex-col gap-2">
         {{ $slot }}
     </div>
 

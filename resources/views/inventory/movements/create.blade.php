@@ -10,7 +10,7 @@
 <x-app-layout title="Ajuste de inventario">
     <div class="p-4 md:p-6"
         x-data="{
-            warehouseId: @js((string) old('warehouse_id', $warehouses->first()?->id)),
+            warehouseId: @js((string) old('warehouse_id', '')),
             stocks: @js($stocks),
             products: @js($products->keyBy('id')),
             lines: @js(array_values($oldLines)),
@@ -43,7 +43,7 @@
             <x-ui.infolist.section title="Datos del ajuste" icon="heroicon-o-adjustments-horizontal" :cols="0"
                 description="En qué almacén y por qué se corrige.">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
-                    <x-ui.forms.select label="Almacén" name="warehouse_id" x-model="warehouseId" placeholder="" required
+                    <x-ui.forms.select label="Almacén" name="warehouse_id" x-model="warehouseId" placeholder="Seleccione el almacén..." required
                         hint="Las existencias de cada línea se muestran para este almacén."
                         :error="$errors->first('warehouse_id')">
                         @foreach($warehouses as $warehouse)
@@ -72,7 +72,7 @@
             <x-ui.infolist.section title="Líneas" icon="heroicon-o-queue-list" :cols="0"
                 description="Cada línea suma (entrada) o resta (salida) existencias de un producto.">
                 @error('lines')
-                    <div class="mb-4 rounded-lg border border-state-error/20 bg-state-error/5 px-4 py-3 text-sm text-state-error">{{ $message }}</div>
+                    <x-ui.alert variant="error" class="mb-4">{{ $message }}</x-ui.alert>
                 @enderror
 
                 <x-ui.infolist.repeater countExpr="lines.length" addAction="addLine()">

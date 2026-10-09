@@ -5,12 +5,14 @@ namespace App\Services\Sales\Returns;
 use App\Models\Accounting\DocumentType;
 use App\Models\Configuration\TipoPago;
 use App\Models\Inventory\InventoryMovement;
+use App\Models\Inventory\InventoryWasteItem;
 use App\Models\Products\Product;
 use App\Models\Sales\Returns\SaleReturn;
 use App\Models\Sales\Sale;
 use App\Models\Sales\SaleItem;
 use App\Services\Accounting\Receivable\ReceivableService;
 use App\Services\Inventory\InventoryMovementService;
+use App\Services\Inventory\InventoryWasteService;
 use App\Services\Sales\SalesServices\SaleService;
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -26,12 +28,13 @@ class ReturnService
     public function __construct(
         protected InventoryMovementService $inventoryService,
         protected ReceivableService $receivableService,
-        protected SaleService $saleService
+        protected SaleService $saleService,
+        protected InventoryWasteService $wasteService
     ) {}
 
     /**
      * @param  array{
-     *     lines: array<int, array{sale_item_id: int, quantity: float, restock?: bool}>,
+     *     lines: array<int, array{sale_item_id: int, quantity: float, restock?: bool, waste?: bool}>,
      *     reason: string,
      *     refund_method?: string,
      *     replacement_product_id?: int|null,
@@ -85,18 +88,45 @@ class ReturnService
                 'status' => SaleReturn::STATUS_COMPLETED,
             ]);
 
+            $wasteLines = [];
+
             foreach ($lines as $line) {
+                $product = $line['sale_item']->product;
+                // REQ-2.3: "Registrar como merma" solo tiene sentido si hay stock que mover.
+                $wasted = ! $line['restock'] && $line['waste'] && $this->movesStock($product);
+
                 $return->items()->create([
                     'sale_item_id' => $line['sale_item']->id,
                     'quantity' => $line['quantity'],
                     'unit_subtotal' => $line['unit_subtotal'],
                     'unit_tax' => $line['unit_tax'],
                     'restock' => $line['restock'],
+                    'wasted' => $wasted,
                 ]);
 
-                if ($line['restock']) {
-                    $this->moveStock($sale, $line['sale_item']->product, $line['quantity'], "Devolución {$number}", $return);
+                // La unidad entra con la devolución (+). Si está dañada, sale enseguida
+                // con la merma (−): el kardex queda neto en 0, pero se ve qué pasó.
+                if ($line['restock'] || $wasted) {
+                    $this->moveStock($sale, $product, $line['quantity'], "Devolución {$number}", $return);
                 }
+
+                if ($wasted) {
+                    $wasteLines[] = [
+                        'product_id' => $product->id,
+                        'quantity' => $line['quantity'],
+                        'reason' => InventoryWasteItem::REASON_DAMAGED_RETURN,
+                    ];
+                }
+            }
+
+            if ($wasteLines) {
+                $this->wasteService->create([
+                    'warehouse_id' => $sale->warehouse_id,
+                    'waste_date' => now()->toDateString(),
+                    'notes' => "Devolución {$number} de la venta {$sale->number}",
+                    'reference_type' => SaleReturn::class,
+                    'reference_id' => $return->id,
+                ], $wasteLines);
             }
 
             match ($method) {
@@ -131,11 +161,17 @@ class ReturnService
 
             $sale = $return->sale;
 
+            // REQ-2.3: primero se anula su merma (la unidad dañada vuelve +) y después se
+            // revierte la entrada de la devolución (−): el kardex sigue neto en 0.
+            if ($return->waste && ! $return->waste->isVoided()) {
+                $this->wasteService->void($return->waste, "Anulación de la devolución {$return->number}", fromReference: true);
+            }
+
             foreach ($return->items()->with('saleItem.product')->get() as $item) {
                 $product = $item->saleItem->product;
                 $quantity = (float) $item->quantity;
 
-                if ($item->restock) {
+                if ($item->restock || $item->wasted) {
                     $this->moveStock($sale, $product, -$quantity, "Anulación de devolución {$return->number}", $return);
                 }
 
@@ -212,6 +248,8 @@ class ReturnService
                 'sale_item' => $saleItem,
                 'quantity' => $quantity,
                 'restock' => (bool) ($raw['restock'] ?? true),
+                // Sin regresar a inventario, va a merma salvo que se apague (REQ-2.3).
+                'waste' => (bool) ($raw['waste'] ?? true),
                 'unit_subtotal' => $unitSubtotal,
                 'unit_tax' => $unitTax,
                 'total' => round($unitSubtotal * $quantity, 2) + round($unitTax * $quantity, 2),
@@ -318,7 +356,7 @@ class ReturnService
      */
     private function moveStock(Sale $sale, ?Product $product, float $signedQty, string $description, SaleReturn $return): void
     {
-        if (! $product || $product->isService() || ! module_enabled('inventory.tracking')) {
+        if (! $this->movesStock($product)) {
             return;
         }
 
@@ -331,6 +369,12 @@ class ReturnService
             'reference_type' => SaleReturn::class,
             'reference_id' => $return->id,
         ]);
+    }
+
+    /** Un servicio nunca mueve stock, y con inventory.tracking apagado no se escribe nada. */
+    private function movesStock(?Product $product): bool
+    {
+        return $product && ! $product->isService() && module_enabled('inventory.tracking');
     }
 
     private function tipoPago(string $slug): TipoPago

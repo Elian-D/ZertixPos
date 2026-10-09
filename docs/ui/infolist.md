@@ -103,6 +103,7 @@ Líneas **editables** de un formulario, como el Repeater de Filament. Para ver l
 **Qué hace:**
 - **Tarjetas:** cada línea es una tarjeta **gris** (`bg-gray-50`), que contrasta con el fondo blanco de la sección. Arranca abierta y se contrae o expande con un clic en su encabezado.
 - **Encabezado:** lleva el **título o resumen** de la línea, el botón de quitar y el chevron. El resumen se ve también con la línea contraída.
+- **Acordeón:** abrir una línea, o agregar una nueva, cierra las demás del mismo repeater, para dejar espacio. "Expandir todo" sí las abre todas. Las líneas que llegan al cargar la página (un `old()` tras un error de validación) se quedan abiertas, para que se vean sus errores.
 - **Contraer todo / Expandir todo:** aparece solo con más de una línea. Solo afecta a las líneas de ese repeater, así que dos repeaters en la misma página no se pisan.
 - **Agregar:** el botón va **siempre debajo de la última línea**, para agregar otra sin volver a subir.
 
@@ -124,7 +125,26 @@ Líneas **editables** de un formulario, como el Repeater de Filament. Para ver l
 | `removeAction` | `string\|null` | `null` | Expresión Alpine del botón de quitar (`'removeLine(i)'`). Sin ella no hay botón |
 | `removeDisabled` | `string\|null` | `null` | Expresión Alpine que lo deshabilita (`'lines.length === 1'`) |
 | `collapsed` | `bool` | `false` | Arranca contraída |
+| `compact` | `bool` | `false` | Una sola fila, sin contraer: el título a la izquierda y los campos a la derecha (ver abajo) |
 | slot | — | — | Los campos de la línea |
+
+**Variante `compact`:** es para listas largas donde cada línea lleva solo una o dos cantidades. Con cientos de productos, una tarjeta contraíble por producto haría la página eterna. Primer uso: la pantalla de conteo de la toma física (`resources/views/inventory/counts/count.blade.php`).
+- Misma tarjeta gris, en una sola fila.
+- Al ser una fila, no lleva encabezado, chevron ni la barra "Contraer todo / Expandir todo": no le pases `countExpr` al repeater.
+- El título va en `<x-slot:title>` (nombre + SKU/código en dos líneas). Los campos van en el slot, alineados a la derecha.
+- En móvil la fila se apila: título arriba, campos abajo.
+- Admite `x-bind:class` para resaltar una línea (por ejemplo, la que se acaba de escanear).
+
+```blade
+<x-ui.infolist.repeater>
+    <template x-for="item in filtered" :key="item.id">
+        <x-ui.infolist.repeater-item compact>
+            <x-slot:title><span x-text="item.name"></span></x-slot:title>
+            <div class="w-28"><x-ui.forms.input name="" type="number" x-model="item.counted" /></div>
+        </x-ui.infolist.repeater-item>
+    </template>
+</x-ui.infolist.repeater>
+```
 
 Dentro de un `<template x-for>`, el `repeater-item` es el único elemento raíz del template, como exige Alpine. Cada línea guarda su estado abierta/contraída de forma local, y las expresiones (`line`, `i`) vienen del scope del `x-for`. Los campos usan `x-bind:name="'lines[' + i + '][campo]'"` y `x-bind:id`. Los radios funcionan sin `for` porque `x-ui.forms.radio` envuelve su input.
 

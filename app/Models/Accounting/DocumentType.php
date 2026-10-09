@@ -2,6 +2,9 @@
 
 namespace App\Models\Accounting;
 
+use App\Models\Inventory\InventoryCount;
+use App\Models\Inventory\InventoryTransfer;
+use App\Models\Inventory\InventoryWaste;
 use App\Models\Sales\Invoice;
 use App\Models\Sales\Pos\PosSession;
 use App\Models\Sales\Quotes\Quote;
@@ -21,7 +24,7 @@ class DocumentType extends Model
      * Códigos que el propio sistema consulta por texto (SaleService, CollectionService...).
      * Cambiar el 'code' de uno de estos rompería esas búsquedas hardcodeadas.
      */
-    const SYSTEM_PROTECTED_CODES = ['VTA', 'FAC', 'CXC', 'COT', 'TRN', 'PAG', 'DEV'];
+    const SYSTEM_PROTECTED_CODES = ['VTA', 'FAC', 'CXC', 'COT', 'TRN', 'PAG', 'DEV', 'TFS', 'MER', 'TRA'];
 
     protected static function booted()
     {
@@ -70,6 +73,11 @@ class DocumentType extends Model
             // ClientCollection no guarda document_type_id; se identifica por el prefijo de su receipt_number.
             'PAG' => ClientCollection::where('receipt_number', 'like', $this->prefix.'-%')->exists(),
             'DEV' => SaleReturn::where('document_type_id', $this->id)->exists(),
+            // v1.5.0: cada documento nuevo con HasDocumentNumber se agrega aquí, o su
+            // correlativo quedaría editable con documentos ya emitidos (números repetidos).
+            'TFS' => InventoryCount::where('document_type_id', $this->id)->exists(),
+            'MER' => InventoryWaste::where('document_type_id', $this->id)->exists(),
+            'TRA' => InventoryTransfer::where('document_type_id', $this->id)->exists(),
             default => false,
         };
     }
