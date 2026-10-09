@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Inventory\InventoryCountController;
 use App\Http\Controllers\Inventory\InventoryMovementController;
 use App\Http\Controllers\Inventory\InventoryStockController;
 use App\Http\Controllers\Inventory\WarehouseController;
@@ -67,6 +68,20 @@ Route::prefix('inventory')->as('inventory.')->group(function () {
             // movements.export reemplazada por InventoryMovementTable::export() del
             // mismo índice (Excel::download() puede devolverse directo desde una
             // acción Livewire) — ver ARCHITECTURE.md §7.
+
+            // Toma física (v1.5.0 REQ-2.1). Crear es un modal del listado (4 campos).
+            // `count` es un permiso aparte: el contador entra al listado (solo borradores)
+            // y a la pantalla de conteo, sin ver la revisión ni las diferencias.
+            Route::prefix('counts')->as('counts.')->controller(InventoryCountController::class)->group(function () {
+                Route::get('/', 'index')->middleware('permission:inventory_counts.view|inventory_counts.count')->name('index');
+                Route::post('/', 'store')->middleware('permission:inventory_counts.create')->name('store');
+                Route::get('/{count}', 'show')->whereNumber('count')->middleware('permission:inventory_counts.view')->name('show');
+                Route::get('/{count}/count', 'count')->whereNumber('count')->middleware('permission:inventory_counts.count')->name('count');
+                Route::put('/{count}/count', 'save')->whereNumber('count')->middleware('permission:inventory_counts.count')->name('save');
+                Route::post('/{count}/apply', 'apply')->whereNumber('count')->middleware('permission:inventory_counts.apply')->name('apply');
+                Route::patch('/{count}/cancel', 'cancel')->whereNumber('count')->middleware('permission:inventory_counts.create')->name('cancel');
+                Route::get('/{count}/pdf', 'pdf')->whereNumber('count')->middleware('permission:inventory_counts.view')->name('pdf');
+            });
         });
 
         // Dashboard Inventario movido a routes/app/reports.php como reports.inventory
