@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Inventory\InventoryCountController;
 use App\Http\Controllers\Inventory\InventoryMovementController;
+use App\Http\Controllers\Inventory\InventoryTransferController;
 use App\Http\Controllers\Inventory\InventoryWasteController;
 use App\Http\Controllers\Inventory\InventoryStockController;
 use App\Http\Controllers\Inventory\WarehouseController;
@@ -92,6 +93,21 @@ Route::prefix('inventory')->as('inventory.')->group(function () {
                 Route::get('/{waste}', 'show')->whereNumber('waste')->middleware('permission:inventory_wastes.view')->name('show');
                 Route::patch('/{waste}/void', 'void')->whereNumber('waste')->middleware('permission:inventory_wastes.void')->name('void');
                 Route::get('/{waste}/pdf', 'pdf')->whereNumber('waste')->middleware('permission:inventory_wastes.view')->name('pdf');
+            });
+
+            // Transferencias (v1.5.0 REQ-2.4). Borrador → Enviada (en tránsito) → Recibida.
+            Route::prefix('transfers')->as('transfers.')->controller(InventoryTransferController::class)->group(function () {
+                Route::get('/', 'index')->middleware('permission:inventory_transfers.view')->name('index');
+                Route::get('/create', 'create')->middleware('permission:inventory_transfers.create')->name('create');
+                Route::post('/', 'store')->middleware('permission:inventory_transfers.create')->name('store');
+                Route::get('/{transfer}', 'show')->whereNumber('transfer')->middleware('permission:inventory_transfers.view')->name('show');
+                Route::get('/{transfer}/edit', 'edit')->whereNumber('transfer')->middleware('permission:inventory_transfers.create')->name('edit');
+                Route::put('/{transfer}', 'update')->whereNumber('transfer')->middleware('permission:inventory_transfers.create')->name('update');
+                Route::post('/{transfer}/send', 'send')->whereNumber('transfer')->middleware('permission:inventory_transfers.send')->name('send');
+                Route::get('/{transfer}/receive', 'receiveForm')->whereNumber('transfer')->middleware('permission:inventory_transfers.receive')->name('receive.form');
+                Route::post('/{transfer}/receive', 'receive')->whereNumber('transfer')->middleware('permission:inventory_transfers.receive')->name('receive');
+                Route::patch('/{transfer}/cancel', 'cancel')->whereNumber('transfer')->middleware('permission:inventory_transfers.create')->name('cancel');
+                Route::get('/{transfer}/pdf', 'pdf')->whereNumber('transfer')->middleware('permission:inventory_transfers.view')->name('pdf');
             });
         });
 
