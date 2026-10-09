@@ -172,7 +172,10 @@ El componente distingue dos modos según si el `$slot` tiene contenido:
 1. Al hacer clic en un botón `type="submit"`, Alpine valida el `<form>` más cercano con `reportValidity()` (validación nativa del navegador — si hay campos `required` vacíos o inválidos, el guard no se activa y el navegador muestra su mensaje nativo).
 2. Si la validación pasa, el botón entra en estado `sending`: se deshabilita (`:disabled`) y su ícono (o el ícono único en modo solo-ícono) se reemplaza por `<x-ui.loading>`.
 3. **El texto del slot NO cambia.** A diferencia del patrón original de Orvian (que reemplazaba el texto por "Guardando..."), acá se eligió el estilo Filament — spinner al lado, texto intacto — para evitar que el botón cambie de ancho (lo cual desplaza elementos vecinos, ej. el botón "Cancelar" al lado) y para no requerir un string de copy nuevo en cada call site.
-4. Si el botón no tiene ningún ícono (`iconLeft`/`icon` no declarados), el spinner simplemente no tiene dónde aparecer en modo texto — en ese caso considerá agregar un `iconLeft` al botón si querés feedback visual, o usar el mecanismo de Livewire (`wire:loading`, ver abajo) si el submit es vía `wire:click` en vez de un `<form>` HTML nativo.
+4. **Varios botones de envío en el mismo form** (v1.5.0, toma física: "Guardar avance" / "Guardar y revisar"):
+   - **Spinner:** sale solo en el botón pulsado (`event.submitter`). Los demás se deshabilitan sin spinner.
+   - **Cuándo se deshabilita:** en un `setTimeout(0)`, después de que el navegador arma los datos del form. Un botón deshabilitado no envía su `name`/`value`. Antes, `<x-ui.button type="submit" name="then" value="review">` llegaba al servidor sin `then`, así que "Guardar y revisar" se comportaba igual que "Guardar avance".
+5. Si el botón no tiene ningún ícono (`iconLeft`/`icon` no declarados), el spinner simplemente no tiene dónde aparecer en modo texto — en ese caso considerá agregar un `iconLeft` al botón si querés feedback visual, o usar el mecanismo de Livewire (`wire:loading`, ver abajo) si el submit es vía `wire:click` en vez de un `<form>` HTML nativo.
 
 ### Reset de `sending` — necesario para `<form wire:submit>`, no solo forms nativos
 
