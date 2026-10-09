@@ -124,6 +124,7 @@
         'inventory_movements.view',
         'inventory_counts.view',
         'inventory_counts.count',
+        'inventory_wastes.view',
         'warehouses.manage',
     ])
         <x-sidebar.dropdown
@@ -159,6 +160,12 @@
                         Tomas físicas
                     </x-sidebar.subitem>
                 @endcanany
+
+                @can('inventory_wastes.view')
+                    <x-sidebar.subitem href="{{ route('inventory.wastes.index') }}">
+                        Mermas
+                    </x-sidebar.subitem>
+                @endcan
 
                 @can('warehouses.manage')
                     <x-sidebar.subitem href="{{ route('inventory.warehouses.index') }}">

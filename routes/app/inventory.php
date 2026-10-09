@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Inventory\InventoryCountController;
 use App\Http\Controllers\Inventory\InventoryMovementController;
+use App\Http\Controllers\Inventory\InventoryWasteController;
 use App\Http\Controllers\Inventory\InventoryStockController;
 use App\Http\Controllers\Inventory\WarehouseController;
 use App\Http\Controllers\Products\ProductController;
@@ -81,6 +82,16 @@ Route::prefix('inventory')->as('inventory.')->group(function () {
                 Route::post('/{count}/apply', 'apply')->whereNumber('count')->middleware('permission:inventory_counts.apply')->name('apply');
                 Route::patch('/{count}/cancel', 'cancel')->whereNumber('count')->middleware('permission:inventory_counts.create')->name('cancel');
                 Route::get('/{count}/pdf', 'pdf')->whereNumber('count')->middleware('permission:inventory_counts.view')->name('pdf');
+            });
+
+            // Mermas (v1.5.0 REQ-2.2). Se aplican al guardar; anular devuelve el stock.
+            Route::prefix('wastes')->as('wastes.')->controller(InventoryWasteController::class)->group(function () {
+                Route::get('/', 'index')->middleware('permission:inventory_wastes.view')->name('index');
+                Route::get('/create', 'create')->middleware('permission:inventory_wastes.create')->name('create');
+                Route::post('/', 'store')->middleware('permission:inventory_wastes.create')->name('store');
+                Route::get('/{waste}', 'show')->whereNumber('waste')->middleware('permission:inventory_wastes.view')->name('show');
+                Route::patch('/{waste}/void', 'void')->whereNumber('waste')->middleware('permission:inventory_wastes.void')->name('void');
+                Route::get('/{waste}/pdf', 'pdf')->whereNumber('waste')->middleware('permission:inventory_wastes.view')->name('pdf');
             });
         });
 
