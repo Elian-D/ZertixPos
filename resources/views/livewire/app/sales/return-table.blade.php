@@ -105,7 +105,7 @@
                                 :itemName="$return->number"
                                 type="la devolución"
                                 :wireConfirm="'void('.$return->id.')'"
-                                description="Se revierte el inventario y, si aplica, la deuda del cliente. El efectivo entregado se corrige a mano." />
+                                description="Se revierte el inventario (y su merma, si la tiene) y, si aplica, la deuda del cliente. El efectivo entregado se corrige a mano." />
                         @endunless
                     @endcan
                 </td>

@@ -70,6 +70,11 @@
                         <x-ui.badge :variant="$methodVariant" size="sm" :dot="false">{{ $return->refund_method_label }}</x-ui.badge>
                     </x-ui.infolist.entry>
                     <x-ui.infolist.entry label="Motivo" :value="$return->reason_label" />
+                    @if($return->waste)
+                        {{-- v1.5.0 REQ-2.3: las unidades dañadas quedaron como merma --}}
+                        <x-ui.infolist.entry label="Merma" :value="$return->waste->number.($return->waste->isVoided() ? ' (anulada)' : '')"
+                            :href="auth()->user()->can('inventory_wastes.view') ? route('inventory.wastes.show', $return->waste) : null" />
+                    @endif
                     <x-ui.infolist.entry label="Observaciones" :value="$return->notes" full />
                 </x-ui.infolist.section>
 
@@ -96,6 +101,8 @@
                                         <x-ui.badge variant="slate" size="sm" :dot="false">Servicio</x-ui.badge>
                                     @elseif($item->restock)
                                         <x-ui.badge variant="success" size="sm" :dot="false">Regresó</x-ui.badge>
+                                    @elseif($item->wasted)
+                                        <x-ui.badge variant="error" size="sm" :dot="false">Merma</x-ui.badge>
                                     @else
                                         <x-ui.badge variant="warning" size="sm" :dot="false">No regresó</x-ui.badge>
                                     @endif
@@ -162,7 +169,7 @@
                 type="la devolución"
                 method="PATCH"
                 :route="route('sales.returns.void', $return)"
-                description="Se revierte el inventario y, si aplica, la deuda del cliente. El efectivo entregado se corrige a mano." />
+                description="Se revierte el inventario (y su merma, si la tiene) y, si aplica, la deuda del cliente. El efectivo entregado se corrige a mano." />
         @endunless
     @endcan
 </x-app-layout>
