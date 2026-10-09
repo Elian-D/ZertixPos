@@ -260,7 +260,6 @@
                 // Sin coincidencia exacta no hace nada: el texto se queda filtrando el catálogo.
                 // Devuelve true si agregó el producto.
                 onScan(raw = null) {
-                    clearTimeout(this.scan.timer);
                     const term = (raw ?? this.search).trim().toLowerCase();
                     if (!term) return false;
                     const exact = this.products.find(p => (p.barcode || '').toLowerCase() === term)
@@ -269,113 +268,25 @@
                     // Se mantiene el foco en el buscador para seguir escaneando sin tocar el mouse.
                     this.addItem(exact, 'search');
                     this.search = '';
-                    this.scan.streak = 0;
                     return true;
                 },
 
                 // --- 7.2b Lector sin Enter (v1.5.0) ---
-                // Muchos lectores solo "teclean" el código, sin Enter al final. Un lector manda
-                // cada carácter a 5-30 ms del anterior; una persona rara vez baja de 80-100 ms.
-                // Si llega una ráfaga de al menos SCAN_MIN_LENGTH caracteres rápidos y después
-                // una pausa de SCAN_IDLE_MS, se trata como si hubieran dado Enter. Es seguro
-                // porque onScan() solo agrega con coincidencia exacta. Pegar (Ctrl+V) no cuenta:
-                // llega en un solo evento, no como ráfaga. Ver docs/features/v1.5.0.md §1.2.
-                scan: { last: 0, streak: 0, start: 0, timer: null },
-                SCAN_KEY_GAP_MS: 35,
-                SCAN_MIN_LENGTH: 6,
-                SCAN_IDLE_MS: 100,
-
-                // Lector con el foco FUERA del buscador (en el carrito, un botón o la página):
-                // un listener global de teclado arma el código con la misma regla de ráfaga y lo
-                // escanea, sin mover el foco ni usar un input oculto (que le robaría el foco a
-                // los demás campos). Se ignora cuando:
-                //  - el foco está en un campo editable: el buscador ya detecta por su cuenta
-                //    (onSearchInput) y en los demás (efectivo, cliente) se escribe normal;
-                //  - hay un modal abierto (x-modal pone overflow-y-hidden en el body): no se
-                //    agregan productos al carrito por detrás del cobro.
-                // Sin coincidencia exacta, el código queda en el buscador (con foco) para que
-                // el cajero vea que no se encontró.
+                // Detección de ráfaga compartida: resources/js/utils/barcode-scanner.js. Escucha
+                // los buscadores ([data-scan-input], escritorio y móvil) y la página cuando el
+                // foco está fuera de un campo; con un modal abierto se pausa. Fuera de un campo,
+                // un código sin coincidencia queda en el buscador para que el cajero lo vea.
                 startScannerListener() {
                     // init() puede correr dos veces (doble montaje): se reemplaza el anterior.
-                    if (window.__posScannerHandler) {
-                        window.removeEventListener('keydown', window.__posScannerHandler, true);
-                    }
-
-                    const buf = { text: '', last: 0, timer: null };
-                    const reset = () => { clearTimeout(buf.timer); buf.text = ''; };
-                    const flush = () => {
-                        const code = buf.text;
-                        reset();
-                        if (code.length < this.SCAN_MIN_LENGTH) return false;
-                        if (!this.onScan(code)) {
+                    window.__posScanner?.destroy();
+                    window.__posScanner = window.ZertixScanner?.create({
+                        inputs: [...this.$root.querySelectorAll('[data-scan-input]')],
+                        onScan: (code) => this.onScan(code),
+                        onMiss: (code) => {
                             this.search = code;
                             this.$nextTick(() => this.$refs.searchInput?.focus());
-                        }
-                        return true;
-                    };
-
-                    window.__posScannerHandler = (e) => {
-                        const t = e.target;
-                        const editable = t instanceof HTMLElement
-                            && (t.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(t.tagName));
-                        if (editable || document.body.classList.contains('overflow-y-hidden')) {
-                            reset();
-                            return;
-                        }
-
-                        const now = performance.now();
-
-                        if (e.key === 'Enter') {
-                            // Lector con sufijo Enter: si hay una ráfaga en curso, se escanea y se
-                            // evita que el Enter "pulse" el botón que tenga el foco (ej. Cobrar).
-                            if (buf.text && now - buf.last <= this.SCAN_IDLE_MS && flush()) {
-                                e.preventDefault();
-                                e.stopPropagation();
-                            }
-                            return;
-                        }
-
-                        if (e.key.length !== 1 || e.ctrlKey || e.metaKey || e.altKey) return;
-
-                        buf.text = (now - buf.last <= this.SCAN_KEY_GAP_MS) ? buf.text + e.key : e.key;
-                        buf.last = now;
-
-                        clearTimeout(buf.timer);
-                        buf.timer = setTimeout(flush, this.SCAN_IDLE_MS);
-                    };
-
-                    window.addEventListener('keydown', window.__posScannerHandler, true);
-                },
-
-                onSearchInput(event) {
-                    const now = performance.now();
-                    clearTimeout(this.scan.timer);
-
-                    if (event.inputType !== 'insertText') {
-                        // Pegado, borrado, autocompletado: corta cualquier ráfaga en curso.
-                        this.scan.streak = 0;
-                        this.scan.last = now;
-                        return;
-                    }
-
-                    if (now - this.scan.last <= this.SCAN_KEY_GAP_MS && this.scan.streak > 0) {
-                        this.scan.streak++;
-                    } else {
-                        // Primer carácter de una posible ráfaga: desde aquí empieza el código.
-                        this.scan.streak = 1;
-                        this.scan.start = Math.max(0, event.target.value.length - 1);
-                    }
-                    this.scan.last = now;
-
-                    if (this.scan.streak < this.SCAN_MIN_LENGTH) return;
-
-                    this.scan.timer = setTimeout(() => {
-                        if (this.scan.streak < this.SCAN_MIN_LENGTH) return;
-                        // Primero todo el texto; si el cajero ya había escrito algo antes de
-                        // escanear, se prueba solo con lo que llegó en la ráfaga.
-                        this.onScan() || this.onScan(this.search.slice(this.scan.start));
-                        this.scan.streak = 0;
-                    }, this.SCAN_IDLE_MS);
+                        },
+                    });
                 },
 
                 // --- 7.3 Cart Engine ---
