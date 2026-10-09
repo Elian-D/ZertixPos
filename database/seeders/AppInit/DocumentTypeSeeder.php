@@ -53,6 +53,24 @@ class DocumentTypeSeeder extends Seeder
                 'code' => 'DEV',
                 'prefix' => 'DEV',
             ],
+            [
+                // Toma física (v1.5.0 REQ-2.1) — documento interno para firmar.
+                'name' => 'Toma física',
+                'code' => 'TFS',
+                'prefix' => 'TFS',
+            ],
+            [
+                // Merma (v1.5.0 REQ-2.2) — baja de mercancía perdida con motivo.
+                'name' => 'Merma',
+                'code' => 'MER',
+                'prefix' => 'MER',
+            ],
+            [
+                // Transferencia entre almacenes (v1.5.0 REQ-2.4).
+                'name' => 'Transferencia',
+                'code' => 'TRA',
+                'prefix' => 'TRA',
+            ],
         ];
 
         foreach ($docs as $doc) {
