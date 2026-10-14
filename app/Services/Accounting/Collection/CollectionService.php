@@ -9,6 +9,7 @@ use App\Models\Accounting\JournalEntry;
 use App\Models\Accounting\Receivable;
 use App\Services\Accounting\JournalEntries\JournalEntryService;
 use App\Services\Accounting\Receivable\ReceivableService;
+use App\Services\Accounting\Treasury\CustomerPaymentService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -16,7 +17,8 @@ class CollectionService
 {
     public function __construct(
         protected JournalEntryService $journalService,
-        protected ReceivableService $receivableService
+        protected ReceivableService $receivableService,
+        protected CustomerPaymentService $customerPayments,
     ) {}
 
     /**
@@ -57,6 +59,9 @@ class CollectionService
             $receivable->current_balance -= $data['amount'];
             $this->receivableService->updateStatusBasedOnBalance($receivable);
             $receivable->client->refreshBalance();
+
+            // v1.5.0 REQ-3.6: un cobro que no fue en efectivo entra a la cuenta de banco.
+            $this->customerPayments->forCollection($payment);
 
             // 3. Asiento contable derivado — SOLO si accounting.advanced está activo.
             if (module_enabled('accounting.advanced')) {
@@ -128,6 +133,9 @@ class CollectionService
             if ($payment->journalEntry) {
                 $payment->journalEntry->update(['status' => JournalEntry::STATUS_CANCELLED]);
             }
+
+            // v1.5.0 REQ-3.6: saca del banco lo que entró por este cobro.
+            $this->customerPayments->reverseCollection($payment);
 
             // 3. Marcar cobro como anulado
             $payment->update(['status' => ClientCollection::STATUS_CANCELLED]);

@@ -3,6 +3,7 @@
 namespace App\Models\Sales\Pos;
 
 use App\Models\Accounting\AccountingAccount;
+use App\Models\Accounting\FinancialAccount;
 use App\Models\Clients\Client;
 use App\Models\Inventory\Warehouse;
 use App\Models\Sales\Ncf\NcfType;
@@ -34,6 +35,7 @@ class PosTerminal extends Model
         'max_global_discount_percentage',
         'discount_policy',
         'allow_receivable_collection',
+        'financial_account_id', // v1.5.0 REQ-3.6: cuenta de banco de los pagos que no son efectivo
     ];
 
     protected $casts = [
@@ -141,6 +143,12 @@ class PosTerminal extends Model
     }
 
     // ===== RELACIONES =====
+
+    /** Cuenta de banco propia (v1.5.0 REQ-3.6); null = la cuenta por defecto del POS. */
+    public function financialAccount()
+    {
+        return $this->belongsTo(FinancialAccount::class);
+    }
 
     public function warehouse()
     {

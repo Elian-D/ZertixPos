@@ -26,6 +26,8 @@ class UpdatePosTerminalRequest extends FormRequest
             'warehouse_id'        => 'required|exists:warehouses,id',
             'default_ncf_type_id' => 'nullable|exists:ncf_types,id',
             'default_client_id'   => 'nullable|exists:clients,id',
+            // v1.5.0 REQ-3.6: vacía = la cuenta por defecto del POS.
+            'financial_account_id' => ['nullable', Rule::exists('financial_accounts', 'id')->where('type', 'bank')->where('is_active', true)],
             'is_mobile'           => 'boolean',
             'printer_format'      => 'nullable|in:80mm,58mm', 
             'is_active'           => 'boolean',

@@ -5,6 +5,7 @@ namespace App\Services\Sales\Pos\PosTerminals;
 use App\Models\Clients\Client;
 use App\Models\Inventory\Warehouse;
 use App\Models\Accounting\AccountingAccount;
+use App\Models\Accounting\FinancialAccount;
 use App\Models\Sales\Ncf\NcfType;
 use App\Models\Sales\Ncf\NcfSequence;
 
@@ -41,6 +42,12 @@ class PosTerminalCatalogService
 
             'global_client_name' => $globalConfig->defaultCustomer?->name ?? 'Consumidor Final',
             'global_printer_format' => $globalConfig->receipt_size,
+
+            // v1.5.0 REQ-3.6: cuenta de banco de los pagos que no son efectivo; vacía, hereda la del POS.
+            'bank_accounts' => FinancialAccount::active()->where('type', FinancialAccount::TYPE_BANK)->orderBy('name')->get(['id', 'name']),
+            'global_bank_account_name' => $globalConfig->default_financial_account_id
+                ? FinancialAccount::whereKey($globalConfig->default_financial_account_id)->value('name')
+                : null,
 
             // 4. Clientes por defecto: Priorizando Consumidor Final
             'clients' => Client::select('id', 'name', 'tax_id')
