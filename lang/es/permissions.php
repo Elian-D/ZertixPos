@@ -162,6 +162,13 @@ return [
         'export' => ['label' => 'Exportar cobros', 'description' => 'Exportar cobros a Excel.'],
     ],
 
+    'financial_accounts' => [
+        'view' => ['label' => 'Ver cajas y bancos', 'description' => 'Ver las cuentas de caja y banco, su saldo, su kardex y sus conciliaciones.'],
+        'manage' => ['label' => 'Gestionar cajas y bancos', 'description' => 'Crear cuentas con su saldo inicial, editar sus datos y activarlas o desactivarlas.'],
+        'move' => ['label' => 'Mover dinero', 'description' => 'Registrar depósitos, retiros y transferencias entre cuentas, y anularlos o corregir su monto.'],
+        'reconcile' => ['label' => 'Conciliar cuentas', 'description' => 'Escribir el saldo real de una cuenta y ajustar la diferencia con su motivo.'],
+    ],
+
     'sales' => [
         'view' => ['label' => 'Ver ventas', 'description' => 'Ver el listado de ventas.'],
         'create' => ['label' => 'Crear ventas', 'description' => 'Registrar nuevas ventas.'],

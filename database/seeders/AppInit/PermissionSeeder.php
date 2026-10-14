@@ -359,6 +359,12 @@ class PermissionSeeder extends Seeder
                 // (Categoría C) y sin sentido un permiso propio solo para imprimir.
                 'collections.cancel',
                 'collections.export',
+
+                // Cajas y Bancos (v1.5.0 Fase 3) — núcleo fijo, sin module_key.
+                'financial_accounts.view',
+                'financial_accounts.manage',
+                'financial_accounts.move',
+                'financial_accounts.reconcile',
             ],
         ];
 
