@@ -4,6 +4,7 @@ namespace App\Http\Requests\Sales\Pos\PosConfig;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Validation\Rule;
 
 class UpdatePosConfigRequest extends FormRequest
 {
@@ -33,6 +34,8 @@ class UpdatePosConfigRequest extends FormRequest
             'allow_quote_without_save'      => 'boolean',
             'auto_print_receipt'            => 'boolean',
             'receipt_size'                  => 'required|in:58mm,80mm',
+            // v1.5.0 REQ-3.6: cuenta de banco por defecto de los pagos que no son efectivo.
+            'default_financial_account_id'  => ['nullable', Rule::exists('financial_accounts', 'id')->where('type', 'bank')->where('is_active', true)],
         ];
     }
 
@@ -41,6 +44,7 @@ class UpdatePosConfigRequest extends FormRequest
         return [
             'default_walkin_customer_id' => 'Cliente por defecto',
             'receipt_size'               => 'Tamaño del recibo',
+            'default_financial_account_id' => 'Cuenta de banco por defecto',
         ];
     }
 

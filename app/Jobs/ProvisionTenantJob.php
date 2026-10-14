@@ -129,6 +129,15 @@ class ProvisionTenantJob implements ShouldQueue
                 'login_url' => $this->loginUrl,
             ], now()->addMinutes(10));
         } catch (Throwable $e) {
+            // `Tenant::run()` de stancl no tiene `finally`: si algo revienta
+            // adentro, la tenancy queda inicializada y el `Cache::put` de abajo
+            // cae en el cache etiquetado del tenant (CacheTenancyBootstrapper),
+            // no en el central que sondea el wizard — la pantalla de progreso
+            // se quedaba colgada para siempre en vez de mostrar el error.
+            if (tenancy()->initialized) {
+                tenancy()->end();
+            }
+
             Log::error('ProvisionTenantJob: fallo aprovisionando un tenant nuevo.', [
                 'token' => $this->token,
                 'full_domain' => $this->fullDomain,

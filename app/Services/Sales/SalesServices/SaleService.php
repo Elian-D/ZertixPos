@@ -17,6 +17,7 @@ use App\Models\Sales\Pos\PosTerminal;
 use App\Models\Sales\Sale;
 use App\Services\Accounting\JournalEntries\JournalEntryService;
 use App\Services\Accounting\Receivable\ReceivableService;
+use App\Services\Accounting\Treasury\CustomerPaymentService;
 use App\Services\Inventory\InventoryMovementService;
 use App\Services\Sales\InvoicesServices\InvoiceService;
 use Carbon\Carbon;
@@ -40,7 +41,8 @@ class SaleService
         protected JournalEntryService $journalService,
         protected ReceivableService $receivableService,
         protected InvoiceService $invoiceService,
-        protected NcfGeneratorInterface $ncfGenerator
+        protected NcfGeneratorInterface $ncfGenerator,
+        protected CustomerPaymentService $customerPayments,
     ) {}
 
     /**
@@ -182,6 +184,10 @@ class SaleService
             // 5. INTEGRACIÓN CON MÓDULOS FINANCIEROS Y FISCALES
             // Registra cobros inmediatos o genera pasivos corrientes en cuentas por cobrar (CxC).
             $this->processPayments($sale, $data, $context);
+
+            // v1.5.0 REQ-3.6: lo que no fue en efectivo entra a la cuenta de banco de la
+            // terminal (o la por defecto del POS). El efectivo se queda en la gaveta.
+            $this->customerPayments->forSale($sale, $context?->terminal_id);
 
             // Genera asiento contable automático de doble entrada en el Libro Diario.
             $this->generateSaleAccountingEntry($sale, $context);
@@ -508,6 +514,9 @@ class SaleService
 
             // Revierte de forma contable el asiento de diario original mediante un contra-asiento de diario automático.
             $this->generateCancellationAccountingEntry($sale);
+
+            // v1.5.0 REQ-3.6: saca del banco lo que entró por los pagos de la venta.
+            $this->customerPayments->reverseSale($sale);
 
             // Reingreso físico de mercancía al stock — simétrico al gate de creación
             // (REQ-10.5): si inventory.tracking estaba apagado cuando se vendió, no

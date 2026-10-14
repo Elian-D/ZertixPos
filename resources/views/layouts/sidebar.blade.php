@@ -152,7 +152,7 @@
 
                 @can('inventory_movements.view')
                     <x-sidebar.subitem href="{{ route('inventory.movements.index') }}">
-                        Movimientos
+                        Movimientos de Stock
                     </x-sidebar.subitem>
                 @endcan
 
@@ -186,6 +186,7 @@
     {{-- GRUPO 4: Finanzas --}}
     @canany([
         'accounting.dashboard',
+        'financial_accounts.view',
         'receivables.view',
         'collections.view',
         'invoices.view',
@@ -200,6 +201,18 @@
             @can('accounting.dashboard')
                 <x-sidebar.subitem href="{{ route('finance.overview.index') }}">
                     Ingresos y Gastos
+                </x-sidebar.subitem>
+            @endcan
+
+            {{-- Núcleo fijo (v1.5.0 Fase 3): sin module_enabled --}}
+            @can('financial_accounts.view')
+                <x-sidebar.subitem href="{{ route('finance.treasury.index') }}"
+                    :active="request()->routeIs('finance.treasury.*') && ! request()->routeIs('finance.treasury.movements.*')">
+                    Cajas y Bancos
+                </x-sidebar.subitem>
+
+                <x-sidebar.subitem href="{{ route('finance.treasury.movements.index') }}" :active="request()->routeIs('finance.treasury.movements.*')">
+                    Movimientos de Tesorería
                 </x-sidebar.subitem>
             @endcan
 

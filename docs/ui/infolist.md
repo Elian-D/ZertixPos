@@ -193,6 +193,26 @@ Una pestaña que el usuario no puede ver no se agrega al arreglo ni se renderiza
 
 ---
 
+## `x-ui.stat`
+
+Tarjeta de un total grande (v1.5.0 Fase 3): los totales de Cajas y Bancos, y los tableros de la Fase 6. Va en una grilla (`grid grid-cols-1 sm:grid-cols-3 gap-4`); no es parte de una sección.
+
+| Prop | Uso |
+|---|---|
+| `label` | Etiqueta corta (se muestra en mayúsculas pequeñas) |
+| `value` | El número ya formateado (`RD$486,320.50`) |
+| `hint` / `hintIcon` | Línea chica debajo y su heroicon (opcionales) |
+| `variant` | `default`, `error` o `success`: color del valor |
+| `href` | Si se pasa, la tarjeta entera es un enlace |
+
+El slot, si se usa, reemplaza al `hint` cuando hace falta markup (un badge, un enlace).
+
+```blade
+<x-ui.stat label="Total disponible" :value="$money($total)" hint="Solo cuentas activas" hintIcon="heroicon-o-check-circle" />
+```
+
+---
+
 ## Notas
 
 - Estados → accessors del modelo (`status_variant`/`status_label`, ej. `Quote`, `Invoice`), nunca un `match` en la vista.

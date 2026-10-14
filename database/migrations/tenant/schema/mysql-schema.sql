@@ -221,6 +221,80 @@ CREATE TABLE `failed_jobs` (
   UNIQUE KEY `failed_jobs_uuid_unique` (`uuid`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `financial_accounts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `financial_accounts` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `type` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `bank_name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `last_four_digits` varchar(4) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `current_balance` decimal(14,2) NOT NULL DEFAULT '0.00',
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `financial_movements`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `financial_movements` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `financial_account_id` bigint unsigned NOT NULL,
+  `direction` varchar(3) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `amount` decimal(14,2) NOT NULL,
+  `balance_after` decimal(14,2) NOT NULL,
+  `origin` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `movement_date` date NOT NULL,
+  `reference_type` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `reference_id` bigint unsigned DEFAULT NULL,
+  `counterpart_id` bigint unsigned DEFAULT NULL,
+  `reverses_id` bigint unsigned DEFAULT NULL,
+  `reversed_by_id` bigint unsigned DEFAULT NULL,
+  `notes` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_by` bigint unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `financial_movements_reference_type_reference_id_index` (`reference_type`,`reference_id`),
+  KEY `financial_movements_counterpart_id_foreign` (`counterpart_id`),
+  KEY `financial_movements_reverses_id_foreign` (`reverses_id`),
+  KEY `financial_movements_reversed_by_id_foreign` (`reversed_by_id`),
+  KEY `financial_movements_created_by_foreign` (`created_by`),
+  KEY `financial_movements_financial_account_id_id_index` (`financial_account_id`,`id`),
+  KEY `financial_movements_financial_account_id_movement_date_index` (`financial_account_id`,`movement_date`),
+  CONSTRAINT `financial_movements_counterpart_id_foreign` FOREIGN KEY (`counterpart_id`) REFERENCES `financial_movements` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `financial_movements_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `financial_movements_financial_account_id_foreign` FOREIGN KEY (`financial_account_id`) REFERENCES `financial_accounts` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `financial_movements_reversed_by_id_foreign` FOREIGN KEY (`reversed_by_id`) REFERENCES `financial_movements` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `financial_movements_reverses_id_foreign` FOREIGN KEY (`reverses_id`) REFERENCES `financial_movements` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `financial_reconciliations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `financial_reconciliations` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `financial_account_id` bigint unsigned NOT NULL,
+  `reconciled_at` date NOT NULL,
+  `system_balance` decimal(14,2) NOT NULL,
+  `real_balance` decimal(14,2) NOT NULL,
+  `difference` decimal(14,2) NOT NULL,
+  `reason` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `notes` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_by` bigint unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `financial_reconciliations_created_by_foreign` (`created_by`),
+  KEY `fin_reconciliations_account_date_index` (`financial_account_id`,`reconciled_at`),
+  CONSTRAINT `financial_reconciliations_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `financial_reconciliations_financial_account_id_foreign` FOREIGN KEY (`financial_account_id`) REFERENCES `financial_accounts` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `installation_modules`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -852,8 +926,11 @@ CREATE TABLE `pos_settings` (
   `receipt_size` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '80mm',
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
+  `default_financial_account_id` bigint unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `pos_settings_default_walkin_customer_id_foreign` (`default_walkin_customer_id`),
+  KEY `pos_settings_default_financial_account_id_foreign` (`default_financial_account_id`),
+  CONSTRAINT `pos_settings_default_financial_account_id_foreign` FOREIGN KEY (`default_financial_account_id`) REFERENCES `financial_accounts` (`id`) ON DELETE SET NULL,
   CONSTRAINT `pos_settings_default_walkin_customer_id_foreign` FOREIGN KEY (`default_walkin_customer_id`) REFERENCES `clients` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -865,6 +942,7 @@ CREATE TABLE `pos_terminals` (
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `warehouse_id` bigint unsigned NOT NULL,
   `cash_account_id` bigint unsigned DEFAULT NULL,
+  `financial_account_id` bigint unsigned DEFAULT NULL,
   `default_ncf_type_id` bigint unsigned DEFAULT NULL,
   `default_client_id` bigint unsigned DEFAULT NULL,
   `is_mobile` tinyint(1) NOT NULL DEFAULT '0',
@@ -887,9 +965,11 @@ CREATE TABLE `pos_terminals` (
   KEY `pos_terminals_cash_account_id_foreign` (`cash_account_id`),
   KEY `pos_terminals_default_ncf_type_id_foreign` (`default_ncf_type_id`),
   KEY `pos_terminals_default_client_id_foreign` (`default_client_id`),
+  KEY `pos_terminals_financial_account_id_foreign` (`financial_account_id`),
   CONSTRAINT `pos_terminals_cash_account_id_foreign` FOREIGN KEY (`cash_account_id`) REFERENCES `accounting_accounts` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `pos_terminals_default_client_id_foreign` FOREIGN KEY (`default_client_id`) REFERENCES `clients` (`id`) ON DELETE SET NULL,
   CONSTRAINT `pos_terminals_default_ncf_type_id_foreign` FOREIGN KEY (`default_ncf_type_id`) REFERENCES `ncf_types` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `pos_terminals_financial_account_id_foreign` FOREIGN KEY (`financial_account_id`) REFERENCES `financial_accounts` (`id`) ON DELETE SET NULL,
   CONSTRAINT `pos_terminals_warehouse_id_foreign` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -1404,3 +1484,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (93,'2026_10_02_100
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (94,'2026_10_02_110000_add_document_numbers',5);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (96,'2026_10_03_100000_v150_inventory_base',6);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (97,'2026_10_04_100000_v150_stock_docs',7);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (98,'2026_10_12_100000_v150_treasury',8);

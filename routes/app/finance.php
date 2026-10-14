@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Accounting\AccountingAccountController;
 use App\Http\Controllers\Accounting\CollectionController;
+use App\Http\Controllers\Accounting\FinancialAccountController;
+use App\Http\Controllers\Accounting\FinancialMovementController;
 use App\Http\Controllers\Accounting\FinancialOverviewController;
 use App\Http\Controllers\Accounting\JournalEntryController;
 use App\Http\Controllers\Accounting\ReceivableController;
@@ -157,6 +159,33 @@ Route::prefix('finance')->as('finance.')->group(function () {
     Route::get('/overview', FinancialOverviewController::class)
         ->middleware('can:accounting.dashboard')
         ->name('overview.index');
+
+    // Cajas y Bancos (v1.5.0 Fase 3) — núcleo fijo, sin gate de módulo: todo negocio
+    // tiene caja o banco, y los pagos de CxP (Fase 4) salen de una cuenta. Prefijo
+    // treasury porque finance/accounts ya es el Plan de Cuentas.
+    Route::middleware('auth')->prefix('treasury')->as('treasury.')->group(function () {
+
+        // Movimientos de Tesorería: kardex de todas las cuentas, "Nuevo movimiento", anular y corregir.
+        Route::prefix('movements')->as('movements.')->controller(FinancialMovementController::class)->group(function () {
+            Route::get('/', 'index')->middleware('permission:financial_accounts.view')->name('index');
+            Route::get('/create', 'create')->middleware('permission:financial_accounts.move')->name('create');
+            Route::post('/', 'store')->middleware('permission:financial_accounts.move')->name('store');
+            Route::patch('/{movement}/void', 'void')->whereNumber('movement')->middleware('permission:financial_accounts.move')->name('void');
+            Route::patch('/{movement}/correct', 'correct')->whereNumber('movement')->middleware('permission:financial_accounts.move')->name('correct');
+        });
+
+        Route::controller(FinancialAccountController::class)->group(function () {
+            Route::get('/', 'index')->middleware('permission:financial_accounts.view')->name('index');
+            Route::get('/create', 'create')->middleware('permission:financial_accounts.manage')->name('create');
+            Route::post('/', 'store')->middleware('permission:financial_accounts.manage')->name('store');
+            Route::get('/reconcile', 'reconcileForm')->middleware('permission:financial_accounts.reconcile')->name('reconcile.form');
+            Route::post('/reconcile', 'reconcile')->middleware('permission:financial_accounts.reconcile')->name('reconcile');
+            Route::get('/{account}', 'show')->whereNumber('account')->middleware('permission:financial_accounts.view')->name('show');
+            Route::get('/{account}/edit', 'edit')->whereNumber('account')->middleware('permission:financial_accounts.manage')->name('edit');
+            Route::put('/{account}', 'update')->whereNumber('account')->middleware('permission:financial_accounts.manage')->name('update');
+            Route::patch('/{account}/toggle', 'toggle')->whereNumber('account')->middleware('permission:financial_accounts.manage')->name('toggle');
+        });
+    });
 
     // routes/app/sales.php (antes) — Facturas, movidas junto con el resto de Finanzas.
     Route::middleware('auth')->group(function () {
