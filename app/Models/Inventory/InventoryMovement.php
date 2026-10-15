@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 use App\Models\User;
 use App\Models\Inventory\Warehouse;
 use App\Models\Products\Product;
+use App\Models\Purchases\PurchaseReception;
 use App\Models\Sales\Returns\SaleReturn;
 use App\Models\Sales\Sale;
 
@@ -125,6 +126,7 @@ class InventoryMovement extends Model
             InventoryCount::class => ['label' => "Toma física {$ref}", 'url' => route('inventory.counts.show', $id)],
             InventoryWaste::class => ['label' => "Merma {$ref}", 'url' => route('inventory.wastes.show', $id)],
             InventoryTransfer::class => ['label' => "Transferencia {$ref}", 'url' => route('inventory.transfers.show', $id)],
+            PurchaseReception::class => ['label' => "Compra {$ref}", 'url' => route('purchases.receptions.show', $id)],
             default => ['label' => class_basename($this->reference_type)." {$ref}", 'url' => null],
         };
     }

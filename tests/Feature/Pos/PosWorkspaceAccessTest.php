@@ -2,13 +2,11 @@
 
 namespace Tests\Feature\Pos;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Feature\Pos\Concerns\SetsUpPosWorkspace;
-use Tests\TestCase;
+use Tests\TenantTestCase;
 
-class PosWorkspaceAccessTest extends TestCase
+class PosWorkspaceAccessTest extends TenantTestCase
 {
-    use RefreshDatabase;
     use SetsUpPosWorkspace;
 
     public function test_redirects_to_lobby_when_there_is_no_open_session(): void

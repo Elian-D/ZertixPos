@@ -1,16 +1,22 @@
-{{-- Proveedor — show (v1.5.0 REQ-4.1, /filament-show) con pestañas: Resumen, Cuentas por
-     pagar (cada una con sus pagos) y Gastos. La Fase 5 suma Órdenes de compra y Recepciones.
-     Recibe $vendor (con defaultAccount), $payables (con source y payments.account),
-     $expenses (con account) y $summary. --}}
+{{-- Proveedor — show (v1.5.0 REQ-4.1, /filament-show) con pestañas: Resumen, Órdenes de
+     compra, Recepciones (Fase 5), Cuentas por pagar (cada una con sus pagos) y Gastos.
+     Recibe $vendor (con defaultAccount), $orders (con warehouse e items_count), $receptions
+     (con order y payable), $payables (con source y payments.account), $expenses (con
+     account) y $summary. --}}
 @php
     $currency = config('regional.currency_symbol');
     $money = fn ($v) => $currency.number_format((float) $v, 2);
     $user = auth()->user();
-    $tabs = [
+    $canOrder = $vendor->is_active && $user->can('purchase_orders.create');
+    $canExpense = $vendor->is_active && module_enabled('sales.payables') && $user->can('expenses.create');
+    $canSeeOrders = $user->can('purchase_orders.view');
+    $tabs = array_values(array_filter([
         ['name' => 'summary', 'label' => 'Resumen', 'icon' => 'heroicon-o-building-storefront'],
+        $canSeeOrders ? ['name' => 'orders', 'label' => 'Órdenes de compra', 'icon' => 'heroicon-o-clipboard-document-list', 'count' => $summary['orders_count']] : null,
+        $canSeeOrders ? ['name' => 'receptions', 'label' => 'Recepciones', 'icon' => 'heroicon-o-inbox-arrow-down', 'count' => $summary['receptions_count']] : null,
         ['name' => 'payables', 'label' => 'Cuentas por pagar', 'icon' => 'heroicon-o-document-text', 'count' => $summary['payables_count']],
         ['name' => 'expenses', 'label' => 'Gastos', 'icon' => 'heroicon-o-receipt-percent', 'count' => $summary['expenses_count']],
-    ];
+    ]));
 @endphp
 
 <x-app-layout :title="$vendor->display_name">
@@ -26,12 +32,21 @@
                         Editar
                     </x-ui.button>
                 @endcan
-                @if($vendor->is_active && module_enabled('sales.payables') && $user->can('expenses.create'))
-                    <x-ui.button href="{{ route('finance.expenses.create', ['vendor' => $vendor->id]) }}" variant="primary" iconLeft="heroicon-s-plus">
-                        Registrar gasto
+                @if($canOrder)
+                    <x-ui.button href="{{ route('purchases.orders.create', ['vendor' => $vendor->id]) }}" variant="primary" iconLeft="heroicon-s-plus">
+                        Nueva orden
                     </x-ui.button>
                 @endif
             </x-slot:actions>
+
+            @if($canExpense)
+                <x-slot:secondary>
+                    <x-ui.button href="{{ route('finance.expenses.create', ['vendor' => $vendor->id]) }}" variant="secondary" appearance="ghost"
+                        class="w-full justify-start" iconLeft="heroicon-s-receipt-percent">
+                        Registrar gasto
+                    </x-ui.button>
+                </x-slot:secondary>
+            @endif
         </x-ui.page-header>
 
         @unless($vendor->is_active)
@@ -43,7 +58,8 @@
             <x-ui.stat label="Le debes" :value="$money($summary['pending'])"
                 :variant="$summary['pending'] > 0 ? 'error' : 'default'"
                 :hint="$summary['overdue'] ? $summary['overdue'].' '.($summary['overdue'] === 1 ? 'cuenta vencida' : 'cuentas vencidas') : 'Nada vencido'" />
-            <x-ui.stat label="Total en gastos" :value="$money($summary['total'])" hint="Gastos no anulados con este proveedor" />
+            <x-ui.stat label="Comprado" :value="$money($summary['purchased'])"
+                :hint="'Recibido en compras · '.$money($summary['spent']).' en gastos'" />
             <x-ui.stat label="Calificación" :value="$vendor->rating_label" hint="Sale de los despachos que se califican al recibir mercancía" />
         </div>
 
@@ -76,6 +92,60 @@
                     <x-ui.infolist.entry label="Notas" :value="$vendor->notes" full />
                 </x-ui.infolist.section>
             </x-ui.infolist.tab>
+
+            @if($canSeeOrders)
+                {{-- Órdenes de compra --}}
+                <x-ui.infolist.tab name="orders">
+                    <x-ui.infolist.repeatable :empty="$orders->isEmpty()" emptyIcon="heroicon-o-clipboard-document-list"
+                        emptyTitle="Sin órdenes de compra" emptyDescription="Las órdenes que le hagas a este proveedor aparecen aquí.">
+                        @foreach($orders as $order)
+                            <x-ui.infolist.repeatable-item :cols="5">
+                                <x-ui.infolist.entry label="Orden" strong :href="route('purchases.orders.show', $order)">
+                                    {{ $order->number }}
+                                    <span class="block text-xs font-normal text-gray-500">{{ $order->order_date->format('d/m/Y') }}</span>
+                                </x-ui.infolist.entry>
+                                <x-ui.infolist.entry label="Almacén" :value="$order->warehouse->name ?? null" />
+                                <x-ui.infolist.entry label="Condición" :value="$order->condition_label.' · '.$order->items_count.' '.($order->items_count === 1 ? 'línea' : 'líneas')" />
+                                <x-ui.infolist.entry label="Total" :value="$money($order->total)" strong />
+                                <x-ui.infolist.entry label="Estado" class="sm:text-right">
+                                    <x-ui.badge :variant="$order->status_variant" size="sm" :dot="false">{{ $order->status_label }}</x-ui.badge>
+                                </x-ui.infolist.entry>
+                            </x-ui.infolist.repeatable-item>
+                        @endforeach
+                    </x-ui.infolist.repeatable>
+                </x-ui.infolist.tab>
+
+                {{-- Recepciones --}}
+                <x-ui.infolist.tab name="receptions">
+                    <x-ui.infolist.repeatable :empty="$receptions->isEmpty()" emptyIcon="heroicon-o-inbox-arrow-down"
+                        emptyTitle="Sin recepciones" emptyDescription="Cada entrega que recibas de sus órdenes aparece aquí, con su calificación.">
+                        @foreach($receptions as $reception)
+                            <x-ui.infolist.repeatable-item :cols="5">
+                                <x-ui.infolist.entry label="Recepción" strong :href="route('purchases.receptions.show', $reception)">
+                                    {{ $reception->number }}
+                                    <span class="block text-xs font-normal text-gray-500">{{ $reception->reception_date->format('d/m/Y') }} · orden {{ $reception->order->number ?? '' }}</span>
+                                </x-ui.infolist.entry>
+                                <x-ui.infolist.entry label="Factura" :value="$reception->supplier_invoice ?? $reception->supplier_ncf" />
+                                <x-ui.infolist.entry label="Total" :value="$money($reception->total)" strong />
+                                <x-ui.infolist.entry label="Cuenta por pagar">
+                                    @if($reception->payable)
+                                        <x-ui.badge :variant="$reception->payable->status_variant" size="sm" :dot="false">{{ $reception->payable->number }} · {{ $reception->payable->status_label }}</x-ui.badge>
+                                    @else
+                                        <span class="text-gray-400">Sin deuda</span>
+                                    @endif
+                                </x-ui.infolist.entry>
+                                <x-ui.infolist.entry label="Calificación" class="sm:text-right">
+                                    @if($reception->rating)
+                                        <x-ui.badge :variant="$reception->rating_variant" size="sm" :dot="false">{{ $reception->rating }}</x-ui.badge>
+                                    @else
+                                        <span class="text-gray-400">—</span>
+                                    @endif
+                                </x-ui.infolist.entry>
+                            </x-ui.infolist.repeatable-item>
+                        @endforeach
+                    </x-ui.infolist.repeatable>
+                </x-ui.infolist.tab>
+            @endif
 
             {{-- Cuentas por pagar --}}
             <x-ui.infolist.tab name="payables">

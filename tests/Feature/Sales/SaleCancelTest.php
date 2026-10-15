@@ -8,9 +8,8 @@ use App\Models\Sales\Pos\PosSession;
 use App\Models\Sales\Sale;
 use App\Services\Sales\SalesServices\SaleService;
 use Exception;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Feature\Pos\Concerns\SetsUpPosWorkspace;
-use Tests\TestCase;
+use Tests\TenantTestCase;
 
 /**
  * v1.4.0 Fase 1, REQ-1.2 — regresión del guard de Anulación. Antes de esta
@@ -19,19 +18,9 @@ use Tests\TestCase;
  * restricción aunque su turno ya hubiera cerrado, o aunque la venta ni
  * siquiera tuviera turno (creada desde backoffice). Ver docs/features/v1.4.0.md §1.2.
  */
-class SaleCancelTest extends TestCase
+class SaleCancelTest extends TenantTestCase
 {
-    use RefreshDatabase;
     use SetsUpPosWorkspace;
-
-    protected function migrateFreshUsing()
-    {
-        return [
-            '--path' => ['database/migrations/tenant'],
-            '--realpath' => false,
-            '--seed' => $this->shouldSeed(),
-        ];
-    }
 
     private function makeSale(array $overrides = []): Sale
     {

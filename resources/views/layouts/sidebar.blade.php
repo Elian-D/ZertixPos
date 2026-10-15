@@ -183,21 +183,30 @@
         </x-sidebar.dropdown>
     @endcanany
 
-    {{-- GRUPO: Compras (v1.5.0 Fase 4) — núcleo flexible `purchases`. La Fase 5 suma
-         órdenes de compra y recepciones. --}}
+    {{-- GRUPO: Compras (v1.5.0 Fases 4 y 5) — núcleo flexible `purchases`. --}}
     @if(module_enabled('purchases'))
-        @can('vendors.view')
+        @canany(['vendors.view', 'purchase_orders.view'])
             <x-sidebar.dropdown
                 id="compras"
                 icon="heroicon-s-building-storefront"
                 label="Compras"
                 :activeRoutes="['app/purchases*']"
             >
-                <x-sidebar.subitem href="{{ route('purchases.vendors.index') }}">
-                    Proveedores
-                </x-sidebar.subitem>
+                @can('purchase_orders.view')
+                    <x-sidebar.subitem href="{{ route('purchases.orders.index') }}">
+                        Órdenes de compra
+                    </x-sidebar.subitem>
+                    <x-sidebar.subitem href="{{ route('purchases.receptions.index') }}">
+                        Recepciones
+                    </x-sidebar.subitem>
+                @endcan
+                @can('vendors.view')
+                    <x-sidebar.subitem href="{{ route('purchases.vendors.index') }}">
+                        Proveedores
+                    </x-sidebar.subitem>
+                @endcan
             </x-sidebar.dropdown>
-        @endcan
+        @endcanany
     @endif
 
     {{-- GRUPO 4: Finanzas — solo dinero (v1.5.0 Fase 4: Facturas y NCF pasaron a "Fiscal").
