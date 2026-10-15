@@ -89,6 +89,8 @@ php artisan test tests/Feature/YourTest.php --filter=methodName
 
 Configuration: `phpunit.xml` defines test suites (Unit/Feature) with SQLite in-memory database for testing.
 
+**Every test that touches the database extends `Tests\TenantTestCase`**, not `TestCase` + `RefreshDatabase`. It migrates the tenant schema (`database/migrations/tenant`) and skips the tenancy middleware so `routes/tenant.php` answers from `localhost`. `RefreshDatabase` migrates only once per process, so a single test on the central schema breaks every test that runs after it. Run tests inside Docker as `sail`: `docker exec --user=sail <container> php artisan test`.
+
 ## Code Quality & Linting
 
 ```bash
