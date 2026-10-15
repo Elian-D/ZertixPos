@@ -24,7 +24,7 @@ class DocumentType extends Model
      * Códigos que el propio sistema consulta por texto (SaleService, CollectionService...).
      * Cambiar el 'code' de uno de estos rompería esas búsquedas hardcodeadas.
      */
-    const SYSTEM_PROTECTED_CODES = ['VTA', 'FAC', 'CXC', 'COT', 'TRN', 'PAG', 'DEV', 'TFS', 'MER', 'TRA'];
+    const SYSTEM_PROTECTED_CODES = ['VTA', 'FAC', 'CXC', 'COT', 'TRN', 'PAG', 'DEV', 'TFS', 'MER', 'TRA', 'CXP', 'EGR', 'GAS'];
 
     protected static function booted()
     {
@@ -78,6 +78,9 @@ class DocumentType extends Model
             'TFS' => InventoryCount::where('document_type_id', $this->id)->exists(),
             'MER' => InventoryWaste::where('document_type_id', $this->id)->exists(),
             'TRA' => InventoryTransfer::where('document_type_id', $this->id)->exists(),
+            'CXP' => Payable::where('document_type_id', $this->id)->exists(),
+            'EGR' => PayablePayment::where('document_type_id', $this->id)->exists(),
+            'GAS' => Expense::where('document_type_id', $this->id)->exists(),
             default => false,
         };
     }

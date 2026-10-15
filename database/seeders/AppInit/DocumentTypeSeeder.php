@@ -71,6 +71,24 @@ class DocumentTypeSeeder extends Seeder
                 'code' => 'TRA',
                 'prefix' => 'TRA',
             ],
+            [
+                // Cuenta por pagar (v1.5.0 REQ-4.2) — de un gasto a crédito o de una recepción.
+                'name' => 'Cuenta por pagar',
+                'code' => 'CXP',
+                'prefix' => 'CXP',
+            ],
+            [
+                // Pago a proveedor (v1.5.0 REQ-4.3) — sale de una cuenta de Cajas y Bancos.
+                'name' => 'Pago a proveedor',
+                'code' => 'EGR',
+                'prefix' => 'EGR',
+            ],
+            [
+                // Gasto directo (v1.5.0 REQ-4.4).
+                'name' => 'Gasto',
+                'code' => 'GAS',
+                'prefix' => 'GAS',
+            ],
         ];
 
         foreach ($docs as $doc) {
