@@ -2,6 +2,7 @@
 
 namespace App\Models\Accounting;
 
+use App\Models\Purchases\PurchaseReception;
 use App\Models\Purchases\Vendor;
 use App\Models\User;
 use App\Traits\HasDocumentNumber;
@@ -12,8 +13,8 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 /**
  * Cuenta por pagar (v1.5.0 REQ-4.2, CXP): una sola tabla para lo que se debe, sin importar
- * de dónde vino. Nace sola: de un gasto a crédito (§4.4) o, en la Fase 5, de recibir una
- * compra a crédito. No se crea a mano ni se edita.
+ * de dónde vino. Nace sola: de un gasto a crédito (§4.4) o de recibir una
+ * compra (§5.3; de contado nace pagada). No se crea a mano ni se edita.
  *
  * El estado sale del saldo: Pendiente (nada pagado), Parcial, Pagada; Anulada solo cuando
  * se anula su documento de origen (el gasto). Una CxP de una recepción no se anula: la
@@ -61,7 +62,7 @@ class Payable extends Model
     {
         return [
             Expense::class => 'Gasto',
-            // PurchaseReception (Fase 5)
+            PurchaseReception::class => 'Compra',
         ];
     }
 
@@ -99,7 +100,7 @@ class Payable extends Model
         return round((float) $this->total_amount - (float) $this->balance, 2);
     }
 
-    /** Origen con su enlace. Requiere `source` cargado. */
+    /** Origen con su enlace y el permiso para abrirlo. Requiere `source` cargado. */
     public function getOriginAttribute(): ?array
     {
         $source = $this->source;
@@ -108,6 +109,12 @@ class Payable extends Model
             $source instanceof Expense => [
                 'label' => "Gasto {$source->number} · {$source->category_label}",
                 'url' => route('finance.expenses.show', $source),
+                'permission' => 'expenses.view',
+            ],
+            $source instanceof PurchaseReception => [
+                'label' => "Compra · recepción {$source->number}",
+                'url' => route('purchases.receptions.show', $source),
+                'permission' => 'purchase_orders.view',
             ],
             default => null,
         };

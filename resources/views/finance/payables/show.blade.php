@@ -45,7 +45,7 @@
                 <x-ui.infolist.entry label="Proveedor" :value="$payable->vendor?->display_name"
                     :href="$payable->vendor && ! $payable->vendor->trashed() && module_enabled('purchases') && $user->can('vendors.view') ? route('purchases.vendors.show', $payable->vendor) : null" />
                 <x-ui.infolist.entry label="Origen" :value="$origin['label'] ?? null"
-                    :href="$origin && $user->can('expenses.view') ? $origin['url'] : null" />
+                    :href="$origin && $user->can($origin['permission']) ? $origin['url'] : null" />
                 <x-ui.infolist.entry label="Concepto" :value="$payable->concept" full />
                 <x-ui.infolist.entry label="Emitida" :value="$payable->issue_date->format('d/m/Y')" />
                 <x-ui.infolist.entry label="Vence" :value="$payable->due_date->format('d/m/Y')" />

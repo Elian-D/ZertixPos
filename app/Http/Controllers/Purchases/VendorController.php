@@ -48,18 +48,27 @@ class VendorController extends Controller
         $payables = $vendor->payables()->with(['source', 'payments' => fn ($q) => $q->with('account:id,name')->latest('id')])
             ->latest('id')->limit(self::SHOW_LIMIT)->get();
         $expenses = $vendor->expenses()->with('account:id,name')->latest('expense_date')->latest('id')->limit(self::SHOW_LIMIT)->get();
+        $orders = $vendor->purchaseOrders()->with('warehouse:id,name')->withCount('items')
+            ->latest('order_date')->latest('id')->limit(self::SHOW_LIMIT)->get();
+        $receptions = $vendor->receptions()->with(['order:id,number', 'payable:id,source_type,source_id,number,status,balance,due_date'])
+            ->latest('reception_date')->latest('purchase_receptions.id')->limit(self::SHOW_LIMIT)->get();
 
         return view('purchases.vendors.show', [
             'vendor' => $vendor,
             'payables' => $payables,
             'expenses' => $expenses,
+            'orders' => $orders,
+            'receptions' => $receptions,
             'summary' => [
                 'pending' => (float) $vendor->payables()->open()->sum('balance'),
                 'overdue' => $vendor->payables()->open()->whereDate('due_date', '<', today())->count(),
-                // Lo que se le ha comprado o gastado con él: gastos y CxP no anulados.
-                'total' => (float) $vendor->expenses()->where('status', Expense::STATUS_APPLIED)->sum('amount'),
+                // Lo comprado (recepciones) y lo gastado con él (gastos no anulados).
+                'purchased' => (float) $vendor->receptions()->sum('purchase_receptions.total'),
+                'spent' => (float) $vendor->expenses()->where('status', Expense::STATUS_APPLIED)->sum('amount'),
                 'payables_count' => $vendor->payables()->where('status', '!=', Payable::STATUS_VOIDED)->count(),
                 'expenses_count' => $vendor->expenses()->count(),
+                'orders_count' => $vendor->purchaseOrders()->count(),
+                'receptions_count' => $vendor->receptions()->count(),
             ],
         ]);
     }
