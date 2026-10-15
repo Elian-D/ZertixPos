@@ -28,7 +28,7 @@
         }">
 
         <x-ui.page-header title="Conciliar cuenta"
-            description="Dile al sistema cuánto hay de verdad. Si no cuadra, la diferencia se ajusta con su motivo y la cuenta queda igual a la realidad." />
+            description="Escribe cuánto hay ahora de verdad: la cuenta queda en ese número y la diferencia se ajusta con su motivo. Para sumar dinero que entró, usa Depósito." />
 
         <form method="POST" action="{{ route('finance.treasury.reconcile') }}" class="mt-6 flex flex-col gap-6">
             @csrf
@@ -59,10 +59,10 @@
 
             {{-- Fila 2: lo real --}}
             <x-ui.infolist.section title="Saldo real" icon="heroicon-o-scale" :cols="0"
-                description="Lo que hay de verdad, no lo que dice el sistema.">
+                description="No se suma ni se resta: reemplaza lo que dice el sistema.">
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-5">
                     <div>
-                        <x-ui.forms.input label="Saldo real" name="real_balance" type="number" step="0.01" min="0" required
+                        <x-ui.forms.input label="¿Cuánto hay ahora?" name="real_balance" type="number" step="0.01" min="0" required
                             :addonLeft="$currency" x-model="real" :error="$errors->first('real_balance')" />
                         {{-- Hint según el tipo de cuenta (el componente solo admite uno fijo) --}}
                         @unless($errors->has('real_balance'))

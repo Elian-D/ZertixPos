@@ -53,7 +53,7 @@
                             @endforeach
                         </div>
                         <p class="mt-1.5 text-xs text-slate-400">
-                            <span x-show="type === 'deposit'">Entra dinero a la cuenta: por ejemplo, el efectivo de la semana al banco.</span>
+                            <span x-show="type === 'deposit'">Entró dinero: se suma al saldo (ej. el efectivo del turno al banco). Si contaste y no cuadra, eso es Conciliar.</span>
                             <span x-show="type === 'withdrawal'" x-cloak>Sale dinero de la cuenta: por ejemplo, un retiro del dueño.</span>
                             <span x-show="type === 'transfer'" x-cloak>Sale de una cuenta y entra a otra; el total no cambia.</span>
                         </p>
