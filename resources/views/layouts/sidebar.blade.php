@@ -183,6 +183,23 @@
         </x-sidebar.dropdown>
     @endcanany
 
+    {{-- GRUPO: Compras (v1.5.0 Fase 4) — núcleo flexible `purchases`. La Fase 5 suma
+         órdenes de compra y recepciones. --}}
+    @if(module_enabled('purchases'))
+        @can('vendors.view')
+            <x-sidebar.dropdown
+                id="compras"
+                icon="heroicon-s-building-storefront"
+                label="Compras"
+                :activeRoutes="['app/purchases*']"
+            >
+                <x-sidebar.subitem href="{{ route('purchases.vendors.index') }}">
+                    Proveedores
+                </x-sidebar.subitem>
+            </x-sidebar.dropdown>
+        @endcan
+    @endif
+
     {{-- GRUPO 4: Finanzas --}}
     @canany([
         'accounting.dashboard',
