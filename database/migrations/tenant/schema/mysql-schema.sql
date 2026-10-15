@@ -1136,6 +1136,129 @@ CREATE TABLE `provinces` (
   UNIQUE KEY `provinces_name_unique` (`name`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `purchase_order_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `purchase_order_items` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `purchase_order_id` bigint unsigned NOT NULL,
+  `product_id` bigint unsigned NOT NULL,
+  `quantity` decimal(12,2) NOT NULL,
+  `unit_cost` decimal(14,4) NOT NULL,
+  `subtotal` decimal(14,2) NOT NULL,
+  `quantity_received` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `quantity_rejected` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `purchase_order_items_purchase_order_id_foreign` (`purchase_order_id`),
+  KEY `purchase_order_items_product_id_foreign` (`product_id`),
+  CONSTRAINT `purchase_order_items_product_id_foreign` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `purchase_order_items_purchase_order_id_foreign` FOREIGN KEY (`purchase_order_id`) REFERENCES `purchase_orders` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `purchase_orders`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `purchase_orders` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `document_type_id` bigint unsigned DEFAULT NULL,
+  `number` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `vendor_id` bigint unsigned NOT NULL,
+  `warehouse_id` bigint unsigned NOT NULL,
+  `order_date` date NOT NULL,
+  `expected_date` date DEFAULT NULL,
+  `payment_condition` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `financial_account_id` bigint unsigned DEFAULT NULL,
+  `total` decimal(14,2) NOT NULL DEFAULT '0.00',
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `status` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'draft',
+  `sent_at` timestamp NULL DEFAULT NULL,
+  `sent_by` bigint unsigned DEFAULT NULL,
+  `created_by` bigint unsigned DEFAULT NULL,
+  `approved_by` bigint unsigned DEFAULT NULL,
+  `approved_at` timestamp NULL DEFAULT NULL,
+  `canceled_by` bigint unsigned DEFAULT NULL,
+  `canceled_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `purchase_orders_number_unique` (`number`),
+  KEY `purchase_orders_document_type_id_foreign` (`document_type_id`),
+  KEY `purchase_orders_warehouse_id_foreign` (`warehouse_id`),
+  KEY `purchase_orders_financial_account_id_foreign` (`financial_account_id`),
+  KEY `purchase_orders_sent_by_foreign` (`sent_by`),
+  KEY `purchase_orders_created_by_foreign` (`created_by`),
+  KEY `purchase_orders_approved_by_foreign` (`approved_by`),
+  KEY `purchase_orders_canceled_by_foreign` (`canceled_by`),
+  KEY `purchase_orders_status_order_date_index` (`status`,`order_date`),
+  KEY `purchase_orders_vendor_id_status_index` (`vendor_id`,`status`),
+  CONSTRAINT `purchase_orders_approved_by_foreign` FOREIGN KEY (`approved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `purchase_orders_canceled_by_foreign` FOREIGN KEY (`canceled_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `purchase_orders_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `purchase_orders_document_type_id_foreign` FOREIGN KEY (`document_type_id`) REFERENCES `document_types` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `purchase_orders_financial_account_id_foreign` FOREIGN KEY (`financial_account_id`) REFERENCES `financial_accounts` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `purchase_orders_sent_by_foreign` FOREIGN KEY (`sent_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `purchase_orders_vendor_id_foreign` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `purchase_orders_warehouse_id_foreign` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `purchase_reception_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `purchase_reception_items` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `purchase_reception_id` bigint unsigned NOT NULL,
+  `purchase_order_item_id` bigint unsigned NOT NULL,
+  `product_id` bigint unsigned NOT NULL,
+  `quantity_received` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `quantity_rejected` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `reject_reason` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `unit_cost` decimal(14,4) NOT NULL,
+  `subtotal` decimal(14,2) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `purchase_reception_items_purchase_reception_id_foreign` (`purchase_reception_id`),
+  KEY `purchase_reception_items_purchase_order_item_id_foreign` (`purchase_order_item_id`),
+  KEY `purchase_reception_items_product_id_foreign` (`product_id`),
+  CONSTRAINT `purchase_reception_items_product_id_foreign` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `purchase_reception_items_purchase_order_item_id_foreign` FOREIGN KEY (`purchase_order_item_id`) REFERENCES `purchase_order_items` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `purchase_reception_items_purchase_reception_id_foreign` FOREIGN KEY (`purchase_reception_id`) REFERENCES `purchase_receptions` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `purchase_receptions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `purchase_receptions` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `document_type_id` bigint unsigned DEFAULT NULL,
+  `number` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `purchase_order_id` bigint unsigned NOT NULL,
+  `reception_date` date NOT NULL,
+  `supplier_invoice` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `supplier_ncf` varchar(19) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `financial_account_id` bigint unsigned DEFAULT NULL,
+  `total` decimal(14,2) NOT NULL DEFAULT '0.00',
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `rating` varchar(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `rating_note` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_by` bigint unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `purchase_receptions_number_unique` (`number`),
+  KEY `purchase_receptions_document_type_id_foreign` (`document_type_id`),
+  KEY `purchase_receptions_purchase_order_id_foreign` (`purchase_order_id`),
+  KEY `purchase_receptions_financial_account_id_foreign` (`financial_account_id`),
+  KEY `purchase_receptions_created_by_foreign` (`created_by`),
+  KEY `purchase_receptions_reception_date_index` (`reception_date`),
+  CONSTRAINT `purchase_receptions_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `purchase_receptions_document_type_id_foreign` FOREIGN KEY (`document_type_id`) REFERENCES `document_types` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `purchase_receptions_financial_account_id_foreign` FOREIGN KEY (`financial_account_id`) REFERENCES `financial_accounts` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `purchase_receptions_purchase_order_id_foreign` FOREIGN KEY (`purchase_order_id`) REFERENCES `purchase_orders` (`id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `quote_items`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -1625,3 +1748,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (96,'2026_10_03_100
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (97,'2026_10_04_100000_v150_stock_docs',7);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (98,'2026_10_12_100000_v150_treasury',8);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (99,'2026_10_14_100000_v150_vendors_payables',9);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (100,'2026_10_16_100000_v150_purchases',10);

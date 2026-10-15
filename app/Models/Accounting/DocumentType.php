@@ -5,6 +5,8 @@ namespace App\Models\Accounting;
 use App\Models\Inventory\InventoryCount;
 use App\Models\Inventory\InventoryTransfer;
 use App\Models\Inventory\InventoryWaste;
+use App\Models\Purchases\PurchaseOrder;
+use App\Models\Purchases\PurchaseReception;
 use App\Models\Sales\Invoice;
 use App\Models\Sales\Pos\PosSession;
 use App\Models\Sales\Quotes\Quote;
@@ -24,7 +26,7 @@ class DocumentType extends Model
      * Códigos que el propio sistema consulta por texto (SaleService, CollectionService...).
      * Cambiar el 'code' de uno de estos rompería esas búsquedas hardcodeadas.
      */
-    const SYSTEM_PROTECTED_CODES = ['VTA', 'FAC', 'CXC', 'COT', 'TRN', 'PAG', 'DEV', 'TFS', 'MER', 'TRA', 'CXP', 'EGR', 'GAS'];
+    const SYSTEM_PROTECTED_CODES = ['VTA', 'FAC', 'CXC', 'COT', 'TRN', 'PAG', 'DEV', 'TFS', 'MER', 'TRA', 'CXP', 'EGR', 'GAS', 'OC', 'RCP'];
 
     protected static function booted()
     {
@@ -81,6 +83,8 @@ class DocumentType extends Model
             'CXP' => Payable::where('document_type_id', $this->id)->exists(),
             'EGR' => PayablePayment::where('document_type_id', $this->id)->exists(),
             'GAS' => Expense::where('document_type_id', $this->id)->exists(),
+            'OC' => PurchaseOrder::where('document_type_id', $this->id)->exists(),
+            'RCP' => PurchaseReception::where('document_type_id', $this->id)->exists(),
             default => false,
         };
     }

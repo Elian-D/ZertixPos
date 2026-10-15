@@ -89,6 +89,18 @@ class DocumentTypeSeeder extends Seeder
                 'code' => 'GAS',
                 'prefix' => 'GAS',
             ],
+            [
+                // Orden de compra (v1.5.0 REQ-5.1) — lo que se le pide al proveedor.
+                'name' => 'Orden de compra',
+                'code' => 'OC',
+                'prefix' => 'OC',
+            ],
+            [
+                // Recepción de compra (v1.5.0 REQ-5.2) — cada entrega de una orden.
+                'name' => 'Recepción de compra',
+                'code' => 'RCP',
+                'prefix' => 'RCP',
+            ],
         ];
 
         foreach ($docs as $doc) {

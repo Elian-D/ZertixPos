@@ -170,6 +170,17 @@ return [
         'restore' => ['label' => 'Restaurar proveedores', 'description' => 'Sacar un proveedor de la papelera.'],
     ],
 
+    'purchase_orders' => [
+        'view' => ['label' => 'Ver órdenes de compra', 'description' => 'Ver las órdenes de compra, sus recepciones y sus PDF.'],
+        'create' => ['label' => 'Crear órdenes de compra', 'description' => 'Crear y editar una orden en borrador y marcarla como enviada al proveedor.'],
+        'approve' => ['label' => 'Aprobar órdenes de compra', 'description' => 'Aprobar una orden en borrador: ya no se edita y se puede recibir.'],
+        'cancel' => ['label' => 'Cancelar órdenes de compra', 'description' => 'Cancelar una orden que todavía no tiene recepciones.'],
+    ],
+
+    'purchase_receptions' => [
+        'create' => ['label' => 'Recibir mercancía', 'description' => 'Registrar lo que llegó de una orden: entra el stock, se recalcula el costo y nace lo que se debe (o se paga de contado).'],
+    ],
+
     'payables' => [
         'view' => ['label' => 'Ver cuentas por pagar', 'description' => 'Ver lo que se debe a proveedores, sus pagos y los recibos.'],
         'pay' => ['label' => 'Pagar cuentas por pagar', 'description' => 'Registrar pagos (totales o parciales) desde una cuenta de Cajas y Bancos.'],

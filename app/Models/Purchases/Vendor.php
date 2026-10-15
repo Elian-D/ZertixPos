@@ -9,14 +9,17 @@ use App\Models\Accounting\Payable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * Proveedor (v1.5.0 REQ-4.1). Catálogo Categoría A (docs/analisis/politica-soft-deletes.md):
- * se borra a la papelera y se restaura; el borrado definitivo solo si no tiene CxP ni gastos.
+ * se borra a la papelera y se restaura; el borrado definitivo solo si no tiene CxP, gastos
+ * ni órdenes de compra.
  *
- * La calificación (`rating`, A–D) no se escribe a mano: la llena la Fase 5 con el promedio
- * de los despachos calificados. Sin calificaciones, "Sin calificar".
+ * La calificación (`rating`, A–D) no se escribe a mano: es la caché del promedio de los
+ * despachos calificados al recibir (REQ-5.4, PurchaseReceptionService). Sin calificaciones,
+ * "Sin calificar".
  */
 class Vendor extends Model
 {
@@ -97,9 +100,19 @@ class Vendor extends Model
         return $this->hasMany(Expense::class);
     }
 
+    public function purchaseOrders(): HasMany
+    {
+        return $this->hasMany(PurchaseOrder::class);
+    }
+
+    public function receptions(): HasManyThrough
+    {
+        return $this->hasManyThrough(PurchaseReception::class, PurchaseOrder::class);
+    }
+
     /** Si ya tiene documentos: entonces no se borra definitivo (la papelera sí). */
     public function hasDocuments(): bool
     {
-        return $this->payables()->exists() || $this->expenses()->exists();
+        return $this->payables()->exists() || $this->expenses()->exists() || $this->purchaseOrders()->exists();
     }
 }
