@@ -206,6 +206,8 @@
         'financial_accounts.view',
         'receivables.view',
         'collections.view',
+        'payables.view',
+        'expenses.view',
         'invoices.view',
         'ncf_sequences.view',
     ])
@@ -243,6 +245,25 @@
                 @can('collections.view')
                     <x-sidebar.subitem href="{{ route('finance.collections.index') }}">
                         Cobros y Pagos
+                    </x-sidebar.subitem>
+                @endcan
+            @endif
+
+            {{-- v1.5.0 Fase 4 — núcleo flexible `sales.payables` --}}
+            @if(module_enabled('sales.payables'))
+                @can('payables.view')
+                    <x-sidebar.subitem href="{{ route('finance.payables.index') }}">
+                        Cuentas por Pagar
+                    </x-sidebar.subitem>
+
+                    <x-sidebar.subitem href="{{ route('finance.payments.index') }}">
+                        Pagos a proveedores
+                    </x-sidebar.subitem>
+                @endcan
+
+                @can('expenses.view')
+                    <x-sidebar.subitem href="{{ route('finance.expenses.index') }}">
+                        Gastos
                     </x-sidebar.subitem>
                 @endcan
             @endif
