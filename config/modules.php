@@ -89,15 +89,16 @@ return [
         'route_prefixes' => ['app/finance/payables', 'app/finance/payments', 'app/finance/expenses'],
     ],
 
-    // v1.5.0 REQ-4.5 (antes 'purchases.vendors', satélite Pro): proveedores y, en la
-    // Fase 5, órdenes de compra y recepciones. Encendido en todo plan. Depende de
-    // inventory.tracking con bloqueo al guardar (SystemFeatures::HARD_DEPENDENCIES).
+    // v1.5.0 REQ-4.5 (antes 'purchases.vendors', satélite Pro): proveedores, órdenes de
+    // compra y recepciones. Encendido en todo plan. Depende de inventory.tracking (la
+    // recepción entra stock) y de sales.payables (la recepción crea la CxP), con bloqueo al
+    // guardar (SystemFeatures::HARD_DEPENDENCIES).
     'purchases' => [
         'label' => 'Compras a proveedores',
         'description' => 'Registra a tus proveedores y, al recibir mercancía, entra el stock y nace lo que les debes.',
         'icon' => 'heroicon-s-building-storefront',
         'category' => 'base_flexible',
-        'depends_on' => ['inventory.tracking'],
+        'depends_on' => ['inventory.tracking', 'sales.payables'],
         'route_prefixes' => ['app/purchases'],
     ],
 
