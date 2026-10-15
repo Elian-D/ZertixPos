@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Accounting\AccountingAccountController;
 use App\Http\Controllers\Accounting\CollectionController;
+use App\Http\Controllers\Accounting\ExpenseController;
+use App\Http\Controllers\Accounting\PayableController;
 use App\Http\Controllers\Accounting\FinancialAccountController;
 use App\Http\Controllers\Accounting\FinancialMovementController;
 use App\Http\Controllers\Accounting\FinancialOverviewController;
@@ -184,6 +186,32 @@ Route::prefix('finance')->as('finance.')->group(function () {
             Route::get('/{account}/edit', 'edit')->whereNumber('account')->middleware('permission:financial_accounts.manage')->name('edit');
             Route::put('/{account}', 'update')->whereNumber('account')->middleware('permission:financial_accounts.manage')->name('update');
             Route::patch('/{account}/toggle', 'toggle')->whereNumber('account')->middleware('permission:financial_accounts.manage')->name('toggle');
+        });
+    });
+
+    // Cuentas por pagar, pagos (EGR) y gastos (v1.5.0 Fase 4) — núcleo flexible
+    // `sales.payables`, encendido en todo plan (REQ-4.5).
+    Route::middleware(['auth', 'module:sales.payables'])->group(function () {
+
+        Route::prefix('payables')->as('payables.')->controller(PayableController::class)->group(function () {
+            Route::get('/', 'index')->middleware('permission:payables.view')->name('index');
+            Route::get('/{payable}', 'show')->whereNumber('payable')->middleware('permission:payables.view')->name('show');
+            Route::get('/{payable}/pay', 'payForm')->whereNumber('payable')->middleware('permission:payables.pay')->name('pay.form');
+            Route::post('/{payable}/pay', 'pay')->whereNumber('payable')->middleware('permission:payables.pay')->name('pay');
+        });
+
+        Route::prefix('payments')->as('payments.')->controller(PayableController::class)->group(function () {
+            Route::get('/', 'payments')->middleware('permission:payables.view')->name('index');
+            Route::get('/{payment}/receipt', 'receipt')->whereNumber('payment')->middleware('permission:payables.view')->name('receipt');
+            Route::patch('/{payment}/void', 'voidPayment')->whereNumber('payment')->middleware('permission:payables.void_payment')->name('void');
+        });
+
+        Route::prefix('expenses')->as('expenses.')->controller(ExpenseController::class)->group(function () {
+            Route::get('/', 'index')->middleware('permission:expenses.view')->name('index');
+            Route::get('/create', 'create')->middleware('permission:expenses.create')->name('create');
+            Route::post('/', 'store')->middleware('permission:expenses.create')->name('store');
+            Route::get('/{expense}', 'show')->whereNumber('expense')->middleware('permission:expenses.view')->name('show');
+            Route::patch('/{expense}/void', 'void')->whereNumber('expense')->middleware('permission:expenses.void')->name('void');
         });
     });
 

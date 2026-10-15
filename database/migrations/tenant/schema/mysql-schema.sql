@@ -206,6 +206,45 @@ CREATE TABLE `equipments` (
   CONSTRAINT `equipments_point_of_sale_id_foreign` FOREIGN KEY (`point_of_sale_id`) REFERENCES `point_of_sales` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `expenses`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `expenses` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `document_type_id` bigint unsigned DEFAULT NULL,
+  `number` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `vendor_id` bigint unsigned DEFAULT NULL,
+  `category` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `concept` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `amount` decimal(14,2) NOT NULL,
+  `expense_date` date NOT NULL,
+  `payment_condition` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `financial_account_id` bigint unsigned DEFAULT NULL,
+  `supplier_invoice` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `status` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'applied',
+  `created_by` bigint unsigned DEFAULT NULL,
+  `voided_by` bigint unsigned DEFAULT NULL,
+  `voided_at` timestamp NULL DEFAULT NULL,
+  `void_reason` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `expenses_number_unique` (`number`),
+  KEY `expenses_vendor_id_foreign` (`vendor_id`),
+  KEY `expenses_financial_account_id_foreign` (`financial_account_id`),
+  KEY `expenses_created_by_foreign` (`created_by`),
+  KEY `expenses_voided_by_foreign` (`voided_by`),
+  KEY `expenses_status_expense_date_index` (`status`,`expense_date`),
+  KEY `expenses_category_index` (`category`),
+  KEY `expenses_document_type_id_foreign` (`document_type_id`),
+  CONSTRAINT `expenses_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `expenses_document_type_id_foreign` FOREIGN KEY (`document_type_id`) REFERENCES `document_types` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `expenses_financial_account_id_foreign` FOREIGN KEY (`financial_account_id`) REFERENCES `financial_accounts` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `expenses_vendor_id_foreign` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `expenses_voided_by_foreign` FOREIGN KEY (`voided_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `failed_jobs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -747,6 +786,78 @@ CREATE TABLE `password_reset_tokens` (
   `token` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `payable_payments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `payable_payments` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `document_type_id` bigint unsigned DEFAULT NULL,
+  `number` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `payable_id` bigint unsigned NOT NULL,
+  `financial_account_id` bigint unsigned NOT NULL,
+  `amount` decimal(14,2) NOT NULL,
+  `payment_date` date NOT NULL,
+  `reference` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `status` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'active',
+  `created_by` bigint unsigned DEFAULT NULL,
+  `voided_by` bigint unsigned DEFAULT NULL,
+  `voided_at` timestamp NULL DEFAULT NULL,
+  `void_reason` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `payable_payments_number_unique` (`number`),
+  KEY `payable_payments_document_type_id_foreign` (`document_type_id`),
+  KEY `payable_payments_payable_id_foreign` (`payable_id`),
+  KEY `payable_payments_financial_account_id_foreign` (`financial_account_id`),
+  KEY `payable_payments_created_by_foreign` (`created_by`),
+  KEY `payable_payments_voided_by_foreign` (`voided_by`),
+  KEY `payable_payments_status_payment_date_index` (`status`,`payment_date`),
+  CONSTRAINT `payable_payments_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `payable_payments_document_type_id_foreign` FOREIGN KEY (`document_type_id`) REFERENCES `document_types` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `payable_payments_financial_account_id_foreign` FOREIGN KEY (`financial_account_id`) REFERENCES `financial_accounts` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `payable_payments_payable_id_foreign` FOREIGN KEY (`payable_id`) REFERENCES `payables` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `payable_payments_voided_by_foreign` FOREIGN KEY (`voided_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `payables`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `payables` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `document_type_id` bigint unsigned DEFAULT NULL,
+  `number` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `vendor_id` bigint unsigned DEFAULT NULL,
+  `source_type` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `source_id` bigint unsigned DEFAULT NULL,
+  `concept` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `total_amount` decimal(14,2) NOT NULL,
+  `balance` decimal(14,2) NOT NULL,
+  `supplier_invoice` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `issue_date` date NOT NULL,
+  `due_date` date NOT NULL,
+  `status` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `created_by` bigint unsigned DEFAULT NULL,
+  `voided_by` bigint unsigned DEFAULT NULL,
+  `voided_at` timestamp NULL DEFAULT NULL,
+  `void_reason` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `payables_number_unique` (`number`),
+  KEY `payables_document_type_id_foreign` (`document_type_id`),
+  KEY `payables_source_type_source_id_index` (`source_type`,`source_id`),
+  KEY `payables_created_by_foreign` (`created_by`),
+  KEY `payables_voided_by_foreign` (`voided_by`),
+  KEY `payables_status_due_date_index` (`status`,`due_date`),
+  KEY `payables_vendor_id_status_index` (`vendor_id`,`status`),
+  CONSTRAINT `payables_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `payables_document_type_id_foreign` FOREIGN KEY (`document_type_id`) REFERENCES `document_types` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `payables_vendor_id_foreign` FOREIGN KEY (`vendor_id`) REFERENCES `vendors` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `payables_voided_by_foreign` FOREIGN KEY (`voided_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `payments`;
@@ -1367,6 +1478,34 @@ CREATE TABLE `users` (
   UNIQUE KEY `users_email_unique` (`email`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `vendors`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `vendors` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `business_name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `trade_name` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tax_identifier_type` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tax_id` varchar(20) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `contact_name` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `phone` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `payment_condition` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'cash',
+  `credit_days` smallint unsigned NOT NULL DEFAULT '0',
+  `default_financial_account_id` bigint unsigned DEFAULT NULL,
+  `rating` varchar(1) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `is_active` tinyint(1) NOT NULL DEFAULT '1',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  `deleted_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `vendors_default_financial_account_id_foreign` (`default_financial_account_id`),
+  KEY `vendors_tax_id_index` (`tax_id`),
+  CONSTRAINT `vendors_default_financial_account_id_foreign` FOREIGN KEY (`default_financial_account_id`) REFERENCES `financial_accounts` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `warehouses`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
@@ -1485,3 +1624,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (94,'2026_10_02_110
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (96,'2026_10_03_100000_v150_inventory_base',6);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (97,'2026_10_04_100000_v150_stock_docs',7);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (98,'2026_10_12_100000_v150_treasury',8);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (99,'2026_10_14_100000_v150_vendors_payables',9);

@@ -74,7 +74,7 @@ class FinancialMovementTable extends DataTable
     {
         return [
             'accounts' => FinancialAccount::orderByDesc('is_active')->orderBy('name')->pluck('name', 'id')->all(),
-            'origins' => FinancialMovement::getOrigins(available: true),
+            'origins' => FinancialMovement::getOrigins(),
             'directions' => [FinancialMovement::DIRECTION_IN => 'Entradas', FinancialMovement::DIRECTION_OUT => 'Salidas'],
         ];
     }

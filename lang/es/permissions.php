@@ -162,6 +162,26 @@ return [
         'export' => ['label' => 'Exportar cobros', 'description' => 'Exportar cobros a Excel.'],
     ],
 
+    'vendors' => [
+        'view' => ['label' => 'Ver proveedores', 'description' => 'Ver los proveedores, su detalle, lo que se les debe y sus gastos.'],
+        'create' => ['label' => 'Crear proveedores', 'description' => 'Registrar proveedores nuevos.'],
+        'edit' => ['label' => 'Editar proveedores', 'description' => 'Cambiar los datos, el contacto y los términos de pago de un proveedor.'],
+        'delete' => ['label' => 'Eliminar proveedores', 'description' => 'Enviar un proveedor a la papelera o borrarlo definitivo si no tiene documentos.'],
+        'restore' => ['label' => 'Restaurar proveedores', 'description' => 'Sacar un proveedor de la papelera.'],
+    ],
+
+    'payables' => [
+        'view' => ['label' => 'Ver cuentas por pagar', 'description' => 'Ver lo que se debe a proveedores, sus pagos y los recibos.'],
+        'pay' => ['label' => 'Pagar cuentas por pagar', 'description' => 'Registrar pagos (totales o parciales) desde una cuenta de Cajas y Bancos.'],
+        'void_payment' => ['label' => 'Anular pagos', 'description' => 'Anular un pago: el dinero vuelve a la cuenta y el monto a lo pendiente.'],
+    ],
+
+    'expenses' => [
+        'view' => ['label' => 'Ver gastos', 'description' => 'Ver los gastos del negocio por categoría y fecha.'],
+        'create' => ['label' => 'Registrar gastos', 'description' => 'Registrar gastos de contado (sale de una cuenta) o a crédito (nace una cuenta por pagar).'],
+        'void' => ['label' => 'Anular gastos', 'description' => 'Anular un gasto: el dinero vuelve a la cuenta o se anula su cuenta por pagar con sus pagos.'],
+    ],
+
     'financial_accounts' => [
         'view' => ['label' => 'Ver cajas y bancos', 'description' => 'Ver las cuentas de caja y banco, su saldo, su kardex y sus conciliaciones.'],
         'manage' => ['label' => 'Gestionar cajas y bancos', 'description' => 'Crear cuentas con su saldo inicial, editar sus datos y activarlas o desactivarlas.'],

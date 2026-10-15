@@ -183,20 +183,39 @@
         </x-sidebar.dropdown>
     @endcanany
 
-    {{-- GRUPO 4: Finanzas --}}
+    {{-- GRUPO: Compras (v1.5.0 Fase 4) — núcleo flexible `purchases`. La Fase 5 suma
+         órdenes de compra y recepciones. --}}
+    @if(module_enabled('purchases'))
+        @can('vendors.view')
+            <x-sidebar.dropdown
+                id="compras"
+                icon="heroicon-s-building-storefront"
+                label="Compras"
+                :activeRoutes="['app/purchases*']"
+            >
+                <x-sidebar.subitem href="{{ route('purchases.vendors.index') }}">
+                    Proveedores
+                </x-sidebar.subitem>
+            </x-sidebar.dropdown>
+        @endcan
+    @endif
+
+    {{-- GRUPO 4: Finanzas — solo dinero (v1.5.0 Fase 4: Facturas y NCF pasaron a "Fiscal").
+         activeRoutes lista las rutas de dinero, no 'app/finance*': si no, también se
+         resaltaría en Facturas/NCF, que viven bajo el mismo prefijo. --}}
     @canany([
         'accounting.dashboard',
         'financial_accounts.view',
         'receivables.view',
         'collections.view',
-        'invoices.view',
-        'ncf_sequences.view',
+        'payables.view',
+        'expenses.view',
     ])
         <x-sidebar.dropdown
             id="finanzas"
             icon="heroicon-s-calculator"
             label="Finanzas"
-            :activeRoutes="['app/finance*']"
+            :activeRoutes="['app/finance/overview*', 'app/finance/treasury*', 'app/finance/receivables*', 'app/finance/collections*', 'app/finance/payables*', 'app/finance/payments*', 'app/finance/expenses*', 'app/finance/journal_entries*', 'app/finance/accounts*']"
         >
             @can('accounting.dashboard')
                 <x-sidebar.subitem href="{{ route('finance.overview.index') }}">
@@ -223,9 +242,29 @@
                     </x-sidebar.subitem>
                 @endcan
 
+                {{-- "Cobros y Pagos" → "Cobros" (v1.5.0 Fase 4): los pagos a proveedores son otra cosa. --}}
                 @can('collections.view')
                     <x-sidebar.subitem href="{{ route('finance.collections.index') }}">
-                        Cobros y Pagos
+                        Cobros
+                    </x-sidebar.subitem>
+                @endcan
+            @endif
+
+            {{-- v1.5.0 Fase 4 — núcleo flexible `sales.payables` --}}
+            @if(module_enabled('sales.payables'))
+                @can('payables.view')
+                    <x-sidebar.subitem href="{{ route('finance.payables.index') }}">
+                        Cuentas por Pagar
+                    </x-sidebar.subitem>
+
+                    <x-sidebar.subitem href="{{ route('finance.payments.index') }}">
+                        Pagos a proveedores
+                    </x-sidebar.subitem>
+                @endcan
+
+                @can('expenses.view')
+                    <x-sidebar.subitem href="{{ route('finance.expenses.index') }}">
+                        Gastos
                     </x-sidebar.subitem>
                 @endcan
             @endif
@@ -241,7 +280,18 @@
                     </x-sidebar.subitem>
                 @endcan
             @endif
+        </x-sidebar.dropdown>
+    @endcanany
 
+    {{-- GRUPO: Fiscal (v1.5.0 Fase 4) — cumplimiento fiscal, no dinero. Las rutas siguen
+         bajo app/finance (finance.invoices.*, finance.ncf.*). --}}
+    @canany(['invoices.view', 'ncf_sequences.view'])
+        <x-sidebar.dropdown
+            id="fiscal"
+            icon="heroicon-s-document-text"
+            label="Fiscal"
+            :activeRoutes="['app/finance/invoices*', 'app/finance/ncf*']"
+        >
             @can('invoices.view')
                 <x-sidebar.subitem href="{{ route('finance.invoices.index') }}">
                     Facturas

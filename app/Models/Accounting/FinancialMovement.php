@@ -46,10 +46,9 @@ class FinancialMovement extends Model
         'movement_date' => 'date',
     ];
 
-    /** @param  bool  $available  sin los orígenes de la Fase 4, que todavía no existen */
-    public static function getOrigins(bool $available = false): array
+    public static function getOrigins(): array
     {
-        $origins = [
+        return [
             self::ORIGIN_OPENING => 'Saldo inicial',
             self::ORIGIN_DEPOSIT => 'Depósito',
             self::ORIGIN_WITHDRAWAL => 'Retiro',
@@ -60,10 +59,6 @@ class FinancialMovement extends Model
             self::ORIGIN_EXPENSE_PAYMENT => 'Pago de gasto',
             self::ORIGIN_REVERSAL => 'Anulación',
         ];
-
-        return $available
-            ? array_diff_key($origins, array_flip([self::ORIGIN_SUPPLIER_PAYMENT, self::ORIGIN_EXPENSE_PAYMENT]))
-            : $origins;
     }
 
     public function getOriginLabelAttribute(): string
@@ -152,6 +147,14 @@ class FinancialMovement extends Model
                 'label' => 'Conciliación del '.$ref->reconciled_at->format('d/m/Y'),
                 'url' => null,
             ],
+            $ref instanceof Expense => [
+                'label' => "Gasto {$ref->number} · {$ref->concept}",
+                'url' => route('finance.expenses.show', $ref),
+            ],
+            $ref instanceof PayablePayment => [
+                'label' => "Pago {$ref->number} de ".($ref->payable->number ?? ''),
+                'url' => $ref->payable ? route('finance.payables.show', $ref->payable) : null,
+            ],
             $ref instanceof self => [
                 'label' => 'Corrige '.mb_strtolower($ref->origin_label).' de '.number_format((float) $ref->amount, 2),
                 'url' => null,
@@ -166,7 +169,10 @@ class FinancialMovement extends Model
         return $query->with([
             'account:id,name,type,is_active,current_balance', 'creator:id,name', 'counterpart.account:id,name',
             'reverses', 'reversedBy:id,movement_date,created_at',
-            'reference' => fn (MorphTo $morph) => $morph->morphWith([SalePayment::class => ['sale:id,number']]),
+            'reference' => fn (MorphTo $morph) => $morph->morphWith([
+                SalePayment::class => ['sale:id,number'],
+                PayablePayment::class => ['payable:id,number'],
+            ]),
         ]);
     }
 

@@ -75,6 +75,7 @@ class PermissionSeeder extends Seeder
         'pos' => 'Punto de Venta',
         'ncf' => 'NCF',
         'accounting' => 'Contabilidad',
+        'purchases' => 'Compras',
     ];
 
     /**
@@ -150,6 +151,19 @@ class PermissionSeeder extends Seeder
         'collections.create' => 'sales.receivables',
         'collections.cancel' => 'sales.receivables',
         'collections.export' => 'sales.receivables',
+
+        // v1.5.0 Fase 4
+        'vendors.view' => 'purchases',
+        'vendors.create' => 'purchases',
+        'vendors.edit' => 'purchases',
+        'vendors.delete' => 'purchases',
+        'vendors.restore' => 'purchases',
+        'payables.view' => 'sales.payables',
+        'payables.pay' => 'sales.payables',
+        'payables.void_payment' => 'sales.payables',
+        'expenses.view' => 'sales.payables',
+        'expenses.create' => 'sales.payables',
+        'expenses.void' => 'sales.payables',
 
         'quotes.view' => 'sales.quotes',
         'quotes.create' => 'sales.quotes',
@@ -365,6 +379,23 @@ class PermissionSeeder extends Seeder
                 'financial_accounts.manage',
                 'financial_accounts.move',
                 'financial_accounts.reconcile',
+
+                // Cuentas por pagar, pagos y gastos (v1.5.0 Fase 4).
+                'payables.view',
+                'payables.pay',
+                'payables.void_payment',
+                'expenses.view',
+                'expenses.create',
+                'expenses.void',
+            ],
+
+            // Compras (v1.5.0 Fase 4): proveedores; la Fase 5 suma órdenes y recepciones.
+            'purchases' => [
+                'vendors.view',
+                'vendors.create',
+                'vendors.edit',
+                'vendors.delete',
+                'vendors.restore',
             ],
         ];
 
