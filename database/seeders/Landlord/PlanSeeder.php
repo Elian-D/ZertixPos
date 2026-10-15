@@ -30,6 +30,7 @@ class PlanSeeder extends Seeder
                 'price' => 29.00,
                 'users_limit' => 1, // un solo dueño/operador — REQ-05.6
                 'features' => [
+                    'Compras a proveedores, cuentas por pagar y control de gastos',
                     'Punto de venta rápido',
                     'Facturación electrónica estándar',
                     'Inventario básico automático',
@@ -44,6 +45,7 @@ class PlanSeeder extends Seeder
                 'price' => 59.00,
                 'users_limit' => null, // multiusuario, sin techo
                 'features' => [
+                    'Compras a proveedores, cuentas por pagar y control de gastos',
                     'Reportes financieros avanzados',
                     'Inventario inteligente con alertas',
                     'Multiusuario con roles',
@@ -58,6 +60,7 @@ class PlanSeeder extends Seeder
                 'price' => 89.00,
                 'users_limit' => null,
                 'features' => [
+                    'Compras a proveedores, cuentas por pagar y control de gastos',
                     'Panel ejecutivo con métricas avanzadas',
                     'Rutas con cálculo de distancia',
                     'API de integración externa',
@@ -68,7 +71,6 @@ class PlanSeeder extends Seeder
                     'sales.ncf',
                     'sales.delivery_points',
                     'inventory.advanced',
-                    'purchases.vendors',
                     'clients.field_assets', ],
             ],
         ];

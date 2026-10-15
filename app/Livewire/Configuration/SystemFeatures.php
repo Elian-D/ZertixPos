@@ -33,7 +33,7 @@ class SystemFeatures extends Component
      * guardar (REQ-10.7) — el dueño decide cuál de los dos apagar.
      */
     protected const HARD_DEPENDENCIES = [
-        'purchases.vendors' => 'inventory.tracking',
+        'purchases' => 'inventory.tracking',
     ];
 
     /**
