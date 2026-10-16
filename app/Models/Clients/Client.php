@@ -11,16 +11,18 @@ use App\Models\Geo\Province;
 use App\Models\Sales\Invoice;
 use App\Models\Sales\Quotes\Quote;
 use App\Models\Sales\Sale;
+use App\Traits\GuardsForceDelete;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class Client extends Model
 {
-    use HasFactory, SoftDeletes;
+    use GuardsForceDelete, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'type',
@@ -230,5 +232,17 @@ class Client extends Model
                 $q->whereNotIn('status', [Receivable::STATUS_PAID, Receivable::STATUS_CANCELLED])
                     ->where('due_date', '<', now()->subDays($diasGracia));
             }]);
+    }
+
+    /** Qué impide el borrado definitivo (v1.5.1 REQ-1.1). */
+    public function deletionBlockers(): array
+    {
+        return [
+            'venta|ventas' => DB::table('sales')->where('client_id', $this->id)->count(),
+            'cotización|cotizaciones' => DB::table('quotes')->where('customer_id', $this->id)->count(),
+            'cuenta por cobrar|cuentas por cobrar' => DB::table('receivables')->where('client_id', $this->id)->count(),
+            'cobro|cobros' => DB::table('payments')->where('client_id', $this->id)->count(),
+            'punto de reparto|puntos de reparto' => DB::table('point_of_sales')->where('client_id', $this->id)->count(),
+        ];
     }
 }

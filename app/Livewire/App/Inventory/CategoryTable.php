@@ -4,25 +4,26 @@ namespace App\Livewire\App\Inventory;
 
 use App\Livewire\Base\DataTable;
 use App\Models\Products\Category;
+use DomainException;
 use Illuminate\Database\Eloquent\Builder;
 
 class CategoryTable extends DataTable
 {
     public array $filters = [
-        'search'    => '',
+        'search' => '',
         'is_active' => '',
-        'trashed'   => '',
+        'trashed' => '',
     ];
 
     protected function columns(): array
     {
         return [
-            'id'          => ['label' => 'ID', 'mobile' => true],
-            'name'        => ['label' => 'Nombre', 'default' => true, 'mobile' => true],
-            'is_active'   => ['label' => 'Estado', 'default' => true],
+            'id' => ['label' => 'ID', 'mobile' => true],
+            'name' => ['label' => 'Nombre', 'default' => true, 'mobile' => true],
+            'is_active' => ['label' => 'Estado', 'default' => true],
             'description' => ['label' => 'Descripción', 'default' => true],
-            'created_at'  => ['label' => 'Fecha Creación'],
-            'updated_at'  => ['label' => 'Última Actualización'],
+            'created_at' => ['label' => 'Fecha Creación'],
+            'updated_at' => ['label' => 'Última Actualización'],
         ];
     }
 
@@ -51,7 +52,7 @@ class CategoryTable extends DataTable
     {
         return match ($key) {
             'is_active' => filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'Activos' : 'Inactivos',
-            default     => parent::formatFilterValue($key, $value),
+            default => parent::formatFilterValue($key, $value),
         };
     }
 
@@ -90,7 +91,13 @@ class CategoryTable extends DataTable
 
         $category = Category::onlyTrashed()->findOrFail($id);
         $name = $category->name;
-        $category->forceDelete();
+        try {
+            $category->forceDeleteGuarded("La categoría \"{$name}\"");
+        } catch (DomainException $e) {
+            $this->notify('error', $e->getMessage());
+
+            return;
+        }
 
         $this->notify('success', "Categoría \"{$name}\" eliminada definitivamente.");
     }

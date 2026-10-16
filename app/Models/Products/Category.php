@@ -2,13 +2,15 @@
 
 namespace App\Models\Products;
 
+use App\Traits\GuardsForceDelete;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class Category extends Model
 {
-    use SoftDeletes;
+    use GuardsForceDelete, SoftDeletes;
 
     protected $table = 'categories';
 
@@ -69,5 +71,13 @@ class Category extends Model
         static::creating(function ($category) {
             $category->slug = Str::slug($category->name);
         });
+    }
+
+    /** Qué impide el borrado definitivo (v1.5.1 REQ-1.1). */
+    public function deletionBlockers(): array
+    {
+        return [
+            'producto|productos' => DB::table('products')->where('category_id', $this->id)->count(),
+        ];
     }
 }

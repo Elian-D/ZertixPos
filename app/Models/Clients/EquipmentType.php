@@ -2,13 +2,15 @@
 
 namespace App\Models\Clients;
 
+use App\Traits\GuardsForceDelete;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class EquipmentType extends Model
 {
-    use HasFactory, SoftDeletes;
+    use GuardsForceDelete, HasFactory, SoftDeletes;
 
     protected $table = 'equipment_types';
 
@@ -25,7 +27,6 @@ class EquipmentType extends Model
     /* ===========================
      |  COMPORTAMIENTO AUTOMÁTICO
      =========================== */
-
 
     protected static function booted()
     {
@@ -68,5 +69,13 @@ class EquipmentType extends Model
     {
         $this->activo = ! $this->activo;
         $this->save();
+    }
+
+    /** Qué impide el borrado definitivo (v1.5.1 REQ-1.1). */
+    public function deletionBlockers(): array
+    {
+        return [
+            'equipo|equipos' => DB::table('equipments')->where('equipment_type_id', $this->id)->count(),
+        ];
     }
 }

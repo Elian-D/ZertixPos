@@ -4,6 +4,14 @@ namespace App\Traits;
 
 use Illuminate\Http\Request;
 
+/**
+ * Papelera de un catálogo Categoría A (docs/analisis/politica-soft-deletes.md).
+ *
+ * El borrado definitivo NO va por borrarDefinitivo() (vestigial en los módulos Livewire):
+ * la tabla llama a forceDeleteGuarded() de App\Traits\GuardsForceDelete, que revisa qué ata
+ * al registro y avisa con un toast en vez de dar un 500. Ninguna llave hacia un catálogo es
+ * CASCADE (v1.5.1 REQ-1.2). Primer caso: VendorService::forceDelete().
+ */
 trait SoftDeletesTrait
 {
     /**

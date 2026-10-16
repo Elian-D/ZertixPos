@@ -4,25 +4,26 @@ namespace App\Livewire\App\Inventory;
 
 use App\Livewire\Base\DataTable;
 use App\Models\Products\Unit;
+use DomainException;
 use Illuminate\Database\Eloquent\Builder;
 
 class UnitTable extends DataTable
 {
     public array $filters = [
-        'search'    => '',
+        'search' => '',
         'is_active' => '',
-        'trashed'   => '',
+        'trashed' => '',
     ];
 
     protected function columns(): array
     {
         return [
-            'id'           => ['label' => 'ID', 'mobile' => true],
-            'name'         => ['label' => 'Nombre', 'default' => true, 'mobile' => true],
+            'id' => ['label' => 'ID', 'mobile' => true],
+            'name' => ['label' => 'Nombre', 'default' => true, 'mobile' => true],
             'abbreviation' => ['label' => 'Abreviatura', 'default' => true],
-            'is_active'    => ['label' => 'Estado', 'default' => true],
-            'created_at'   => ['label' => 'Fecha Creación'],
-            'updated_at'   => ['label' => 'Última Actualización'],
+            'is_active' => ['label' => 'Estado', 'default' => true],
+            'created_at' => ['label' => 'Fecha Creación'],
+            'updated_at' => ['label' => 'Última Actualización'],
         ];
     }
 
@@ -51,7 +52,7 @@ class UnitTable extends DataTable
     {
         return match ($key) {
             'is_active' => filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'Activos' : 'Inactivos',
-            default     => parent::formatFilterValue($key, $value),
+            default => parent::formatFilterValue($key, $value),
         };
     }
 
@@ -90,7 +91,13 @@ class UnitTable extends DataTable
 
         $unit = Unit::onlyTrashed()->findOrFail($id);
         $name = $unit->name;
-        $unit->forceDelete();
+        try {
+            $unit->forceDeleteGuarded("La unidad \"{$name}\"");
+        } catch (DomainException $e) {
+            $this->notify('error', $e->getMessage());
+
+            return;
+        }
 
         $this->notify('success', "Unidad de medida \"{$name}\" eliminada definitivamente.");
     }

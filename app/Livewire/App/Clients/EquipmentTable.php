@@ -6,30 +6,31 @@ use App\Exports\Equipment\EquipmentsExport;
 use App\Livewire\Base\DataTable;
 use App\Models\Clients\Equipment;
 use App\Services\Equipment\EquipmentCatalogService;
+use DomainException;
 use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Facades\Excel;
 
 class EquipmentTable extends DataTable
 {
     public array $filters = [
-        'search'            => '',
+        'search' => '',
         'equipment_type_id' => '',
-        'point_of_sale_id'  => '',
-        'active'            => '',
-        'trashed'           => '',
+        'point_of_sale_id' => '',
+        'active' => '',
+        'trashed' => '',
     ];
 
     protected function columns(): array
     {
         return [
-            'name'              => ['label' => 'Nombre', 'default' => true, 'mobile' => true],
+            'name' => ['label' => 'Nombre', 'default' => true, 'mobile' => true],
             'equipment_type_id' => ['label' => 'Tipo de Equipo', 'default' => true],
-            'point_of_sale_id'  => ['label' => 'Punto de Venta', 'default' => true],
-            'serial_number'     => ['label' => 'Serial'],
-            'model'             => ['label' => 'Modelo'],
-            'active'            => ['label' => 'Estado', 'default' => true],
-            'created_at'        => ['label' => 'Fecha Creación'],
-            'updated_at'        => ['label' => 'Última Actualización'],
+            'point_of_sale_id' => ['label' => 'Punto de Venta', 'default' => true],
+            'serial_number' => ['label' => 'Serial'],
+            'model' => ['label' => 'Modelo'],
+            'active' => ['label' => 'Estado', 'default' => true],
+            'created_at' => ['label' => 'Fecha Creación'],
+            'updated_at' => ['label' => 'Última Actualización'],
         ];
     }
 
@@ -47,8 +48,8 @@ class EquipmentTable extends DataTable
                 ->orWhere('serial_number', 'like', "%{$v}%")
                 ->orWhere('model', 'like', "%{$v}%")),
             'equipment_type_id' => fn (Builder $q, $v) => $q->where('equipment_type_id', $v),
-            'point_of_sale_id'  => fn (Builder $q, $v) => $q->where('point_of_sale_id', $v),
-            'active'            => fn (Builder $q, $v) => $q->where('active', filter_var($v, FILTER_VALIDATE_BOOLEAN)),
+            'point_of_sale_id' => fn (Builder $q, $v) => $q->where('point_of_sale_id', $v),
+            'active' => fn (Builder $q, $v) => $q->where('active', filter_var($v, FILTER_VALIDATE_BOOLEAN)),
         ];
     }
 
@@ -68,9 +69,9 @@ class EquipmentTable extends DataTable
 
         return match ($key) {
             'equipment_type_id' => $options['equipmentTypes']->firstWhere('id', $value)?->nombre ?? $value,
-            'point_of_sale_id'  => $options['pointsOfSale']->firstWhere('id', $value)?->name ?? $value,
-            'active'            => filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'Activos' : 'Inactivos',
-            default             => parent::formatFilterValue($key, $value),
+            'point_of_sale_id' => $options['pointsOfSale']->firstWhere('id', $value)?->name ?? $value,
+            'active' => filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'Activos' : 'Inactivos',
+            default => parent::formatFilterValue($key, $value),
         };
     }
 
@@ -107,7 +108,13 @@ class EquipmentTable extends DataTable
 
         $equipment = Equipment::onlyTrashed()->findOrFail($id);
         $name = $equipment->name;
-        $equipment->forceDelete();
+        try {
+            $equipment->forceDeleteGuarded("El equipo \"{$name}\"");
+        } catch (DomainException $e) {
+            $this->notify('error', $e->getMessage());
+
+            return;
+        }
 
         $this->notify('success', "Equipo \"{$name}\" eliminado definitivamente.");
     }

@@ -3,6 +3,7 @@
 namespace App\Models\Inventory;
 
 use App\Models\Accounting\AccountingAccount;
+use App\Traits\GuardsForceDelete;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -11,7 +12,7 @@ use Illuminate\Support\Facades\DB;
 
 class Warehouse extends Model
 {
-    use SoftDeletes;
+    use GuardsForceDelete, SoftDeletes;
 
     protected $table = 'warehouses';
 
@@ -170,5 +171,18 @@ class Warehouse extends Model
         return Attribute::make(
             get: fn () => self::getTypes()[$this->type] ?? $this->type,
         );
+    }
+
+    /** Qué impide el borrado definitivo (v1.5.1 REQ-1.1). */
+    public function deletionBlockers(): array
+    {
+        return [
+            'producto con existencia|productos con existencia' => DB::table('inventory_stocks')->where('warehouse_id', $this->id)->where('quantity', '!=', 0)->count(),
+            'movimiento de inventario|movimientos de inventario' => DB::table('inventory_movements')->where('warehouse_id', $this->id)->orWhere('to_warehouse_id', $this->id)->count(),
+            'venta|ventas' => DB::table('sales')->where('warehouse_id', $this->id)->count(),
+            'terminal TPV|terminales TPV' => DB::table('pos_terminals')->where('warehouse_id', $this->id)->count(),
+            'orden de compra|órdenes de compra' => DB::table('purchase_orders')->where('warehouse_id', $this->id)->count(),
+            'toma, merma o transferencia|tomas, mermas o transferencias' => DB::table('inventory_counts')->where('warehouse_id', $this->id)->count() + DB::table('inventory_wastes')->where('warehouse_id', $this->id)->count() + DB::table('inventory_transfers')->where('from_warehouse_id', $this->id)->orWhere('to_warehouse_id', $this->id)->count(),
+        ];
     }
 }

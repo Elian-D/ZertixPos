@@ -2,13 +2,14 @@
 
 namespace App\Models\Clients;
 
+use App\Traits\GuardsForceDelete;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Equipment extends Model
 {
-    use HasFactory, SoftDeletes;
+    use GuardsForceDelete, HasFactory, SoftDeletes;
 
     protected $table = 'equipments';
 
@@ -49,5 +50,11 @@ class Equipment extends Model
             'equipmentType:id,nombre,prefix',
             'pointOfSale:id,name,address',
         ]);
+    }
+
+    /** Qué impide el borrado definitivo (v1.5.1 REQ-1.1). */
+    public function deletionBlockers(): array
+    {
+        return []; // nada lo referencia
     }
 }

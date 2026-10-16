@@ -3,14 +3,16 @@
 namespace App\Models\Clients;
 
 use App\Models\Geo\Province;
+use App\Traits\GuardsForceDelete;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class PointOfSale extends Model
 {
-    use HasFactory, SoftDeletes;
+    use GuardsForceDelete, HasFactory, SoftDeletes;
 
     protected $table = 'point_of_sales';
 
@@ -91,5 +93,13 @@ class PointOfSale extends Model
     public function scopeActive($query)
     {
         return $query->where('active', true);
+    }
+
+    /** Qué impide el borrado definitivo (v1.5.1 REQ-1.1). */
+    public function deletionBlockers(): array
+    {
+        return [
+            'equipo|equipos' => DB::table('equipments')->where('point_of_sale_id', $this->id)->count(),
+        ];
     }
 }

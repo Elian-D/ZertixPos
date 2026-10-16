@@ -2,13 +2,15 @@
 
 namespace App\Models\Clients;
 
+use App\Traits\GuardsForceDelete;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class BusinessType extends Model
 {
-    use HasFactory, SoftDeletes;
+    use GuardsForceDelete, HasFactory, SoftDeletes;
 
     protected $table = 'business_types';
 
@@ -35,7 +37,6 @@ class BusinessType extends Model
             }
         });
     }
-
 
     /* ===========================
      |  SCOPES DEL CATÁLOGO
@@ -74,5 +75,13 @@ class BusinessType extends Model
     {
         $this->activo = ! $this->activo;
         $this->save();
+    }
+
+    /** Qué impide el borrado definitivo (v1.5.1 REQ-1.1). */
+    public function deletionBlockers(): array
+    {
+        return [
+            'punto de reparto|puntos de reparto' => DB::table('point_of_sales')->where('business_type_id', $this->id)->count(),
+        ];
     }
 }

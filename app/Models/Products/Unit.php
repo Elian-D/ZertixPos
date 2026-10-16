@@ -2,15 +2,17 @@
 
 namespace App\Models\Products;
 
+use App\Traits\GuardsForceDelete;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class Unit extends Model
 {
-    use SoftDeletes;
+    use GuardsForceDelete, SoftDeletes;
 
     protected $table = 'units';
-    
+
     protected $fillable = [
         'name',
         'abbreviation',
@@ -55,5 +57,13 @@ class Unit extends Model
         // Corregido: Debe coincidir con el nombre de la columna en la DB
         $this->is_active = ! $this->is_active;
         $this->save();
+    }
+
+    /** Qué impide el borrado definitivo (v1.5.1 REQ-1.1). */
+    public function deletionBlockers(): array
+    {
+        return [
+            'producto|productos' => DB::table('products')->where('unit_id', $this->id)->count(),
+        ];
     }
 }

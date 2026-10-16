@@ -8,6 +8,7 @@ use App\Models\Clients\Client;
 use App\Models\Geo\Province;
 use App\Services\Client\ClientCatalogService;
 use App\Services\Client\ClientService;
+use DomainException;
 use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -185,7 +186,13 @@ class ClientTable extends DataTable
 
         $client = Client::onlyTrashed()->findOrFail($id);
         $name = $client->name;
-        $client->forceDelete();
+        try {
+            $client->forceDeleteGuarded("El cliente \"{$name}\"");
+        } catch (DomainException $e) {
+            $this->notify('error', $e->getMessage());
+
+            return;
+        }
 
         $this->notify('success', "Cliente \"{$name}\" eliminado definitivamente.");
     }

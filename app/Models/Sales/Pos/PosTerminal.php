@@ -8,6 +8,7 @@ use App\Models\Clients\Client;
 use App\Models\Inventory\Warehouse;
 use App\Models\Sales\Ncf\NcfType;
 use App\Models\Sales\Sale;
+use App\Traits\GuardsForceDelete;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -16,7 +17,7 @@ use Illuminate\Support\Facades\Hash;
 
 class PosTerminal extends Model
 {
-    use SoftDeletes;
+    use GuardsForceDelete, SoftDeletes;
 
     protected $fillable = [
         'name',
@@ -195,5 +196,15 @@ class PosTerminal extends Model
             'auto_print' => pos_config('auto_print_receipt'), // No sobreescribible por ahora
             default => pos_config($key)
         };
+    }
+
+    /** Qué impide el borrado definitivo (v1.5.1 REQ-1.1). */
+    public function deletionBlockers(): array
+    {
+        return [
+            'turno|turnos' => DB::table('pos_sessions')->where('terminal_id', $this->id)->count(),
+            'venta|ventas' => DB::table('sales')->where('pos_terminal_id', $this->id)->count(),
+            'cotización|cotizaciones' => DB::table('quotes')->where('pos_terminal_id', $this->id)->count(),
+        ];
     }
 }
