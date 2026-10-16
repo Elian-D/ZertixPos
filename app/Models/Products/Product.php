@@ -13,7 +13,7 @@ class Product extends Model
     use SoftDeletes;
 
     protected $fillable = [
-        'category_id', 'unit_id', 'name', 'slug', 'sku', 'description',
+        'category_id', 'unit_id', 'name', 'slug', 'sku', 'barcode', 'description',
         'image_path', 'price', 'cost', 'is_active', 'type',
     ];
 
@@ -175,12 +175,14 @@ class Product extends Model
      *
      * @return array{key: string, label: string, variant: string}
      */
-    public function stockCondition(float $quantity, float $min = 0): array
+    /** $max null = sin tope (v1.5.0 REQ-1.3: por encima del máximo hay sobre stock). */
+    public function stockCondition(float $quantity, float $min = 0, ?float $max = null): array
     {
         return match (true) {
             $this->isService() => ['key' => 'service', 'label' => 'No maneja stock', 'variant' => 'slate'],
             $quantity <= 0 => ['key' => 'out', 'label' => 'Agotado', 'variant' => 'error'],
             $min > 0 && $quantity <= $min => ['key' => 'low', 'label' => 'Stock bajo', 'variant' => 'warning'],
+            $max !== null && $quantity > $max => ['key' => 'over', 'label' => 'Sobre stock', 'variant' => 'info'],
             default => ['key' => 'available', 'label' => 'Disponible', 'variant' => 'success'],
         };
     }

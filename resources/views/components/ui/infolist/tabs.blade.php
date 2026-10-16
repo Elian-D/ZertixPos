@@ -6,6 +6,10 @@
     PROPS:
       tabs    — [['name' => 'summary', 'label' => 'Resumen', 'icon' => 'heroicon-o-user-circle', 'count' => null], ...]
                 `count` opcional: se muestra como badge junto a la etiqueta.
+                `show` opcional: expresión Alpine que oculta la pestaña cuando es falsa
+                (ej. 'Inventario' solo con '!isService' en el form de producto). Si la
+                pestaña activa se oculta, se vuelve a la primera.
+                `error` opcional: true pinta un punto rojo (form con errores en esa pestaña).
       default — pestaña inicial (default: la primera).
 
     La pestaña activa se refleja en el hash de la URL (#quotes), así un enlace o un
@@ -35,6 +39,10 @@
     <div class="flex gap-1 overflow-x-auto px-3 pt-3 pb-2 border-b border-gray-100" role="tablist">
         @foreach($tabs as $t)
             <button type="button" role="tab"
+                @if(! empty($t['show']))
+                    x-show="{{ $t['show'] }}"
+                    x-effect="if (! ({{ $t['show'] }}) && tab === @js($t['name'])) select(names[0])"
+                @endif
                 @click="select(@js($t['name']))"
                 :aria-selected="tab === @js($t['name'])"
                 :class="tab === @js($t['name'])
@@ -47,6 +55,9 @@
                 {{ $t['label'] }}
                 @if(isset($t['count']))
                     <span class="rounded-full bg-slate-100 px-1.5 py-0.5 text-[10px] font-bold text-slate-600">{{ $t['count'] }}</span>
+                @endif
+                @if(! empty($t['error']))
+                    <span class="h-2 w-2 rounded-full bg-state-error" aria-label="Tiene errores"></span>
                 @endif
             </button>
         @endforeach

@@ -34,7 +34,7 @@ class InventoryStockTable extends DataTable
     /** En qué busca el filtro 'search' de abajo — debe coincidir con su closure. */
     protected function searchFields(): array
     {
-        return ['producto', 'SKU'];
+        return ['producto', 'SKU', 'código de barras'];
     }
 
     protected function filterMap(): array
@@ -42,7 +42,8 @@ class InventoryStockTable extends DataTable
         return [
             'search' => fn (Builder $q, $v) => $q->whereHas('product', fn (Builder $p) => $p
                 ->where('name', 'like', "%{$v}%")
-                ->orWhere('sku', 'like', "%{$v}%")),
+                ->orWhere('sku', 'like', "%{$v}%")
+                ->orWhere('barcode', 'like', "%{$v}%")),
             'warehouse_id' => fn (Builder $q, $v) => $q->where('warehouse_id', $v),
             'category_id'  => fn (Builder $q, $v) => $q->whereHas('product', fn (Builder $p) => $p->where('category_id', $v)),
             'status'       => fn (Builder $q, $v) => match ($v) {

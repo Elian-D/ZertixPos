@@ -89,6 +89,8 @@ php artisan test tests/Feature/YourTest.php --filter=methodName
 
 Configuration: `phpunit.xml` defines test suites (Unit/Feature) with SQLite in-memory database for testing.
 
+**Every test that touches the database extends `Tests\TenantTestCase`**, not `TestCase` + `RefreshDatabase`. It migrates the tenant schema (`database/migrations/tenant`) and skips the tenancy middleware so `routes/tenant.php` answers from `localhost`. `RefreshDatabase` migrates only once per process, so a single test on the central schema breaks every test that runs after it. Run tests inside Docker as `sail`: `docker exec --user=sail <container> php artisan test`.
+
 ## Code Quality & Linting
 
 ```bash
@@ -121,7 +123,8 @@ The system is **mid-migration** between two table engines. Getting this wrong pr
 **Other docs to check before starting non-trivial work, so a fresh session doesn't reintroduce a mistake already fixed once:**
 - `docs/ui/datatable-migration-checklist.md` — step-by-step checklist for migrating one more module to Livewire, with real bugs already hit (N+1 patterns, permission gaps when converting a route to a Livewire method, catalog/filter key mismatches) and why each check exists.
 - `docs/ui/datatables.md` / `docs/ui/datatable-components.md` — Livewire DataTable engine and component reference.
-- `docs/ui/buttons.md`, `docs/ui/badge.md`, `docs/ui/forms.md` — the only sanctioned UI primitives; never hand-roll a `<button>`/badge/form input with raw Tailwind when a `x-ui.*` component covers it.
+- `docs/ui/reports.md` — the one layout every report and the home page use (`x-ui.report.*`, Tailwind bar charts, no chart library); figures always come from `App\Services\Reports\BusinessMetrics`.
+- `docs/ui/buttons.md`, `docs/ui/badge.md`, `docs/ui/forms.md`, `docs/ui/feedback.md` (`x-ui.alert`, `x-ui.confirm-modal`) — the only sanctioned UI primitives; never hand-roll a `<button>`/badge/form input with raw Tailwind when a `x-ui.*` component covers it.
 - `docs/analisis/politica-soft-deletes.md` — how to decide whether a model needs `SoftDeletes`/a papelera tab at all (Categoría A) vs. its own status lifecycle (`cancel()`, B/C) vs. a ledger row that's never deleted (bitácora). Get this wrong and you either build a papelera nobody can reach or delete rows that should never be deletable.
 - `docs/analisis/modulos-base-satelite.md`, `docs/analisis/sobre-ingenieria-modulos.md`, `docs/analisis/politica-descuentos.md` — module-boundary and discount-policy decisions referenced by name elsewhere in the code; read before restructuring a module's scope.
 - `docs/features/v1.3.0.md` — current roadmap and phase status (Fase 0 = the DataTable migration itself; check its requirement table for what's actually Completed vs. Pendiente before assuming a module's state).

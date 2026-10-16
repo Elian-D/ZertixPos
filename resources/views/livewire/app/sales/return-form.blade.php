@@ -82,10 +82,17 @@
                                                 :disabled="$line->returnable <= 1"
                                                 :hint="$line->returnable <= 1 ? 'Única unidad disponible.' : 'Máximo '.$fmtQty($line->returnable).'.'"
                                                 :error="$errors->first('lines.'.$id.'.quantity')" />
-                                            <div class="pt-6">
+                                            <div class="pt-6 flex flex-col gap-3">
                                                 <x-ui.forms.toggle id="ret-restock-{{ $id }}" name="lines[{{ $id }}][restock]"
-                                                    wire:model="lines.{{ $id }}.restock" label="Regresa a inventario"
+                                                    wire:model.live="lines.{{ $id }}.restock" label="Regresa a inventario"
                                                     description="Apágalo si está dañado." />
+
+                                                {{-- REQ-2.3: la unidad dañada queda registrada como merma (valor perdido) --}}
+                                                @if($wasteEnabled && empty($lines[$id]['restock']) && ! $line->product?->isService())
+                                                    <x-ui.forms.checkbox id="ret-waste-{{ $id }}" name="lines[{{ $id }}][waste]"
+                                                        wire:model="lines.{{ $id }}.waste" label="Registrar como merma"
+                                                        description="Queda el valor perdido, con motivo Devolución dañada." />
+                                                @endif
                                             </div>
                                         </div>
                                     @endif

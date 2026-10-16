@@ -15,6 +15,7 @@ class ReturnItem extends Model
         'unit_subtotal',
         'unit_tax',
         'restock',
+        'wasted', // v1.5.0 REQ-2.3: no regresó y fue a la merma de la devolución
     ];
 
     protected $casts = [
@@ -22,6 +23,7 @@ class ReturnItem extends Model
         'unit_subtotal' => 'decimal:4',
         'unit_tax' => 'decimal:4',
         'restock' => 'boolean',
+        'wasted' => 'boolean',
     ];
 
     public function getSubtotalAttribute(): float

@@ -3,6 +3,7 @@
 namespace App\Models\Sales\Pos;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Accounting\FinancialAccount;
 use App\Models\Clients\Client;
 use Illuminate\Support\Facades\Cache;
 
@@ -14,6 +15,7 @@ class PosSetting extends Model
         'allow_quote_without_save',
         'auto_print_receipt',
         'receipt_size',
+        'default_financial_account_id', // v1.5.0 REQ-3.6
     ];
 
     protected $casts = [
@@ -69,6 +71,12 @@ class PosSetting extends Model
     }
 
     // Relaciones
+    /** Cuenta de banco por defecto de los pagos que no son efectivo (v1.5.0 REQ-3.6). */
+    public function defaultFinancialAccount()
+    {
+        return $this->belongsTo(FinancialAccount::class, 'default_financial_account_id');
+    }
+
     public function defaultCustomer()
     {
         return $this->belongsTo(Client::class, 'default_walkin_customer_id');

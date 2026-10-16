@@ -2,6 +2,7 @@
 
 namespace App\Services\Products;
 
+use App\Models\Inventory\Warehouse;
 use App\Models\Products\Category;
 use App\Models\Products\Unit;
 
@@ -44,6 +45,12 @@ class ProductCatalogService
             // y se apila libremente (checkboxes) — ver comentario en config/impuestos.php.
             'itbisTaxes' => $productTaxes->filter(fn ($tax) => ($tax['group'] ?? null) === 'itbis'),
             'addonTaxes' => $productTaxes->reject(fn ($tax) => ($tax['group'] ?? null) === 'itbis'),
+
+            // Sección Inventario al crear (v1.5.0 REQ-1.3): el primero es el preseleccionado.
+            'warehouses' => Warehouse::where('is_active', true)
+                ->select('id', 'name')
+                ->orderBy('id')
+                ->get(),
         ]);
     }
 }

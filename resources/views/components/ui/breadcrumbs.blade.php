@@ -41,7 +41,7 @@
         <li class="inline-flex items-center">
             <a href="{{ route($isAdminContext ? 'admin.tenants.index' : 'dashboard') }}" class="text-gray-400 hover:text-zertix-secondary transition flex items-center gap-1">
                 <x-heroicon-s-home class="w-3.5 h-3.5" />
-                {{ $isAdminContext ? 'Súper Admin' : 'Dashboard' }}
+                {{ $isAdminContext ? 'Súper Admin' : 'Inicio' }}
             </a>
         </li>
 

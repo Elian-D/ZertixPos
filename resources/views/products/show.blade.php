@@ -1,6 +1,6 @@
 {{-- Ficha del producto/servicio — patrón Infolist con pestañas (/filament-show,
      docs/ui/infolist.md). Recibe $product (category, unit, productTaxes,
-     stocks.warehouse cargados), $totalStock, $totalMin, $condition
+     stocks.warehouse cargados), $totalStock, $totalMin, $totalMax (null = sin tope), $condition
      (Product::stockCondition()), $profit/$margin/$markup, $tabLimit y
      $movements/$movementsCount ($movements es null si no aplica la pestaña). --}}
 @php
@@ -69,6 +69,11 @@
                                         <span class="font-mono">{{ $product->sku }}</span>
                                     @endif
                                 </x-ui.infolist.entry>
+                                <x-ui.infolist.entry label="Código de barras">
+                                    @if($product->barcode)
+                                        <span class="font-mono">{{ $product->barcode }}</span>
+                                    @endif
+                                </x-ui.infolist.entry>
                                 <x-ui.infolist.entry label="Categoría" :value="$product->category?->name" />
                                 <x-ui.infolist.entry label="Unidad de medida"
                                     :value="$product->unit ? $product->unit->name.($unit ? ' ('.$unit.')' : '') : null" />
@@ -96,6 +101,7 @@
                             <x-ui.badge :variant="$condition['variant']" size="sm" :dot="false">{{ $condition['label'] }}</x-ui.badge>
                         </x-ui.infolist.entry>
                         <x-ui.infolist.entry label="Stock mínimo" :value="! $isService && $totalMin > 0 ? $fmtQty($totalMin).($unit ? ' '.$unit : '') : null" />
+                        <x-ui.infolist.entry label="Stock máximo" :value="! $isService && $totalMax !== null ? $fmtQty($totalMax).($unit ? ' '.$unit : '') : null" />
                         <x-ui.infolist.entry label="Tipo">
                             <x-ui.badge :variant="$isService ? 'primary' : 'info'" size="sm" :dot="false"
                                 :icon="$isService ? 'heroicon-s-wrench-screwdriver' : 'heroicon-s-cube'">
@@ -141,8 +147,8 @@
                         <x-ui.infolist.repeatable :empty="$product->stocks->isEmpty()" emptyIcon="heroicon-o-building-storefront"
                             emptyTitle="Sin stock registrado" emptyDescription="Este producto todavía no tiene existencias en ningún almacén.">
                             @foreach($product->stocks as $stock)
-                                @php $c = $product->stockCondition((float) $stock->quantity, (float) $stock->min_stock); @endphp
-                                <x-ui.infolist.repeatable-item :cols="5">
+                                @php $c = $product->stockCondition((float) $stock->quantity, (float) $stock->min_stock, $stock->max_stock !== null ? (float) $stock->max_stock : null); @endphp
+                                <x-ui.infolist.repeatable-item :cols="6">
                                     <x-ui.infolist.entry label="Almacén" strong>
                                         {{ $stock->warehouse->name ?? 'Almacén eliminado' }}
                                         @if($stock->warehouse && ! $stock->warehouse->is_active)
@@ -159,6 +165,7 @@
                                         @if($unit)<span class="text-gray-500">{{ $unit }}</span>@endif
                                     </x-ui.infolist.entry>
                                     <x-ui.infolist.entry label="Mínimo" :value="$stock->min_stock > 0 ? $fmtQty($stock->min_stock) : null" />
+                                    <x-ui.infolist.entry label="Máximo" :value="$stock->max_stock !== null ? $fmtQty($stock->max_stock) : 'Sin tope'" />
                                     <x-ui.infolist.entry label="Condición" class="sm:text-right">
                                         <x-ui.badge :variant="$c['variant']" size="sm" :dot="false">{{ $c['label'] }}</x-ui.badge>
                                     </x-ui.infolist.entry>
@@ -182,7 +189,7 @@
                                     <span class="block text-xs text-gray-400">{{ $movement->created_at->format('h:i A') }}</span>
                                 </x-ui.infolist.entry>
                                 <x-ui.infolist.entry label="Tipo">
-                                    <x-ui.badge :variant="$movement->type_variant" size="sm" :dot="false">{{ $movement->type_label }}</x-ui.badge>
+                                    <x-ui.badge :hex="$movement->type_hex" size="sm" :dot="false">{{ $movement->type_label }}</x-ui.badge>
                                 </x-ui.infolist.entry>
                                 <x-ui.infolist.entry label="Almacén">
                                     {{ $movement->warehouse->name ?? 'Almacén eliminado' }}

@@ -27,7 +27,7 @@
 return [
 
     'dashboard' => [
-        'view' => ['label' => 'Ver panel principal', 'description' => 'Ver el panel principal (Dashboard) del sistema.'],
+        'view' => ['label' => 'Ver el inicio', 'description' => 'Ver la pantalla de inicio. Cada bloque aparece según los demás permisos (ventas, cobros, pagos, stock).'],
     ],
 
     'roles' => [
@@ -106,7 +106,7 @@ return [
     ],
 
     'inventory' => [
-        'dashboard' => ['label' => 'Ver panel de inventario', 'description' => 'Ver el panel general de inventario.'],
+        'dashboard' => ['label' => 'Ver reporte de inventario', 'description' => 'Ver el valor de la mercancía por almacén y categoría, lo que está bajo el mínimo y lo que no se mueve.'],
     ],
 
     'inventory_stocks' => [
@@ -117,11 +117,31 @@ return [
 
     'inventory_movements' => [
         'view' => ['label' => 'Ver movimientos de inventario', 'description' => 'Ver el historial de movimientos de inventario.'],
-        'create_adjustment' => ['label' => 'Crear ajuste de inventario', 'description' => 'Registrar un movimiento de ajuste de inventario.'],
+        'create_adjustment' => ['label' => 'Crear ajuste de inventario', 'description' => 'Agregar o sacar existencias a mano para corregir un error, con motivo y comentario.'],
+    ],
+
+    'inventory_counts' => [
+        'view' => ['label' => 'Ver tomas físicas', 'description' => 'Ver las tomas físicas, su detalle y su PDF. En un conteo ciego sin aplicar no muestra las diferencias.'],
+        'create' => ['label' => 'Crear tomas físicas', 'description' => 'Crear una toma física y cancelar un borrador.'],
+        'count' => ['label' => 'Contar tomas físicas', 'description' => 'Entrar a la pantalla de conteo de una toma en borrador y guardar lo contado. Por sí solo no da acceso a la revisión ni a las diferencias.'],
+        'apply' => ['label' => 'Revisar y aplicar tomas físicas', 'description' => 'Ver las diferencias de cualquier toma (también las ciegas) y aplicarla: ajusta las existencias del almacén.'],
+    ],
+
+    'inventory_wastes' => [
+        'view' => ['label' => 'Ver mermas', 'description' => 'Ver las mermas, su detalle, su PDF y el valor perdido.'],
+        'create' => ['label' => 'Registrar mermas', 'description' => 'Dar de baja mercancía dañada, vencida, robada o consumida. Se aplica al guardar.'],
+        'void' => ['label' => 'Anular mermas', 'description' => 'Anular una merma: devuelve las existencias al almacén.'],
+    ],
+
+    'inventory_transfers' => [
+        'view' => ['label' => 'Ver transferencias', 'description' => 'Ver las transferencias entre almacenes, su detalle y su PDF de despacho.'],
+        'create' => ['label' => 'Crear transferencias', 'description' => 'Crear, editar y cancelar una transferencia en borrador.'],
+        'send' => ['label' => 'Enviar transferencias', 'description' => 'Despachar una transferencia: la mercancía sale del almacén de origen y queda en tránsito.'],
+        'receive' => ['label' => 'Recibir transferencias', 'description' => 'Confirmar lo que llegó al almacén de destino. Lo que falte queda como merma en tránsito.'],
     ],
 
     'accounting' => [
-        'dashboard' => ['label' => 'Ver panel de contabilidad', 'description' => 'Ver el panel de contabilidad e ingresos y gastos.'],
+        'dashboard' => ['label' => 'Ver reportes financieros', 'description' => 'Ver el estado de resultados, el estado del negocio y la ganancia bruta del inicio.'],
     ],
 
     'document_types' => [
@@ -140,6 +160,44 @@ return [
         'create' => ['label' => 'Crear cobros', 'description' => 'Registrar nuevos cobros.'],
         'cancel' => ['label' => 'Cancelar cobros', 'description' => 'Cancelar cobros ya registrados.'],
         'export' => ['label' => 'Exportar cobros', 'description' => 'Exportar cobros a Excel.'],
+    ],
+
+    'vendors' => [
+        'view' => ['label' => 'Ver proveedores', 'description' => 'Ver los proveedores, su detalle, lo que se les debe y sus gastos.'],
+        'create' => ['label' => 'Crear proveedores', 'description' => 'Registrar proveedores nuevos.'],
+        'edit' => ['label' => 'Editar proveedores', 'description' => 'Cambiar los datos, el contacto y los términos de pago de un proveedor.'],
+        'delete' => ['label' => 'Eliminar proveedores', 'description' => 'Enviar un proveedor a la papelera o borrarlo definitivo si no tiene documentos.'],
+        'restore' => ['label' => 'Restaurar proveedores', 'description' => 'Sacar un proveedor de la papelera.'],
+    ],
+
+    'purchase_orders' => [
+        'view' => ['label' => 'Ver órdenes de compra', 'description' => 'Ver las órdenes de compra, sus recepciones y sus PDF.'],
+        'create' => ['label' => 'Crear órdenes de compra', 'description' => 'Crear y editar una orden en borrador y marcarla como enviada al proveedor.'],
+        'approve' => ['label' => 'Aprobar órdenes de compra', 'description' => 'Aprobar una orden en borrador: ya no se edita y se puede recibir.'],
+        'cancel' => ['label' => 'Cancelar órdenes de compra', 'description' => 'Cancelar una orden que todavía no tiene recepciones.'],
+    ],
+
+    'purchase_receptions' => [
+        'create' => ['label' => 'Recibir mercancía', 'description' => 'Registrar lo que llegó de una orden: entra el stock, se recalcula el costo y nace lo que se debe (o se paga de contado).'],
+    ],
+
+    'payables' => [
+        'view' => ['label' => 'Ver cuentas por pagar', 'description' => 'Ver lo que se debe a proveedores, sus pagos y los recibos.'],
+        'pay' => ['label' => 'Pagar cuentas por pagar', 'description' => 'Registrar pagos (totales o parciales) desde una cuenta de Cajas y Bancos.'],
+        'void_payment' => ['label' => 'Anular pagos', 'description' => 'Anular un pago: el dinero vuelve a la cuenta y el monto a lo pendiente.'],
+    ],
+
+    'expenses' => [
+        'view' => ['label' => 'Ver gastos', 'description' => 'Ver los gastos del negocio por categoría y fecha.'],
+        'create' => ['label' => 'Registrar gastos', 'description' => 'Registrar gastos de contado (sale de una cuenta) o a crédito (nace una cuenta por pagar).'],
+        'void' => ['label' => 'Anular gastos', 'description' => 'Anular un gasto: el dinero vuelve a la cuenta o se anula su cuenta por pagar con sus pagos.'],
+    ],
+
+    'financial_accounts' => [
+        'view' => ['label' => 'Ver cajas y bancos', 'description' => 'Ver las cuentas de caja y banco, su saldo, su kardex y sus conciliaciones.'],
+        'manage' => ['label' => 'Gestionar cajas y bancos', 'description' => 'Crear cuentas con su saldo inicial, editar sus datos y activarlas o desactivarlas.'],
+        'move' => ['label' => 'Mover dinero', 'description' => 'Registrar depósitos, retiros y transferencias entre cuentas, y anularlos o corregir su monto.'],
+        'reconcile' => ['label' => 'Conciliar cuentas', 'description' => 'Escribir el saldo real de una cuenta y ajustar la diferencia con su motivo.'],
     ],
 
     'sales' => [

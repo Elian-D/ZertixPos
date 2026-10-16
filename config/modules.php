@@ -39,16 +39,8 @@ return [
     //     'route_prefixes' => ['app/finance/journal_entries', 'app/finance/accounts', 'app/reports/finance'],
     // ],
 
-    // 'purchases.vendors' => [
-    //     'label' => 'Compras / Proveedores formales',
-    //     'description' => 'Registra proveedores y órdenes de compra formales.',
-    //     'icon' => 'heroicon-s-building-storefront',
-    //     'category' => 'satellite',
-    //     // Dependencia dura satélite→flexible: BLOQUEO explícito al guardar, nunca
-    //     // cascada (ver SystemFeatures::HARD_DEPENDENCIES, REQ-10.7).
-    //     'depends_on' => ['inventory.tracking'],
-    //     'route_prefixes' => ['app/purchases'],
-    // ],
+    // 'purchases.vendors' (satélite del plan Pro) pasó a 'purchases', núcleo flexible
+    // (v1.5.0 REQ-4.5): compras en todos los planes. Ver más abajo.
 
     'sales.ncf' => [
         'label' => 'Comprobantes Fiscales (NCF)',
@@ -88,17 +80,27 @@ return [
         'route_prefixes' => ['app/finance/receivables'],
     ],
 
-    // 'sales.payables' => [
-    //     'label' => 'Cuentas por Pagar',
-    //     'description' => 'Registra y da seguimiento a lo que tu negocio debe a proveedores.',
-    //     'icon' => 'heroicon-s-credit-card',
-    //     'category' => 'base_flexible',
-    //     // Módulo pendiente de construir (docs/analisis/modulos-base-satelite.md §5,
-    //     // ítem 3.5) — se registra ya con este flag para no repetir el error de
-    //     // Contabilidad (construirlo fijo y desacoplarlo después). Sin ruta real
-    //     // todavía: no hay middleware `module:` aplicado a nada por este flag.
-    //     'route_prefixes' => ['app/finance/payables'],
-    // ],
+    // v1.5.0 REQ-4.5: CxP, pagos a proveedores y gastos. Encendido en todo plan.
+    'sales.payables' => [
+        'label' => 'Cuentas por Pagar y Gastos',
+        'description' => 'Registra los gastos del negocio y da seguimiento a lo que debes a tus proveedores.',
+        'icon' => 'heroicon-s-credit-card',
+        'category' => 'base_flexible',
+        'route_prefixes' => ['app/finance/payables', 'app/finance/payments', 'app/finance/expenses'],
+    ],
+
+    // v1.5.0 REQ-4.5 (antes 'purchases.vendors', satélite Pro): proveedores, órdenes de
+    // compra y recepciones. Encendido en todo plan. Depende de inventory.tracking (la
+    // recepción entra stock) y de sales.payables (la recepción crea la CxP), con bloqueo al
+    // guardar (SystemFeatures::HARD_DEPENDENCIES).
+    'purchases' => [
+        'label' => 'Compras a proveedores',
+        'description' => 'Registra a tus proveedores y, al recibir mercancía, entra el stock y nace lo que les debes.',
+        'icon' => 'heroicon-s-building-storefront',
+        'category' => 'base_flexible',
+        'depends_on' => ['inventory.tracking', 'sales.payables'],
+        'route_prefixes' => ['app/purchases'],
+    ],
 
     'sales.quotes' => [
         'label' => 'Cotizaciones',

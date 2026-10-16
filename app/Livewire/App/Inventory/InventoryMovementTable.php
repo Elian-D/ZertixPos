@@ -31,7 +31,7 @@ class InventoryMovementTable extends DataTable
             'quantity'    => ['label' => 'Cant.', 'default' => true, 'mobile' => true],
             'balance'     => ['label' => 'Balance', 'default' => true],
             'user'        => ['label' => 'Responsable', 'default' => true],
-            'reference'   => ['label' => 'Documento/Ref'],
+            'reference'   => ['label' => 'Documento', 'default' => true],
             'description' => ['label' => 'Observaciones'],
         ];
     }

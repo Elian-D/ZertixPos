@@ -33,7 +33,8 @@ class SystemFeatures extends Component
      * guardar (REQ-10.7) — el dueño decide cuál de los dos apagar.
      */
     protected const HARD_DEPENDENCIES = [
-        'purchases.vendors' => 'inventory.tracking',
+        // La recepción de compra entra stock y crea la CxP (v1.5.0 Fase 5).
+        'purchases' => ['inventory.tracking', 'sales.payables'],
     ];
 
     /**
@@ -199,7 +200,15 @@ class SystemFeatures extends Component
      */
     protected function validateHardDependencies(): bool
     {
-        foreach (self::HARD_DEPENDENCIES as $satellite => $requiredFlexible) {
+        // Pares [módulo, del que depende]: un módulo puede depender de varios.
+        $pairs = [];
+        foreach (self::HARD_DEPENDENCIES as $satellite => $required) {
+            foreach ((array) $required as $requiredFlexible) {
+                $pairs[] = [$satellite, $requiredFlexible];
+            }
+        }
+
+        foreach ($pairs as [$satellite, $requiredFlexible]) {
             $satelliteOn = $this->selections[$this->safeKey($satellite)] ?? false;
             $flexibleOn = $this->selections[$this->safeKey($requiredFlexible)] ?? false;
 

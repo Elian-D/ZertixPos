@@ -2,17 +2,17 @@
 
     <x-ui.page-header
         title="Kardex de Inventario"
-        description="Consulta el historial de movimientos de inventario y registra ajustes manuales de stock."
+        description="Historial de existencias: cada movimiento sale de un documento (venta, devolución, inventario inicial, compra, toma física, merma o transferencia) o de un ajuste manual."
         :count="$movements->total()"
         countLabel="movimientos"
     >
-        <x-slot:actions>
-            @can('inventory_movements.create_adjustment')
-                <x-ui.button variant="primary" iconLeft="heroicon-s-adjustments-vertical" x-data x-on:click="$dispatch('open-modal', 'create-adjustment')">
-                    Ajuste de Stock
+        @can('inventory_movements.create_adjustment')
+            <x-slot:actions>
+                <x-ui.button href="{{ route('inventory.movements.create') }}" variant="primary" iconLeft="heroicon-s-adjustments-vertical">
+                    Ajuste de inventario
                 </x-ui.button>
-            @endcan
-        </x-slot:actions>
+            </x-slot:actions>
+        @endcan
 
         <x-slot:secondary>
             <x-ui.button
@@ -68,24 +68,17 @@
                 </x-data-table.cell>
 
                 <x-data-table.cell column="type" :visible="$visibleColumns">
-                    <x-ui.badge :variant="match($movement->type) {
-                        'input' => 'success',
-                        'output' => 'error',
-                        'transfer' => 'info',
-                        default => 'slate',
-                    }" size="sm" :dot="false">
+                    <x-ui.badge :hex="$movement->type_hex" size="sm" :dot="false">
                         {{ $types[$movement->type] ?? $movement->type }}
                     </x-ui.badge>
                 </x-data-table.cell>
 
                 <x-data-table.cell column="toWarehouse" :visible="$visibleColumns">
-                    @if($movement->type === 'transfer' && $movement->to_warehouse_id)
+                    @if(in_array($movement->type, ['transfer_out', 'transfer_in']) && $movement->to_warehouse_id)
                         <div class="flex items-center text-blue-700 font-medium">
                             <x-heroicon-s-arrow-right-circle class="w-4 h-4 mr-1.5 opacity-70" />
                             {{ $movement->toWarehouse->name ?? 'N/A' }}
                         </div>
-                    @elseif($movement->reference_type === 'App\Models\Inventory\InventoryMovement')
-                        <span class="text-slate-400 italic text-xs">Origen de transferencia</span>
                     @else
                         <span class="text-slate-300 italic text-[10px]">No aplica</span>
                     @endif
@@ -114,9 +107,13 @@
                 </x-data-table.cell>
 
                 <x-data-table.cell column="reference" :visible="$visibleColumns">
-                    <span class="text-[11px] text-slate-400 italic">
-                        {{ $movement->reference_type ? class_basename($movement->reference_type).' #'.$movement->reference_id : 'Manual' }}
-                    </span>
+                    {{-- REQ-1.5: cada fila enlaza al documento que la originó --}}
+                    @php $origin = $movement->origin; @endphp
+                    @if($origin['url'])
+                        <a href="{{ $origin['url'] }}" class="text-xs font-medium text-zertix-primary-700 hover:underline whitespace-nowrap">{{ $origin['label'] }}</a>
+                    @else
+                        <span class="text-xs text-slate-500 whitespace-nowrap">{{ $origin['label'] }}</span>
+                    @endif
                 </x-data-table.cell>
 
                 <x-data-table.cell column="description" :visible="$visibleColumns" class="px-4 py-3.5 max-w-[150px] truncate">

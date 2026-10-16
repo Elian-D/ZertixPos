@@ -199,6 +199,22 @@
                         @endforeach
                     </x-ui.forms.select>
                 </div>
+
+                {{-- v1.5.0 REQ-3.6: a qué cuenta entran tarjeta, transferencia, depósito y cheque --}}
+                <div>
+                    <x-ui.forms.select label="Cuenta de banco" name="financial_account_id" placeholder=""
+                        hint="Lo que se cobra en esta terminal sin ser efectivo entra a esta cuenta. El efectivo se queda en la gaveta."
+                        :error="$errors->first('financial_account_id')">
+                        <option value="" @selected(is_null(old('financial_account_id', $posTerminal->financial_account_id ?? null)))>
+                            Heredar de Ajustes POS (Actual: {{ $global_bank_account_name ?? 'sin cuenta' }})
+                        </option>
+                        @foreach($bank_accounts as $account)
+                            <option value="{{ $account->id }}" @selected((string) old('financial_account_id', $posTerminal->financial_account_id ?? '') === (string) $account->id)>
+                                {{ $account->name }}
+                            </option>
+                        @endforeach
+                    </x-ui.forms.select>
+                </div>
             </div>
         </section>
 

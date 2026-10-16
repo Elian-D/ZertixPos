@@ -28,7 +28,7 @@ class ReturnForm extends Component
 
     public string $method = SaleReturn::METHOD_CASH;
 
-    /** @var array<int, array{selected: bool, quantity: mixed, restock: bool}> keyed por sale_item_id */
+    /** @var array<int, array{selected: bool, quantity: mixed, restock: bool, waste: bool}> keyed por sale_item_id */
     public array $lines = [];
 
     public string $replacementProductId = '';
@@ -62,6 +62,8 @@ class ReturnForm extends Component
                 'selected' => $returnable->count() === 1,
                 'quantity' => $this->fmtQty($item->returnable),
                 'restock' => true,
+                // v1.5.0 REQ-2.3: si no regresa a inventario, va a merma salvo que se apague.
+                'waste' => true,
             ];
         }
 
@@ -253,6 +255,7 @@ class ReturnForm extends Component
             'sale_item_id' => $id,
             'quantity' => (float) $this->lines[$id]['quantity'],
             'restock' => (bool) ($this->lines[$id]['restock'] ?? true),
+            'waste' => (bool) ($this->lines[$id]['waste'] ?? true),
         ])->all();
 
         try {
@@ -294,6 +297,8 @@ class ReturnForm extends Component
     {
         return view('livewire.app.sales.return-form', [
             'reasons' => SaleReturn::getReasons(),
+            // Sin control de inventario no hay stock que dar de baja: no se ofrece la merma.
+            'wasteEnabled' => module_enabled('inventory.tracking'),
         ]);
     }
 }

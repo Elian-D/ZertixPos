@@ -53,6 +53,54 @@ class DocumentTypeSeeder extends Seeder
                 'code' => 'DEV',
                 'prefix' => 'DEV',
             ],
+            [
+                // Toma física (v1.5.0 REQ-2.1) — documento interno para firmar.
+                'name' => 'Toma física',
+                'code' => 'TFS',
+                'prefix' => 'TFS',
+            ],
+            [
+                // Merma (v1.5.0 REQ-2.2) — baja de mercancía perdida con motivo.
+                'name' => 'Merma',
+                'code' => 'MER',
+                'prefix' => 'MER',
+            ],
+            [
+                // Transferencia entre almacenes (v1.5.0 REQ-2.4).
+                'name' => 'Transferencia',
+                'code' => 'TRA',
+                'prefix' => 'TRA',
+            ],
+            [
+                // Cuenta por pagar (v1.5.0 REQ-4.2) — de un gasto a crédito o de una recepción.
+                'name' => 'Cuenta por pagar',
+                'code' => 'CXP',
+                'prefix' => 'CXP',
+            ],
+            [
+                // Pago a proveedor (v1.5.0 REQ-4.3) — sale de una cuenta de Cajas y Bancos.
+                'name' => 'Pago a proveedor',
+                'code' => 'EGR',
+                'prefix' => 'EGR',
+            ],
+            [
+                // Gasto directo (v1.5.0 REQ-4.4).
+                'name' => 'Gasto',
+                'code' => 'GAS',
+                'prefix' => 'GAS',
+            ],
+            [
+                // Orden de compra (v1.5.0 REQ-5.1) — lo que se le pide al proveedor.
+                'name' => 'Orden de compra',
+                'code' => 'OC',
+                'prefix' => 'OC',
+            ],
+            [
+                // Recepción de compra (v1.5.0 REQ-5.2) — cada entrega de una orden.
+                'name' => 'Recepción de compra',
+                'code' => 'RCP',
+                'prefix' => 'RCP',
+            ],
         ];
 
         foreach ($docs as $doc) {

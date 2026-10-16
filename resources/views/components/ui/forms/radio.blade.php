@@ -4,10 +4,11 @@
     Props: label, name, id, value, checked, description, disabled
     El punto interior verde se logra con `text-zertix-primary` via @tailwindcss/forms.
     Agrupar múltiples radios con el mismo `name` para selección exclusiva.
+    El <label> envuelve al input, así que no lleva `for`: sin él funciona también dentro de
+    un x-for de Alpine con `x-bind:id`/`x-bind:name` (v1.5.0, líneas del ajuste de inventario).
 --}}
 
 <label
-    for="{{ $id }}"
     class="flex items-start gap-3 cursor-pointer group {{ $disabled ? 'opacity-50 cursor-not-allowed' : '' }}"
 >
     {{-- Radio nativo estilizado --}}

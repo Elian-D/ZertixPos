@@ -14,7 +14,8 @@ class InventoryStock extends Model
         'warehouse_id',
         'product_id',
         'quantity',
-        'min_stock'
+        'min_stock',
+        'max_stock', // v1.5.0 REQ-1.3: sobre stock, nullable
     ];
 
     /**

@@ -14,6 +14,11 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * El modelo declara:
  *   const DOCUMENT_CODE = 'COT';            // código en document_types
  *   const DOCUMENT_NUMBER_COLUMN = 'number'; // opcional, default 'number'
+ *
+ * Al agregar un documento nuevo, además: su código en DocumentTypeSeeder y en
+ * DocumentType::SYSTEM_PROTECTED_CODES, y su caso en DocumentType::hasIssuedDocuments()
+ * — sin este último el correlativo queda editable con documentos ya emitidos y se
+ * repiten números (pasó con TFS y MER en v1.5.0).
  */
 trait HasDocumentNumber
 {
