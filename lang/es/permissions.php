@@ -27,7 +27,7 @@
 return [
 
     'dashboard' => [
-        'view' => ['label' => 'Ver panel principal', 'description' => 'Ver el panel principal (Dashboard) del sistema.'],
+        'view' => ['label' => 'Ver el inicio', 'description' => 'Ver la pantalla de inicio. Cada bloque aparece según los demás permisos (ventas, cobros, pagos, stock).'],
     ],
 
     'roles' => [

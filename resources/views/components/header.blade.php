@@ -26,7 +26,8 @@
                         </svg>
                     </button>
                     <h1 class="text-xl font-semibold text-gray-800 ml-4 hidden sm:block">
-                        {{ request()->routeIs('admin.*') ? 'Súper Admin' : 'Dashboard' }}
+                        {{-- El negocio, no "Dashboard": el título de la página ya lo da su page-header. --}}
+                        {{ request()->routeIs('admin.*') ? 'Súper Admin' : (general_config()?->nombre_empresa ?: config('app.name', 'ZertixPOS')) }}
                     </h1>
                 </div>
 

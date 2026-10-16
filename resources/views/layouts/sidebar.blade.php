@@ -1,10 +1,10 @@
 {{-- SIDEBAR --}}
 <x-sidebar.layout>
 
-    {{-- DASHBOARD --}}
+    {{-- INICIO (v1.5.0 REQ-6.5) --}}
     @can('dashboard.view')
         <x-sidebar.item href="{{ route('dashboard') }}" icon="heroicon-s-home">
-            Dashboard
+            Inicio
         </x-sidebar.item>
     @endcan
 
