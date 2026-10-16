@@ -95,7 +95,8 @@ class InventoryCountTable extends DataTable
             [
                 'counts' => $this->baseQuery()->latest()->paginate($this->perPage),
                 // Para el modal de crear.
-                'categories' => Category::activos()->orderBy('name')->pluck('name', 'id')->all(),
+                // En árbol: una principal cuenta todas sus subcategorías (v1.5.1 REQ-2.4).
+                'categoryFilter' => Category::filterOptions(),
             ],
             $this->filterOptions()
         ));

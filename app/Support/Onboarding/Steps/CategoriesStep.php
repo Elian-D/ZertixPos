@@ -19,7 +19,7 @@ class CategoriesStep implements OnboardingStepInterface
 
     public function description(): string
     {
-        return 'Un producto necesita una categoría antes de poder crearse.';
+        return 'La principal agrupa (ej. Agua) y los productos van en sus subcategorías (ej. Botellones).';
     }
 
     public function ctaLabel(): string
@@ -29,7 +29,7 @@ class CategoriesStep implements OnboardingStepInterface
 
     public function ctaRoute(): string
     {
-        return 'configuration.categories.index';
+        return 'configuration.categories.create';
     }
 
     public function requiredModule(): ?string
@@ -39,6 +39,7 @@ class CategoriesStep implements OnboardingStepInterface
 
     public function isComplete(): bool
     {
-        return Category::exists();
+        // Completo cuando hay al menos una principal con una subcategoría (v1.5.1 REQ-2.6).
+        return Category::whereNotNull('parent_id')->whereHas('parent')->exists();
     }
 }

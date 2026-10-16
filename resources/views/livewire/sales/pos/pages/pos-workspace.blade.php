@@ -3,6 +3,7 @@
         products: @js($products),
         clients: @js($clients),
         categories: @js($categories),
+        topSellerIds: @js($topSellerIds),
         tipoPagos: @js($tipoPagos),
         ncfTypes: @js($ncfTypes),
         usaNcf: @js($usaNcf),
@@ -127,6 +128,9 @@
             return {
                 ...config,
                 search: '',
+                // Chips (v1.5.1 REQ-2.5): activeParent = null (Todas), 'top' (Más vendidos) o
+                // el id de una principal; activeCategory = la subcategoría elegida dentro de ella.
+                activeParent: null,
                 activeCategory: null,
                 items: [],
                 globalDiscountPercentage: 0,
@@ -245,15 +249,42 @@
                 },
 
                 // --- 7.2 Product Engine ---
+                get activeParentCategory() {
+                    return this.categories.find(c => c.id === this.activeParent) ?? null;
+                },
+
+                selectParent(id) {
+                    this.activeParent = id;
+                    this.activeCategory = null;
+                },
+
+                get categoryLabel() {
+                    if (this.activeParent === 'top') return 'Más vendidos';
+                    const parent = this.activeParentCategory;
+                    if (!parent) return 'Todas las categorías';
+                    const child = parent.children.find(c => c.id === this.activeCategory);
+                    return child ? parent.name + ' › ' + child.name : parent.name;
+                },
+
+                // La búsqueda y el escaneo ignoran la categoría elegida (v1.5.1 REQ-2.5).
                 get filteredProducts() {
                     const term = this.search.trim().toLowerCase();
-                    return this.products.filter(p => {
-                        if (this.activeCategory && p.category_id !== this.activeCategory) return false;
-                        if (!term) return true;
-                        return p.name.toLowerCase().includes(term)
+                    if (term) {
+                        return this.products.filter(p => p.name.toLowerCase().includes(term)
                             || (p.sku || '').toLowerCase().includes(term)
-                            || (p.barcode || '').toLowerCase().includes(term);
-                    }).slice(0, 60);
+                            || (p.barcode || '').toLowerCase().includes(term)).slice(0, 60);
+                    }
+
+                    if (this.activeParent === 'top') {
+                        const rank = new Map(this.topSellerIds.map((id, i) => [id, i]));
+                        return this.products.filter(p => rank.has(p.id)).sort((a, b) => rank.get(a.id) - rank.get(b.id));
+                    }
+
+                    const parent = this.activeParentCategory;
+                    if (!parent) return this.products.slice(0, 60);
+
+                    const ids = this.activeCategory ? [this.activeCategory] : parent.children.map(c => c.id);
+                    return this.products.filter(p => ids.includes(p.category_id)).slice(0, 60);
                 },
 
                 // Busca coincidencia EXACTA por código de barras y luego por SKU (v1.5.0 REQ-1.2).

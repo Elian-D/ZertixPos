@@ -5,6 +5,7 @@ namespace App\Livewire\App\Inventory;
 use App\Exports\Inventory\InventoryStockExport;
 use App\Livewire\Base\DataTable;
 use App\Models\Inventory\InventoryStock;
+use App\Models\Products\Category;
 use App\Services\Inventory\InventoryStockService\InventoryStockCatalogService;
 use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Facades\Excel;
@@ -45,7 +46,7 @@ class InventoryStockTable extends DataTable
                 ->orWhere('sku', 'like', "%{$v}%")
                 ->orWhere('barcode', 'like', "%{$v}%")),
             'warehouse_id' => fn (Builder $q, $v) => $q->where('warehouse_id', $v),
-            'category_id'  => fn (Builder $q, $v) => $q->whereHas('product', fn (Builder $p) => $p->where('category_id', $v)),
+            'category_id'  => fn (Builder $q, $v) => $q->whereHas('product', fn (Builder $p) => $p->whereIn('category_id', Category::coveredIds($v))),
             'status'       => fn (Builder $q, $v) => match ($v) {
                 // Stock por debajo del mínimo (pero mayor a 0)
                 'low' => $q->whereColumn('quantity', '<=', 'min_stock')->where('quantity', '>', 0),
@@ -69,7 +70,7 @@ class InventoryStockTable extends DataTable
 
         return match ($key) {
             'warehouse_id' => $options['warehouses']->firstWhere('id', $value)?->name ?? $value,
-            'category_id'  => $options['categories']->firstWhere('id', $value)?->name ?? $value,
+            'category_id'  => Category::find($value)?->name ?? $value,
             // No usa $options['statuses'] (InventoryStockCatalogService): esa clave
             // vive como 'low_stock' ahí para el dashboard de inventario, pero el
             // filtro real (arriba, filterMap()) siempre usó 'low' — mismo criterio

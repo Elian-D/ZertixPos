@@ -74,7 +74,7 @@
                                         <span class="font-mono">{{ $product->barcode }}</span>
                                     @endif
                                 </x-ui.infolist.entry>
-                                <x-ui.infolist.entry label="Categoría" :value="$product->category?->name" />
+                                <x-ui.infolist.entry label="Categoría" :value="$product->category?->full_name" />
                                 <x-ui.infolist.entry label="Unidad de medida"
                                     :value="$product->unit ? $product->unit->name.($unit ? ' ('.$unit.')' : '') : null" />
                                 <x-ui.infolist.entry label="Registrado" :value="$product->created_at->format('d/m/Y')" />

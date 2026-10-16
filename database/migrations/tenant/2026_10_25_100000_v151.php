@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 
 /**
@@ -14,6 +15,11 @@ use Illuminate\Support\Facades\Schema;
  *
  * Siguen en CASCADE las filas que son parte del registro (líneas de un documento, impuestos
  * y existencias del producto, permisos de un rol) y los datos fijos (municipios).
+ *
+ * Fase 2 (REQ-2.1): subcategorías en dos niveles. `parent_id` null = categoría principal
+ * (solo agrupa); con valor = subcategoría (la única que recibe productos). El nombre es
+ * único dentro de su padre. Una base con categorías sueltas que ya tienen productos las
+ * deja como subcategorías de "General", para que ninguna principal quede con productos.
  */
 return new class extends Migration
 {
@@ -32,11 +38,53 @@ return new class extends Migration
     public function up(): void
     {
         $this->setForeignKeys('restrict');
+        $this->categories();
     }
 
     public function down(): void
     {
+        $this->dropCategories();
         $this->setForeignKeys('cascade');
+    }
+
+    private function categories(): void
+    {
+        Schema::table('categories', function (Blueprint $table) {
+            $table->foreignId('parent_id')->nullable()->after('id')->constrained('categories')->restrictOnDelete();
+            $table->dropUnique(['name']);
+            $table->dropUnique(['slug']);
+            $table->unique(['parent_id', 'name']);
+        });
+
+        $withProducts = DB::table('categories')->whereNull('parent_id')
+            ->whereExists(fn ($q) => $q->from('products')->whereColumn('products.category_id', 'categories.id'))
+            ->pluck('id');
+
+        if ($withProducts->isEmpty()) {
+            return;
+        }
+
+        $general = DB::table('categories')->insertGetId([
+            'name' => 'General',
+            'slug' => 'general',
+            'description' => 'Agrupa las categorías que había antes de las subcategorías.',
+            'is_active' => true,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        DB::table('categories')->whereIn('id', $withProducts)->update(['parent_id' => $general]);
+    }
+
+    private function dropCategories(): void
+    {
+        Schema::table('categories', function (Blueprint $table) {
+            $table->dropForeign(['parent_id']);
+            $table->dropUnique(['parent_id', 'name']);
+            $table->dropColumn('parent_id');
+            $table->unique('name');
+            $table->unique('slug');
+        });
     }
 
     private function setForeignKeys(string $onDelete): void

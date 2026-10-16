@@ -50,6 +50,24 @@ class PosWorkspace extends Component
      * lo vendiera. El catálogo debe mostrarse siempre completo; el stock es solo
      * información sobre disponibilidad, no un filtro de existencia.
      */
+    /**
+     * "Más vendidos" del TPV (v1.5.1 REQ-2.5): los productos con más unidades vendidas en
+     * los últimos 30 días en el almacén de la terminal, de más a menos.
+     */
+    private function getTopSellerIds(int $limit = 24): array
+    {
+        return DB::table('sale_items')
+            ->join('sales', 'sales.id', '=', 'sale_items.sale_id')
+            ->where('sales.status', '!=', Sale::STATUS_CANCELED)
+            ->where('sales.sale_date', '>=', now()->subDays(30))
+            ->when($this->terminal->warehouse_id, fn ($q, $id) => $q->where('sales.warehouse_id', $id))
+            ->groupBy('sale_items.product_id')
+            ->orderByRaw('SUM(sale_items.quantity) DESC')
+            ->limit($limit)
+            ->pluck('sale_items.product_id')
+            ->all();
+    }
+
     private function getProducts(): array
     {
         $products = Product::query()
@@ -190,7 +208,13 @@ class PosWorkspace extends Component
             ] : null,
             'lastCollectionId' => $lastCollection?->id,
             'products' => $this->getProducts(),
-            'categories' => Category::where('is_active', true)->select('id', 'name')->orderBy('name')->get(),
+            // Principales con sus subcategorías (v1.5.1 REQ-2.5): una principal inactiva no sale.
+            'categories' => Category::tree()->map(fn (Category $parent) => [
+                'id' => $parent->id,
+                'name' => $parent->name,
+                'children' => $parent->children->map(fn (Category $child) => ['id' => $child->id, 'name' => $child->name])->values(),
+            ])->values(),
+            'topSellerIds' => $this->getTopSellerIds(),
             'clients' => $this->getClients(),
             'debtors' => $canCollect ? $this->getDebtors() : [],
             'canCollect' => $canCollect,

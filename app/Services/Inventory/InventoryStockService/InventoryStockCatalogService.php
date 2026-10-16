@@ -11,7 +11,7 @@ class InventoryStockCatalogService
     {
         return [
             'warehouses' => Warehouse::where('is_active', true)->select('id', 'name')->orderBy('name')->get(),
-            'categories' => Category::select('id', 'name')->orderBy('name')->get(),
+            'categoryFilter' => Category::filterOptions(),
             'statuses'   => [
                 'ok'        => 'Stock Suficiente',
                 'low_stock' => 'Stock Bajo',
