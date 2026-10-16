@@ -110,7 +110,7 @@ class StoreSaleRequest extends FormRequest
                     // El RNC es válido si ya está en el cliente O si se acaba de capturar en esta venta.
                     $hasRnc = ! empty($client->tax_id) || ! empty($this->client_rnc);
                     if (! $hasRnc) {
-                        $validator->errors()->add('ncf_type_id', "El tipo {$ncfType->nombre} requiere un RNC/Cédula.");
+                        $validator->errors()->add('ncf_type_id', $ncfType->missingRncMessage());
                     }
                 }
             }
