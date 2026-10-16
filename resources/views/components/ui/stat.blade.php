@@ -35,7 +35,12 @@
         'hover:border-gray-200 transition-colors' => $href,
     ]) }}>
     <span class="block text-[11px] font-semibold uppercase tracking-wider text-slate-500">{{ $label }}</span>
-    <span class="mt-1 block text-2xl font-bold tabular-nums truncate {{ $valueColor }}">{{ $value }}</span>
+    {{-- Un monto largo (RD$2,581,556.31) baja un tamaño en vez de cortarse con "…". --}}
+    <span @class([
+        'mt-1 block font-bold tabular-nums break-words',
+        mb_strlen((string) $value) > 13 ? 'text-xl' : 'text-2xl',
+        $valueColor,
+    ])>{{ $value }}</span>
     @if($slot->isNotEmpty())
         <div class="mt-1.5 text-xs text-slate-500">{{ $slot }}</div>
     @elseif($hint)

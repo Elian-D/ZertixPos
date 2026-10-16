@@ -1,47 +1,44 @@
 <?php
 
 use App\Http\Controllers\Accounting\AccountingDashboardController;
-use App\Http\Controllers\Inventory\InventoryDashboardController;
-use App\Http\Controllers\Sales\Ncf\NcfDashboardController;
-use App\Http\Controllers\Sales\SalesDashboardController;
+use App\Http\Controllers\Reports\BusinessStatusController;
+use App\Http\Controllers\Reports\IncomeStatementController;
+use App\Http\Controllers\Reports\InventoryReportController;
+use App\Http\Controllers\Reports\NcfReportController;
+use App\Http\Controllers\Reports\SalesReportController;
 use Illuminate\Support\Facades\Route;
 
-// Extraído de sales.php/inventory.php/finance.php (Fase 7.9, sidebar). Los 4
-// dashboards de "Reportes" compartían el mismo prefijo de URL que su módulo
-// operativo de origen (app/sales*, app/inventory*, app/finance*) — el sidebar
-// resaltaba el grupo operativo Y "Reportes" a la vez al visitarlos (bug real).
-// Prefijo propio y exclusivo en vez de listas de exclusión manuales en el
-// sidebar. "Ingresos y Gastos" (finance.overview.index) NO se mueve acá — es
-// la vista financiera base, no un dashboard de Reportes, se queda en Finanzas.
-//
-// De paso: finance.ncf.dashboard tenía un stub muerto duplicado en finance.php
-// (mismo método+URI+nombre que la ruta real, registrado ANTES) — Laravel
-// despacha por orden de registro cuando dos rutas coinciden exacto, así que la
-// URL respondía con el stub vacío, no con NcfDashboardController. Se elimina
-// el stub al migrar; el controlador real conserva el permiso que efectivamente
-// protegía la URL antes (manage ncf sequences, heredado del grupo del stub).
-Route::prefix('reports')->as('reports.')->group(function () {
+// Reportes (v1.5.0 Fase 6): prefijo propio (app/reports) para que el sidebar no resalte
+// también el grupo operativo del módulo (Fase 7.9). Todos con el mismo diseño
+// (docs/ui/reports.md): filtros arriba, fila de totales y paneles.
+Route::prefix('reports')->as('reports.')->middleware('auth')->group(function () {
 
-    Route::middleware('auth')->get('/sales', SalesDashboardController::class)
+    Route::get('/sales', SalesReportController::class)
+        ->middleware('permission:sales.view')
         ->name('sales');
 
-    Route::middleware('module:inventory.tracking')->group(function () {
-        Route::get('/inventory', InventoryDashboardController::class)
-            ->middleware('permission:inventory.dashboard')
-            ->name('inventory');
-    });
+    Route::get('/inventory', InventoryReportController::class)
+        ->middleware(['module:inventory.tracking', 'permission:inventory.dashboard'])
+        ->name('inventory');
 
-    Route::middleware('module:accounting.advanced')->group(function () {
-        Route::get('/finance', AccountingDashboardController::class)
-            ->middleware('can:accounting.dashboard')
-            ->name('finance');
-    });
+    // REQ-6.1: antes "Ingresos y Gastos" (finance/overview), en Finanzas.
+    Route::get('/results', IncomeStatementController::class)
+        ->middleware('can:accounting.dashboard')
+        ->name('results');
 
-    // REQ-1.15 (v1.3.0 Fase 1): igual que en routes/app/finance.php — `module:sales.ncf`
-    // como middleware, no un `if (module_enabled(...))` en el archivo de rutas (ese
-    // corre al registrar rutas, antes de que la tenencia se inicialice para la
-    // petición, y siempre evaluaba `false` contra la conexión central).
-    Route::get('/ncf', NcfDashboardController::class)
-        ->middleware(['auth', 'permission:ncf_sequences.manage', 'module:sales.ncf'])
+    // REQ-6.2
+    Route::get('/business', BusinessStatusController::class)
+        ->middleware('can:accounting.dashboard')
+        ->name('business');
+
+    // `module:` como middleware, no un if en el archivo de rutas: ese corre antes de que la
+    // tenencia se inicialice y siempre veía la conexión central (REQ-1.15 de v1.3.0).
+    Route::get('/ncf', NcfReportController::class)
+        ->middleware(['module:sales.ncf', 'permission:ncf.reports'])
         ->name('ncf');
+
+    // Centro Contable: solo con contabilidad avanzada (apagada). Sin rediseñar en v1.5.0.
+    Route::get('/finance', AccountingDashboardController::class)
+        ->middleware(['module:accounting.advanced', 'can:accounting.dashboard'])
+        ->name('finance');
 });

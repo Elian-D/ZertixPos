@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Middleware\Billing\EnsureSubscriptionActive;
 use App\Http\Middleware\EnsureInstallationWizardCompleted;
@@ -46,9 +47,10 @@ Route::middleware([
     Route::view('/suscripcion/cancelada', 'billing.cancelled')->name('billing.cancelled');
     Route::view('/suscripcion', 'billing.manage')->middleware('auth')->name('billing.manage');
 
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->middleware(['auth', 'verified', 'permission:dashboard.view'])->name('dashboard');
+    // Inicio (v1.5.0 REQ-6.5). La URL y el nombre de ruta siguen siendo 'dashboard': los
+    // usa el login, el Wizard y el TPV para volver al inicio.
+    Route::get('/dashboard', DashboardController::class)
+        ->middleware(['auth', 'verified', 'permission:dashboard.view'])->name('dashboard');
 
     // REQ-7.6 — sin profile.destroy: el auto-borrado de cuenta se eliminó,
     // ver docblock de App\Http\Controllers\ProfileController.

@@ -103,6 +103,7 @@ class PurchaseReceptionService
                         'warehouse_id' => $order->warehouse_id,
                         'product_id' => $item->product_id,
                         'quantity' => $row['received'],
+                        'unit_cost' => $row['unit_cost'],
                         'type' => InventoryMovement::TYPE_PURCHASE,
                         'description' => "Recepción {$reception->number} de la orden {$order->number} · {$order->vendor->display_name}",
                         'reference_type' => PurchaseReception::class,

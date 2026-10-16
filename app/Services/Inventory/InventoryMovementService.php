@@ -65,6 +65,10 @@ class InventoryMovementService
                 'product_id' => $product->id,
                 'user_id' => Auth::id(),
                 'quantity' => $quantity,
+                // Costo congelado (v1.5.0 Fase 6): el costo de ventas de un mes pasado no
+                // cambia cuando una compra recalcula el promedio. La recepción pasa el de la
+                // factura; el resto, el costo del producto en este momento.
+                'unit_cost' => $data['unit_cost'] ?? $product->cost,
                 'type' => $type,
                 'previous_stock' => $previousStock,
                 'current_stock' => $newStockQuantity,
