@@ -6,6 +6,7 @@ use App\Models\Inventory\InventoryCount;
 use App\Models\Inventory\InventoryMovement;
 use App\Models\Inventory\InventoryStock;
 use App\Models\Inventory\Warehouse;
+use App\Models\Products\Category;
 use App\Models\Products\Product;
 use DomainException;
 use Illuminate\Support\Facades\Auth;
@@ -47,7 +48,8 @@ class InventoryCountService
 
             $rows = Product::where('type', Product::TYPE_PRODUCT)
                 ->where('is_active', true)
-                ->when($count->category_id, fn ($q, $id) => $q->where('category_id', $id))
+                // Una principal cuenta los productos de todas sus subcategorías (v1.5.1 REQ-2.4).
+                ->when($count->category_id, fn ($q, $id) => $q->whereIn('category_id', Category::coveredIds($id)))
                 ->orderBy('name')
                 ->pluck('id')
                 ->map(fn ($productId) => [
@@ -174,16 +176,20 @@ class InventoryCountService
 
     /**
      * "Todo el almacén" se solapa con cualquier borrador del almacén; una categoría se
-     * solapa con un borrador de todo el almacén o de esa misma categoría. Dos
-     * categorías distintas del mismo almacén pueden contarse a la vez.
+     * solapa con un borrador de todo el almacén o de una categoría que comparta productos
+     * con ella (la misma, su principal o una de sus subcategorías). Dos categorías que no
+     * se tocan pueden contarse a la vez.
      */
     private function assertNoOverlappingDraft(int $warehouseId, ?int $categoryId): void
     {
+        $mine = $categoryId ? Category::coveredIds($categoryId) : null;
+
         $open = InventoryCount::where('warehouse_id', $warehouseId)
             ->where('status', InventoryCount::STATUS_DRAFT)
-            ->when($categoryId, fn ($q) => $q->where(fn ($qq) => $qq->whereNull('category_id')->orWhere('category_id', $categoryId)))
             ->with('warehouse:id,name')
-            ->first();
+            ->get()
+            ->first(fn (InventoryCount $draft) => $mine === null || $draft->category_id === null
+                || array_intersect($mine, Category::coveredIds($draft->category_id)));
 
         if ($open) {
             throw new DomainException("Ya hay una toma en borrador que cubre estos productos en el almacén {$open->warehouse->name} ({$open->number}): termínala o cancélala antes de crear otra.");

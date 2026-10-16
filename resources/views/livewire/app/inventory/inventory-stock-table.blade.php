@@ -32,7 +32,7 @@
 
                 <x-data-table.filter-select
                     label="Categoría" filterKey="category_id"
-                    :options="$categories->pluck('name', 'id')->all()"
+                    :options="$categoryFilter['options']" :strong="$categoryFilter['strong']"
                     placeholder="Todas las categorías" />
 
                 <x-data-table.filter-select

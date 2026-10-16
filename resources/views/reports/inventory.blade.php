@@ -53,6 +53,10 @@
                 <x-ui.report.rows empty="Sin existencias.">
                     @foreach($byCategory as $row)
                         <x-ui.report.row :label="$row->name" :hint="'('.$row->skus.')'" :value="$money($row->cost)" />
+                        @foreach($row->children as $child)
+                            @continue($child->name === $row->name)
+                            <x-ui.report.row class="pl-5 !py-1.5" :label="$child->name" :hint="'('.$child->skus.')'" :value="$money($child->cost)" :strong="false" />
+                        @endforeach
                     @endforeach
                 </x-ui.report.rows>
             </x-ui.infolist.section>

@@ -148,8 +148,8 @@
                     <div x-show="scope === 'category'" x-cloak>
                         <x-ui.forms.select label="Categoría" name="category_id" placeholder="Seleccione la categoría..."
                             :error="$errors->first('category_id')">
-                            @foreach($categories as $id => $name)
-                                <option value="{{ $id }}" @selected((string) old('category_id') === (string) $id)>{{ $name }}</option>
+                            @foreach($categoryFilter['options'] as $id => $name)
+                                <option value="{{ $id }}" @selected((string) old('category_id') === (string) $id) @if(in_array($id, $categoryFilter['strong'])) class="font-bold" @endif>{{ $name }}</option>
                             @endforeach
                         </x-ui.forms.select>
                     </div>

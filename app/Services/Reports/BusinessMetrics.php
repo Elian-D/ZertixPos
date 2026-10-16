@@ -282,15 +282,29 @@ class BusinessMetrics
             ->get();
     }
 
+    /**
+     * Valor a costo por categoría principal, con sus subcategorías en `children`
+     * (v1.5.1 REQ-2.4). Cada fila: name, skus, cost.
+     */
     public function inventoryValueByCategory(?int $warehouseId = null): Collection
     {
-        return $this->stockValueQuery($warehouseId)
+        $rows = $this->stockValueQuery($warehouseId)
             ->leftJoin('categories', 'categories.id', '=', 'products.category_id')
-            ->groupBy('categories.id', 'categories.name')
-            ->selectRaw("COALESCE(categories.name, 'Sin categoría') as name, COUNT(DISTINCT inventory_stocks.product_id) as skus,
-                SUM(inventory_stocks.quantity * products.cost) as cost")
-            ->orderByDesc('cost')
+            ->leftJoin('categories as parents', 'parents.id', '=', 'categories.parent_id')
+            ->groupBy('categories.id', 'categories.name', 'parents.name')
+            ->selectRaw("COALESCE(parents.name, categories.name, 'Sin categoría') as parent, COALESCE(categories.name, 'Sin categoría') as name,
+                COUNT(DISTINCT inventory_stocks.product_id) as skus, SUM(inventory_stocks.quantity * products.cost) as cost")
             ->get();
+
+        return $rows->groupBy('parent')
+            ->map(fn (Collection $children, string $parent) => (object) [
+                'name' => $parent,
+                'skus' => (int) $children->sum('skus'),
+                'cost' => (float) $children->sum('cost'),
+                'children' => $children->sortByDesc('cost')->values(),
+            ])
+            ->sortByDesc('cost')
+            ->values();
     }
 
     /** @return array{cost: float, price: float, units: float, skus: int} */
