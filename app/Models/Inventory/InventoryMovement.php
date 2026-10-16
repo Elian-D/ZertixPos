@@ -22,8 +22,9 @@ class InventoryMovement extends Model
         'to_warehouse_id', // Para transferencias
         'product_id', 
         'user_id', 
-        'quantity', 
-        'type', 
+        'quantity',
+        'unit_cost',      // v1.5.0 Fase 6: costo congelado al moverse (costo de ventas)
+        'type',
         'previous_stock', // Auditoría
         'current_stock',  // Auditoría
         'description', 

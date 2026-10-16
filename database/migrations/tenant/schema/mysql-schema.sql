@@ -414,6 +414,7 @@ CREATE TABLE `inventory_movements` (
   `user_id` bigint unsigned NOT NULL,
   `to_warehouse_id` bigint unsigned DEFAULT NULL,
   `quantity` decimal(12,2) NOT NULL,
+  `unit_cost` decimal(14,4) DEFAULT NULL,
   `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `previous_stock` decimal(12,2) NOT NULL DEFAULT '0.00',
   `current_stock` decimal(12,2) NOT NULL DEFAULT '0.00',
@@ -1749,3 +1750,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (97,'2026_10_04_100
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (98,'2026_10_12_100000_v150_treasury',8);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (99,'2026_10_14_100000_v150_vendors_payables',9);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (100,'2026_10_16_100000_v150_purchases',10);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (101,'2026_10_20_100000_v150_dashboards',11);
