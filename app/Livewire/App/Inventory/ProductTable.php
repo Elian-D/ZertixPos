@@ -5,6 +5,7 @@ namespace App\Livewire\App\Inventory;
 use App\Livewire\Base\DataTable;
 use App\Models\Products\Product;
 use App\Services\Products\ProductCatalogService;
+use DomainException;
 use Illuminate\Database\Eloquent\Builder;
 
 class ProductTable extends DataTable
@@ -103,7 +104,13 @@ class ProductTable extends DataTable
 
         $product = Product::onlyTrashed()->findOrFail($id);
         $name = $product->name;
-        $product->forceDelete();
+        try {
+            $product->forceDeleteGuarded("El producto \"{$name}\"");
+        } catch (DomainException $e) {
+            $this->notify('error', $e->getMessage());
+
+            return;
+        }
 
         $this->notify('success', "Producto \"{$name}\" eliminado definitivamente.");
     }

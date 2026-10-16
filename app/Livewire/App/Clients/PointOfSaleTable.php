@@ -6,33 +6,34 @@ use App\Exports\PointOfSale\PointsOfSaleExport;
 use App\Livewire\Base\DataTable;
 use App\Models\Clients\PointOfSale;
 use App\Services\PointOfSale\POSCatalogService;
+use DomainException;
 use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Facades\Excel;
 
 class PointOfSaleTable extends DataTable
 {
     public array $filters = [
-        'search'        => '',
-        'client'        => '',
+        'search' => '',
+        'client' => '',
         'business_type' => '',
-        'state'         => '',
-        'active'        => '',
-        'trashed'       => '',
+        'state' => '',
+        'active' => '',
+        'trashed' => '',
     ];
 
     protected function columns(): array
     {
         return [
-            'name'              => ['label' => 'Nombre', 'default' => true, 'mobile' => true],
-            'client_id'         => ['label' => 'Cliente', 'default' => true],
-            'business_type_id'  => ['label' => 'Tipo Negocio', 'default' => true],
-            'provincia_id'      => ['label' => 'Provincia'],
-            'city'              => ['label' => 'Ciudad'],
-            'contact_name'      => ['label' => 'Contacto'],
-            'contact_phone'     => ['label' => 'Teléfono Contacto'],
-            'active'            => ['label' => 'Estado', 'default' => true],
-            'created_at'        => ['label' => 'Fecha Creación'],
-            'updated_at'        => ['label' => 'Última Actualización'],
+            'name' => ['label' => 'Nombre', 'default' => true, 'mobile' => true],
+            'client_id' => ['label' => 'Cliente', 'default' => true],
+            'business_type_id' => ['label' => 'Tipo Negocio', 'default' => true],
+            'provincia_id' => ['label' => 'Provincia'],
+            'city' => ['label' => 'Ciudad'],
+            'contact_name' => ['label' => 'Contacto'],
+            'contact_phone' => ['label' => 'Teléfono Contacto'],
+            'active' => ['label' => 'Estado', 'default' => true],
+            'created_at' => ['label' => 'Fecha Creación'],
+            'updated_at' => ['label' => 'Última Actualización'],
         ];
     }
 
@@ -48,10 +49,10 @@ class PointOfSaleTable extends DataTable
             'search' => fn (Builder $q, $v) => $q->where(fn (Builder $qq) => $qq
                 ->where('name', 'like', "%{$v}%")
                 ->orWhere('contact_name', 'like', "%{$v}%")),
-            'client'        => fn (Builder $q, $v) => $q->where('client_id', $v),
+            'client' => fn (Builder $q, $v) => $q->where('client_id', $v),
             'business_type' => fn (Builder $q, $v) => $q->where('business_type_id', $v),
-            'state'         => fn (Builder $q, $v) => $q->where('provincia_id', $v),
-            'active'        => fn (Builder $q, $v) => $q->where('active', filter_var($v, FILTER_VALIDATE_BOOLEAN)),
+            'state' => fn (Builder $q, $v) => $q->where('provincia_id', $v),
+            'active' => fn (Builder $q, $v) => $q->where('active', filter_var($v, FILTER_VALIDATE_BOOLEAN)),
         ];
     }
 
@@ -70,11 +71,11 @@ class PointOfSaleTable extends DataTable
         $options = $this->filterOptions();
 
         return match ($key) {
-            'client'        => $options['clients']->firstWhere('id', $value)?->name ?? $value,
+            'client' => $options['clients']->firstWhere('id', $value)?->name ?? $value,
             'business_type' => $options['businessTypes']->firstWhere('id', $value)?->nombre ?? $value,
-            'state'         => $options['states']->firstWhere('id', $value)?->name ?? $value,
-            'active'        => filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'Activos' : 'Inactivos',
-            default         => parent::formatFilterValue($key, $value),
+            'state' => $options['states']->firstWhere('id', $value)?->name ?? $value,
+            'active' => filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'Activos' : 'Inactivos',
+            default => parent::formatFilterValue($key, $value),
         };
     }
 
@@ -111,7 +112,13 @@ class PointOfSaleTable extends DataTable
 
         $pos = PointOfSale::onlyTrashed()->findOrFail($id);
         $name = $pos->name;
-        $pos->forceDelete();
+        try {
+            $pos->forceDeleteGuarded("El punto de reparto \"{$name}\"");
+        } catch (DomainException $e) {
+            $this->notify('error', $e->getMessage());
+
+            return;
+        }
 
         $this->notify('success', "Punto de venta \"{$name}\" eliminado definitivamente.");
     }

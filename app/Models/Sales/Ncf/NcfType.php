@@ -35,4 +35,10 @@ class NcfType extends Model
     {
         return "{$this->prefix}{$this->code}";
     }
+
+    /** Aviso cuando el cliente no tiene RNC/cédula (v1.5.1 REQ-1.4). Lo usan el request y SaleService. */
+    public function missingRncMessage(): string
+    {
+        return "El comprobante {$this->name} ({$this->full_code}) exige RNC o cédula. Registra el RNC del cliente o elige otro comprobante.";
+    }
 }

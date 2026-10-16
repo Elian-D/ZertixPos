@@ -33,7 +33,7 @@ class ReportsTest extends TenantTestCase
     {
         $this->setUpPosWorkspace(stock: $stock);
         $this->actingAs($this->cashier);
-        DB::table('installation_modules')->updateOrInsert(['module_key' => 'sales.receivables'], ['is_enabled' => true]);
+        $this->enableModule('sales.receivables');
     }
 
     private function sell(float $qty): Sale

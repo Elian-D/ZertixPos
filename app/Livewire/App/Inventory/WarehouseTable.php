@@ -5,30 +5,31 @@ namespace App\Livewire\App\Inventory;
 use App\Livewire\Base\DataTable;
 use App\Models\Inventory\Warehouse;
 use App\Services\Inventory\WarehouseService\WarehouseCatalogService;
+use DomainException;
 use Illuminate\Database\Eloquent\Builder;
 
 class WarehouseTable extends DataTable
 {
     public array $filters = [
-        'search'    => '',
-        'type'      => '',
+        'search' => '',
+        'type' => '',
         'is_active' => '',
-        'trashed'   => '',
+        'trashed' => '',
     ];
 
     protected function columns(): array
     {
         return array_filter([
-            'name'                  => ['label' => 'Nombre', 'default' => true, 'mobile' => true],
-            'types'                 => ['label' => 'Tipo', 'default' => true],
+            'name' => ['label' => 'Nombre', 'default' => true, 'mobile' => true],
+            'types' => ['label' => 'Tipo', 'default' => true],
             'accounting_account_id' => module_enabled('accounting.advanced')
                 ? ['label' => 'Cuenta Contable', 'default' => true]
                 : null,
-            'address'     => ['label' => 'Ubicación'],
+            'address' => ['label' => 'Ubicación'],
             'description' => ['label' => 'Descripción'],
-            'is_active'   => ['label' => 'Estado', 'default' => true, 'mobile' => true],
-            'created_at'  => ['label' => 'Fecha Creación'],
-            'updated_at'  => ['label' => 'Última Actualización'],
+            'is_active' => ['label' => 'Estado', 'default' => true, 'mobile' => true],
+            'created_at' => ['label' => 'Fecha Creación'],
+            'updated_at' => ['label' => 'Última Actualización'],
         ]);
     }
 
@@ -41,8 +42,8 @@ class WarehouseTable extends DataTable
     protected function filterMap(): array
     {
         return [
-            'search'    => fn (Builder $q, $v) => $q->where('name', 'like', "%{$v}%"),
-            'type'      => fn (Builder $q, $v) => $q->where('type', $v),
+            'search' => fn (Builder $q, $v) => $q->where('name', 'like', "%{$v}%"),
+            'type' => fn (Builder $q, $v) => $q->where('type', $v),
             'is_active' => fn (Builder $q, $v) => $q->where('is_active', (bool) $v),
         ];
     }
@@ -62,9 +63,9 @@ class WarehouseTable extends DataTable
         $options = $this->filterOptions();
 
         return match ($key) {
-            'type'      => $options['types'][$value] ?? $value,
+            'type' => $options['types'][$value] ?? $value,
             'is_active' => filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'Activos' : 'Inactivos',
-            default     => parent::formatFilterValue($key, $value),
+            default => parent::formatFilterValue($key, $value),
         };
     }
 
@@ -103,7 +104,13 @@ class WarehouseTable extends DataTable
 
         $warehouse = Warehouse::onlyTrashed()->findOrFail($id);
         $name = $warehouse->name;
-        $warehouse->forceDelete();
+        try {
+            $warehouse->forceDeleteGuarded("El almacén \"{$name}\"");
+        } catch (DomainException $e) {
+            $this->notify('error', $e->getMessage());
+
+            return;
+        }
 
         $this->notify('success', "Almacén \"{$name}\" eliminado definitivamente.");
     }

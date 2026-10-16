@@ -8,44 +8,44 @@ use App\Models\Clients\Client;
 use App\Models\Geo\Province;
 use App\Services\Client\ClientCatalogService;
 use App\Services\Client\ClientService;
+use DomainException;
 use Illuminate\Database\Eloquent\Builder;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ClientTable extends DataTable
 {
     public array $filters = [
-        'search'     => '',
-        'is_active'  => '',
-        'state'      => '',
-        'type'       => '',
-        'tax_type'   => '',
-        'from_date'  => '',
-        'to_date'    => '',
-        'has_debt'   => '',
-        'over_limit' => '',
+        'search' => '',
+        'is_active' => '',
+        'state' => '',
+        'type' => '',
+        'tax_type' => '',
+        'from_date' => '',
+        'to_date' => '',
+        'has_debt' => '',
         // 'papelera' en vez de un módulo aparte (docs/analisis/politica-soft-deletes.md
         // §6) — reemplaza el scope global (onlyTrashed) en vez de agregar un where,
         // por eso NO tiene entrada en filterMap(): se resuelve en baseQuery().
-        'trashed'    => '',
+        'trashed' => '',
     ];
 
     protected function columns(): array
     {
         return [
-            'id'                    => ['label' => 'ID', 'default' => true],
-            'name'                  => ['label' => 'Nombre Cliente', 'default' => true, 'mobile' => true],
-            'tax_identifier_types'  => ['label' => 'Tipo ID Fiscal'],
-            'tax_id'                => ['label' => 'ID Fiscal', 'default' => true],
-            'type'                  => ['label' => 'Tipo'],
-            'balance'               => ['label' => 'Saldo Pendiente', 'default' => true, 'mobile' => true],
-            'credit_limit'          => ['label' => 'Límite Crédito', 'default' => true],
-            'email'                 => ['label' => 'Email'],
-            'phone'                 => ['label' => 'Teléfono'],
-            'state'                 => ['label' => 'Estado/Provincia'],
-            'city'                  => ['label' => 'Ciudad'],
-            'address'               => ['label' => 'Dirección'],
-            'is_active'             => ['label' => 'Estado', 'default' => true],
-            'created_at'            => ['label' => 'Fecha Creación'],
+            'id' => ['label' => 'ID', 'default' => true],
+            'name' => ['label' => 'Nombre Cliente', 'default' => true, 'mobile' => true],
+            'tax_identifier_types' => ['label' => 'Tipo ID Fiscal'],
+            'tax_id' => ['label' => 'ID Fiscal', 'default' => true],
+            'type' => ['label' => 'Tipo'],
+            'balance' => ['label' => 'Saldo Pendiente', 'default' => true, 'mobile' => true],
+            'credit_limit' => ['label' => 'Límite Crédito', 'default' => true],
+            'email' => ['label' => 'Email'],
+            'phone' => ['label' => 'Teléfono'],
+            'state' => ['label' => 'Estado/Provincia'],
+            'city' => ['label' => 'Ciudad'],
+            'address' => ['label' => 'Dirección'],
+            'is_active' => ['label' => 'Estado', 'default' => true],
+            'created_at' => ['label' => 'Fecha Creación'],
         ];
     }
 
@@ -63,19 +63,16 @@ class ClientTable extends DataTable
                 ->orWhere('tax_id', 'like', "%{$v}%")
                 ->orWhere('email', 'like', "%{$v}%")),
             'is_active' => fn (Builder $q, $v) => $q->where('is_active', filter_var($v, FILTER_VALIDATE_BOOLEAN)),
-            'state'     => fn (Builder $q, $v) => $q->where('provincia_id', $v),
-            'type'      => fn (Builder $q, $v) => $q->where('type', $v),
-            'tax_type'  => fn (Builder $q, $v) => $q->where('tax_identifier_type', $v),
+            'state' => fn (Builder $q, $v) => $q->where('provincia_id', $v),
+            'type' => fn (Builder $q, $v) => $q->where('type', $v),
+            'tax_type' => fn (Builder $q, $v) => $q->where('tax_identifier_type', $v),
             'from_date' => fn (Builder $q, $v) => $q->whereDate('created_at', '>=', $v),
-            'to_date'   => fn (Builder $q, $v) => $q->whereDate('created_at', '<=', $v),
-            'has_debt'  => fn (Builder $q, $v) => match ($v) {
-                'yes'   => $q->where('balance', '>', 0),
-                'no'    => $q->where('balance', '<=', 0),
+            'to_date' => fn (Builder $q, $v) => $q->whereDate('created_at', '<=', $v),
+            'has_debt' => fn (Builder $q, $v) => match ($v) {
+                'yes' => $q->where('balance', '>', 0),
+                'no' => $q->where('balance', '<=', 0),
                 default => $q,
             },
-            'over_limit' => fn (Builder $q, $v) => $v === '1'
-                ? $q->whereColumn('balance', '>', 'credit_limit')
-                : $q,
         ];
     }
 
@@ -92,13 +89,12 @@ class ClientTable extends DataTable
     protected function formatFilterValue(string $key, mixed $value): string
     {
         return match ($key) {
-            'state'      => Province::find($value)?->name ?? $value,
-            'tax_type'   => collect($this->filterOptions()['taxIdentifierTypes'] ?? [])->firstWhere('value', $value)['label'] ?? $value,
-            'type'       => $value === 'company' ? 'Empresa' : 'Individual',
-            'is_active'  => filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'Activos' : 'Inactivos',
-            'has_debt'   => $value === 'yes' ? 'Con deuda' : 'Sin deuda',
-            'over_limit' => 'Límite excedido',
-            default      => parent::formatFilterValue($key, $value),
+            'state' => Province::find($value)?->name ?? $value,
+            'tax_type' => collect($this->filterOptions()['taxIdentifierTypes'] ?? [])->firstWhere('value', $value)['label'] ?? $value,
+            'type' => $value === 'company' ? 'Empresa' : 'Individual',
+            'is_active' => filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'Activos' : 'Inactivos',
+            'has_debt' => $value === 'yes' ? 'Con deuda' : 'Sin deuda',
+            default => parent::formatFilterValue($key, $value),
         };
     }
 
@@ -185,7 +181,13 @@ class ClientTable extends DataTable
 
         $client = Client::onlyTrashed()->findOrFail($id);
         $name = $client->name;
-        $client->forceDelete();
+        try {
+            $client->forceDeleteGuarded("El cliente \"{$name}\"");
+        } catch (DomainException $e) {
+            $this->notify('error', $e->getMessage());
+
+            return;
+        }
 
         $this->notify('success', "Cliente \"{$name}\" eliminado definitivamente.");
     }

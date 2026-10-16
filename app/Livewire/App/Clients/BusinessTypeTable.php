@@ -4,23 +4,24 @@ namespace App\Livewire\App\Clients;
 
 use App\Livewire\Base\DataTable;
 use App\Models\Clients\BusinessType;
+use DomainException;
 use Illuminate\Database\Eloquent\Builder;
 
 class BusinessTypeTable extends DataTable
 {
     public array $filters = [
-        'search'  => '',
-        'activo'  => '',
+        'search' => '',
+        'activo' => '',
         'trashed' => '',
     ];
 
     protected function columns(): array
     {
         return [
-            'id'         => ['label' => 'ID', 'default' => true, 'mobile' => true],
-            'nombre'     => ['label' => 'Nombre', 'default' => true, 'mobile' => true],
-            'prefix'     => ['label' => 'Prefijo', 'default' => true],
-            'activo'     => ['label' => 'Estado', 'default' => true],
+            'id' => ['label' => 'ID', 'default' => true, 'mobile' => true],
+            'nombre' => ['label' => 'Nombre', 'default' => true, 'mobile' => true],
+            'prefix' => ['label' => 'Prefijo', 'default' => true],
+            'activo' => ['label' => 'Estado', 'default' => true],
             'created_at' => ['label' => 'Fecha Creación'],
             'updated_at' => ['label' => 'Última Actualización'],
         ];
@@ -51,7 +52,7 @@ class BusinessTypeTable extends DataTable
     {
         return match ($key) {
             'activo' => filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'Activos' : 'Inactivos',
-            default  => parent::formatFilterValue($key, $value),
+            default => parent::formatFilterValue($key, $value),
         };
     }
 
@@ -90,7 +91,13 @@ class BusinessTypeTable extends DataTable
 
         $businessType = BusinessType::onlyTrashed()->findOrFail($id);
         $nombre = $businessType->nombre;
-        $businessType->forceDelete();
+        try {
+            $businessType->forceDeleteGuarded("El tipo de negocio \"{$nombre}\"");
+        } catch (DomainException $e) {
+            $this->notify('error', $e->getMessage());
+
+            return;
+        }
 
         $this->notify('success', "Tipo de Negocio \"{$nombre}\" eliminado definitivamente.");
     }

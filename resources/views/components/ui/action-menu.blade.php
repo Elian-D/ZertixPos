@@ -35,6 +35,10 @@
     desde md y bottom sheet abajo, un solo criterio (matchMedia), cierre en cualquier
     cambio de breakpoint y listeners que se quitan en destroy().
 
+    v1.5.1 REQ-1.5 — capas. El dropdown de desktop va en z-30, debajo del header (z-40):
+    al hacer scroll se mete bajo el header en vez de taparlo. El bottom sheet móvil y su
+    overlay siguen en z-50, encima de todo.
+
     SLOT: los x-ui.action-menu.item que arma el consumidor.
 
     PROPS:
@@ -146,7 +150,7 @@
                 x-transition:leave-start="opacity-100 translate-y-0 md:scale-100"
                 x-transition:leave-end="opacity-0 translate-y-4 md:translate-y-0 md:scale-95"
                 :style="isMobile ? '' : `top: ${coords.top}px; left: ${coords.left}px;`"
-                class="fixed z-50 bg-white border-slate-100 shadow-2xl
+                class="fixed z-50 md:z-30 bg-white border-slate-100 shadow-2xl
                        inset-x-0 bottom-0 rounded-t-3xl border-t pb-6
                        md:inset-x-auto md:bottom-auto md:w-48 md:rounded-xl md:border md:py-1.5"
             >

@@ -4,31 +4,32 @@ namespace App\Livewire\App\Sales;
 
 use App\Livewire\Base\DataTable;
 use App\Models\Sales\Pos\PosTerminal;
+use DomainException;
 use Illuminate\Database\Eloquent\Builder;
 
 class PosTerminalTable extends DataTable
 {
     public array $filters = [
-        'search'  => '',
+        'search' => '',
         'trashed' => '',
     ];
 
     protected function columns(): array
     {
         return array_filter([
-            'id'                  => ['label' => 'ID Terminal'],
-            'name'                => ['label' => 'Nombre Terminal', 'default' => true, 'mobile' => true],
-            'warehouse_id'        => ['label' => 'Almacén Asociado', 'default' => true],
-            'cash_account_id'     => module_enabled('accounting.advanced')
+            'id' => ['label' => 'ID Terminal'],
+            'name' => ['label' => 'Nombre Terminal', 'default' => true, 'mobile' => true],
+            'warehouse_id' => ['label' => 'Almacén Asociado', 'default' => true],
+            'cash_account_id' => module_enabled('accounting.advanced')
                 ? ['label' => 'Cuenta Caja', 'default' => true]
                 : null,
             'default_ncf_type_id' => ['label' => 'Tipo NCF Defecto'],
-            'default_client_id'   => ['label' => 'Cliente Defecto'],
-            'is_mobile'           => ['label' => 'Es Móvil'],
-            'printer_format'      => ['label' => 'Formato Impresión', 'default' => true, 'mobile' => true],
-            'is_active'           => ['label' => 'Estado', 'default' => true, 'mobile' => true],
-            'created_at'          => ['label' => 'Fecha Creación', 'default' => true],
-            'updated_at'          => ['label' => 'Fecha Actualización'],
+            'default_client_id' => ['label' => 'Cliente Defecto'],
+            'is_mobile' => ['label' => 'Es Móvil'],
+            'printer_format' => ['label' => 'Formato Impresión', 'default' => true, 'mobile' => true],
+            'is_active' => ['label' => 'Estado', 'default' => true, 'mobile' => true],
+            'created_at' => ['label' => 'Fecha Creación', 'default' => true],
+            'updated_at' => ['label' => 'Fecha Actualización'],
         ]);
     }
 
@@ -75,7 +76,13 @@ class PosTerminalTable extends DataTable
 
         $terminal = PosTerminal::onlyTrashed()->findOrFail($id);
         $name = $terminal->name;
-        $terminal->forceDelete();
+        try {
+            $terminal->forceDeleteGuarded("La terminal \"{$name}\"");
+        } catch (DomainException $e) {
+            $this->notify('error', $e->getMessage());
+
+            return;
+        }
 
         $this->notify('success', "Terminal \"{$name}\" eliminada definitivamente.");
     }

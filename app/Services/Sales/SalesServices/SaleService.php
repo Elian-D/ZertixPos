@@ -13,6 +13,7 @@ use App\Models\Inventory\InventoryMovement;
 use App\Models\Products\Product;
 use App\Models\Sales\Ncf\NcfLog;
 use App\Models\Sales\Ncf\NcfSequence;
+use App\Models\Sales\Ncf\NcfType;
 use App\Models\Sales\Pos\PosTerminal;
 use App\Models\Sales\Sale;
 use App\Services\Accounting\JournalEntries\JournalEntryService;
@@ -58,6 +59,7 @@ class SaleService
         // 1. VALIDACIÓN PRE-TRANSACCIONAL (Fail-Fast)
         // Se valida la secuencia NCF antes de abrir la transacción para evitar bloqueos innecesarios en base de datos.
         if (module_enabled('sales.ncf') && isset($data['ncf_type_id'])) {
+            $this->validateNcfRnc($data);
             $this->validateNcfSequence($data['ncf_type_id']);
         }
 
@@ -472,6 +474,24 @@ class SaleService
             ->exists();
         if (! $exists) {
             throw new Exception('Error Fiscal: Secuencias agotadas o vencidas.');
+        }
+    }
+
+    /**
+     * El comprobante que exige RNC no sale sin él (v1.5.1 REQ-1.4). StoreSaleRequest ya lo
+     * valida en el TPV y el backoffice; esto cubre a quien llama a create() directo, como
+     * QuoteService::convertToSale().
+     */
+    private function validateNcfRnc(array $data): void
+    {
+        $ncfType = NcfType::find($data['ncf_type_id']);
+
+        if (! $ncfType?->requires_rnc || ! empty($data['client_rnc'])) {
+            return;
+        }
+
+        if (empty(Client::find($data['client_id'] ?? null)?->tax_id)) {
+            throw new Exception($ncfType->missingRncMessage());
         }
     }
 

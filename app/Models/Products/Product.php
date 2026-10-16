@@ -4,13 +4,15 @@
 
 namespace App\Models\Products;
 
+use App\Traits\GuardsForceDelete;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\DB;
 
 class Product extends Model
 {
-    use SoftDeletes;
+    use GuardsForceDelete, SoftDeletes;
 
     protected $fillable = [
         'category_id', 'unit_id', 'name', 'slug', 'sku', 'barcode', 'description',
@@ -191,5 +193,18 @@ class Product extends Model
     public function getTotalStockAttribute()
     {
         return $this->stocks()->sum('quantity');
+    }
+
+    /** Qué impide el borrado definitivo (v1.5.1 REQ-1.1). */
+    public function deletionBlockers(): array
+    {
+        return [
+            'venta|ventas' => DB::table('sale_items')->where('product_id', $this->id)->count(),
+            'cotización|cotizaciones' => DB::table('quote_items')->where('product_id', $this->id)->count(),
+            'movimiento de inventario|movimientos de inventario' => DB::table('inventory_movements')->where('product_id', $this->id)->count(),
+            'orden de compra|órdenes de compra' => DB::table('purchase_order_items')->where('product_id', $this->id)->count(),
+            'línea de toma, merma o transferencia|líneas de tomas, mermas o transferencias' => DB::table('inventory_count_items')->where('product_id', $this->id)->count() + DB::table('inventory_waste_items')->where('product_id', $this->id)->count() + DB::table('inventory_transfer_items')->where('product_id', $this->id)->count(),
+            'almacén con existencia|almacenes con existencia' => DB::table('inventory_stocks')->where('product_id', $this->id)->where('quantity', '!=', 0)->count(),
+        ];
     }
 }

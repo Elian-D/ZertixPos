@@ -37,7 +37,7 @@ CREATE TABLE `accounting_accounts` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `accounting_accounts_code_unique` (`code`),
   KEY `accounting_accounts_parent_id_foreign` (`parent_id`),
-  CONSTRAINT `accounting_accounts_parent_id_foreign` FOREIGN KEY (`parent_id`) REFERENCES `accounting_accounts` (`id`) ON DELETE CASCADE
+  CONSTRAINT `accounting_accounts_parent_id_foreign` FOREIGN KEY (`parent_id`) REFERENCES `accounting_accounts` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `business_types`;
@@ -200,10 +200,10 @@ CREATE TABLE `equipments` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `equipments_point_of_sale_id_foreign` (`point_of_sale_id`),
   KEY `equipments_equipment_type_id_foreign` (`equipment_type_id`),
+  KEY `equipments_point_of_sale_id_foreign` (`point_of_sale_id`),
   CONSTRAINT `equipments_equipment_type_id_foreign` FOREIGN KEY (`equipment_type_id`) REFERENCES `equipment_types` (`id`) ON DELETE RESTRICT,
-  CONSTRAINT `equipments_point_of_sale_id_foreign` FOREIGN KEY (`point_of_sale_id`) REFERENCES `point_of_sales` (`id`) ON DELETE CASCADE
+  CONSTRAINT `equipments_point_of_sale_id_foreign` FOREIGN KEY (`point_of_sale_id`) REFERENCES `point_of_sales` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `expenses`;
@@ -425,15 +425,15 @@ CREATE TABLE `inventory_movements` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `inventory_movements_warehouse_id_foreign` (`warehouse_id`),
-  KEY `inventory_movements_product_id_foreign` (`product_id`),
-  KEY `inventory_movements_user_id_foreign` (`user_id`),
   KEY `inventory_movements_to_warehouse_id_foreign` (`to_warehouse_id`),
   KEY `inventory_movements_reference_type_reference_id_index` (`reference_type`,`reference_id`),
-  CONSTRAINT `inventory_movements_product_id_foreign` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE CASCADE,
+  KEY `inventory_movements_product_id_foreign` (`product_id`),
+  KEY `inventory_movements_warehouse_id_foreign` (`warehouse_id`),
+  KEY `inventory_movements_user_id_foreign` (`user_id`),
+  CONSTRAINT `inventory_movements_product_id_foreign` FOREIGN KEY (`product_id`) REFERENCES `products` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `inventory_movements_to_warehouse_id_foreign` FOREIGN KEY (`to_warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `inventory_movements_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `inventory_movements_warehouse_id_foreign` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE CASCADE
+  CONSTRAINT `inventory_movements_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `inventory_movements_warehouse_id_foreign` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `inventory_stocks`;
@@ -884,14 +884,14 @@ CREATE TABLE `payments` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `payments_receipt_number_unique` (`receipt_number`),
-  KEY `payments_client_id_foreign` (`client_id`),
   KEY `payments_receivable_id_foreign` (`receivable_id`),
   KEY `payments_tipo_pago_id_foreign` (`tipo_pago_id`),
   KEY `payments_journal_entry_id_foreign` (`journal_entry_id`),
   KEY `payments_created_by_foreign` (`created_by`),
   KEY `payments_pos_session_id_foreign` (`pos_session_id`),
   KEY `payments_pos_terminal_id_foreign` (`pos_terminal_id`),
-  CONSTRAINT `payments_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE CASCADE,
+  KEY `payments_client_id_foreign` (`client_id`),
+  CONSTRAINT `payments_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `payments_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`),
   CONSTRAINT `payments_journal_entry_id_foreign` FOREIGN KEY (`journal_entry_id`) REFERENCES `journal_entries` (`id`),
   CONSTRAINT `payments_pos_session_id_foreign` FOREIGN KEY (`pos_session_id`) REFERENCES `pos_sessions` (`id`),
@@ -952,11 +952,11 @@ CREATE TABLE `point_of_sales` (
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  KEY `point_of_sales_client_id_foreign` (`client_id`),
   KEY `point_of_sales_business_type_id_foreign` (`business_type_id`),
   KEY `point_of_sales_provincia_id_foreign` (`provincia_id`),
+  KEY `point_of_sales_client_id_foreign` (`client_id`),
   CONSTRAINT `point_of_sales_business_type_id_foreign` FOREIGN KEY (`business_type_id`) REFERENCES `business_types` (`id`) ON DELETE RESTRICT,
-  CONSTRAINT `point_of_sales_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `point_of_sales_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `point_of_sales_provincia_id_foreign` FOREIGN KEY (`provincia_id`) REFERENCES `provinces` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -1014,15 +1014,15 @@ CREATE TABLE `pos_sessions` (
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `pos_sessions_number_unique` (`number`),
-  KEY `pos_sessions_terminal_id_foreign` (`terminal_id`),
   KEY `pos_sessions_user_id_foreign` (`user_id`),
   KEY `pos_sessions_opened_by_user_id_foreign` (`opened_by_user_id`),
   KEY `pos_sessions_closed_by_user_id_foreign` (`closed_by_user_id`),
   KEY `pos_sessions_document_type_id_foreign` (`document_type_id`),
+  KEY `pos_sessions_terminal_id_foreign` (`terminal_id`),
   CONSTRAINT `pos_sessions_closed_by_user_id_foreign` FOREIGN KEY (`closed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `pos_sessions_document_type_id_foreign` FOREIGN KEY (`document_type_id`) REFERENCES `document_types` (`id`),
   CONSTRAINT `pos_sessions_opened_by_user_id_foreign` FOREIGN KEY (`opened_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `pos_sessions_terminal_id_foreign` FOREIGN KEY (`terminal_id`) REFERENCES `pos_terminals` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `pos_sessions_terminal_id_foreign` FOREIGN KEY (`terminal_id`) REFERENCES `pos_terminals` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `pos_sessions_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -1121,8 +1121,8 @@ CREATE TABLE `products` (
   UNIQUE KEY `products_barcode_unique` (`barcode`),
   KEY `products_category_id_foreign` (`category_id`),
   KEY `products_unit_id_foreign` (`unit_id`),
-  CONSTRAINT `products_category_id_foreign` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `products_unit_id_foreign` FOREIGN KEY (`unit_id`) REFERENCES `units` (`id`) ON DELETE CASCADE
+  CONSTRAINT `products_category_id_foreign` FOREIGN KEY (`category_id`) REFERENCES `categories` (`id`) ON DELETE RESTRICT,
+  CONSTRAINT `products_unit_id_foreign` FOREIGN KEY (`unit_id`) REFERENCES `units` (`id`) ON DELETE RESTRICT
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `provinces`;
@@ -1347,14 +1347,14 @@ CREATE TABLE `receivables` (
   `reference_id` bigint unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `receivables_number_unique` (`number`),
-  KEY `receivables_client_id_foreign` (`client_id`),
   KEY `receivables_journal_entry_id_foreign` (`journal_entry_id`),
   KEY `receivables_accounting_account_id_foreign` (`accounting_account_id`),
   KEY `receivables_document_number_index` (`document_number`),
   KEY `receivables_reference_type_reference_id_index` (`reference_type`,`reference_id`),
   KEY `receivables_document_type_id_foreign` (`document_type_id`),
+  KEY `receivables_client_id_foreign` (`client_id`),
   CONSTRAINT `receivables_accounting_account_id_foreign` FOREIGN KEY (`accounting_account_id`) REFERENCES `accounting_accounts` (`id`),
-  CONSTRAINT `receivables_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `receivables_client_id_foreign` FOREIGN KEY (`client_id`) REFERENCES `clients` (`id`) ON DELETE RESTRICT,
   CONSTRAINT `receivables_document_type_id_foreign` FOREIGN KEY (`document_type_id`) REFERENCES `document_types` (`id`),
   CONSTRAINT `receivables_journal_entry_id_foreign` FOREIGN KEY (`journal_entry_id`) REFERENCES `journal_entries` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -1751,3 +1751,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (98,'2026_10_12_100
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (99,'2026_10_14_100000_v150_vendors_payables',9);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (100,'2026_10_16_100000_v150_purchases',10);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (101,'2026_10_20_100000_v150_dashboards',11);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (102,'2026_10_25_100000_v151',12);

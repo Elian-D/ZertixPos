@@ -207,6 +207,8 @@ Rules that come with the show views:
 
 For a Categoría A model, there is no dedicated `eliminados` route/view anymore — it's an "Activos"/"Papelera" tab on the same index, driven by a `trashed` key in `$filters` that is excluded from chip/active-filter counting (`nonChipFilterKeys()`) and swaps the base query (`Model::onlyTrashed()`), not an added `where`. Permanent deletion uses `x-ui.confirm-deletion-modal` with `:wireConfirm="'forceDelete(' . $id . ')'"` (never `:route` for that specific action, never a native `wire:confirm`).
 
+**A permanent delete never returns a 500 and never deletes data silently.** The model uses `App\Traits\GuardsForceDelete` and declares in `deletionBlockers()` what ties it down (counted with `DB::table()` so trashed rows count too); the table's `forceDelete()` calls `$model->forceDeleteGuarded('El cliente "X"')` and catches the `DomainException` with `$this->notify('error', ...)`. **No foreign key toward a catalog is `CASCADE`** — use `restrict` (deleting a category used to delete its products, and a product its kardex). `CASCADE` is only for rows that are part of the record: a document's lines, a product's taxes and stock rows, a role's permissions. See `docs/analisis/politica-soft-deletes.md` §3.
+
 ### Selection / bulk actions
 
 **No module currently has bulk selection enabled**, even where the pre-migration AJAX version had one working (explicit product decision, applies uniformly — do not add it to one module without confirming first). The base engine still supports it (`bulkActions()`, `selected`/`selectAll`, `type: 'select'` value-based actions) for when it's revisited across all modules at once.

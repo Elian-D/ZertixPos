@@ -10,11 +10,14 @@ if (! function_exists('module_enabled')) {
      */
     function module_enabled(string $key): bool
     {
-        static $cache = null;
+        // Memo en el contenedor y no en un `static`: el static sobrevivía entre tests del
+        // mismo proceso. app()->forgetInstance('modules.enabled') lo vacía.
+        $cache = app()->bound('modules.enabled') ? app('modules.enabled') : null;
 
         if ($cache === null) {
             try {
                 $cache = InstallationModule::pluck('is_enabled', 'module_key');
+                app()->instance('modules.enabled', $cache);
             } catch (\Throwable $e) {
                 // Base de datos sin migrar aún (instalación nueva, migraciones en curso,
                 // migrate:fresh en progreso) — routes/app/sales.php consulta este helper

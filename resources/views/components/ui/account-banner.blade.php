@@ -15,6 +15,9 @@
     dentro de `x-app-layout` (ver ese archivo), así que quien lo ve ya está
     autenticado — a diferencia del botón de `billing.past-due`, que sí tiene
     que resolver entre login/manage porque esa pantalla es alcanzable sin sesión.
+
+    v1.5.1 REQ-1.5 — relative z-40, igual que el header: el dropdown de x-ui.action-menu
+    (z-30) pasa por debajo al hacer scroll.
 --}}
 @php
     $variant = null;
@@ -51,12 +54,12 @@
 @endphp
 
 @if ($variant === 'demo')
-    <div class="flex items-center justify-center gap-2 px-4 py-2 text-sm bg-sky-50 text-sky-700 border-b border-sky-100">
+    <div class="relative z-40 flex items-center justify-center gap-2 px-4 py-2 text-sm bg-sky-50 text-sky-700 border-b border-sky-100">
         <x-heroicon-o-information-circle class="w-4 h-4 shrink-0" />
         <span>Estás viendo una cuenta de demostración.</span>
     </div>
 @elseif ($variant === 'trial_ending')
-    <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-sm bg-amber-50 text-amber-800 border-b border-amber-100">
+    <div class="relative z-40 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-sm bg-amber-50 text-amber-800 border-b border-amber-100">
         <div class="flex items-center gap-2">
             <x-heroicon-o-clock class="w-4 h-4 shrink-0" />
             <span>
@@ -72,7 +75,7 @@
         </a>
     </div>
 @elseif ($variant === 'past_due')
-    <div class="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-sm bg-red-50 text-red-700 border-b border-red-100">
+    <div class="relative z-40 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 px-4 py-2 text-sm bg-red-50 text-red-700 border-b border-red-100">
         <div class="flex items-center gap-2">
             <x-heroicon-o-exclamation-triangle class="w-4 h-4 shrink-0" />
             <span>

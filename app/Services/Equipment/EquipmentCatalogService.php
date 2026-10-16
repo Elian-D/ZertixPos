@@ -35,7 +35,7 @@ class EquipmentCatalogService
                 ->get(),
 
             'pointsOfSale' => PointOfSale::where('active', true)
-                ->select('id', 'name', 'code')
+                ->select('id', 'name')
                 ->orderBy('name')
                 ->get(),
         ];
