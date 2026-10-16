@@ -37,6 +37,15 @@ abstract class TenantTestCase extends TestCase
         ]);
     }
 
+    /** Prende o apaga un módulo y vacía el memo de module_enabled(). */
+    protected function enableModule(string $key, bool $enabled = true): void
+    {
+        \Illuminate\Support\Facades\DB::table('installation_modules')
+            ->updateOrInsert(['module_key' => $key], ['is_enabled' => $enabled]);
+
+        app()->forgetInstance('modules.enabled');
+    }
+
     protected function migrateFreshUsing()
     {
         return [
