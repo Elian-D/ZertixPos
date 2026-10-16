@@ -22,7 +22,7 @@
                 class="w-full flex items-center justify-between px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-600 shadow-sm">
             <span class="flex items-center gap-2">
                 <x-heroicon-s-funnel class="w-4 h-4 text-gray-400" />
-                <span x-text="activeCategory ? (categories.find(c => c.id === activeCategory)?.name ?? 'Categorías') : 'Todas las categorías'"></span>
+                <span x-text="categoryLabel"></span>
             </span>
             <x-heroicon-s-chevron-down class="w-4 h-4 text-gray-400" />
         </button>
@@ -209,19 +209,36 @@
                 </button>
             </div>
             <div class="overflow-y-auto p-3 space-y-1 pb-6">
-                <button type="button" @click="activeCategory = null; categorySheetOpen = false"
+                <button type="button" @click="selectParent(null); categorySheetOpen = false"
                         class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold"
-                        :class="activeCategory === null ? 'bg-emerald-50 text-[#58c03f]' : 'text-gray-700 hover:bg-gray-50'">
+                        :class="activeParent === null ? 'bg-emerald-50 text-[#58c03f]' : 'text-gray-700 hover:bg-gray-50'">
                     <span>Todas</span>
-                    <x-heroicon-s-check-circle class="w-5 h-5" x-show="activeCategory === null" />
+                    <x-heroicon-s-check-circle class="w-5 h-5" x-show="activeParent === null" />
                 </button>
+                <button type="button" @click="selectParent('top'); categorySheetOpen = false" x-show="topSellerIds.length"
+                        class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold"
+                        :class="activeParent === 'top' ? 'bg-emerald-50 text-[#58c03f]' : 'text-gray-700 hover:bg-gray-50'">
+                    <span class="flex items-center gap-2"><x-heroicon-s-fire class="w-4 h-4" /> Más vendidos</span>
+                    <x-heroicon-s-check-circle class="w-5 h-5" x-show="activeParent === 'top'" />
+                </button>
+                {{-- Cada principal (muestra todas sus subcategorías) y debajo sus subcategorías. --}}
                 <template x-for="cat in categories" :key="'cs-'+cat.id">
-                    <button type="button" @click="activeCategory = cat.id; categorySheetOpen = false"
-                            class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm"
-                            :class="activeCategory === cat.id ? 'bg-emerald-50 text-[#58c03f] font-bold' : 'text-gray-700 hover:bg-gray-50'">
-                        <span x-text="cat.name"></span>
-                        <x-heroicon-s-check-circle class="w-5 h-5" x-show="activeCategory === cat.id" />
-                    </button>
+                    <div>
+                        <button type="button" @click="selectParent(cat.id); categorySheetOpen = false"
+                                class="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm font-bold"
+                                :class="activeParent === cat.id && activeCategory === null ? 'bg-emerald-50 text-[#58c03f]' : 'text-gray-800 hover:bg-gray-50'">
+                            <span x-text="cat.name"></span>
+                            <x-heroicon-s-check-circle class="w-5 h-5" x-show="activeParent === cat.id && activeCategory === null" />
+                        </button>
+                        <template x-for="child in cat.children" :key="'csc-'+child.id">
+                            <button type="button" @click="activeParent = cat.id; activeCategory = child.id; categorySheetOpen = false"
+                                    class="w-full flex items-center justify-between pl-8 pr-4 py-2.5 rounded-xl text-sm"
+                                    :class="activeCategory === child.id ? 'bg-emerald-50 text-[#58c03f] font-bold' : 'text-gray-600 hover:bg-gray-50'">
+                                <span x-text="child.name"></span>
+                                <x-heroicon-s-check-circle class="w-5 h-5" x-show="activeCategory === child.id" />
+                            </button>
+                        </template>
+                    </div>
                 </template>
             </div>
         </div>

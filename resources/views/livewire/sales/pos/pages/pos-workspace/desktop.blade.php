@@ -20,18 +20,35 @@
                    class="w-full pl-12 pr-4 py-3.5 bg-white border border-gray-200 rounded-xl text-sm font-medium shadow-sm focus:ring-2 focus:ring-[#58c03f] focus:border-[#58c03f] transition-all">
         </div>
 
-        {{-- Categorías rápidas --}}
-        <div class="flex items-center gap-2 overflow-x-auto pb-1" x-show="categories.length">
-            <button type="button" @click="activeCategory = null"
-                    :class="activeCategory === null ? 'bg-[#58c03f] text-white' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'"
+        {{-- Categorías rápidas (v1.5.1 REQ-2.5): Todas, Más vendidos y las principales; al
+             tocar una principal aparece debajo la fila de sus subcategorías. --}}
+        <div class="flex items-center gap-2 overflow-x-auto pb-1" x-show="categories.length || topSellerIds.length">
+            <button type="button" @click="selectParent(null)"
+                    :class="activeParent === null ? 'bg-[#58c03f] text-white' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'"
                     class="shrink-0 text-xs font-bold px-3.5 py-2 rounded-full transition-colors">
                 Todas
             </button>
+            <button type="button" @click="selectParent('top')" x-show="topSellerIds.length"
+                    :class="activeParent === 'top' ? 'bg-[#58c03f] text-white' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'"
+                    class="shrink-0 inline-flex items-center gap-1 text-xs font-bold px-3.5 py-2 rounded-full transition-colors">
+                <x-heroicon-s-fire class="w-3.5 h-3.5" />
+                Más vendidos
+            </button>
             <template x-for="cat in categories" :key="cat.id">
-                <button type="button" @click="activeCategory = cat.id"
-                        :class="activeCategory === cat.id ? 'bg-[#58c03f] text-white' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'"
+                <button type="button" @click="selectParent(cat.id)"
+                        :class="activeParent === cat.id ? 'bg-[#58c03f] text-white' : 'bg-white text-gray-500 border border-gray-200 hover:bg-gray-50'"
                         class="shrink-0 text-xs font-bold px-3.5 py-2 rounded-full transition-colors">
                     <span x-text="cat.name"></span>
+                </button>
+            </template>
+        </div>
+
+        <div class="flex items-center gap-2 overflow-x-auto pb-1 -mt-1" x-show="activeParentCategory" x-cloak>
+            <template x-for="child in (activeParentCategory?.children ?? [])" :key="'sub-'+child.id">
+                <button type="button" @click="activeCategory = activeCategory === child.id ? null : child.id"
+                        :class="activeCategory === child.id ? 'bg-emerald-50 text-[#3f9a2b] border-[#58c03f]' : 'bg-white text-gray-500 border-gray-200 hover:bg-gray-50'"
+                        class="shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border transition-colors">
+                    <span x-text="child.name"></span>
                 </button>
             </template>
         </div>
