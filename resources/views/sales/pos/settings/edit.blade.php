@@ -83,6 +83,35 @@
                     </div>
                 </section>
 
+                {{-- SECCIÓN 3: DINERO (v1.5.0 REQ-3.6) --}}
+                <section class="bg-white rounded-2xl sm:rounded-3xl shadow-sm border border-slate-200 overflow-hidden">
+                    <div class="p-4 sm:p-6 border-b border-slate-100 flex items-center gap-3 sm:gap-4">
+                        <span class="flex-none w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-zertix-primary-50 text-zertix-primary-600 flex items-center justify-center text-sm font-bold">3</span>
+                        <h2 class="font-bold text-slate-800 text-base sm:text-lg">Pagos que no son efectivo</h2>
+                    </div>
+                    <div class="p-4 sm:p-8 space-y-4">
+                        <x-ui.forms.select label="Cuenta de banco por defecto" name="default_financial_account_id" placeholder="Sin cuenta"
+                            hint="Aquí entra lo que se cobra con tarjeta, transferencia, depósito o cheque en las terminales sin cuenta propia y desde el backoffice. Sin cuenta, esos pagos no entran a ninguna."
+                            :error="$errors->first('default_financial_account_id')">
+                            @foreach($bankAccounts as $account)
+                                <option value="{{ $account->id }}" @selected((string) old('default_financial_account_id', $settings->default_financial_account_id) === (string) $account->id)>
+                                    {{ $account->name }}{{ $account->bank_label ? ' · '.$account->bank_label : '' }}
+                                </option>
+                            @endforeach
+                        </x-ui.forms.select>
+                        @if($missingBankAccount)
+                            <x-ui.alert variant="neutral">
+                                Las ventas con tarjeta, transferencia o depósito no entran a ninguna cuenta.
+                                @if($bankAccounts->isEmpty())
+                                    Crea una cuenta de banco en <a href="{{ route('finance.treasury.create') }}" class="font-semibold underline">Cajas y Bancos</a> y elígela aquí.
+                                @else
+                                    Elige una cuenta de banco por defecto.
+                                @endif
+                            </x-ui.alert>
+                        @endif
+                    </div>
+                </section>
+
                 {{-- BOTÓN FLOTANTE --}}
                 <div class="sticky bottom-4 sm:bottom-6 bg-white/95 backdrop-blur-md border border-slate-200 p-3 sm:p-4 rounded-2xl sm:rounded-3xl shadow-2xl flex flex-col sm:flex-row items-stretch sm:items-center gap-3 z-[40]">
                     <x-ui.button href="{{ route('sales.pos.terminals.index') }}" appearance="ghost" variant="secondary"

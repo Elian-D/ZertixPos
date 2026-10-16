@@ -7,27 +7,16 @@ use App\Models\Configuration\TipoPago;
 use App\Models\Products\Product;
 use App\Models\Sales\Sale;
 use App\Services\Sales\SalesServices\SaleService;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Feature\Pos\Concerns\SetsUpPosWorkspace;
-use Tests\TestCase;
+use Tests\TenantTestCase;
 
 /**
  * v1.4.0 Fase 1, REQ-1.1 — regresión del rename `is_stockable` (boolean) →
  * `type` (string, constantes en el modelo). Ver docs/features/v1.4.0.md §1.1.
  */
-class ProductTypeTest extends TestCase
+class ProductTypeTest extends TenantTestCase
 {
-    use RefreshDatabase;
     use SetsUpPosWorkspace;
-
-    protected function migrateFreshUsing()
-    {
-        return [
-            '--path' => ['database/migrations/tenant'],
-            '--realpath' => false,
-            '--seed' => $this->shouldSeed(),
-        ];
-    }
 
     public function test_la_columna_is_stockable_ya_no_existe(): void
     {

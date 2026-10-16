@@ -30,6 +30,7 @@ class ReturnController extends Controller
             'items.saleItem.product:id,name,sku,type',
             'exchangeSale.items.product:id,name',
             'exchangeSale.payments.tipoPago',
+            'waste:id,number,status,reference_type,reference_id', // v1.5.0 REQ-2.3
         ]);
 
         return view('sales.returns.show', ['return' => $return]);

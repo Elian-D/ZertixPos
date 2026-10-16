@@ -54,7 +54,7 @@ class PosWorkspace extends Component
     {
         $products = Product::query()
             ->where('is_active', true)
-            ->select('id', 'category_id', 'name', 'sku', 'price', 'image_path', 'type')
+            ->select('id', 'category_id', 'name', 'sku', 'barcode', 'price', 'image_path', 'type')
             ->with(['stocks' => function ($query) {
                 $query->where('warehouse_id', $this->terminal->warehouse_id)
                     ->select('id', 'product_id', 'warehouse_id', 'quantity', 'min_stock');
@@ -77,6 +77,7 @@ class PosWorkspace extends Component
                     'id' => $product->id,
                     'name' => $product->name,
                     'sku' => $product->sku,
+                    'barcode' => $product->barcode,
                     'price' => (float) $product->price,
                     // Suma de tasas apiladas — el carrito la snapshotea al agregar el
                     // producto, igual que el precio.

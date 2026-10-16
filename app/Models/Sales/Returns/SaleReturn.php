@@ -3,6 +3,8 @@
 namespace App\Models\Sales\Returns;
 
 use App\Models\Accounting\DocumentType;
+use App\Models\Inventory\InventoryWaste;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use App\Models\Sales\Sale;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
@@ -136,5 +138,11 @@ class SaleReturn extends Model
     public function items(): HasMany
     {
         return $this->hasMany(ReturnItem::class, 'return_id');
+    }
+
+    /** Merma de las unidades dañadas que no regresaron a inventario (v1.5.0 REQ-2.3). */
+    public function waste(): MorphOne
+    {
+        return $this->morphOne(InventoryWaste::class, 'reference');
     }
 }

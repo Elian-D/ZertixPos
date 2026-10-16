@@ -75,6 +75,7 @@ class PermissionSeeder extends Seeder
         'pos' => 'Punto de Venta',
         'ncf' => 'NCF',
         'accounting' => 'Contabilidad',
+        'purchases' => 'Compras',
     ];
 
     /**
@@ -131,6 +132,17 @@ class PermissionSeeder extends Seeder
         'inventory_stocks.export' => 'inventory.tracking',
         'inventory_movements.view' => 'inventory.tracking',
         'inventory_movements.create_adjustment' => 'inventory.tracking',
+        'inventory_counts.view' => 'inventory.tracking',
+        'inventory_counts.create' => 'inventory.tracking',
+        'inventory_counts.count' => 'inventory.tracking',
+        'inventory_counts.apply' => 'inventory.tracking',
+        'inventory_wastes.view' => 'inventory.tracking',
+        'inventory_wastes.create' => 'inventory.tracking',
+        'inventory_wastes.void' => 'inventory.tracking',
+        'inventory_transfers.view' => 'inventory.tracking',
+        'inventory_transfers.create' => 'inventory.tracking',
+        'inventory_transfers.send' => 'inventory.tracking',
+        'inventory_transfers.receive' => 'inventory.tracking',
 
         'receivables.view' => 'sales.receivables',
         'receivables.create' => 'sales.receivables',
@@ -139,6 +151,24 @@ class PermissionSeeder extends Seeder
         'collections.create' => 'sales.receivables',
         'collections.cancel' => 'sales.receivables',
         'collections.export' => 'sales.receivables',
+
+        // v1.5.0 Fase 4
+        'vendors.view' => 'purchases',
+        'vendors.create' => 'purchases',
+        'vendors.edit' => 'purchases',
+        'vendors.delete' => 'purchases',
+        'vendors.restore' => 'purchases',
+        'purchase_orders.view' => 'purchases',
+        'purchase_orders.create' => 'purchases',
+        'purchase_orders.approve' => 'purchases',
+        'purchase_orders.cancel' => 'purchases',
+        'purchase_receptions.create' => 'purchases',
+        'payables.view' => 'sales.payables',
+        'payables.pay' => 'sales.payables',
+        'payables.void_payment' => 'sales.payables',
+        'expenses.view' => 'sales.payables',
+        'expenses.create' => 'sales.payables',
+        'expenses.void' => 'sales.payables',
 
         'quotes.view' => 'sales.quotes',
         'quotes.create' => 'sales.quotes',
@@ -229,6 +259,20 @@ class PermissionSeeder extends Seeder
 
                 'inventory_movements.view',
                 'inventory_movements.create_adjustment',
+
+                'inventory_counts.view',
+                'inventory_counts.create',
+                'inventory_counts.count',
+                'inventory_counts.apply',
+
+                'inventory_wastes.view',
+                'inventory_wastes.create',
+                'inventory_wastes.void',
+
+                'inventory_transfers.view',
+                'inventory_transfers.create',
+                'inventory_transfers.send',
+                'inventory_transfers.receive',
             ],
 
             'sales' => [
@@ -334,6 +378,34 @@ class PermissionSeeder extends Seeder
                 // (Categoría C) y sin sentido un permiso propio solo para imprimir.
                 'collections.cancel',
                 'collections.export',
+
+                // Cajas y Bancos (v1.5.0 Fase 3) — núcleo fijo, sin module_key.
+                'financial_accounts.view',
+                'financial_accounts.manage',
+                'financial_accounts.move',
+                'financial_accounts.reconcile',
+
+                // Cuentas por pagar, pagos y gastos (v1.5.0 Fase 4).
+                'payables.view',
+                'payables.pay',
+                'payables.void_payment',
+                'expenses.view',
+                'expenses.create',
+                'expenses.void',
+            ],
+
+            // Compras (v1.5.0 Fases 4 y 5): proveedores, órdenes de compra y recepciones.
+            'purchases' => [
+                'vendors.view',
+                'vendors.create',
+                'vendors.edit',
+                'vendors.delete',
+                'vendors.restore',
+                'purchase_orders.view',
+                'purchase_orders.create',
+                'purchase_orders.approve',
+                'purchase_orders.cancel',
+                'purchase_receptions.create',
             ],
         ];
 

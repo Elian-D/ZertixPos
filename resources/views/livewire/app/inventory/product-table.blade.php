@@ -72,8 +72,8 @@
                     @else
                         <a href="{{ route('inventory.products.show', $item) }}" class="font-medium text-slate-900 hover:text-zertix-primary-700 hover:underline">{{ $item->name }}</a>
                     @endif
-                    @if($item->sku)
-                        <span class="block text-[10px] font-mono text-slate-400 mt-0.5">{{ $item->sku }}</span>
+                    @if($item->sku || $item->barcode)
+                        <span class="block text-[10px] font-mono text-slate-400 mt-0.5">{{ collect([$item->sku, $item->barcode])->filter()->implode(' · ') }}</span>
                     @endif
                 </x-data-table.cell>
 

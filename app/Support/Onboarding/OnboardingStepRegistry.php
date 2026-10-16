@@ -2,6 +2,7 @@
 
 namespace App\Support\Onboarding;
 
+use App\Support\Onboarding\Steps\BankAccountStep;
 use App\Support\Onboarding\Steps\CategoriesStep;
 use App\Support\Onboarding\Steps\ClientsStep;
 use App\Support\Onboarding\Steps\NcfStep;
@@ -23,6 +24,7 @@ class OnboardingStepRegistry
         ClientsStep::class,
         WarehousesStep::class,
         NcfStep::class,
+        BankAccountStep::class, // v1.5.0 REQ-3.6: antes del TPV, que hereda esta cuenta
         PosTerminalStep::class, // después de NCF: el TPV se crea con un almacén ya
         // existente y pide un tipo de comprobante (REQ-09.10)
     ];

@@ -41,6 +41,10 @@ class ProductController extends Controller
 
         $totalStock = (float) $product->stocks->sum('quantity');
         $totalMin = (float) $product->stocks->sum('min_stock');
+        // El máximo total solo existe si todos los almacenes tienen tope; uno sin máximo = sin tope.
+        $totalMax = $product->stocks->isNotEmpty() && $product->stocks->every(fn ($s) => $s->max_stock !== null)
+            ? (float) $product->stocks->sum('max_stock')
+            : null;
 
         // Márgenes sobre el precio neto (sin impuesto): margen = ganancia / precio,
         // markup = ganancia / costo. Sin precio o sin costo, no hay porcentaje.
@@ -54,7 +58,8 @@ class ProductController extends Controller
             'product' => $product,
             'totalStock' => $totalStock,
             'totalMin' => $totalMin,
-            'condition' => $product->stockCondition($totalStock, $totalMin),
+            'totalMax' => $totalMax,
+            'condition' => $product->stockCondition($totalStock, $totalMin, $totalMax),
             'profit' => $profit,
             'margin' => $price > 0 ? $profit / $price * 100 : null,
             'markup' => $cost > 0 ? $profit / $cost * 100 : null,
@@ -84,11 +89,14 @@ class ProductController extends Controller
         );
 
         return redirect()->route('inventory.products.index')
-            ->with('success', "Producto {$product->name} ({$product->sku}) creado correctamente.");
+            ->with('success', "Producto {$product->name}".($product->sku ? " ({$product->sku})" : '').' creado correctamente.');
     }
 
     public function edit(Product $product, ProductCatalogService $catalogService)
     {
+        // Sección Inventario (REQ-1.3): existencia por almacén de solo lectura, mínimo y máximo editables.
+        $product->load(['stocks' => fn ($q) => $q->with('warehouse:id,name')->orderBy('warehouse_id')]);
+
         return view('products.edit', array_merge(
             ['product' => $product],
             $catalogService->getForForm()

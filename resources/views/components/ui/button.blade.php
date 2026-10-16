@@ -37,6 +37,12 @@
       "disable submit button onclick") — por eso el guard reacciona al evento
       "submit" del form, que se dispara cuando el navegador ya está comprometido
       a enviar, y deshabilitar el botón después ya no puede cancelarlo.
+      v1.5.0 (toma física, form con dos botones de envío):
+        · Se deshabilita en un setTimeout(0), DESPUÉS de que el navegador arma los
+          datos del form: un botón deshabilitado no envía su name/value, y antes
+          "Guardar y revisar" (name="then" value="review") llegaba sin valor.
+        · El spinner sale solo en el botón pulsado (e.submitter); los demás botones
+          de envío del mismo form se deshabilitan sin spinner.
     - El feedback de wire:loading NO se aplica por defecto (ver REQ-11.1) —
       cada botón Livewire debe declarar explícitamente wire:loading + wire:target
       para evitar que se ilumine ante cualquier acción de la página, no solo la suya.
@@ -47,8 +53,8 @@
 
 <{{ $tag }}
     @if($isSubmit)
-        x-data="{ sending: false }"
-        x-init="$el.closest('form')?.addEventListener('submit', () => { sending = true })"
+        x-data="{ sending: false, mine: false }"
+        x-init="$el.closest('form')?.addEventListener('submit', (e) => { const own = !e.submitter || e.submitter === $el; setTimeout(() => { mine = own; sending = true }, 0) })"
         {{-- Reset real cuando el form vive dentro de un wire:submit.prevent —
              ver resources/js/app.js. Sin esto, un error de validación del
              servidor deja el spinner pegado para siempre (no hay navegación
@@ -56,7 +62,7 @@
              <form> nativo). Inofensivo en un form nativo real: ese caso nunca
              dispara este evento (no hay ningún request de Livewire de por
              medio), así que sending sigue su comportamiento de siempre. --}}
-        x-on:livewire-request-settled.window="sending = false"
+        x-on:livewire-request-settled.window="sending = false; mine = false"
     @endif
     @if($tag === 'button')
         type="{{ $attributes->get('type', 'button') }}"
@@ -80,10 +86,10 @@
     @if($isIconOnly)
         {{-- Modo solo icono — cuadrado automático --}}
         @if($isSubmit)
-            <span x-show="sending" x-cloak class="inline-flex">
+            <span x-show="sending && mine" x-cloak class="inline-flex">
                 <x-ui.loading size="{{ $spinnerSize }}" />
             </span>
-            <span x-show="!sending" class="inline-flex">
+            <span x-show="!(sending && mine)" class="inline-flex">
                 <x-dynamic-component :component="$finalIcon" class="{{ $iconSize }} flex-shrink-0" aria-hidden="true" />
             </span>
         @else
@@ -93,11 +99,11 @@
     @else
         {{-- Modo con texto — icono izquierdo (o spinner mientras envía) + slot + icono derecho --}}
         @if($isSubmit)
-            <span x-show="sending" x-cloak class="inline-flex">
+            <span x-show="sending && mine" x-cloak class="inline-flex">
                 <x-ui.loading size="{{ $spinnerSize }}" />
             </span>
             @if($iconLeft)
-                <span x-show="!sending" class="inline-flex">
+                <span x-show="!(sending && mine)" class="inline-flex">
                     <x-dynamic-component :component="$iconLeft" class="{{ $iconSize }} flex-shrink-0" aria-hidden="true" />
                 </span>
             @endif

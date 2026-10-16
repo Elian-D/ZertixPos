@@ -6,23 +6,12 @@ use App\Models\Configuration\TipoPago;
 use App\Models\Inventory\InventoryStock;
 use App\Models\Sales\Sale;
 use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Feature\Pos\Concerns\SetsUpPosWorkspace;
-use Tests\TestCase;
+use Tests\TenantTestCase;
 
-class PosCheckoutTest extends TestCase
+class PosCheckoutTest extends TenantTestCase
 {
-    use RefreshDatabase;
     use SetsUpPosWorkspace;
-
-    protected function migrateFreshUsing()
-    {
-        return [
-            '--path' => ['database/migrations/tenant'],
-            '--realpath' => false,
-            '--seed' => $this->shouldSeed(),
-        ];
-    }
 
     private function baseItems(float $quantity = 2, float $discountPercentage = 0, float $discountAmount = 0): array
     {
@@ -52,7 +41,9 @@ class PosCheckoutTest extends TestCase
             'tipo_pago_id' => $tipoPago->id,
             'total_amount' => $grossTotal,
             'discount_total' => $discountTotal,
-            'cash_received' => $grossTotal - $discountTotal,
+            // El efectivo cubre el neto más el ITBIS 18 % del producto (impuesto por línea desde
+            // v1.1.0 Fase 5); se redondea hacia arriba y el resto es vuelto.
+            'cash_received' => ceil(($grossTotal - $discountTotal) * 1.18),
             'cash_change' => 0,
             'items' => $items,
             'pos_terminal_id' => $this->terminal->id,
@@ -122,7 +113,6 @@ class PosCheckoutTest extends TestCase
             'pos_session_id' => $session->id,
             'items' => $this->baseItems(quantity: 2, discountPercentage: 50, discountAmount: $discountAmount),
             'discount_total' => $discountAmount,
-            'cash_received' => ($price * 2) - $discountAmount,
         ]);
 
         $response = $this->actingAs($this->cashier)

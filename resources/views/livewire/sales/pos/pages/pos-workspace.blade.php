@@ -173,6 +173,7 @@
                         this.startInactivityWatch();
                     }
                     this.startHeartbeat();
+                    this.startScannerListener();
 
                     // Resuelve el radio de NCF inicial a partir del default de la terminal (si aplica).
                     if (this.formData.ncf_type_id) {
@@ -249,20 +250,43 @@
                     return this.products.filter(p => {
                         if (this.activeCategory && p.category_id !== this.activeCategory) return false;
                         if (!term) return true;
-                        return p.name.toLowerCase().includes(term) || (p.sku || '').toLowerCase().includes(term);
+                        return p.name.toLowerCase().includes(term)
+                            || (p.sku || '').toLowerCase().includes(term)
+                            || (p.barcode || '').toLowerCase().includes(term);
                     }).slice(0, 60);
                 },
 
-                onScan() {
-                    const term = this.search.trim().toLowerCase();
-                    if (!term) return;
-                    const exact = this.products.find(p => (p.sku || '').toLowerCase() === term);
-                    if (exact) {
-                        // Lectura por lector de código de barras: se mantiene el foco en el buscador
-                        // para poder seguir escaneando sin tocar el mouse.
-                        this.addItem(exact, 'search');
-                        this.search = '';
-                    }
+                // Busca coincidencia EXACTA por código de barras y luego por SKU (v1.5.0 REQ-1.2).
+                // Sin coincidencia exacta no hace nada: el texto se queda filtrando el catálogo.
+                // Devuelve true si agregó el producto.
+                onScan(raw = null) {
+                    const term = (raw ?? this.search).trim().toLowerCase();
+                    if (!term) return false;
+                    const exact = this.products.find(p => (p.barcode || '').toLowerCase() === term)
+                        || this.products.find(p => (p.sku || '').toLowerCase() === term);
+                    if (!exact) return false;
+                    // Se mantiene el foco en el buscador para seguir escaneando sin tocar el mouse.
+                    this.addItem(exact, 'search');
+                    this.search = '';
+                    return true;
+                },
+
+                // --- 7.2b Lector sin Enter (v1.5.0) ---
+                // Detección de ráfaga compartida: resources/js/utils/barcode-scanner.js. Escucha
+                // los buscadores ([data-scan-input], escritorio y móvil) y la página cuando el
+                // foco está fuera de un campo; con un modal abierto se pausa. Fuera de un campo,
+                // un código sin coincidencia queda en el buscador para que el cajero lo vea.
+                startScannerListener() {
+                    // init() puede correr dos veces (doble montaje): se reemplaza el anterior.
+                    window.__posScanner?.destroy();
+                    window.__posScanner = window.ZertixScanner?.create({
+                        inputs: [...this.$root.querySelectorAll('[data-scan-input]')],
+                        onScan: (code) => this.onScan(code),
+                        onMiss: (code) => {
+                            this.search = code;
+                            this.$nextTick(() => this.$refs.searchInput?.focus());
+                        },
+                    });
                 },
 
                 // --- 7.3 Cart Engine ---

@@ -2,7 +2,10 @@
 
 use App\Http\Controllers\Accounting\AccountingAccountController;
 use App\Http\Controllers\Accounting\CollectionController;
-use App\Http\Controllers\Accounting\FinancialOverviewController;
+use App\Http\Controllers\Accounting\ExpenseController;
+use App\Http\Controllers\Accounting\PayableController;
+use App\Http\Controllers\Accounting\FinancialAccountController;
+use App\Http\Controllers\Accounting\FinancialMovementController;
 use App\Http\Controllers\Accounting\JournalEntryController;
 use App\Http\Controllers\Accounting\ReceivableController;
 use App\Http\Controllers\Sales\InvoiceController;
@@ -143,20 +146,61 @@ Route::prefix('finance')->as('finance.')->group(function () {
             ->name('collections.cancel');
     });
 
-    // Dashboard Finanzas movido a routes/app/reports.php como reports.finance
-    // (Fase 7.9, sidebar) — vivía bajo app/finance/dashboard, mismo prefijo
-    // que el resto de este grupo (Ingresos y Gastos, CxC, Cobros, Facturas,
-    // NCF operativo), así que el sidebar resaltaba "Finanzas" Y "Reportes" a
-    // la vez al visitarlo. "Ingresos y Gastos" (overview.index, abajo) se
-    // queda acá — no es un dashboard de Reportes, es la vista financiera base.
+    // "Ingresos y Gastos" (finance/overview) pasó a Reportes como Estado de resultados
+    // (v1.5.0 REQ-6.1, reports.results). Finanzas queda solo para el dinero.
 
-    // Ingresos y Gastos (REQ-03.7) — base, sin gate de módulo: arma sus cifras
-    // solo con Sale/InventoryMovement/ClientCollection/Receivable, nunca con JournalEntry.
-    // Es la vista financiera universal; el Dashboard de arriba es un extra para
-    // quien además tiene contabilidad formal activa.
-    Route::get('/overview', FinancialOverviewController::class)
-        ->middleware('can:accounting.dashboard')
-        ->name('overview.index');
+    // Cajas y Bancos (v1.5.0 Fase 3) — núcleo fijo, sin gate de módulo: todo negocio
+    // tiene caja o banco, y los pagos de CxP (Fase 4) salen de una cuenta. Prefijo
+    // treasury porque finance/accounts ya es el Plan de Cuentas.
+    Route::middleware('auth')->prefix('treasury')->as('treasury.')->group(function () {
+
+        // Movimientos de Tesorería: kardex de todas las cuentas, "Nuevo movimiento", anular y corregir.
+        Route::prefix('movements')->as('movements.')->controller(FinancialMovementController::class)->group(function () {
+            Route::get('/', 'index')->middleware('permission:financial_accounts.view')->name('index');
+            Route::get('/create', 'create')->middleware('permission:financial_accounts.move')->name('create');
+            Route::post('/', 'store')->middleware('permission:financial_accounts.move')->name('store');
+            Route::patch('/{movement}/void', 'void')->whereNumber('movement')->middleware('permission:financial_accounts.move')->name('void');
+            Route::patch('/{movement}/correct', 'correct')->whereNumber('movement')->middleware('permission:financial_accounts.move')->name('correct');
+        });
+
+        Route::controller(FinancialAccountController::class)->group(function () {
+            Route::get('/', 'index')->middleware('permission:financial_accounts.view')->name('index');
+            Route::get('/create', 'create')->middleware('permission:financial_accounts.manage')->name('create');
+            Route::post('/', 'store')->middleware('permission:financial_accounts.manage')->name('store');
+            Route::get('/reconcile', 'reconcileForm')->middleware('permission:financial_accounts.reconcile')->name('reconcile.form');
+            Route::post('/reconcile', 'reconcile')->middleware('permission:financial_accounts.reconcile')->name('reconcile');
+            Route::get('/{account}', 'show')->whereNumber('account')->middleware('permission:financial_accounts.view')->name('show');
+            Route::get('/{account}/edit', 'edit')->whereNumber('account')->middleware('permission:financial_accounts.manage')->name('edit');
+            Route::put('/{account}', 'update')->whereNumber('account')->middleware('permission:financial_accounts.manage')->name('update');
+            Route::patch('/{account}/toggle', 'toggle')->whereNumber('account')->middleware('permission:financial_accounts.manage')->name('toggle');
+        });
+    });
+
+    // Cuentas por pagar, pagos (EGR) y gastos (v1.5.0 Fase 4) — núcleo flexible
+    // `sales.payables`, encendido en todo plan (REQ-4.5).
+    Route::middleware(['auth', 'module:sales.payables'])->group(function () {
+
+        Route::prefix('payables')->as('payables.')->controller(PayableController::class)->group(function () {
+            Route::get('/', 'index')->middleware('permission:payables.view')->name('index');
+            Route::get('/{payable}', 'show')->whereNumber('payable')->middleware('permission:payables.view')->name('show');
+            Route::get('/{payable}/pay', 'payForm')->whereNumber('payable')->middleware('permission:payables.pay')->name('pay.form');
+            Route::post('/{payable}/pay', 'pay')->whereNumber('payable')->middleware('permission:payables.pay')->name('pay');
+        });
+
+        Route::prefix('payments')->as('payments.')->controller(PayableController::class)->group(function () {
+            Route::get('/', 'payments')->middleware('permission:payables.view')->name('index');
+            Route::get('/{payment}/receipt', 'receipt')->whereNumber('payment')->middleware('permission:payables.view')->name('receipt');
+            Route::patch('/{payment}/void', 'voidPayment')->whereNumber('payment')->middleware('permission:payables.void_payment')->name('void');
+        });
+
+        Route::prefix('expenses')->as('expenses.')->controller(ExpenseController::class)->group(function () {
+            Route::get('/', 'index')->middleware('permission:expenses.view')->name('index');
+            Route::get('/create', 'create')->middleware('permission:expenses.create')->name('create');
+            Route::post('/', 'store')->middleware('permission:expenses.create')->name('store');
+            Route::get('/{expense}', 'show')->whereNumber('expense')->middleware('permission:expenses.view')->name('show');
+            Route::patch('/{expense}/void', 'void')->whereNumber('expense')->middleware('permission:expenses.void')->name('void');
+        });
+    });
 
     // routes/app/sales.php (antes) — Facturas, movidas junto con el resto de Finanzas.
     Route::middleware('auth')->group(function () {

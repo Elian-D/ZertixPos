@@ -2,14 +2,12 @@
 
 namespace Tests\Feature\Pos;
 
-use App\Models\Geo\State;
-use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Models\Geo\Province;
 use Tests\Feature\Pos\Concerns\SetsUpPosWorkspace;
-use Tests\TestCase;
+use Tests\TenantTestCase;
 
-class PosQuickCustomerTest extends TestCase
+class PosQuickCustomerTest extends TenantTestCase
 {
-    use RefreshDatabase;
     use SetsUpPosWorkspace;
 
     public function test_a_quick_customer_can_be_created_from_the_pos_modal(): void
@@ -20,7 +18,7 @@ class PosQuickCustomerTest extends TestCase
             ->postJson(route('sales.pos.quick-customer.store'), [
                 'name' => 'Cliente Express',
                 'phone' => '809-555-0000',
-                'state_id' => State::query()->value('id'),
+                'provincia_id' => Province::query()->value('id'),
             ]);
 
         $response->assertCreated();

@@ -1,4 +1,5 @@
 import './bootstrap';
+import './utils/barcode-scanner';
 
 // Alpine/Livewire NO se importan ni se arrancan acá (Fase 7.9). El intento
 // anterior importaba Alpine desde el bundle de Livewire y llamaba

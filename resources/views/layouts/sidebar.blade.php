@@ -1,10 +1,10 @@
 {{-- SIDEBAR --}}
 <x-sidebar.layout>
 
-    {{-- DASHBOARD --}}
+    {{-- INICIO (v1.5.0 REQ-6.5) --}}
     @can('dashboard.view')
         <x-sidebar.item href="{{ route('dashboard') }}" icon="heroicon-s-home">
-            Dashboard
+            Inicio
         </x-sidebar.item>
     @endcan
 
@@ -122,6 +122,10 @@
         'products.view',
         'inventory_stocks.view',
         'inventory_movements.view',
+        'inventory_counts.view',
+        'inventory_counts.count',
+        'inventory_wastes.view',
+        'inventory_transfers.view',
         'warehouses.manage',
     ])
         <x-sidebar.dropdown
@@ -148,7 +152,25 @@
 
                 @can('inventory_movements.view')
                     <x-sidebar.subitem href="{{ route('inventory.movements.index') }}">
-                        Movimientos
+                        Movimientos de Stock
+                    </x-sidebar.subitem>
+                @endcan
+
+                @canany(['inventory_counts.view', 'inventory_counts.count'])
+                    <x-sidebar.subitem href="{{ route('inventory.counts.index') }}">
+                        Tomas físicas
+                    </x-sidebar.subitem>
+                @endcanany
+
+                @can('inventory_wastes.view')
+                    <x-sidebar.subitem href="{{ route('inventory.wastes.index') }}">
+                        Mermas
+                    </x-sidebar.subitem>
+                @endcan
+
+                @can('inventory_transfers.view')
+                    <x-sidebar.subitem href="{{ route('inventory.transfers.index') }}">
+                        Transferencias
                     </x-sidebar.subitem>
                 @endcan
 
@@ -161,23 +183,59 @@
         </x-sidebar.dropdown>
     @endcanany
 
-    {{-- GRUPO 4: Finanzas --}}
+    {{-- GRUPO: Compras (v1.5.0 Fases 4 y 5) — núcleo flexible `purchases`. --}}
+    @if(module_enabled('purchases'))
+        @canany(['vendors.view', 'purchase_orders.view'])
+            <x-sidebar.dropdown
+                id="compras"
+                icon="heroicon-s-building-storefront"
+                label="Compras"
+                :activeRoutes="['app/purchases*']"
+            >
+                @can('purchase_orders.view')
+                    <x-sidebar.subitem href="{{ route('purchases.orders.index') }}">
+                        Órdenes de compra
+                    </x-sidebar.subitem>
+                    <x-sidebar.subitem href="{{ route('purchases.receptions.index') }}">
+                        Recepciones
+                    </x-sidebar.subitem>
+                @endcan
+                @can('vendors.view')
+                    <x-sidebar.subitem href="{{ route('purchases.vendors.index') }}">
+                        Proveedores
+                    </x-sidebar.subitem>
+                @endcan
+            </x-sidebar.dropdown>
+        @endcanany
+    @endif
+
+    {{-- GRUPO 4: Finanzas — solo dinero (v1.5.0 Fase 4: Facturas y NCF pasaron a "Fiscal").
+         activeRoutes lista las rutas de dinero, no 'app/finance*': si no, también se
+         resaltaría en Facturas/NCF, que viven bajo el mismo prefijo. --}}
     @canany([
-        'accounting.dashboard',
+        'financial_accounts.view',
         'receivables.view',
         'collections.view',
-        'invoices.view',
-        'ncf_sequences.view',
+        'payables.view',
+        'expenses.view',
     ])
         <x-sidebar.dropdown
             id="finanzas"
             icon="heroicon-s-calculator"
             label="Finanzas"
-            :activeRoutes="['app/finance*']"
+            :activeRoutes="['app/finance/treasury*', 'app/finance/receivables*', 'app/finance/collections*', 'app/finance/payables*', 'app/finance/payments*', 'app/finance/expenses*', 'app/finance/journal_entries*', 'app/finance/accounts*']"
         >
-            @can('accounting.dashboard')
-                <x-sidebar.subitem href="{{ route('finance.overview.index') }}">
-                    Ingresos y Gastos
+            {{-- "Ingresos y Gastos" pasó a Reportes › Estado de resultados (v1.5.0 REQ-6.1). --}}
+
+            {{-- Núcleo fijo (v1.5.0 Fase 3): sin module_enabled --}}
+            @can('financial_accounts.view')
+                <x-sidebar.subitem href="{{ route('finance.treasury.index') }}"
+                    :active="request()->routeIs('finance.treasury.*') && ! request()->routeIs('finance.treasury.movements.*')">
+                    Cajas y Bancos
+                </x-sidebar.subitem>
+
+                <x-sidebar.subitem href="{{ route('finance.treasury.movements.index') }}" :active="request()->routeIs('finance.treasury.movements.*')">
+                    Movimientos de Tesorería
                 </x-sidebar.subitem>
             @endcan
 
@@ -188,9 +246,29 @@
                     </x-sidebar.subitem>
                 @endcan
 
+                {{-- "Cobros y Pagos" → "Cobros" (v1.5.0 Fase 4): los pagos a proveedores son otra cosa. --}}
                 @can('collections.view')
                     <x-sidebar.subitem href="{{ route('finance.collections.index') }}">
                         Cobros
+                    </x-sidebar.subitem>
+                @endcan
+            @endif
+
+            {{-- v1.5.0 Fase 4 — núcleo flexible `sales.payables` --}}
+            @if(module_enabled('sales.payables'))
+                @can('payables.view')
+                    <x-sidebar.subitem href="{{ route('finance.payables.index') }}">
+                        Cuentas por Pagar
+                    </x-sidebar.subitem>
+
+                    <x-sidebar.subitem href="{{ route('finance.payments.index') }}">
+                        Pagos a proveedores
+                    </x-sidebar.subitem>
+                @endcan
+
+                @can('expenses.view')
+                    <x-sidebar.subitem href="{{ route('finance.expenses.index') }}">
+                        Gastos
                     </x-sidebar.subitem>
                 @endcan
             @endif
@@ -206,7 +284,18 @@
                     </x-sidebar.subitem>
                 @endcan
             @endif
+        </x-sidebar.dropdown>
+    @endcanany
 
+    {{-- GRUPO: Fiscal (v1.5.0 Fase 4) — cumplimiento fiscal, no dinero. Las rutas siguen
+         bajo app/finance (finance.invoices.*, finance.ncf.*). --}}
+    @canany(['invoices.view', 'ncf_sequences.view'])
+        <x-sidebar.dropdown
+            id="fiscal"
+            icon="heroicon-s-document-text"
+            label="Fiscal"
+            :activeRoutes="['app/finance/invoices*', 'app/finance/ncf*']"
+        >
             @can('invoices.view')
                 <x-sidebar.subitem href="{{ route('finance.invoices.index') }}">
                     Facturas
@@ -227,12 +316,13 @@
         </x-sidebar.dropdown>
     @endcanany
 
-    {{-- GRUPO 5: Reportes --}}
+    {{-- GRUPO 5: Reportes (v1.5.0 Fase 6) — mismo diseño en todos (docs/ui/reports.md). --}}
     @php
-        $showReportes = auth()->user()->can('sales.view')
-            || (module_enabled('inventory.tracking') && auth()->user()->can('inventory.dashboard'))
-            || (module_enabled('sales.ncf') && auth()->user()->can('ncf.reports'))
-            || (module_enabled('accounting.advanced') && auth()->user()->can('accounting.dashboard'));
+        $user = auth()->user();
+        $showReportes = $user->can('sales.view')
+            || (module_enabled('inventory.tracking') && $user->can('inventory.dashboard'))
+            || $user->can('accounting.dashboard')
+            || (module_enabled('sales.ncf') && $user->can('ncf.reports'));
     @endphp
 
     @if($showReportes)
@@ -244,22 +334,31 @@
         >
             @can('sales.view')
                 <x-sidebar.subitem href="{{ route('reports.sales') }}">
-                    Reportes de Ventas
+                    Ventas
                 </x-sidebar.subitem>
             @endcan
 
             @if(module_enabled('inventory.tracking'))
                 @can('inventory.dashboard')
                     <x-sidebar.subitem href="{{ route('reports.inventory') }}">
-                        Reportes de Inventario
+                        Inventario
                     </x-sidebar.subitem>
                 @endcan
             @endif
 
+            @can('accounting.dashboard')
+                <x-sidebar.subitem href="{{ route('reports.results') }}">
+                    Estado de resultados
+                </x-sidebar.subitem>
+                <x-sidebar.subitem href="{{ route('reports.business') }}">
+                    Estado del negocio
+                </x-sidebar.subitem>
+            @endcan
+
             @if(module_enabled('sales.ncf'))
                 @can('ncf.reports')
                     <x-sidebar.subitem href="{{ route('reports.ncf') }}">
-                        Reportes de NCF
+                        NCF
                     </x-sidebar.subitem>
                 @endcan
             @endif
@@ -267,7 +366,7 @@
             @if(module_enabled('accounting.advanced'))
                 @can('accounting.dashboard')
                     <x-sidebar.subitem href="{{ route('reports.finance') }}">
-                        Reportes de Finanzas
+                        Centro Contable
                     </x-sidebar.subitem>
                 @endcan
             @endif
