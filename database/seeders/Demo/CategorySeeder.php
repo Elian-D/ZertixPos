@@ -4,53 +4,41 @@ namespace Database\Seeders\Demo;
 
 use App\Models\Products\Category;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 
+/**
+ * Categorías del demo en dos niveles (v1.5.1 REQ-2): la principal agrupa y los productos
+ * van en sus subcategorías. Los nombres de las subcategorías que usa ProductSeeder (Hielo,
+ * Agua, Accesorios…) se mantienen.
+ */
 class CategorySeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $categories = [
-            [
-                'name' => 'Hielo',
-                'description' => 'Diferentes presentaciones de hielo en funda y bloques.',
+        $tree = [
+            'Agua y Hielo' => [
+                'Agua' => 'Agua purificada en distintas presentaciones.',
+                'Hielo' => 'Diferentes presentaciones de hielo en funda y bloques.',
+                'Accesorios' => 'Bombas, dispensadores y otros artículos relacionados.',
             ],
-            [
-                'name' => 'Agua',
-                'description' => 'Agua purificada en distintas presentaciones.',
+            'Colmado' => [
+                'Bebidas' => 'Refrescos, jugos y bebidas frías para venta directa.',
+                'Snacks' => 'Golosinas y meriendas para venta al mostrador.',
+                'Limpieza' => 'Artículos de limpieza e higiene para el hogar.',
             ],
-            [
-                'name' => 'Accesorios',
-                'description' => 'Bombas, dispensadores y otros artículos relacionados.',
-            ],
-            [
-                'name' => 'Bebidas',
-                'description' => 'Refrescos, jugos y bebidas frías para venta directa.',
-            ],
-            [
-                'name' => 'Snacks',
-                'description' => 'Golosinas y meriendas para venta al mostrador.',
-            ],
-            [
-                'name' => 'Limpieza',
-                'description' => 'Artículos de limpieza e higiene para el hogar.',
-            ],
-            [
-                'name' => 'Servicios',
-                'description' => 'Servicios sin control de inventario (instalación, flete, mano de obra, etc.).',
+            'Otros' => [
+                'Servicios' => 'Servicios sin control de inventario (instalación, flete, mano de obra, etc.).',
             ],
         ];
 
-        foreach ($categories as $category) {
-            Category::updateOrCreate([
-                'name' => $category['name'],
-                'slug' => Str::slug($category['name']),
-                'description' => $category['description'],
-                'is_active' => true,
-            ]);
+        foreach ($tree as $parentName => $children) {
+            $parent = Category::updateOrCreate(['parent_id' => null, 'name' => $parentName], ['is_active' => true]);
+
+            foreach ($children as $name => $description) {
+                Category::updateOrCreate(
+                    ['parent_id' => $parent->id, 'name' => $name],
+                    ['description' => $description, 'is_active' => true],
+                );
+            }
         }
     }
 }

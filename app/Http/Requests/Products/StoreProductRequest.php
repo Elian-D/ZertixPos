@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Products;
 
+use App\Models\Products\Category;
 use App\Models\Products\Product;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
@@ -29,7 +30,7 @@ class StoreProductRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'category_id' => 'required|exists:categories,id',
+            'category_id' => ['required', Category::productRule()],
             'unit_id' => 'required|exists:units,id',
             'name' => 'required|string|max:150',
             // v1.5.0 REQ-1.2: SKU opcional (ya no se autogenera) y código de barras propio.

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Products;
 
+use App\Models\Products\Category;
 use App\Models\Products\Product;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Str;
@@ -32,7 +33,7 @@ class UpdateProductRequest extends FormRequest
         $productId = $this->route('product')->id;
 
         return [
-            'category_id' => 'required|exists:categories,id',
+            'category_id' => ['required', Category::productRule()],
             'unit_id' => 'required|exists:units,id',
             'name' => 'required|string|max:150',
             'sku' => "nullable|string|max:50|unique:products,sku,{$productId}",
