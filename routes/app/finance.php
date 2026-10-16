@@ -6,7 +6,6 @@ use App\Http\Controllers\Accounting\ExpenseController;
 use App\Http\Controllers\Accounting\PayableController;
 use App\Http\Controllers\Accounting\FinancialAccountController;
 use App\Http\Controllers\Accounting\FinancialMovementController;
-use App\Http\Controllers\Accounting\FinancialOverviewController;
 use App\Http\Controllers\Accounting\JournalEntryController;
 use App\Http\Controllers\Accounting\ReceivableController;
 use App\Http\Controllers\Sales\InvoiceController;
@@ -147,20 +146,8 @@ Route::prefix('finance')->as('finance.')->group(function () {
             ->name('collections.cancel');
     });
 
-    // Dashboard Finanzas movido a routes/app/reports.php como reports.finance
-    // (Fase 7.9, sidebar) — vivía bajo app/finance/dashboard, mismo prefijo
-    // que el resto de este grupo (Ingresos y Gastos, CxC, Cobros, Facturas,
-    // NCF operativo), así que el sidebar resaltaba "Finanzas" Y "Reportes" a
-    // la vez al visitarlo. "Ingresos y Gastos" (overview.index, abajo) se
-    // queda acá — no es un dashboard de Reportes, es la vista financiera base.
-
-    // Ingresos y Gastos (REQ-03.7) — base, sin gate de módulo: arma sus cifras
-    // solo con Sale/InventoryMovement/ClientCollection/Receivable, nunca con JournalEntry.
-    // Es la vista financiera universal; el Dashboard de arriba es un extra para
-    // quien además tiene contabilidad formal activa.
-    Route::get('/overview', FinancialOverviewController::class)
-        ->middleware('can:accounting.dashboard')
-        ->name('overview.index');
+    // "Ingresos y Gastos" (finance/overview) pasó a Reportes como Estado de resultados
+    // (v1.5.0 REQ-6.1, reports.results). Finanzas queda solo para el dinero.
 
     // Cajas y Bancos (v1.5.0 Fase 3) — núcleo fijo, sin gate de módulo: todo negocio
     // tiene caja o banco, y los pagos de CxP (Fase 4) salen de una cuenta. Prefijo

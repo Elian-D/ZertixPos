@@ -213,7 +213,6 @@
          activeRoutes lista las rutas de dinero, no 'app/finance*': si no, también se
          resaltaría en Facturas/NCF, que viven bajo el mismo prefijo. --}}
     @canany([
-        'accounting.dashboard',
         'financial_accounts.view',
         'receivables.view',
         'collections.view',
@@ -224,13 +223,9 @@
             id="finanzas"
             icon="heroicon-s-calculator"
             label="Finanzas"
-            :activeRoutes="['app/finance/overview*', 'app/finance/treasury*', 'app/finance/receivables*', 'app/finance/collections*', 'app/finance/payables*', 'app/finance/payments*', 'app/finance/expenses*', 'app/finance/journal_entries*', 'app/finance/accounts*']"
+            :activeRoutes="['app/finance/treasury*', 'app/finance/receivables*', 'app/finance/collections*', 'app/finance/payables*', 'app/finance/payments*', 'app/finance/expenses*', 'app/finance/journal_entries*', 'app/finance/accounts*']"
         >
-            @can('accounting.dashboard')
-                <x-sidebar.subitem href="{{ route('finance.overview.index') }}">
-                    Ingresos y Gastos
-                </x-sidebar.subitem>
-            @endcan
+            {{-- "Ingresos y Gastos" pasó a Reportes › Estado de resultados (v1.5.0 REQ-6.1). --}}
 
             {{-- Núcleo fijo (v1.5.0 Fase 3): sin module_enabled --}}
             @can('financial_accounts.view')
@@ -321,12 +316,13 @@
         </x-sidebar.dropdown>
     @endcanany
 
-    {{-- GRUPO 5: Reportes --}}
+    {{-- GRUPO 5: Reportes (v1.5.0 Fase 6) — mismo diseño en todos (docs/ui/reports.md). --}}
     @php
-        $showReportes = auth()->user()->can('sales.view')
-            || (module_enabled('inventory.tracking') && auth()->user()->can('inventory.dashboard'))
-            || (module_enabled('sales.ncf') && auth()->user()->can('ncf.reports'))
-            || (module_enabled('accounting.advanced') && auth()->user()->can('accounting.dashboard'));
+        $user = auth()->user();
+        $showReportes = $user->can('sales.view')
+            || (module_enabled('inventory.tracking') && $user->can('inventory.dashboard'))
+            || $user->can('accounting.dashboard')
+            || (module_enabled('sales.ncf') && $user->can('ncf.reports'));
     @endphp
 
     @if($showReportes)
@@ -338,22 +334,31 @@
         >
             @can('sales.view')
                 <x-sidebar.subitem href="{{ route('reports.sales') }}">
-                    Reportes de Ventas
+                    Ventas
                 </x-sidebar.subitem>
             @endcan
 
             @if(module_enabled('inventory.tracking'))
                 @can('inventory.dashboard')
                     <x-sidebar.subitem href="{{ route('reports.inventory') }}">
-                        Reportes de Inventario
+                        Inventario
                     </x-sidebar.subitem>
                 @endcan
             @endif
 
+            @can('accounting.dashboard')
+                <x-sidebar.subitem href="{{ route('reports.results') }}">
+                    Estado de resultados
+                </x-sidebar.subitem>
+                <x-sidebar.subitem href="{{ route('reports.business') }}">
+                    Estado del negocio
+                </x-sidebar.subitem>
+            @endcan
+
             @if(module_enabled('sales.ncf'))
                 @can('ncf.reports')
                     <x-sidebar.subitem href="{{ route('reports.ncf') }}">
-                        Reportes de NCF
+                        NCF
                     </x-sidebar.subitem>
                 @endcan
             @endif
@@ -361,7 +366,7 @@
             @if(module_enabled('accounting.advanced'))
                 @can('accounting.dashboard')
                     <x-sidebar.subitem href="{{ route('reports.finance') }}">
-                        Reportes de Finanzas
+                        Centro Contable
                     </x-sidebar.subitem>
                 @endcan
             @endif

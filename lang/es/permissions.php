@@ -106,7 +106,7 @@ return [
     ],
 
     'inventory' => [
-        'dashboard' => ['label' => 'Ver panel de inventario', 'description' => 'Ver el panel general de inventario.'],
+        'dashboard' => ['label' => 'Ver reporte de inventario', 'description' => 'Ver el valor de la mercancía por almacén y categoría, lo que está bajo el mínimo y lo que no se mueve.'],
     ],
 
     'inventory_stocks' => [
@@ -141,7 +141,7 @@ return [
     ],
 
     'accounting' => [
-        'dashboard' => ['label' => 'Ver panel de contabilidad', 'description' => 'Ver el panel de contabilidad e ingresos y gastos.'],
+        'dashboard' => ['label' => 'Ver reportes financieros', 'description' => 'Ver el estado de resultados, el estado del negocio y la ganancia bruta del inicio.'],
     ],
 
     'document_types' => [
