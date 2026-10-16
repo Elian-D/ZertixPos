@@ -242,7 +242,7 @@ El plan original de abajo ("Alcance") se dejó como registro. Lo construido difi
 
 ## v1.5.1 — Listo para enseñarlo
 
-**Propuesta (2026-10-16).** Sale de revisar el sistema completo después de cerrar v1.5.0. No agrega funciones nuevas: arregla lo que se vería roto en una demostración, protege datos y deja coherentes los módulos que ya existen.
+**Especificación fase por fase en [`v1.5.1.md`](v1.5.1.md)** (2026-10-16). Sale de revisar el sistema completo después de cerrar v1.5.0. No agrega funciones nuevas: arregla lo que se vería roto en una demostración, protege datos y deja coherentes los módulos que ya existen.
 
 ### Hallazgos confirmados en el código
 
