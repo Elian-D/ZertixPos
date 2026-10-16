@@ -3,98 +3,74 @@
 namespace App\Http\Controllers\Products;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Products\SaveCategoryRequest;
 use App\Models\Products\Category;
-use App\Traits\SoftDeletesTrait;
-use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
+use App\Services\Products\CategoryService;
+use DomainException;
 
+/**
+ * Categorías en dos niveles (v1.5.1 REQ-2.3): listado en árbol (CategoryTable) y crear/editar
+ * en vista propia. La papelera, restaurar y borrar definitivo viven en CategoryTable.
+ */
 class CategoryController extends Controller
 {
-    use SoftDeletesTrait;
+    public function __construct(private CategoryService $service) {}
 
-    /**
-     * Listado migrado a Livewire — ver App\Livewire\App\Inventory\CategoryTable.
-     */
     public function index()
     {
         return view('products.categories.index');
     }
 
-    public function store(Request $request)
+    public function create()
     {
-        $request->validate([
-            'name' => 'required|string|unique:categories,name',
-            'description' => 'nullable|string',
-            'is_active' => 'sometimes|boolean',
-        ]);
+        return view('products.categories.create', ['parents' => $this->parents()]);
+    }
 
-        $category = Category::create([
-            'name' => $request->name,
-            'description' => $request->description,
-            'is_active' => $request->is_active,
-        ]);
+    public function store(SaveCategoryRequest $request)
+    {
+        $category = $this->service->save($request->validated());
 
         return redirect()
             ->route('configuration.categories.index')
-            ->with('success', 'Categoria "'.$category->name.'" creada exitosamente.');
+            ->with('success', "Categoría \"{$category->name}\" creada.");
     }
 
-    public function update(Request $request, Category $category)
+    public function edit(Category $category)
     {
-        $request->validate([
-            'name' => ['required', 'string', Rule::unique('categories')->ignore($category->id)],
-            'description' => 'nullable|string',
-            'is_active' => 'sometimes|boolean',
+        return view('products.categories.edit', [
+            'category' => $category->loadCount(['children', 'products']),
+            'parents' => $this->parents($category),
         ]);
+    }
 
-        // Convertimos el input a boolean para comparar correctamente
-        $nuevoEstado = $request->boolean('is_active');
-
-        $category->update([
-            'name' => $request->name,
-            'description' => $request->description,
-            'is_active' => $nuevoEstado, // Importante usar la variable ya procesada
-        ]);
+    public function update(SaveCategoryRequest $request, Category $category)
+    {
+        $this->service->save($request->validated(), $category);
 
         return redirect()
             ->route('configuration.categories.index')
-            ->with('success', "Categoría \"{$category->name}\" actualizada correctamente.");
+            ->with('success', "Categoría \"{$category->name}\" actualizada.");
     }
 
-    // Elimina la Category si no tiene relaciones (o desactiva la eliminación por defecto).
-    public function destroy($id)
+    public function destroy(Category $category)
     {
-        $Category = Category::findOrFail($id);
+        try {
+            $this->service->trash($category);
+        } catch (DomainException $e) {
+            return redirect()->route('configuration.categories.index')->with('error', $e->getMessage());
+        }
 
-        return $this->destroyTrait($Category);
+        return redirect()
+            ->route('configuration.categories.index')
+            ->with('success', "Categoría \"{$category->name}\" enviada a la papelera.");
     }
 
-    /* Configuración del Trait para destroy() (eliminados/restaurar/borrarDefinitivo
-     * del trait ya no se usan — reemplazados por el tab "Papelera" + CategoryTable
-     * ::restore()/forceDelete(); toggleEstado() reemplazado por CategoryTable
-     * ::toggleActivo(), ver docs/analisis/politica-soft-deletes.md §6). */
-    protected function getModelClass(): string
+    /** Principales a las que se puede colgar una subcategoría (sin la propia). */
+    private function parents(?Category $except = null)
     {
-        return \App\Models\Products\Category::class;
-    }
-
-    protected function getViewFolder(): string
-    {
-        return 'products.categories';
-    }
-
-    protected function getRouteIndex(): string
-    {
-        return 'configuration.categories.index';
-    }
-
-    protected function getRouteEliminadas(): string
-    {
-        return 'configuration.categories.eliminados';
-    }
-
-    protected function getEntityName(): string
-    {
-        return 'Tipo de Negocio';
+        return Category::parents()
+            ->when($except, fn ($q) => $q->whereKeyNot($except->id))
+            ->orderBy('name')
+            ->get(['id', 'name', 'is_active']);
     }
 }

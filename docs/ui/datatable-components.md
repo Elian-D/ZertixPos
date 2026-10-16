@@ -179,6 +179,7 @@ Select de filtro con label encima. Solo funciona dentro de `filter-container`.
 | `filterKey` | `string` | `''` | Clave en `$filters` |
 | `options` | `array` | `[]` | Array asociativo `['valor' => 'Label visible']` |
 | `placeholder` | `string` | `'Todos'` | Opción vacía por defecto |
+| `strong` | `array` | `[]` | Valores que salen en negrita. Para un filtro en árbol: `Category::filterOptions()` devuelve `options` (hijas con sangría) y `strong` (las principales) |
 
 ### Comportamiento
 

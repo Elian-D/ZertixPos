@@ -4,7 +4,8 @@
      Con errores de validación abre en la primera pestaña que tenga uno, marcada con punto rojo.
 
      Recibe (ProductCatalogService::getForForm()):
-       $categories, $units           — catálogos de los selects.
+       $categories                  — principales activas con sus subcategorías (Category::tree()).
+       $units                       — catálogo del select de unidad.
        $itbisTaxes, $addonTaxes      — impuestos scope 'product' (ITBIS excluyente / apilables).
        $warehouses                   — almacenes activos (sección Inventario al crear).
      Opcional:
@@ -40,7 +41,7 @@
         isService: @js(old('type', $product->type ?? 'product') === 'service'),
         categoryId: @js((string) old('category_id', $product->category_id ?? '')),
         unitId: @js((string) old('unit_id', $product->unit_id ?? '')),
-        servicesCategoryId: @js($categories->firstWhere('name', 'Servicios')?->id),
+        servicesCategoryId: @js($categories->flatMap->children->firstWhere('name', 'Servicios')?->id),
         unidadUnitId: @js($units->firstWhere('name', 'Unidad')?->id),
         taxRates: @js($taxRates),
         rate: 0,
@@ -130,13 +131,28 @@
                     hint="Opcional. Con él, el TPV lo agrega con solo escanearlo."
                     :error="$errors->first('barcode')" />
 
-                <x-ui.forms.select label="Categoría" name="category_id" x-model="categoryId" required
-                    placeholder="Seleccione una categoría..."
-                    :error="$errors->first('category_id')">
-                    @foreach($categories as $category)
-                        <option value="{{ $category->id }}">{{ $category->name }}</option>
-                    @endforeach
-                </x-ui.forms.select>
+                {{-- Solo subcategorías, agrupadas por su principal (v1.5.1 REQ-2.3). --}}
+                <div>
+                    <x-ui.forms.select label="Categoría" name="category_id" x-model="categoryId" required
+                        placeholder="Seleccione una categoría..."
+                        :error="$errors->first('category_id')">
+                        @foreach($categories as $parent)
+                            <optgroup label="{{ $parent->name }}">
+                                @foreach($parent->children as $category)
+                                    <option value="{{ $category->id }}">{{ $category->name }}</option>
+                                @endforeach
+                            </optgroup>
+                        @endforeach
+                    </x-ui.forms.select>
+                    @if($categories->isEmpty())
+                        <p class="mt-1.5 text-xs text-slate-400">
+                            No hay subcategorías.
+                            @can('categories.manage')
+                                <a href="{{ route('configuration.categories.create') }}" class="font-semibold text-zertix-secondary hover:underline">Crear categoría</a>
+                            @endcan
+                        </p>
+                    @endif
+                </div>
 
                 {{-- Un servicio usa siempre la unidad "Unidad": el select se cambia por un campo fijo. --}}
                 <div>

@@ -102,7 +102,7 @@ Route::prefix('config')->as('configuration.')->group(function () {
     Route::middleware('permission:categories.manage')->group(function () {
         Route::resource('categories', CategoryController::class)
             ->parameters(['categories' => 'category'])
-            ->only(['index', 'store', 'update', 'destroy'])
+            ->only(['index', 'create', 'store', 'edit', 'update', 'destroy'])
             ->names('categories');
     });
 

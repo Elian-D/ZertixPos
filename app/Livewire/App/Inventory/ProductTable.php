@@ -3,6 +3,7 @@
 namespace App\Livewire\App\Inventory;
 
 use App\Livewire\Base\DataTable;
+use App\Models\Products\Category;
 use App\Models\Products\Product;
 use App\Services\Products\ProductCatalogService;
 use DomainException;
@@ -51,7 +52,7 @@ class ProductTable extends DataTable
                 ->where('name', 'like', "%{$v}%")
                 ->orWhere('sku', 'like', "%{$v}%")
                 ->orWhere('barcode', 'like', "%{$v}%")),
-            'category_id' => fn (Builder $q, $v) => $q->where('category_id', $v),
+            'category_id' => fn (Builder $q, $v) => $q->whereIn('category_id', Category::coveredIds($v)),
             'unit_id' => fn (Builder $q, $v) => $q->where('unit_id', $v),
             'is_active' => fn (Builder $q, $v) => $q->where('is_active', (bool) $v),
         ];
@@ -72,7 +73,7 @@ class ProductTable extends DataTable
         $options = $this->filterOptions();
 
         return match ($key) {
-            'category_id' => $options['categories']->firstWhere('id', $value)?->name ?? $value,
+            'category_id' => Category::find($value)?->name ?? $value,
             'unit_id' => $options['units']->firstWhere('id', $value)?->name ?? $value,
             'is_active' => filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'Activos' : 'Inactivos',
             default => parent::formatFilterValue($key, $value),

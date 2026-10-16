@@ -1,8 +1,11 @@
+{{-- strong: valores que salen en negrita (ej. la categoría principal en un filtro en árbol,
+     v1.5.1 REQ-2.4); las hijas llegan con sangría en su etiqueta. --}}
 @props([
     'label'       => '',
     'filterKey'   => '',
     'options'     => [],
     'placeholder' => 'Todos',
+    'strong'      => [],
 ])
 
 <div class="space-y-1.5">
@@ -28,7 +31,7 @@
         >
             <option value="">{{ $placeholder }}</option>
             @foreach($options as $value => $label)
-                <option value="{{ $value }}">{{ $label }}</option>
+                <option value="{{ $value }}" @if(in_array($value, $strong)) class="font-bold text-slate-900" @endif>{{ $label }}</option>
             @endforeach
         </select>
     </div>

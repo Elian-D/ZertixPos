@@ -47,7 +47,7 @@
 
                 <x-data-table.filter-select
                     label="Categoría" filterKey="category_id"
-                    :options="$categories->pluck('name', 'id')->all()"
+                    :options="$categoryFilter['options']" :strong="$categoryFilter['strong']"
                     placeholder="Todas las categorías" />
 
                 <x-data-table.filter-select
@@ -88,7 +88,7 @@
                 </x-data-table.cell>
 
                 <x-data-table.cell column="category_id" :visible="$visibleColumns">
-                    <span class="px-2 py-1 bg-slate-100 rounded text-xs">{{ $item->category->name ?? 'S/C' }}</span>
+                    <span class="px-2 py-1 bg-slate-100 rounded text-xs">{{ $item->category?->full_name ?? 'S/C' }}</span>
                 </x-data-table.cell>
 
                 <x-data-table.cell column="description" :visible="$visibleColumns" class="px-4 py-3.5 max-w-xs truncate">

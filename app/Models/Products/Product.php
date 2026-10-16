@@ -149,7 +149,8 @@ class Product extends Model
     public function scopeWithIndexRelations(Builder $query): void
     {
         $query->with([
-            'category:id,name',
+            'category:id,parent_id,name',
+            'category.parent:id,name',
             'unit:id,name,abbreviation',
             'productTaxes',
         ]); // Solo traemos lo necesario

@@ -1,14 +1,14 @@
 <div>
 
     <x-ui.page-header
-        title="Gestión de Categorías de Productos"
-        description="Administra las categorías utilizadas para organizar el catálogo de productos."
+        title="Categorías de productos"
+        description="Las principales agrupan; los productos van en sus subcategorías."
         :count="$categories->total()"
         countLabel="categorías"
     >
         <x-slot:actions>
             @can('categories.manage')
-                <x-ui.button variant="primary" iconLeft="heroicon-s-plus" x-data x-on:click="$dispatch('open-modal', 'crear-category')">
+                <x-ui.button variant="primary" iconLeft="heroicon-s-plus" href="{{ route('configuration.categories.create') }}">
                     Nueva Categoría
                 </x-ui.button>
             @endcan
@@ -45,8 +45,13 @@
         <x-slot:filterSlot>
             <x-data-table.filter-container :activeCount="$this->activeFilterCount()">
                 <x-data-table.filter-select
+                    label="Categoría principal" filterKey="parent_id"
+                    :options="$parents"
+                    placeholder="Todas" />
+
+                <x-data-table.filter-select
                     label="Estado" filterKey="is_active"
-                    :options="['1' => 'Activos', '0' => 'Inactivos']"
+                    :options="['1' => 'Activas', '0' => 'Inactivas']"
                     placeholder="Todos" />
             </x-data-table.filter-container>
         </x-slot:filterSlot>
@@ -59,12 +64,34 @@
                 </x-data-table.cell>
 
                 <x-data-table.cell column="name" :visible="$visibleColumns">
-                    <span class="font-medium text-slate-900">{{ $item->name }}</span>
+                    @if($item->isParent())
+                        <div class="flex items-center gap-2">
+                            <x-heroicon-o-folder class="w-4 h-4 text-slate-400 shrink-0" />
+                            <span class="font-semibold text-slate-900 whitespace-nowrap">{{ $item->name }}</span>
+                            <span class="text-xs text-slate-400 whitespace-nowrap">{{ $item->children_count }} {{ $item->children_count === 1 ? 'subcategoría' : 'subcategorías' }}</span>
+                        </div>
+                    @else
+                        <div class="flex items-center gap-2 pl-6">
+                            <x-heroicon-o-arrow-turn-down-right class="w-4 h-4 text-slate-300 shrink-0" />
+                            <span class="text-slate-800 whitespace-nowrap">{{ $item->name }}</span>
+                            @if($filters['search'] !== '' || $item->trashed() || $item->parent?->trashed())
+                                <span class="text-xs text-slate-400">en {{ $item->parent?->name }}{{ $item->parent?->trashed() ? ' (papelera)' : '' }}</span>
+                            @endif
+                        </div>
+                    @endif
+                </x-data-table.cell>
+
+                <x-data-table.cell column="products_count" :visible="$visibleColumns">
+                    @if($item->isParent())
+                        <span class="text-slate-300">—</span>
+                    @else
+                        <span class="font-mono text-slate-700">{{ $item->products_count }}</span>
+                    @endif
                 </x-data-table.cell>
 
                 <x-data-table.cell column="is_active" :visible="$visibleColumns">
                     <x-ui.badge :variant="$item->is_active ? 'success' : 'error'" size="sm" :dot="false">
-                        {{ $item->is_active ? 'Activo' : 'Inactivo' }}
+                        {{ $item->is_active ? 'Activa' : 'Inactiva' }}
                     </x-ui.badge>
                 </x-data-table.cell>
 
@@ -95,7 +122,7 @@
                         @else
                             <x-ui.action-menu>
                                 <x-ui.action-menu.item
-                                    x-data @click="$dispatch('open-modal', 'edit-category-{{ $item->id }}')"
+                                    href="{{ route('configuration.categories.edit', $item) }}"
                                     icon="heroicon-o-pencil-square">
                                     Editar
                                 </x-ui.action-menu.item>

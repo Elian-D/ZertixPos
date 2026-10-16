@@ -14,10 +14,8 @@ class ProductCatalogService
     public function getForFilters(): array
     {
         return [
-            'categories' => Category::activos()
-                ->select('id', 'name')
-                ->orderBy('name')
-                ->get(),
+            // En árbol (v1.5.1 REQ-2.4): elegir una principal filtra todas sus subcategorías.
+            'categoryFilter' => Category::filterOptions(),
 
             'units' => Unit::activos()
                 ->select('id', 'name', 'abbreviation')
@@ -40,6 +38,10 @@ class ProductCatalogService
             ->filter(fn ($tax) => is_array($tax) && ($tax['scope'] ?? null) === 'product');
 
         return array_merge($this->getForFilters(), [
+            // Solo subcategorías, agrupadas por su principal (v1.5.1 REQ-2.3): un producto
+            // nunca va en una principal.
+            'categories' => Category::tree(),
+
             // Split en dos grupos para la UI (Fase 5, REQ-5.4 extra — regla DGII):
             // ITBIS es mutuamente excluyente (radio buttons), el resto es aditivo
             // y se apila libremente (checkboxes) — ver comentario en config/impuestos.php.
