@@ -1,6 +1,6 @@
 {{-- Estado del negocio (v1.5.0 REQ-6.2): dinero + mercancía + me deben − debo = neto, hoy.
-     Recibe $accounts, $byWarehouse, $totals, $topDebtors y $topCreditors
-     (App\Http\Controllers\Reports\BusinessStatusController). --}}
+     Recibe $show (qué partes tienen su módulo encendido), $accounts, $byWarehouse, $totals,
+     $topDebtors y $topCreditors (App\Http\Controllers\Reports\BusinessStatusController). --}}
 @php
     $currency = config('regional.currency_symbol');
     $money = fn ($v) => ($v < 0 ? '−' : '').$currency.number_format(abs((float) $v), 2);
@@ -12,15 +12,25 @@
     <div class="p-4 md:p-6 flex flex-col gap-6">
         <x-ui.page-header title="Estado del negocio" :description="'Hoy, '.now()->translatedFormat('j \d\e F').' · ¿en qué está el negocio?'" />
 
+        @php
+            $parts = array_filter(['Dinero', $show['inventory'] ? 'mercancía' : null, $show['receivables'] ? 'lo que te deben' : null]);
+            $netHint = implode(' + ', $parts).($show['payables'] ? ' − lo que debes' : '');
+        @endphp
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
             <x-ui.stat label="Dinero" :value="$money($t['money'])" :variant="$t['money'] < 0 ? 'error' : 'default'" hint="Cajas y Bancos" />
-            <x-ui.stat label="+ Mercancía" :value="$money($t['inventory'])" hint="Existencias a costo" />
-            <x-ui.stat label="+ Me deben" :value="$money($t['receivables'])" hint="Cuentas por cobrar" />
-            <x-ui.stat label="− Debo" :value="$money($t['payables'])" :variant="$t['payables'] > 0 ? 'error' : 'default'" hint="Cuentas por pagar" />
+            @if($show['inventory'])
+                <x-ui.stat label="+ Mercancía" :value="$money($t['inventory'])" hint="Existencias a costo" />
+            @endif
+            @if($show['receivables'])
+                <x-ui.stat label="+ Me deben" :value="$money($t['receivables'])" hint="Cuentas por cobrar" />
+            @endif
+            @if($show['payables'])
+                <x-ui.stat label="− Debo" :value="$money($t['payables'])" :variant="$t['payables'] > 0 ? 'error' : 'default'" hint="Cuentas por pagar" />
+            @endif
         </div>
 
         <x-ui.stat label="= Neto: lo que es del negocio" :value="$money($t['net'])" :variant="$t['net'] < 0 ? 'error' : 'success'"
-            hint="Dinero + mercancía + lo que te deben − lo que debes" class="ring-1 ring-zertix-primary/30" />
+            :hint="$netHint" class="ring-1 ring-zertix-primary/30" />
 
         <x-ui.alert variant="neutral">No incluye el efectivo de los turnos abiertos: entra a Cajas y Bancos al depositarlo.</x-ui.alert>
 
@@ -35,18 +45,22 @@
                 </x-ui.report.rows>
             </x-ui.infolist.section>
 
-            <x-ui.infolist.section title="Mercancía" icon="heroicon-o-building-office-2" :cols="0" description="A costo, por almacén">
-                <x-slot:headerActions>
-                    <x-ui.button href="{{ route('reports.inventory') }}" size="sm" variant="secondary" appearance="ghost">Ver inventario</x-ui.button>
-                </x-slot:headerActions>
-                <x-ui.report.rows empty="Sin existencias.">
-                    @foreach($byWarehouse as $row)
-                        <x-ui.report.row :label="$row->name" :hint="$row->skus.' productos'" :value="$money($row->cost)" />
-                    @endforeach
-                </x-ui.report.rows>
-            </x-ui.infolist.section>
+            @if($show['inventory'])
+                <x-ui.infolist.section title="Mercancía" icon="heroicon-o-building-office-2" :cols="0" description="A costo, por almacén">
+                    @can('inventory.dashboard')
+                        <x-slot:headerActions>
+                            <x-ui.button href="{{ route('reports.inventory') }}" size="sm" variant="secondary" appearance="ghost">Ver inventario</x-ui.button>
+                        </x-slot:headerActions>
+                    @endcan
+                    <x-ui.report.rows empty="Sin existencias.">
+                        @foreach($byWarehouse as $row)
+                            <x-ui.report.row :label="$row->name" :hint="$row->skus.' productos'" :value="$money($row->cost)" />
+                        @endforeach
+                    </x-ui.report.rows>
+                </x-ui.infolist.section>
+            @endif
 
-            @if(module_enabled('sales.receivables'))
+            @if($show['receivables'])
                 <x-ui.infolist.section title="Me deben" icon="heroicon-o-arrow-down-left" :cols="0" description="Clientes con más saldo pendiente">
                     <x-ui.report.rows empty="Nadie te debe.">
                         @foreach($topDebtors as $row)
@@ -57,7 +71,7 @@
                 </x-ui.infolist.section>
             @endif
 
-            @if(module_enabled('sales.payables'))
+            @if($show['payables'])
                 <x-ui.infolist.section title="Debo" icon="heroicon-o-arrow-up-right" :cols="0" description="Proveedores con más saldo pendiente">
                     <x-ui.report.rows empty="No le debes a nadie.">
                         @foreach($topCreditors as $row)

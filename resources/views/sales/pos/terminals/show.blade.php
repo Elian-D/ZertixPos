@@ -93,13 +93,9 @@
 
                 <x-ui.infolist.section title="Configuración" icon="heroicon-o-cog-6-tooth" flat>
                     <x-ui.infolist.entry label="Nombre" :value="$terminal->name" strong />
-                    <x-ui.infolist.entry label="Tipo">
-                        <x-ui.badge variant="info" size="sm" :dot="false"
-                            :icon="$terminal->is_mobile ? 'heroicon-s-device-phone-mobile' : 'heroicon-s-computer-desktop'">
-                            {{ $terminal->is_mobile ? 'Móvil' : 'Fija' }}
-                        </x-ui.badge>
-                    </x-ui.infolist.entry>
-                    <x-ui.infolist.entry label="Almacén de despacho" :value="$terminal->warehouse?->name" />
+                    @if(module_enabled('inventory.tracking'))
+                        <x-ui.infolist.entry label="Almacén de despacho" :value="$terminal->warehouse?->name" />
+                    @endif
                     <x-ui.infolist.entry label="Formato de impresión">
                         {{ $terminal->getSetting('printer_format') }}
                         @unless($terminal->printer_format)
@@ -128,11 +124,13 @@
                             </x-ui.badge>
                         @endif
                     </x-ui.infolist.entry>
-                    <x-ui.infolist.entry label="Cobro de deudas en TPV">
-                        <x-ui.badge :variant="$terminal->allow_receivable_collection ? 'success' : 'slate'" size="sm" :dot="false">
-                            {{ $terminal->allow_receivable_collection ? 'Permitido' : 'No permitido' }}
-                        </x-ui.badge>
-                    </x-ui.infolist.entry>
+                    @if(module_enabled('sales.receivables'))
+                        <x-ui.infolist.entry label="Cobro de deudas en TPV">
+                            <x-ui.badge :variant="$terminal->allow_receivable_collection ? 'success' : 'slate'" size="sm" :dot="false">
+                                {{ $terminal->allow_receivable_collection ? 'Permitido' : 'No permitido' }}
+                            </x-ui.badge>
+                        </x-ui.infolist.entry>
+                    @endif
                     <x-ui.infolist.entry label="Descuento por producto">
                         @if($terminal->allow_item_discount)
                             <x-ui.badge variant="info" size="sm" :dot="false">Hasta {{ rtrim(rtrim(number_format($terminal->max_item_discount_percentage, 2), '0'), '.') }}%</x-ui.badge>

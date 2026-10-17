@@ -49,6 +49,17 @@ class Warehouse extends Model
     }
 
     /**
+     * El almacén que se usa cuando Inventario está apagado (v1.5.1 REQ-3.3): la terminal y
+     * la venta lo guardan sin pedirlo, porque sin inventario no se toca ninguna existencia.
+     * Una instalación nueva no trae almacenes, así que si no hay ninguno lo crea.
+     */
+    public static function fallback(): self
+    {
+        return static::where('is_active', true)->orderBy('id')->first()
+            ?? static::create(['name' => 'Almacén principal', 'type' => self::TYPE_POS, 'is_active' => true]);
+    }
+
+    /**
      * Eventos del Modelo
      */
     protected static function booted()

@@ -60,11 +60,7 @@
 
                 <x-data-table.cell column="name" :visible="$visibleColumns">
                     <div class="flex items-center font-medium text-slate-900">
-                        @if($item->is_mobile)
-                            <x-heroicon-s-device-phone-mobile class="w-4 h-4 mr-2 text-zertix-primary-500" title="Dispositivo Móvil" />
-                        @else
-                            <x-heroicon-s-computer-desktop class="w-4 h-4 mr-2 text-slate-400" title="Terminal Fija" />
-                        @endif
+                        <x-heroicon-s-computer-desktop class="w-4 h-4 mr-2 text-slate-400" />
                         @if(! $item->trashed() && auth()->user()->can('pos_terminals.view'))
                             <a href="{{ route('sales.pos.terminals.show', $item) }}" class="hover:text-zertix-primary-700 hover:underline">{{ $item->name }}</a>
                         @else
@@ -101,9 +97,6 @@
                     @endif
                 </x-data-table.cell>
 
-                <x-data-table.cell column="is_mobile" :visible="$visibleColumns" class="px-4 py-3.5 text-center">
-                    <x-heroicon-s-check-circle class="w-5 h-5 mx-auto {{ $item->is_mobile ? 'text-emerald-500' : 'text-slate-200' }}" />
-                </x-data-table.cell>
 
                 <x-data-table.cell column="printer_format" :visible="$visibleColumns">
                     @php $isInherited = is_null($item->printer_format); @endphp

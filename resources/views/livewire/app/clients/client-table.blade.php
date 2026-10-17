@@ -78,12 +78,14 @@
                         placeholder="Todos" />
                 </x-data-table.filter-group>
 
-                <x-data-table.filter-group title="Estado Financiero" collapsed>
-                    <x-data-table.filter-select
-                        label="Saldo" filterKey="has_debt"
-                        :options="['yes' => 'Con Deuda', 'no' => 'Sin Deuda']"
-                        placeholder="Todos" />
-                </x-data-table.filter-group>
+                @if(module_enabled('sales.receivables'))
+                    <x-data-table.filter-group title="Estado Financiero" collapsed>
+                        <x-data-table.filter-select
+                            label="Saldo" filterKey="has_debt"
+                            :options="['yes' => 'Con Deuda', 'no' => 'Sin Deuda']"
+                            placeholder="Todos" />
+                    </x-data-table.filter-group>
+                @endif
 
                 <x-data-table.filter-group title="Rangos de Búsqueda" collapsed>
                     <x-data-table.filter-date-range

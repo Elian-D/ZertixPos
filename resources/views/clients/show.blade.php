@@ -4,6 +4,8 @@
      ($quotes/$invoices son null si el usuario no puede ver esa pestaña). --}}
 @php
     $currency = config('regional.currency_symbol');
+    // Sin Cuentas por Cobrar no se muestra nada de crédito (v1.5.1 REQ-3.3).
+    $receivables = module_enabled('sales.receivables');
     $hasCredit = $client->credit_limit > 0;
     $exceeded = $hasCredit && $client->balance > $client->credit_limit;
     $money = fn ($v) => $currency.number_format((float) $v, 2);
@@ -41,7 +43,7 @@
             </x-slot:actions>
         </x-ui.page-header>
 
-        @if($exceeded)
+        @if($receivables && $exceeded)
             <div class="rounded-xl border border-state-error/20 bg-state-error/5 px-5 py-3 flex items-center gap-2 text-sm text-state-error">
                 <x-heroicon-s-exclamation-triangle class="w-5 h-5 shrink-0" />
                 Superó su límite de crédito por <strong>{{ $money($client->balance - $client->credit_limit) }}</strong>.
@@ -84,6 +86,7 @@
                     <x-ui.infolist.entry label="Dirección" :value="$client->address" full />
                 </x-ui.infolist.section>
 
+                @if($receivables)
                 <x-ui.infolist.section title="Crédito" icon="heroicon-o-credit-card" flat>
                     <x-ui.infolist.entry label="Límite de crédito">
                         @if($hasCredit)
@@ -105,6 +108,7 @@
                     <x-ui.infolist.entry label="Términos de pago"
                         :value="$hasCredit && $client->payment_terms ? $client->payment_terms.' días' : null" />
                 </x-ui.infolist.section>
+                @endif
 
                 @if(module_enabled('accounting.advanced'))
                     <x-ui.infolist.section title="Contabilidad" icon="heroicon-o-building-library" :cols="2" flat>

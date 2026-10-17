@@ -5,6 +5,117 @@
 
 **Restricción real de esta semana:** hay una instalación para la embasadora que se quiere probar el viernes. Este documento es el mapa de qué hacer y en qué orden — **no** implica parar ni retrasar esa entrega. La sección "Qué hacer antes del viernes" al final es explícita sobre eso: nada de lo de aquí bloquea la demo.
 
+> **Leer primero §0.** Es el mapa vigente de los módulos (v1.5.1): qué hay, de qué depende cada uno, qué se oculta al apagarlo y qué combinaciones valen. Las secciones 1 a 7 son el análisis original de 2026-07/08 y quedan como historia de por qué el sistema es así; donde contradicen a §0, manda §0.
+
+---
+
+## 0. Estado actual de los módulos (v1.5.1, 2026-10-16)
+
+### 0.1 Qué hay
+
+La fuente de verdad es `config/modules.php`. **Es el interruptor maestro:** `module_enabled()` exige que la clave esté ahí, así que comentar una entrada apaga el módulo en todo (rutas, sidebar, pantallas, planes, wizard y Funcionalidades), diga lo que diga la base. La tabla `installation_modules` es el interruptor de cada negocio para lo que sí está en el config.
+
+| Módulo | Clave | Tipo | Encendido al instalar | Lo enciende/apaga | Necesita | Grupo en Funcionalidades |
+|---|---|---|---|---|---|---|
+| Cotizaciones | `sales.quotes` | Núcleo flexible | Sí | El dueño | — | Ventas |
+| Cuentas por cobrar | `sales.receivables` | Núcleo flexible | Sí | El dueño | — | Ventas |
+| Comprobantes fiscales (NCF) | `sales.ncf` | Satélite | Si el plan lo trae | El plan y el dueño | — | Ventas |
+| Control de inventario | `inventory.tracking` | Núcleo flexible | Sí | El dueño | — | Inventario y compras |
+| Cuentas por pagar y gastos | `sales.payables` | Núcleo flexible | Sí | El dueño | — | Inventario y compras |
+| Compras a proveedores | `purchases` | Núcleo flexible | Sí | El dueño | Inventario y CxP | Inventario y compras |
+
+**Comentados en el config (apagados en todo):**
+
+| Módulo | Clave | Por qué |
+|---|---|---|
+| Clientes de ruta (puntos de reparto, tipos de negocio) | `sales.delivery_points` | Oculto en v1.5.1 hasta que haya rutas de verdad. |
+| Equipos en préstamo (equipos, tipos de equipo) | `clients.field_assets` | Va con Rutas: un equipo prestado está en un punto de reparto. Rentar equipos sin rutas sería otro módulo. |
+| Contabilidad formal (partida doble) | `accounting.advanced` | Sin cliente que la pida; el código queda desacoplado (§3). |
+| Propina legal | `sales.propina_legal` | Diseñado, no construido (comentario en el config). |
+
+Lo que **no es módulo** (núcleo fijo, sin interruptor): usuarios y roles, configuración, productos y categorías, clientes, ventas, TPV, devoluciones, facturas, Cajas y Bancos, y los reportes de ventas, resultados y estado del negocio.
+
+### 0.2 Dependencias
+
+```mermaid
+flowchart LR
+    subgraph Nucleo["Núcleo fijo (siempre)"]
+        V[Ventas y TPV]
+        P[Productos y categorías]
+        C[Clientes]
+        T[Cajas y Bancos]
+    end
+
+    subgraph Ventas["Grupo Ventas"]
+        Q[Cotizaciones]
+        R[Cuentas por cobrar]
+        N[NCF · plan]
+    end
+
+    subgraph Inv["Grupo Inventario y compras"]
+        I[Inventario]
+        X[CxP y gastos]
+        PU[Compras]
+    end
+
+    V --> Q & R & N
+    P --> I
+    PU -- necesita --> I
+    PU -- necesita --> X
+
+    subgraph Ocultos["Comentados en el config"]
+        DP[Clientes de ruta]
+        FA[Equipos en préstamo]
+        AC[Contabilidad formal]
+    end
+    FA -. necesita .-> DP
+```
+
+**Una sola dependencia dura:** Compras necesita Inventario (la recepción entra stock) y CxP (la recepción a crédito crea lo que se debe). Se declara en el `depends_on` del config y Funcionalidades bloquea al guardar; nunca se apaga nada en cascada. Todo lo demás es independiente entre sí.
+
+### 0.3 Qué se oculta al apagar cada uno (matriz de coherencia, REQ-3.3)
+
+| Apagado | Sidebar y rutas (404) | Otras pantallas | Validación y escritura | TPV | Inicio y reportes | Onboarding | Tipos de documento |
+|---|---|---|---|---|---|---|---|
+| **Cotizaciones** | Cotizaciones | Pestaña Cotizaciones del cliente | No se crean cotizaciones | — | — | — | COT |
+| **Cuentas por cobrar** | Cuentas por cobrar, Cobros | Saldo, límite y filtro de deuda en Clientes; crédito en el show del cliente; "Cobro de deudas" de la terminal | La venta solo acepta contado; no nacen CxC | Sin venta a crédito ni "Cobrar deudas" | Sin "Me deben" ni CxC por vencer | — | CXC, PAG |
+| **NCF** | Secuencias, Tipos de NCF, Reporte NCF | NCF por defecto de la terminal | La venta no pide comprobante ni RNC | Sin selector de comprobante | Sin Reporte NCF | Sin paso de NCF | — |
+| **Inventario** | Almacenes, Stock, Movimientos, Tomas, Mermas, Transferencias, Reporte de inventario | Pestaña Inventario y estado de stock del producto; almacén en la terminal (usa el de respaldo); almacén en la venta de backoffice; "Regresar al inventario" en devoluciones | No se escriben movimientos ni existencias; no se valida stock | Sin badges de stock | Sin "Mercancía" en Estado del negocio ni stock bajo | Sin paso de almacenes | TFS, MER, TRA |
+| **CxP y gastos** | Cuentas por pagar, Pagos, Gastos | — | No se registran gastos ni CxP | — | Sin "Debo" ni CxP por vencer | — | CXP, EGR, GAS |
+| **Compras** | Proveedores, Órdenes, Recepciones | Botón "Orden de compra" en stock bajo | No se reciben compras | — | Sin atajo de orden de compra | — | OC, RCP |
+
+Cómo se hace en código:
+- **Rutas:** middleware `module:<clave>` → 404.
+- **Pantallas y sidebar:** `@if(module_enabled('<clave>'))`; en tablas, la columna se quita de `columns()`.
+- **Escritura:** el servicio revisa el módulo (`SaleService`, `InventoryMovementService`, `ReturnService::movesStock()`), no solo la vista.
+- **Tipos de documento:** `DocumentType::MODULE_BY_CODE`.
+- **Sin inventario, almacén de respaldo:** `Warehouse::fallback()` (el primero activo, o "Almacén principal" si no hay ninguno). La terminal y la venta lo guardan sin pedirlo.
+
+`tests/Feature/V151/ModulesTest.php` apaga cada módulo y recorre todas las pantallas: las suyas dan 404, las demás cargan sin enlazar a ninguna de las suyas.
+
+### 0.4 Combinaciones
+
+Con 6 módulos hay 64 combinaciones; solo son inválidas las que dejan **Compras encendido con Inventario o CxP apagados** (Funcionalidades no las deja guardar). Perfiles típicos:
+
+| Perfil | Cotiz. | CxC | NCF | Inventario | CxP | Compras |
+|---|:-:|:-:|:-:|:-:|:-:|:-:|
+| Colmado o tienda (contado, formal) | ✗ | ✗ | ✓ | ✓ | ✓ | ✓ |
+| Distribuidora (crédito y compras) | ✓ | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Servicios (barbería, taller sin repuestos) | ✓ | ✓ | ✓ | ✗ | ✓ | ✗ |
+| Vendedor informal mínimo | ✗ | ✗ | ✗ | ✗ | ✗ | ✗ |
+| Inválida | — | — | — | ✗ | — | ✓ |
+
+### 0.5 Agregar o quitar un módulo
+
+1. Entrada en `config/modules.php` con `label`, `description`, `icon`, `category` (`satellite` o `base_flexible`), `group`, `hides` y `depends_on`.
+2. Sus rutas en un grupo `module:<clave>`.
+3. Cada pantalla de otro módulo que lo muestre, detrás de `module_enabled()`; el servicio que escribe, también.
+4. Sus tipos de documento en `DocumentType::MODULE_BY_CODE`; su paso de onboarding con `requiredModule()`.
+5. Una fila en la matriz de §0.3 y en `ModulesTest::modules()`.
+6. Para ocultarlo sin borrar código: comentar su entrada en el config (y sacarlo de `PlanSeeder` y de las sugerencias del wizard).
+
+---
+
 **Modelo de negocio de despliegue (aclarado en esta conversación):** por ahora, cada cliente es una instalación individual en su propio subdominio (no multi-tenant todavía). La idea del wizard de instalación es que, al instalar, se elijan los módulos satélite que aplican a ese cliente (vía flags), dejando guardado qué está activo. Cuando más adelante se construya el multi-tenant (`stancl/tenancy`, ver `docs/promts.md`), ese mismo registro de flags por instalación se exporta e importa como el registro de módulos activos por tenant — mismo modelo de datos, solo cambia de "una fila en la instalación" a "una fila por tenant".
 
 ---

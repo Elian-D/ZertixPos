@@ -19,13 +19,17 @@ class DocumentTypeController extends Controller
      */
     public function index()
     {
-        $items = DocumentType::query()->withIndexRelations()->orderBy('name')->get();
+        // Los tipos de un módulo apagado no se listan (v1.5.1 REQ-3.3).
+        $items = DocumentType::query()->withIndexRelations()->orderBy('name')->get()
+            ->filter(fn (DocumentType $type) => $type->isAvailable())->values();
 
         return view('accounting.document_types.index', compact('items'));
     }
 
     public function edit(DocumentType $document_type)
     {
+        abort_unless($document_type->isAvailable(), 404);
+
         return view('accounting.document_types.edit', [
             'item' => $document_type,
             'hasIssuedDocuments' => $document_type->hasIssuedDocuments(),
@@ -34,6 +38,8 @@ class DocumentTypeController extends Controller
 
     public function update(UpdateDocumentTypeRequest $request, DocumentType $document_type)
     {
+        abort_unless($document_type->isAvailable(), 404);
+
         try {
             $this->service->update($document_type, $request->validated());
 

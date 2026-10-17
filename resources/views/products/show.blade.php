@@ -83,7 +83,9 @@
                         </div>
                     </x-ui.infolist.section>
 
-                    <x-ui.infolist.section title="Estado de stock" icon="heroicon-o-archive-box" :cols="1" flat class="lg:col-span-3">
+                    <x-ui.infolist.section :title="module_enabled('inventory.tracking') ? 'Estado de stock' : 'Estado'" icon="heroicon-o-archive-box" :cols="1" flat class="lg:col-span-3">
+                        {{-- Sin Inventario no hay existencias que mostrar (v1.5.1 REQ-3.3). --}}
+                        @if(module_enabled('inventory.tracking'))
                         <x-ui.infolist.entry label="En stock (todos los almacenes)">
                             @unless($isService)
                                 <span @class([
@@ -102,6 +104,7 @@
                         </x-ui.infolist.entry>
                         <x-ui.infolist.entry label="Stock mínimo" :value="! $isService && $totalMin > 0 ? $fmtQty($totalMin).($unit ? ' '.$unit : '') : null" />
                         <x-ui.infolist.entry label="Stock máximo" :value="! $isService && $totalMax !== null ? $fmtQty($totalMax).($unit ? ' '.$unit : '') : null" />
+                        @endif
                         <x-ui.infolist.entry label="Tipo">
                             <x-ui.badge :variant="$isService ? 'primary' : 'info'" size="sm" :dot="false"
                                 :icon="$isService ? 'heroicon-s-wrench-screwdriver' : 'heroicon-s-cube'">
@@ -140,8 +143,8 @@
                     <x-ui.infolist.entry label="Markup" :value="$pct($markup)" />
                 </x-ui.infolist.section>
 
-                {{-- Fila 3: stock por almacén (solo productos) --}}
-                @unless($isService)
+                {{-- Fila 3: stock por almacén (solo productos, y con Inventario encendido) --}}
+                @if(! $isService && module_enabled('inventory.tracking'))
                     <x-ui.infolist.section title="Stock por almacén" icon="heroicon-o-building-storefront" :cols="0" flat
                         :description="$product->stocks->count().' '.($product->stocks->count() === 1 ? 'almacén' : 'almacenes')">
                         <x-ui.infolist.repeatable :empty="$product->stocks->isEmpty()" emptyIcon="heroicon-o-building-storefront"
@@ -173,7 +176,7 @@
                             @endforeach
                         </x-ui.infolist.repeatable>
                     </x-ui.infolist.section>
-                @endunless
+                @endif
             </x-ui.infolist.tab>
 
             {{-- Movimientos (historial de stock) --}}

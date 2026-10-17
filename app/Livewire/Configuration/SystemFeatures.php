@@ -28,13 +28,10 @@ class SystemFeatures extends Component
     /** safe_key => texto de advertencia si se está apagando algo con datos. */
     public array $warnings = [];
 
-    /**
-     * Satélite → Flexible: no se cascadea, se BLOQUEA la combinación inválida al
-     * guardar (REQ-10.7) — el dueño decide cuál de los dos apagar.
-     */
-    protected const HARD_DEPENDENCIES = [
-        // La recepción de compra entra stock y crea la CxP (v1.5.0 Fase 5).
-        'purchases' => ['inventory.tracking', 'sales.payables'],
+    /** Grupos por lo que hace el negocio (v1.5.1 REQ-3.4), en este orden. */
+    public const GROUPS = [
+        'sales' => ['label' => 'Ventas', 'icon' => 'heroicon-o-shopping-cart', 'description' => 'Cómo vendes y cómo cobras.'],
+        'inventory' => ['label' => 'Inventario y compras', 'icon' => 'heroicon-o-archive-box', 'description' => 'La mercancía, a quién se la compras y lo que debes.'],
     ];
 
     /**
@@ -128,38 +125,52 @@ class SystemFeatures extends Component
     }
 
     /**
-     * @return array<int, array{key: string, label: string, description: string, icon: string, includedInPlan: bool}>
+     * Módulos de config/modules.php agrupados por lo que hace el negocio (v1.5.1 REQ-3.4).
+     * Un satélite que el plan no incluye se muestra sin interruptor.
+     *
+     * @return array<string, array{label: string, icon: string, description: string, modules: array}>
      */
-    public function satelliteModules(): array
+    public function groups(): array
     {
         $planModules = $this->planModules();
+        $modules = config('modules');
 
-        return collect(config('modules'))
-            ->filter(fn (array $module) => $module['category'] === 'satellite')
-            ->map(fn (array $module, string $key) => [
-                'key' => $this->safeKey($key),
-                'label' => $module['label'],
-                'description' => $module['description'] ?? '',
-                'icon' => $module['icon'] ?? 'heroicon-s-puzzle-piece',
-                'includedInPlan' => in_array($key, $planModules, true),
-            ])
-            ->values()
-            ->all();
+        $groups = [];
+        foreach (self::GROUPS as $groupKey => $group) {
+            $groups[$groupKey] = $group + ['modules' => collect($modules)
+                ->filter(fn (array $module) => ($module['group'] ?? null) === $groupKey)
+                ->map(fn (array $module, string $key) => [
+                    'key' => $this->safeKey($key),
+                    'label' => $module['label'],
+                    'description' => $module['description'] ?? '',
+                    'icon' => $module['icon'] ?? 'heroicon-s-puzzle-piece',
+                    'hides' => $module['hides'] ?? [],
+                    'needs' => collect($this->dependenciesOf($key))->map(fn ($dep) => $modules[$dep]['label'])->values()->all(),
+                    // safe_key => etiqueta de los módulos que lo necesitan encendido.
+                    'neededBy' => collect($this->dependentsOf($key))->mapWithKeys(fn ($dep) => [$this->safeKey($dep) => $modules[$dep]['label']])->all(),
+                    'byPlan' => $module['category'] === 'satellite',
+                    'locked' => $module['category'] === 'satellite' && ! in_array($key, $planModules, true),
+                ])
+                ->values()
+                ->all()];
+        }
+
+        return $groups;
     }
 
-    /**
-     * @return array<int, array{key: string, label: string, description: string, icon: string}>
-     */
-    public function flexibleModules(): array
+    /** Módulos de este config que $key necesita encendidos (su depends_on). */
+    protected function dependenciesOf(string $key): array
     {
-        return collect(config('modules'))
-            ->filter(fn (array $module) => $module['category'] === 'base_flexible')
-            ->map(fn (array $module, string $key) => [
-                'key' => $this->safeKey($key),
-                'label' => $module['label'],
-                'description' => $module['description'] ?? '',
-                'icon' => $module['icon'] ?? 'heroicon-s-puzzle-piece',
-            ])
+        $modules = config('modules');
+
+        return array_values(array_filter($modules[$key]['depends_on'] ?? [], fn ($dep) => isset($modules[$dep])));
+    }
+
+    /** Módulos que necesitan a $key encendido. */
+    protected function dependentsOf(string $key): array
+    {
+        return collect(array_keys(config('modules')))
+            ->filter(fn ($other) => in_array($key, $this->dependenciesOf($other), true))
             ->values()
             ->all();
     }
@@ -200,11 +211,11 @@ class SystemFeatures extends Component
      */
     protected function validateHardDependencies(): bool
     {
-        // Pares [módulo, del que depende]: un módulo puede depender de varios.
+        // Pares [módulo, del que depende], leídos del depends_on de config/modules.php.
         $pairs = [];
-        foreach (self::HARD_DEPENDENCIES as $satellite => $required) {
-            foreach ((array) $required as $requiredFlexible) {
-                $pairs[] = [$satellite, $requiredFlexible];
+        foreach (array_keys(config('modules')) as $module) {
+            foreach ($this->dependenciesOf($module) as $required) {
+                $pairs[] = [$module, $required];
             }
         }
 
@@ -228,7 +239,7 @@ class SystemFeatures extends Component
                     'notify',
                     type: 'error',
                     title: 'No se pudo guardar',
-                    message: "No podés apagar \"{$flexibleLabel}\" mientras \"{$satelliteLabel}\" esté activo."
+                    message: "\"{$satelliteLabel}\" necesita \"{$flexibleLabel}\": apaga primero \"{$satelliteLabel}\" o deja \"{$flexibleLabel}\" encendido."
                 );
 
                 return false;

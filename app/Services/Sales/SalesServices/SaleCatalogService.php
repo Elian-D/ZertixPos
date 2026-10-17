@@ -6,8 +6,8 @@ use App\Models\Accounting\AccountingAccount;
 use App\Models\Accounting\DocumentType;
 use App\Models\Clients\Client;
 use App\Models\Configuration\TipoPago;
-use App\Models\Inventory\InventoryStock;
 use App\Models\Inventory\Warehouse;
+use App\Models\Products\Product;
 use App\Models\Sales\Pos\PosSession;
 use App\Models\Sales\Pos\PosTerminal;
 use App\Models\Sales\Sale;
@@ -77,39 +77,47 @@ class SaleCatalogService
                     ];
                 }),
 
-            // 2. Almacenes: Para saber de dónde sale el hielo
-            'warehouses' => Warehouse::select('id', 'name', 'type')
-                ->get(),
+            // 2. Almacenes. Con Inventario apagado solo el de respaldo, y el formulario
+            // no lo pide (v1.5.1 REQ-3.3).
+            'warehouses' => $warehouses = module_enabled('inventory.tracking')
+                ? Warehouse::where('is_active', true)->select('id', 'name', 'type')->get()
+                : collect([Warehouse::fallback()]),
 
-            // 3. Productos con Stock: Relacionados con sus almacenes
-            // Traemos los productos que tienen existencia en al menos un lugar
-            'products' => (function () {
-                $stocks = InventoryStock::with(['product' => function ($query) {
-                    $query->select('id', 'name', 'price');
-                }])
-                    ->where('quantity', '>', 0)
-                    ->get()
-                    ->filter(fn ($stock) => $stock->product !== null); // Evita errores si un stock no tiene producto
+            // 3. Productos por almacén: los que tienen existencia ahí, más los servicios
+            // (no tienen existencia). Con Inventario apagado, todos los productos activos.
+            'products' => (function () use ($warehouses) {
+                $tracking = module_enabled('inventory.tracking');
+
+                $products = Product::where('is_active', true)
+                    ->select('id', 'name', 'price', 'type')
+                    ->with(['stocks' => fn ($q) => $q->where('quantity', '>', 0)->select('id', 'product_id', 'warehouse_id', 'quantity')])
+                    ->get();
 
                 // Precargado en una sola query (evita N+1 de Product::taxRate() por
                 // producto): suma de tasas apiladas por producto (Fase 5, REQ-5.1).
                 $taxRates = DB::table('product_taxes')
-                    ->whereIn('product_id', $stocks->pluck('product_id')->unique())
+                    ->whereIn('product_id', $products->pluck('id'))
                     ->get()
                     ->groupBy('product_id')
                     ->map(fn ($rows) => $rows->sum(fn ($row) => config("impuestos.{$row->tax_key}.rate", 0)));
 
-                return $stocks->map(function ($stock) use ($taxRates) {
-                    return [
-                        'id' => $stock->product_id,
-                        'name' => $stock->product->name,
-                        'price' => $stock->product->price,
-                        // Suma de tasas apiladas — el carrito la snapshotea al agregar
-                        // el producto, igual que el precio.
-                        'tax_rate' => (float) ($taxRates->get($stock->product_id) ?? 0),
-                        'warehouse_id' => $stock->warehouse_id,
-                        'stock' => $stock->quantity,
-                    ];
+                $row = fn (Product $product, int $warehouseId, ?float $stock) => [
+                    'id' => $product->id,
+                    'name' => $product->name,
+                    'price' => $product->price,
+                    // Suma de tasas apiladas — el carrito la snapshotea al agregar
+                    // el producto, igual que el precio.
+                    'tax_rate' => (float) ($taxRates->get($product->id) ?? 0),
+                    'warehouse_id' => $warehouseId,
+                    'stock' => $stock,
+                ];
+
+                return $products->flatMap(function (Product $product) use ($tracking, $warehouses, $row) {
+                    if (! $tracking || $product->isService()) {
+                        return $warehouses->map(fn ($warehouse) => $row($product, $warehouse->id, null));
+                    }
+
+                    return $product->stocks->map(fn ($stock) => $row($product, $stock->warehouse_id, (float) $stock->quantity));
                 })->values()->toArray();
             })(),
 
