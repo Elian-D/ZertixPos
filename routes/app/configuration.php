@@ -56,6 +56,7 @@ Route::prefix('config')->as('configuration.')->group(function () {
 
         Route::resource('tipo-pagos', TipoPagoController::class)
             ->parameters(['tipo-pagos' => 'tipoPago'])
+            ->only(['index', 'store', 'update', 'destroy'])
             ->names('pagos');
 
         Route::patch('tipo-pagos/{tipoPago}/estado', [TipoPagoController::class, 'toggleEstado'])
