@@ -33,6 +33,10 @@
         ['name' => 'precio', 'label' => 'Precio e impuestos', 'icon' => 'heroicon-o-banknotes', 'error' => $tabErrors['precio']],
         ['name' => 'inventario', 'label' => 'Inventario', 'icon' => 'heroicon-o-archive-box', 'show' => '!isService', 'error' => $tabErrors['inventario']],
     ];
+    // Sin Inventario no hay pestaña de existencias (v1.5.1 REQ-3.3).
+    if (! $tracking) {
+        array_pop($tabs);
+    }
     $defaultTab = array_key_first(array_filter($tabErrors)) ?? 'identificacion';
 @endphp
 
@@ -294,6 +298,7 @@
     </x-ui.infolist.tab>
 
     {{-- PESTAÑA 3: Inventario (REQ-1.3) — solo productos; la pestaña se oculta con isService --}}
+    @if($tracking)
     <x-ui.infolist.tab name="inventario">
         @if($isEdit)
                 <p class="text-sm text-gray-500">La existencia no se cambia aquí: se ajusta con una toma física, una compra o una merma. Sí puedes cambiar el mínimo y el máximo de cada almacén.</p>
@@ -355,6 +360,7 @@
                 </div>
         @endif
     </x-ui.infolist.tab>
+    @endif
 
 </x-ui.infolist.tabs>
 </div>

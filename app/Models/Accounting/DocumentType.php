@@ -28,6 +28,33 @@ class DocumentType extends Model
      */
     const SYSTEM_PROTECTED_CODES = ['VTA', 'FAC', 'CXC', 'COT', 'TRN', 'PAG', 'DEV', 'TFS', 'MER', 'TRA', 'CXP', 'EGR', 'GAS', 'OC', 'RCP'];
 
+    /**
+     * Módulo del que depende cada tipo (v1.5.1 REQ-3.3): con el módulo apagado el tipo no
+     * se lista ni se edita. Los que no están aquí son del núcleo (venta, factura, turno,
+     * devolución).
+     */
+    const MODULE_BY_CODE = [
+        'CXC' => 'sales.receivables',
+        'PAG' => 'sales.receivables',
+        'COT' => 'sales.quotes',
+        'CXP' => 'sales.payables',
+        'EGR' => 'sales.payables',
+        'GAS' => 'sales.payables',
+        'OC' => 'purchases',
+        'RCP' => 'purchases',
+        'TFS' => 'inventory.tracking',
+        'MER' => 'inventory.tracking',
+        'TRA' => 'inventory.tracking',
+    ];
+
+    /** Si su módulo está encendido (o no depende de ninguno). */
+    public function isAvailable(): bool
+    {
+        $module = self::MODULE_BY_CODE[$this->code] ?? null;
+
+        return $module === null || module_enabled($module);
+    }
+
     protected static function booted()
     {
         static::saving(function ($type) {

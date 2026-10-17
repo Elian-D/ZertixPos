@@ -28,6 +28,11 @@ class StoreSaleRequest extends FormRequest
     {
         $terminal = $this->route('pos_terminal');
 
+        // Sin Inventario el almacén no se pide: se usa el de respaldo (v1.5.1 REQ-3.3).
+        if (! module_enabled('inventory.tracking') && ! $this->filled('warehouse_id') && ! $terminal?->warehouse_id) {
+            $this->merge(['warehouse_id' => \App\Models\Inventory\Warehouse::fallback()->id]);
+        }
+
         if ($terminal && ! $this->filled('warehouse_id')) {
             $this->merge(['warehouse_id' => $terminal->warehouse_id]);
         }

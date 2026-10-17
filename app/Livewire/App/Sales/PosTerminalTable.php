@@ -19,13 +19,12 @@ class PosTerminalTable extends DataTable
         return array_filter([
             'id' => ['label' => 'ID Terminal'],
             'name' => ['label' => 'Nombre Terminal', 'default' => true, 'mobile' => true],
-            'warehouse_id' => ['label' => 'Almacén Asociado', 'default' => true],
+            'warehouse_id' => module_enabled('inventory.tracking') ? ['label' => 'Almacén Asociado', 'default' => true] : null,
             'cash_account_id' => module_enabled('accounting.advanced')
                 ? ['label' => 'Cuenta Caja', 'default' => true]
                 : null,
             'default_ncf_type_id' => ['label' => 'Tipo NCF Defecto'],
             'default_client_id' => ['label' => 'Cliente Defecto'],
-            'is_mobile' => ['label' => 'Es Móvil'],
             'printer_format' => ['label' => 'Formato Impresión', 'default' => true, 'mobile' => true],
             'is_active' => ['label' => 'Estado', 'default' => true, 'mobile' => true],
             'created_at' => ['label' => 'Fecha Creación', 'default' => true],

@@ -52,7 +52,7 @@ class ProductController extends Controller
         $cost = (float) $product->cost;
         $profit = $price - $cost;
 
-        $showMovements = $product->isProduct() && auth()->user()->can('inventory_movements.view');
+        $showMovements = $product->isProduct() && module_enabled('inventory.tracking') && auth()->user()->can('inventory_movements.view');
 
         return view('products.show', [
             'product' => $product,

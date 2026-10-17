@@ -31,14 +31,17 @@ class ClientTable extends DataTable
 
     protected function columns(): array
     {
-        return [
+        // Saldo y límite son de Cuentas por Cobrar (v1.5.1 REQ-3.3).
+        $receivables = module_enabled('sales.receivables');
+
+        return array_filter([
             'id' => ['label' => 'ID', 'default' => true],
             'name' => ['label' => 'Nombre Cliente', 'default' => true, 'mobile' => true],
             'tax_identifier_types' => ['label' => 'Tipo ID Fiscal'],
             'tax_id' => ['label' => 'ID Fiscal', 'default' => true],
             'type' => ['label' => 'Tipo'],
-            'balance' => ['label' => 'Saldo Pendiente', 'default' => true, 'mobile' => true],
-            'credit_limit' => ['label' => 'Límite Crédito', 'default' => true],
+            'balance' => $receivables ? ['label' => 'Saldo Pendiente', 'default' => true, 'mobile' => true] : null,
+            'credit_limit' => $receivables ? ['label' => 'Límite Crédito', 'default' => true] : null,
             'email' => ['label' => 'Email'],
             'phone' => ['label' => 'Teléfono'],
             'state' => ['label' => 'Estado/Provincia'],
@@ -46,7 +49,7 @@ class ClientTable extends DataTable
             'address' => ['label' => 'Dirección'],
             'is_active' => ['label' => 'Estado', 'default' => true],
             'created_at' => ['label' => 'Fecha Creación'],
-        ];
+        ]);
     }
 
     /** En qué busca el filtro 'search' de abajo — debe coincidir con su closure. */

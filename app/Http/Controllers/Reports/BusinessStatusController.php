@@ -19,16 +19,24 @@ class BusinessStatusController extends Controller
 
     public function __invoke(BusinessMetrics $metrics)
     {
+        // Cada parte solo cuenta si su módulo está encendido (v1.5.1 REQ-3.3).
+        $show = [
+            'inventory' => module_enabled('inventory.tracking'),
+            'receivables' => module_enabled('sales.receivables'),
+            'payables' => module_enabled('sales.payables'),
+        ];
+
         $accounts = $metrics->accounts();
-        $inventory = $metrics->inventoryValue();
+        $inventory = $show['inventory'] ? $metrics->inventoryValue() : ['cost' => 0.0];
 
         $money = round((float) $accounts->sum('current_balance'), 2);
         $receivables = module_enabled('sales.receivables') ? $metrics->receivablesPending() : 0.0;
         $payables = module_enabled('sales.payables') ? $metrics->payablesPending() : 0.0;
 
         return view('reports.business', [
+            'show' => $show,
             'accounts' => $accounts,
-            'byWarehouse' => $metrics->inventoryValueByWarehouse(),
+            'byWarehouse' => $show['inventory'] ? $metrics->inventoryValueByWarehouse() : collect(),
             'totals' => [
                 'money' => $money,
                 'inventory' => $inventory['cost'],

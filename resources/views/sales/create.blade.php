@@ -62,8 +62,9 @@
                             </x-ui.forms.select>
                         </div>
 
-                        {{-- Almacén (Compacto) --}}
-                        <div class="md:col-span-3">
+                        {{-- Almacén (Compacto). Sin Inventario no se pide: va el de respaldo
+                             (v1.5.1 REQ-3.3). --}}
+                        <div class="md:col-span-3" @unless(module_enabled('inventory.tracking')) x-show="false" @endunless>
                             <x-ui.forms.select label="Almacén" name="warehouse_id" placeholder="Seleccione origen..."
                                 x-model="formData.warehouse_id" @change="clearItems()" required
                                 :error="$errors->first('warehouse_id')">
@@ -218,7 +219,7 @@
                                             </select>
                                         </td>
                                         <td class="px-4 py-3 text-center">
-                                            <span class="px-2 py-1 bg-gray-100 rounded text-gray-500 font-mono text-[11px]" x-text="item.stock || 0"></span>
+                                            <span class="px-2 py-1 bg-gray-100 rounded text-gray-500 font-mono text-[11px]" x-text="item.stock === null ? '—' : (item.stock || 0)"></span>
                                         </td>
                                         <td class="px-4 py-3">
                                             <input type="number" :name="`items[${index}][quantity]`" 
@@ -402,7 +403,7 @@
                     payment_type: 'cash',
                     tipo_pago_id: '1',
                     client_id: '1',
-                    warehouse_id: '',
+                    warehouse_id: @js(module_enabled('inventory.tracking') ? '' : (string) $warehouses->first()?->id),
                     ncf_type_id: '2',
                     sale_date: '{{ date("Y-m-d") }}',
                     cash_received: 0,

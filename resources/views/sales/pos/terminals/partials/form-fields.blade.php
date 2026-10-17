@@ -10,7 +10,6 @@
         requiresPin: {{ old('requires_pin', $posTerminal->requires_pin ?? true) ? 'true' : 'false' }},
         isEdit: {{ isset($posTerminal) ? 'true' : 'false' }},
         hasExistingPin: {{ isset($posTerminal) && $posTerminal->access_pin ? 'true' : 'false' }},
-        isMobile: {{ old('is_mobile', $posTerminal->is_mobile ?? false) ? 'true' : 'false' }},
         isActive: {{ old('is_active', $posTerminal->is_active ?? true) ? 'true' : 'false' }},
         allowReceivableCollection: {{ old('allow_receivable_collection', $posTerminal->allow_receivable_collection ?? true) ? 'true' : 'false' }},
         allowItemDiscount: {{ old('allow_item_discount', $posTerminal->allow_item_discount ?? true) ? 'true' : 'false' }},
@@ -32,6 +31,8 @@
                     <x-ui.forms.input label="Nombre de la Terminal" name="name" value="{{ old('name', $posTerminal->name ?? '') }}" placeholder="Ej: Caja Principal 01" required :error="$errors->first('name')" />
                 </div>
 
+                {{-- Sin Inventario no se pide: va el almacén de respaldo (v1.5.1 REQ-3.3). --}}
+                @if(module_enabled('inventory.tracking'))
                 <div class="md:col-span-2">
                     <x-ui.forms.select label="Almacén de Despacho" name="warehouse_id" placeholder="Seleccione almacén..." required :error="$errors->first('warehouse_id')">
                         @foreach($warehouses as $warehouse)
@@ -42,11 +43,12 @@
                     </x-ui.forms.select>
                     <p class="mt-1 text-[10px] text-gray-400 italic">El inventario se descontará de este almacén.</p>
                 </div>
+                @endif
             </div>
         </section>
 
         {{-- Funcionalidades de la Terminal — grilla 2x2 de toggles reales. Cobro de CxC
-             (Fase 6, REQ-6.5) se agrega acá, mismo patrón visual que Móvil/Activa/PIN. --}}
+             (Fase 6, REQ-6.5) se agrega acá, mismo patrón visual que Activa/PIN. --}}
         <section class="bg-white border border-gray-100 rounded-2xl shadow-sm p-5 sm:p-6">
             <div class="flex items-center gap-2 mb-6 border-b border-gray-100 pb-3">
                 <x-heroicon-s-adjustments-horizontal class="w-5 h-5 text-zertix-secondary" />
@@ -54,28 +56,8 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {{-- Terminal Móvil — @click="isMobile = !isMobile" en la tarjeta completa
-                     conserva el "clic en cualquier parte de la tarjeta" que daba el <label>
-                     original; el wrapper interno con @click.stop evita que el propio click
-                     del switch (que ya hace su propio toggle) dispare un segundo toggle por
-                     burbujeo, dejando la tarjeta en el estado contrario al que se ve. --}}
-                <div class="relative flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all"
-                     @click="isMobile = !isMobile"
-                     :class="isMobile ? 'border-zertix-primary bg-zertix-primary/5' : 'border-gray-100 hover:border-gray-200'">
-                    <div class="shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-colors"
-                         :class="isMobile ? 'bg-zertix-primary text-white' : 'bg-gray-100 text-gray-400'">
-                        <x-heroicon-s-device-phone-mobile class="w-5 h-5" />
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <p class="text-sm font-bold text-gray-800">Terminal Móvil</p>
-                        <p class="text-xs text-gray-500 mt-0.5">Terminal portátil, ej. tablet en ruta.</p>
-                    </div>
-                    <input type="hidden" name="is_mobile" value="0">
-                    <div class="mt-0.5" @click.stop>
-                        <x-ui.forms.toggle name="is_mobile" value="1" x-model="isMobile" />
-                    </div>
-                </div>
-
+                {{-- "Terminal Móvil" se quitó de la UI (v1.5.1 REQ-3.2); la columna is_mobile
+                     se queda para la futura app. --}}
                 {{-- Terminal Activa --}}
                 <div class="relative flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all"
                      @click="isActive = !isActive"
@@ -112,7 +94,8 @@
                     </div>
                 </div>
 
-                {{-- Permite Cobro de Cuentas por Cobrar (Fase 6, REQ-6.5) --}}
+                {{-- Permite Cobro de Cuentas por Cobrar (Fase 6, REQ-6.5). Sin CxC no aplica (v1.5.1 REQ-3.3). --}}
+                @if(module_enabled('sales.receivables'))
                 <div class="relative flex items-start gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all"
                      @click="allowReceivableCollection = !allowReceivableCollection"
                      :class="allowReceivableCollection ? 'border-zertix-primary bg-zertix-primary/5' : 'border-gray-100 hover:border-gray-200'">
@@ -129,6 +112,7 @@
                         <x-ui.forms.toggle name="allow_receivable_collection" value="1" x-model="allowReceivableCollection" />
                     </div>
                 </div>
+                @endif
             </div>
 
             {{-- Panel de PIN: solo visible si "Requiere PIN de Seguridad" está activo — se
