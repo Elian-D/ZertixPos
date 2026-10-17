@@ -10,6 +10,12 @@ if (! function_exists('module_enabled')) {
      */
     function module_enabled(string $key): bool
     {
+        // config/modules.php es el interruptor maestro (v1.5.1 REQ-3.1): un módulo que no
+        // está ahí (o está comentado) está apagado en todo, diga lo que diga la base.
+        if (! array_key_exists($key, config('modules', []))) {
+            return false;
+        }
+
         // Memo en el contenedor y no en un `static`: el static sobrevivía entre tests del
         // mismo proceso. app()->forgetInstance('modules.enabled') lo vacía.
         $cache = app()->bound('modules.enabled') ? app('modules.enabled') : null;

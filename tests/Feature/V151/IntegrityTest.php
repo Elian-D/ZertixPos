@@ -115,6 +115,9 @@ class IntegrityTest extends TenantTestCase
 
     public function test_crear_equipo_carga(): void
     {
+        // Equipos está comentado en config/modules.php desde v1.5.1 REQ-3.1: el código sigue
+        // y debe funcionar al volver a servirlo.
+        config(['modules' => config('modules') + ['clients.field_assets' => ['label' => 'Equipos', 'category' => 'satellite']]]);
         $this->enableModule('clients.field_assets');
 
         $this->get(route('clients.equipment.create'))->assertOk();

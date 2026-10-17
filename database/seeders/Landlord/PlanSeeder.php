@@ -52,7 +52,7 @@ class PlanSeeder extends Seeder
                     'Margen de ganancia por producto',
                     'Automatización WhatsApp ilimitada',
                 ],
-                'modules' => ['sales.ncf', 'inventory.advanced'],
+                'modules' => ['sales.ncf'],
             ],
             [
                 'name' => 'Pro',
@@ -62,16 +62,12 @@ class PlanSeeder extends Seeder
                 'features' => [
                     'Compras a proveedores, cuentas por pagar y control de gastos',
                     'Panel ejecutivo con métricas avanzadas',
-                    'Rutas con cálculo de distancia',
                     'API de integración externa',
                     'Automatización total ilimitada',
                     'Soporte prioritario',
                 ],
-                'modules' => [
-                    'sales.ncf',
-                    'sales.delivery_points',
-                    'inventory.advanced',
-                    'clients.field_assets', ],
+                // Rutas y Equipos en préstamo quedaron fuera en v1.5.1 (config/modules.php).
+                'modules' => ['sales.ncf'],
             ],
         ];
 

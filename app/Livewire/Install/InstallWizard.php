@@ -247,13 +247,13 @@ class InstallWizard extends Component
             'label' => 'Vendedor ambulante / Ruta sin oficina',
             'description' => 'Cobro rápido desde celular o terminal portátil',
             'icon' => 'heroicon-s-device-phone-mobile',
-            'suggested_modules' => ['sales.delivery_points'],
+            'suggested_modules' => [],
         ],
         'distribucion' => [
             'label' => 'Distribuidora con rutas',
             'description' => 'Reparto y venta mayorista en calle',
             'icon' => 'heroicon-s-truck',
-            'suggested_modules' => ['sales.delivery_points', 'clients.field_assets'],
+            'suggested_modules' => [],
         ],
         'restaurant' => [
             'label' => 'Restaurante / Cafetería',

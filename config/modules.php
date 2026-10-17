@@ -7,25 +7,41 @@
 // solo lo cambia el dueño desde "Funcionalidades del Sistema", REQ-10.6/10.8). Los módulos
 // base FIJOS (Auth, Config General, Productos, Clientes núcleo, Ventas/POS núcleo,
 // Devoluciones) nunca se registran acá — no tienen flag, no son opt-out.
+//
+// INTERRUPTOR MAESTRO (v1.5.1 REQ-3.1): comentar una entrada apaga el módulo en TODO —
+// rutas (middleware module:), sidebar, pantallas, planes, wizard y Funcionalidades del
+// Sistema — diga lo que diga installation_modules, porque module_enabled() exige que la
+// clave esté aquí. La base sigue siendo el interruptor de cada negocio para lo que sí está.
+// El mapa de qué oculta cada módulo está en docs/analisis/modulos-base-satelite.md §0.3.
+//
+// Claves que lee Funcionalidades del Sistema (v1.5.1 REQ-3.4):
+//   group      — 'sales' (Ventas) | 'inventory' (Inventario y compras): dónde se muestra.
+//   hides      — qué deja de verse al apagarlo, en palabras del usuario.
+//   depends_on — módulos de este archivo que tienen que estar encendidos; apagar uno de
+//                ellos con este encendido se bloquea al guardar. Claves que no son módulos
+//                de este archivo (ej. 'sales.core') se ignoran.
 return [
 
-    'sales.delivery_points' => [
-        'label' => 'Clientes de Ruta',
-        'description' => 'Gestiona rutas de entrega y clientes fijos con puntos de venta propios.',
-        'icon' => 'heroicon-s-truck',
-        'category' => 'satellite',
-        'depends_on' => ['clients.core'],
-        'route_prefixes' => ['app/clients/delivery-points', 'app/clients/businessTypes'],
-    ],
-
-    'clients.field_assets' => [
-        'label' => 'Equipos en Préstamo',
-        'description' => 'Rastrea equipos prestados o en comodato a tus clientes.',
-        'icon' => 'heroicon-s-wrench-screwdriver',
-        'category' => 'satellite',
-        'depends_on' => ['clients.core'],
-        'route_prefixes' => ['app/clients/equipments', 'app/clients/equipmentTypes'],
-    ],
+    // Rutas y Equipos en préstamo, ocultos en v1.5.1 (REQ-3.1). Van juntos: un equipo
+    // prestado está en un punto de reparto, y ese punto es parte de una ruta. El código
+    // sigue ahí; descomentar los dos para volver a servirlos.
+    // 'sales.delivery_points' => [
+    //     'label' => 'Clientes de Ruta',
+    //     'description' => 'Gestiona rutas de entrega y clientes fijos con puntos de venta propios.',
+    //     'icon' => 'heroicon-s-truck',
+    //     'category' => 'satellite',
+    //     'depends_on' => ['clients.core'],
+    //     'route_prefixes' => ['app/clients/delivery-points', 'app/config/business-types'],
+    // ],
+    //
+    // 'clients.field_assets' => [
+    //     'label' => 'Equipos en Préstamo',
+    //     'description' => 'Rastrea equipos prestados o en comodato a tus clientes.',
+    //     'icon' => 'heroicon-s-wrench-screwdriver',
+    //     'category' => 'satellite',
+    //     'depends_on' => ['sales.delivery_points'],
+    //     'route_prefixes' => ['app/clients/equipments', 'app/config/equipment-types'],
+    // ],
 
     // 'accounting.advanced' => [
     //     'label' => 'Contabilidad formal (partida doble)',
@@ -49,6 +65,8 @@ return [
         'category' => 'satellite',
         'depends_on' => ['sales.core'],
         'route_prefixes' => ['app/finance/ncf'],
+        'group' => 'sales',
+        'hides' => ['Secuencias NCF', 'Tipos de NCF', 'Reporte NCF', 'Comprobante al vender', 'NCF por defecto de la terminal'],
     ],
 
     // 'sales.credit_notes_b04' NO es un módulo propio (revisión REQ-10.9) — el B04 es
@@ -70,6 +88,8 @@ return [
         'icon' => 'heroicon-s-archive-box',
         'category' => 'base_flexible',
         'route_prefixes' => ['app/inventory'],
+        'group' => 'inventory',
+        'hides' => ['Almacenes', 'Stock actual', 'Movimientos', 'Tomas físicas', 'Mermas', 'Transferencias', 'Reporte de inventario', 'Inventario del producto', 'Regresar al inventario al devolver'],
     ],
 
     'sales.receivables' => [
@@ -78,6 +98,8 @@ return [
         'icon' => 'heroicon-s-banknotes',
         'category' => 'base_flexible',
         'route_prefixes' => ['app/finance/receivables'],
+        'group' => 'sales',
+        'hides' => ['Venta a crédito', 'Cuentas por cobrar', 'Cobros', 'Saldo y límite del cliente', 'Cobrar deudas en el TPV'],
     ],
 
     // v1.5.0 REQ-4.5: CxP, pagos a proveedores y gastos. Encendido en todo plan.
@@ -87,12 +109,14 @@ return [
         'icon' => 'heroicon-s-credit-card',
         'category' => 'base_flexible',
         'route_prefixes' => ['app/finance/payables', 'app/finance/payments', 'app/finance/expenses'],
+        'group' => 'inventory',
+        'hides' => ['Cuentas por pagar', 'Pagos a proveedores', 'Gastos'],
     ],
 
     // v1.5.0 REQ-4.5 (antes 'purchases.vendors', satélite Pro): proveedores, órdenes de
     // compra y recepciones. Encendido en todo plan. Depende de inventory.tracking (la
     // recepción entra stock) y de sales.payables (la recepción crea la CxP), con bloqueo al
-    // guardar (SystemFeatures::HARD_DEPENDENCIES).
+    // guardar (SystemFeatures lee este depends_on).
     'purchases' => [
         'label' => 'Compras a proveedores',
         'description' => 'Registra a tus proveedores y, al recibir mercancía, entra el stock y nace lo que les debes.',
@@ -100,6 +124,8 @@ return [
         'category' => 'base_flexible',
         'depends_on' => ['inventory.tracking', 'sales.payables'],
         'route_prefixes' => ['app/purchases'],
+        'group' => 'inventory',
+        'hides' => ['Proveedores', 'Órdenes de compra', 'Recepciones'],
     ],
 
     'sales.quotes' => [
@@ -108,6 +134,8 @@ return [
         'icon' => 'heroicon-s-document-duplicate',
         'category' => 'base_flexible',
         'route_prefixes' => ['app/sales/quotes'],
+        'group' => 'sales',
+        'hides' => ['Cotizaciones', 'Cotizaciones del cliente'],
     ],
 
     // 'sales.propina_legal' => [
